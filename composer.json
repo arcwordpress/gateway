@@ -1,0 +1,7 @@
+{
+    "name": "arcwp/gateway",
+    "require": {
+        "php": ">=8.2",
+        "illuminate/database": "^12.0"
+    }
+}
