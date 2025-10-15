@@ -21,66 +21,106 @@ define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
 
+// Check for required vendor autoload
+if (!file_exists(GATEWAY_PATH . 'vendor/autoload.php')) {
+    add_action('admin_notices', function() {
+        echo '<div class="notice notice-error"><p>';
+        echo '<strong>' . esc_html__('Gateway Error:', 'gateway') . '</strong> ';
+        echo esc_html__('Required dependencies are missing. Please run composer install.', 'gateway');
+        echo '</p></div>';
+    });
+    return;
+}
+
+require_once GATEWAY_PATH . 'vendor/autoload.php';
+
+// Register SPL autoloader for Gateway classes
+spl_autoload_register(function ($class) {
+    $prefix = 'Gateway\\';
+    $base_dir = GATEWAY_PATH . 'includes/';
+
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+
+    if (file_exists($file)) {
+        require $file;
+    }
+});
+
 class Plugin
 {
-    /**
-     * Register SPL autoloader
-     */
-    private static function autoload()
+    private static $instance = null;
+    private $registry;
+    private $standardRoutes;
+
+    public static function getInstance()
     {
-        spl_autoload_register(function ($class) {
-            $prefix = 'Gateway\\';
-            $base_dir = GATEWAY_PATH . 'includes/';
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
-            $len = strlen($prefix);
-            if (strncmp($prefix, $class, $len) !== 0) {
-                return;
-            }
-
-            $relative_class = substr($class, $len);
-            $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
-            if (file_exists($file)) {
-                require $file;
-            }
-        });
+    private function __construct()
+    {
+        $this->registry = new CollectionRegistry();
+        $this->standardRoutes = new StandardRoutes();
+        $this->init();
     }
 
     /**
      * Initialize the plugin
      */
-    public static function init()
+    private function init()
     {
-        // Check for required vendor autoload
-        if (!file_exists(GATEWAY_PATH . 'vendor/autoload.php')) {
-            add_action('admin_notices', [__CLASS__, 'missingDependenciesNotice']);
-            return;
-        }
-
-        require_once GATEWAY_PATH . 'vendor/autoload.php';
-
-        // Register autoloader
-        self::autoload();
-
         // Boot Eloquent on plugins_loaded
         add_action('plugins_loaded', [__CLASS__, 'bootEloquent']);
 
-        // Register activation hook
-        register_activation_hook(GATEWAY_FILE, [__CLASS__, 'activate']);
+        // Register activation and deactivation hooks
+        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
+        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
+
+        // Hook for any initialization that needs to happen on 'init'
+        add_action('init', [$this, 'onInit']);
 
         // Initialize admin page
         Admin\Page::init();
     }
 
-    /**
-     * Display missing dependencies notice
-     */
-    public static function missingDependenciesNotice()
+    public function onInit()
     {
-        echo '<div class="notice notice-error"><p>';
-        echo '<strong>' . esc_html__('Gateway Error:', 'gateway') . '</strong> ';
-        echo esc_html__('Required dependencies are missing. Please run composer install.', 'gateway');
-        echo '</p></div>';
+        // Register test collection
+        $this->registerTestCollection();
+
+        do_action('gateway_loaded');
+    }
+
+    /**
+     * Register test collection for development/testing
+     */
+    private function registerTestCollection()
+    {
+        // Load test files
+        require_once GATEWAY_PATH . 'test/Test.php';
+        require_once GATEWAY_PATH . 'test/TestCollection.php';
+
+        // Register the collection
+        \Gateway\Test\TestCollection::register();
+    }
+
+    public function getRegistry()
+    {
+        return $this->registry;
+    }
+
+    public function getStandardRoutes()
+    {
+        return $this->standardRoutes;
     }
 
     /**
@@ -94,12 +134,23 @@ class Plugin
     /**
      * Plugin activation
      */
-    public static function activate()
+    public function activate()
     {
         // Run database migrations
         Database\DatabaseMigration::run();
+
+        // Flush rewrite rules
+        flush_rewrite_rules();
+    }
+
+    /**
+     * Plugin deactivation
+     */
+    public function deactivate()
+    {
+        flush_rewrite_rules();
     }
 }
 
-// Self-initialize
-Plugin::init();
+// Initialize plugin
+Plugin::getInstance();
