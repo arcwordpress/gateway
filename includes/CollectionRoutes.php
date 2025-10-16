@@ -190,7 +190,11 @@ class CollectionRoutes
             $casts = $castsProp->getValue($collection);
         }
 
+        // Get the collection key
+        $key = method_exists($collection, 'getKey') ? $collection->getKey() : null;
+
         return [
+            'key' => $key,
             'class' => $collectionClass,
             'name' => basename(str_replace('\\', '/', $collectionClass)),
             'table' => $table,

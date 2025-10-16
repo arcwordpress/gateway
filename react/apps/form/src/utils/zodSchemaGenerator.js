@@ -1,19 +1,19 @@
 import { z } from 'zod';
 
 /**
- * Generate a Zod schema from the API schema response
- * @param {object} schema - The schema object from the API
+ * Generate a Zod schema from the API collection response
+ * @param {object} collection - The collection object from the API
  * @returns {z.ZodObject} Zod schema for validation
  */
-export const generateZodSchema = (schema) => {
-  if (!schema?.collection?.model?.fillable) {
+export const generateZodSchema = (collection) => {
+  if (!collection?.fillable) {
     return z.object({});
   }
 
   const schemaShape = {};
-  const fillable = schema.collection.model.fillable;
-  const casts = schema.collection.model.casts || {};
-  const fields = schema.fields || {};
+  const fillable = collection.fillable;
+  const casts = collection.casts || {};
+  const fields = collection.fields || {};
 
   fillable.forEach((fieldName) => {
     const fieldConfig = fields[fieldName] || {};

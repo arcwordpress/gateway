@@ -1,4 +1,4 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from './services/api';
@@ -12,9 +12,16 @@ const App = ({ collectionKey, recordId }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [validationSchema, setValidationSchema] = useState(null);
+
+  // Generate validation schema from collection data
+  const validationSchema = useMemo(() => {
+    if (!collection) return null;
+    return generateZodSchema(collection);
+  }, [collection]);
+
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: validationSchema ? zodResolver(validationSchema) : undefined,
+    mode: 'onSubmit',
   });
 
   useEffect(() => {
@@ -36,13 +43,6 @@ const App = ({ collectionKey, recordId }) => {
       const response = await getCollection(collectionKey);
       console.log('Collection response:', response);
       setCollection(response.data);
-
-      // Generate Zod validation schema if we have fields
-      if (response.data?.fields) {
-        const zodSchema = generateZodSchema(response.data);
-        setValidationSchema(zodSchema);
-        console.log('Zod schema generated:', zodSchema);
-      }
     } catch (err) {
       const errorMessage = err.response?.status === 404
         ? `Collection "${collectionKey}" not found`

@@ -52,6 +52,16 @@ class FormTestPage
             $asset['version']
         );
 
+        // Set up wpApiSettings for WordPress REST API
+        wp_localize_script(
+            'gateway-form-app',
+            'wpApiSettings',
+            [
+                'root' => esc_url_raw(rest_url()),
+                'nonce' => wp_create_nonce('wp_rest')
+            ]
+        );
+
         // Localize script with collection key
         wp_localize_script(
             'gateway-form-app',
@@ -59,8 +69,6 @@ class FormTestPage
             [
                 'collectionKey' => 'tests', // TestCollection key
                 'recordId' => isset($_GET['record_id']) ? intval($_GET['record_id']) : null,
-                'nonce' => wp_create_nonce('wp_rest'),
-                'root' => esc_url_raw(rest_url())
             ]
         );
     }
