@@ -20,42 +20,42 @@ class CollectionRegistry
             throw new \InvalidArgumentException("Must pass a Collection instance");
         }
 
-        $modelClass = $collection->getModelClass();
+        $collectionClass = get_class($collection);
 
         // Store the collection instance
-        $this->collections[$modelClass] = $collection;
+        $this->collections[$collectionClass] = $collection;
 
-        // Register alias if provided, otherwise auto-generate from model name
+        // Register alias if provided, otherwise auto-generate from collection name
         if ($alias) {
             if (isset($this->aliases[$alias])) {
                 throw new \InvalidArgumentException(
                     sprintf("Alias '%s' is already registered for %s", esc_html($alias), esc_html($this->aliases[$alias]))
                 );
             }
-            $this->aliases[$alias] = $modelClass;
+            $this->aliases[$alias] = $collectionClass;
         } else {
-            // Auto-generate alias from model class name
-            $autoAlias = $this->generateAlias($modelClass);
-            $this->aliases[$autoAlias] = $modelClass;
+            // Auto-generate alias from collection class name
+            $autoAlias = $this->generateAlias($collectionClass);
+            $this->aliases[$autoAlias] = $collectionClass;
         }
 
         // Fire action hook
-        do_action('gateway_collection_registered', $alias, $modelClass, $collection->getConfig());
+        do_action('gateway_collection_registered', $alias, $collectionClass, $collection);
 
         return $collection;
     }
 
     /**
-     * Generate alias from model class name
+     * Generate alias from collection class name
      *
-     * @param string $modelClass
+     * @param string $collectionClass
      * @return string
      */
-    protected function generateAlias($modelClass)
+    protected function generateAlias($collectionClass)
     {
-        $className = class_basename($modelClass);
-        // Remove "Model" suffix if present
-        $alias = str_replace('Model', '', $className);
+        $className = class_basename($collectionClass);
+        // Remove "Collection" suffix if present
+        $alias = str_replace('Collection', '', $className);
         return $alias;
     }
 
@@ -159,14 +159,14 @@ class CollectionRegistry
     }
 
     /**
-     * Get alias for a model class
+     * Get alias for a collection class
      *
-     * @param string $modelClass
+     * @param string $collectionClass
      * @return string|null
      */
-    public function getAlias($modelClass)
+    public function getAlias($collectionClass)
     {
-        return array_search($modelClass, $this->aliases) ?: null;
+        return array_search($collectionClass, $this->aliases) ?: null;
     }
 
     /**
@@ -186,7 +186,7 @@ class CollectionRegistry
     {
         $this->collections = [];
         $this->aliases = [];
-        do_action('gateway_registry_cleared');
+        do_action('gateway_collection_registry_cleared');
     }
 
     /**
@@ -198,15 +198,14 @@ class CollectionRegistry
     {
         $export = [];
 
-        foreach ($this->collections as $modelClass => $collection) {
-            $alias = $this->getAlias($modelClass);
+        foreach ($this->collections as $collectionClass => $collection) {
+            $alias = $this->getAlias($collectionClass);
             $export[] = [
-                'model' => $modelClass,
-                'collection_class' => get_class($collection),
-                'config' => $collection->getConfig(),
+                'collection_class' => $collectionClass,
+                'table' => $collection->getTable(),
                 'routes' => $collection->getRoutes(),
                 'alias' => $alias,
-                'analysis' => $collection->getAnalysis(),
+                'fields' => $collection->getFields(),
             ];
         }
 
@@ -226,13 +225,13 @@ class CollectionRegistry
             'collections' => [],
         ];
 
-        foreach ($this->collections as $modelClass => $collection) {
+        foreach ($this->collections as $collectionClass => $collection) {
             $stats['collections'][] = [
-                'model' => $modelClass,
-                'collection' => get_class($collection),
-                'alias' => $this->getAlias($modelClass),
+                'collection' => $collectionClass,
+                'table' => $collection->getTable(),
+                'alias' => $this->getAlias($collectionClass),
                 'route' => $collection->getRoute(),
-                'column_count' => $collection->getColumnCount(),
+                'fillable_count' => count($collection->getFillable()),
                 'enabled_routes' => array_keys(array_filter($collection->getRoutes()['methods'])),
             ];
         }

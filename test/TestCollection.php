@@ -11,10 +11,10 @@ if (!defined('ABSPATH')) {
 
 class TestCollection extends Collection
 {
-    /**
-     * The Eloquent model for this collection
-     */
-    protected $model = Test::class;
+
+    protected $key = 'tests';
+    protected $table = 'gateway_tests';
+    protected $fillable = ['name', 'description', 'status'];
 
     /**
      * Configure routes for this collection
@@ -23,36 +23,45 @@ class TestCollection extends Collection
         'enabled' => true,
         'namespace' => 'gateway',
         'version' => 'v1',
-        'route' => 'tests', // Will be auto-generated as 'tests' if not specified
+        'route' => 'tests',
         'allow_basic_auth' => true,
         'methods' => [
-            'get_many' => true,  // GET /gateway/v1/tests
-            'get_one' => true,   // GET /gateway/v1/tests/{id}
-            'create' => true,    // POST /gateway/v1/tests
-            'update' => true,    // PUT /gateway/v1/tests/{id}
-            'delete' => true,    // DELETE /gateway/v1/tests/{id}
+            'get_many' => true, 
+            'get_one' => true, 
+            'create' => true, 
+            'update' => true,  
+            'delete' => true, 
         ],
         'permissions' => [
-            // Require authentication via Basic Auth (Application Passwords) or cookie
-            // Leave empty for basic login requirement, or set to false for public access
             '*' => [
                 'type' => 'cookie_authentication',
-                'settings' => [] // No capability required, just need to be logged in
+                'settings' => []
             ]
         ],
     ];
 
-    /**
-     * Configure API behavior
-     */
-    protected $config = [
-        'searchable' => ['name', 'description'],
-        'filterable' => ['status'],
-        'sortable' => ['id', 'name', 'created_at'],
-        'relations' => [],
-        'hidden' => [],
-        'appends' => [],
-        'per_page' => 15,
-        'max_per_page' => 100,
+    protected $fields = [
+        'name' => [
+            'type' => 'text',
+            'label' => 'Test Name',
+            'required' => true,
+            'placeholder' => 'Enter test name',
+        ],
+        'description' => [
+            'type' => 'textarea',
+            'label' => 'Description',
+            'rows' => 5,
+            'placeholder' => 'Enter test description',
+        ],
+        'status' => [
+            'type' => 'select',
+            'label' => 'Status',
+            'options' => [
+                ['value' => 'active', 'label' => 'Active'],
+                ['value' => 'pending', 'label' => 'Pending'],
+                ['value' => 'inactive', 'label' => 'Inactive'],
+            ],
+            'default' => 'active',
+        ],
     ];
 }

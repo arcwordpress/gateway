@@ -46,8 +46,7 @@ class Plugin
     private static $instance = null;
     private $registry;
     private $standardRoutes;
-    private $schemaRegistry;
-    private $schemaRoutes;
+    private $collectionRoutes;
 
     public static function getInstance()
     {
@@ -61,8 +60,7 @@ class Plugin
     {
         $this->registry = new CollectionRegistry();
         $this->standardRoutes = new StandardRoutes();
-        $this->schemaRegistry = new SchemaRegistry();
-        $this->schemaRoutes = new SchemaRoutes();
+        $this->collectionRoutes = new CollectionRoutes();
         $this->init();
     }
 
@@ -99,15 +97,11 @@ class Plugin
     private function registerTestCollection()
     {
         // Load test files
-        require_once GATEWAY_PATH . 'test/Test.php';
         require_once GATEWAY_PATH . 'test/TestCollection.php';
-        require_once GATEWAY_PATH . 'test/TestSchema.php';
 
         // Register the collection
         \Gateway\Test\TestCollection::register();
 
-        // Register the schema
-        \Gateway\Test\TestSchema::register('test_schema');
     }
 
     public function getRegistry()
@@ -120,14 +114,9 @@ class Plugin
         return $this->standardRoutes;
     }
 
-    public function getSchemaRegistry()
+    public function getCollectionRoutes()
     {
-        return $this->schemaRegistry;
-    }
-
-    public function getSchemaRoutes()
-    {
-        return $this->schemaRoutes;
+        return $this->collectionRoutes;
     }
 
     /**

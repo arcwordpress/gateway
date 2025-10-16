@@ -2,56 +2,86 @@
 
 namespace Gateway;
 
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+
 /**
- * Abstract Collection class that configures API routes for Eloquent models
+ * Collection class that extends Eloquent Model and configures API routes
  *
  * Usage:
  * class TicketCollection extends \Gateway\Collection {
- *     protected $model = \TicketSystem\TicketModel::class;
+ *     protected $table = 'gateway_tickets';
+ *     protected $fillable = ['title', 'status'];
+ *
+ *     protected $routes = [
+ *         'enabled' => true,
+ *         'namespace' => 'gateway',
+ *         'version' => 'v1',
+ *         'route' => 'tickets',
+ *     ];
  * }
  *
  * Then register: TicketCollection::register();
  */
-abstract class Collection
+class Collection extends EloquentModel
 {
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [];
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table;
 
     protected $title;
     protected $key;
-    protected $model;
+    protected $fields = [];
     protected $routes = [
         'enabled' => true,
-        'namespace' => 'gateway',    // First segment of REST route (set to '' to omit)
-        'version' => 'v1',           // Second segment of REST route (set to '' to omit)
-        'route' => null,             // Auto-generated from model if null
-        'allow_basic_auth' => true,  // Allow WordPress Application Passwords (Basic Auth) in addition to configured auth
+        'namespace' => 'gateway',
+        'version' => 'v1',
+        'route' => null,
+        'allow_basic_auth' => true,
         'methods' => [
-            'get_many' => true,      // GET /tickets
-            'get_one' => true,       // GET /tickets/{id}
-            'create' => true,        // POST /tickets
-            'update' => true,        // PUT /tickets/{id}
-            'delete' => true,        // DELETE /tickets/{id}
+            'get_many' => true,
+            'get_one' => true,
+            'create' => true,
+            'update' => true,
+            'delete' => true,
         ],
         'middleware' => [],
-        'permissions' => [
-            // Multi-type auth system
-            // Use '*' for all routes or specify per route: 'get_many', 'get_one', 'create', 'update', 'delete'
-            // Set to false for public access
-            // Example:
-            // '*' => [
-            //     'type' => 'cookie_authentication',
-            //     'settings' => [
-            //         'capability' => 'edit_posts',
-            //     ]
-            // ],
-        ],
+        'permissions' => [],
     ];
 
-    private $modelInstance;
-
-
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
-        $this->validateModel();
+        parent::__construct($attributes);
+
+        // Set table if not already set
+        if (!$this->table && $this->key) {
+            $this->table = $this->key;
+        } elseif (!$this->table) {
+            $this->table = $this->generateTableName();
+        }
+
+        // Set fillable from fields if not already set
+        if (empty($this->fillable) && !empty($this->fields)) {
+            $this->fillable = array_keys($this->fields);
+        }
+
+        // Set route if not configured
         if (!isset($this->routes['route']) || $this->routes['route'] === null) {
             $this->routes['route'] = $this->generateRoute();
         }
@@ -70,44 +100,40 @@ abstract class Collection
     }
 
     /**
-     * Validate that model property is set and valid
+     * Generate table name from collection key or class name
+     *
+     * @return string The generated table name
      */
-    protected function validateModel()
+    protected function generateTableName()
     {
-        if (!$this->model) {
-            throw new \InvalidArgumentException(
-                static::class . " must define a \$model property"
-            );
-        }
+        $collectionName = class_basename(static::class);
 
-        if (!class_exists($this->model)) {
-            throw new \InvalidArgumentException(
-                sprintf('Model class %s does not exist', esc_html($this->model))
-            );
-        }
+        // Remove "Collection" suffix if present
+        $name = str_replace('Collection', '', $collectionName);
 
-        $reflection = new \ReflectionClass($this->model);
-        if (!$reflection->isSubclassOf('Illuminate\Database\Eloquent\Model')) {
-            throw new \InvalidArgumentException(
-                sprintf('%s must extend Illuminate\Database\Eloquent\Model', esc_html($this->model))
-            );
-        }
+        // Convert PascalCase to snake_case
+        $name = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
+
+        // Add gateway_ prefix
+        return 'gateway_' . $name . 's';
     }
 
     /**
-     * Generate route from model name
+     * Generate route from collection name
      */
     protected function generateRoute()
     {
-        $modelName = class_basename($this->model);
+        if ($this->key) {
+            return $this->key;
+        }
 
-        // Convert "TicketModel" or "Ticket" to "tickets"
-        $route = str_replace('Model', '', $modelName);
+        $collectionName = class_basename(static::class);
+        $route = str_replace('Collection', '', $collectionName);
 
-        // Convert PascalCase to kebab-case (e.g., "DocSet" -> "doc-set", "MyPluginModel" -> "my-plugin")
+        // Convert PascalCase to kebab-case
         $route = strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $route));
 
-        // Simple pluralization (can be made more sophisticated)
+        // Simple pluralization
         if (!str_ends_with($route, 's')) {
             $route .= 's';
         }
@@ -115,82 +141,22 @@ abstract class Collection
         return $route;
     }
 
-    /**
-     * Generate route prefix from model name (deprecated - use generateRoute() instead)
-     * @deprecated Use generateRoute() instead
-     */
-    protected function generateRoutePrefix()
-    {
-        return $this->generateRoute();
-    }
-
-    /**
-     * Get fresh model instance
-     */
-    public function getModelInstance()
-    {
-        if (!$this->modelInstance) {
-            $this->modelInstance = new $this->model();
-        }
-        return clone $this->modelInstance;
-    }
-
-    /**
-     * Get model class name
-     */
-    public function getModelClass()
-    {
-        return $this->model;
-    }
-
-    /**
-     * Get route configuration
-     */
     public function getRoutes()
     {
         return $this->routes;
     }
 
-    /**
-     * Get configuration value(s)
-     */
-    public function getConfig($key = null)
-    {
-        if ($key) {
-            return $this->config[$key] ?? null;
-        }
-        return $this->config;
-    }
-
-    /**
-     * Check if route method is enabled
-     */
     public function isRouteEnabled($method)
     {
         return $this->routes['enabled'] &&
                ($this->routes['methods'][$method] ?? false);
     }
 
-    /**
-     * Get route
-     */
     public function getRoute()
     {
         return $this->routes['route'];
     }
 
-    /**
-     * Get route prefix (deprecated - use getRoute() instead)
-     * @deprecated Use getRoute() instead
-     */
-    public function getRoutePrefix()
-    {
-        return $this->getRoute();
-    }
-
-    /**
-     * Get full REST namespace (e.g., "gateway/v1" or "productify/v1" or just "productify")
-     */
     public function getRestNamespace()
     {
         $namespace = $this->routes['namespace'] ?? 'gateway';
@@ -200,19 +166,13 @@ abstract class Collection
         return implode('/', $parts);
     }
 
-    /**
-     * Override route configuration
-     */
-    protected function configureRoutes(array $config)
+    public function getFields()
     {
-        $this->routes = array_merge($this->routes, $config);
+        return $this->fields;
     }
 
-    /**
-     * Override configuration
-     */
-    protected function configureApi(array $config)
+    public function getKey()
     {
-        $this->config = array_merge($this->config, $config);
+        return $this->key;
     }
 }
