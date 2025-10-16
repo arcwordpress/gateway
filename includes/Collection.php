@@ -14,14 +14,10 @@ namespace Gateway;
  */
 abstract class Collection
 {
-    /**
-     * @var string Eloquent model class name (must be set by child class)
-     */
-    protected $model;
 
-    /**
-     * @var array API route configuration
-     */
+    protected $title;
+    protected $key;
+    protected $model;
     protected $routes = [
         'enabled' => true,
         'namespace' => 'gateway',    // First segment of REST route (set to '' to omit)
@@ -50,33 +46,12 @@ abstract class Collection
         ],
     ];
 
-    /**
-     * @var array Model configuration
-     */
-    protected $config = [
-        'searchable' => [],          // Columns to search
-        'filterable' => [],          // Columns that can be filtered
-        'sortable' => [],            // Columns that can be sorted
-        'relations' => [],           // Relations to eager load
-        'hidden' => [],              // Fields to hide in API responses
-        'appends' => [],             // Accessors to append in API responses
-        'per_page' => 15,            // Default pagination
-        'max_per_page' => 100,       // Maximum items per page
-    ];
-
-    /**
-     * @var \Illuminate\Database\Eloquent\Model Model instance
-     */
     private $modelInstance;
 
-    /**
-     * Constructor
-     */
+
     public function __construct()
     {
         $this->validateModel();
-
-        // Auto-generate route if not set
         if (!isset($this->routes['route']) || $this->routes['route'] === null) {
             $this->routes['route'] = $this->generateRoute();
         }

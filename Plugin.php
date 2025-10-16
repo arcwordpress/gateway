@@ -21,17 +21,6 @@ define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
 
-// Check for required vendor autoload
-if (!file_exists(GATEWAY_PATH . 'vendor/autoload.php')) {
-    add_action('admin_notices', function() {
-        echo '<div class="notice notice-error"><p>';
-        echo '<strong>' . esc_html__('Gateway Error:', 'gateway') . '</strong> ';
-        echo esc_html__('Required dependencies are missing. Please run composer install.', 'gateway');
-        echo '</p></div>';
-    });
-    return;
-}
-
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 
 // Register SPL autoloader for Gateway classes
@@ -57,6 +46,8 @@ class Plugin
     private static $instance = null;
     private $registry;
     private $standardRoutes;
+    private $schemaRegistry;
+    private $schemaRoutes;
 
     public static function getInstance()
     {
@@ -70,6 +61,8 @@ class Plugin
     {
         $this->registry = new CollectionRegistry();
         $this->standardRoutes = new StandardRoutes();
+        $this->schemaRegistry = new SchemaRegistry();
+        $this->schemaRoutes = new SchemaRoutes();
         $this->init();
     }
 
@@ -108,9 +101,13 @@ class Plugin
         // Load test files
         require_once GATEWAY_PATH . 'test/Test.php';
         require_once GATEWAY_PATH . 'test/TestCollection.php';
+        require_once GATEWAY_PATH . 'test/TestSchema.php';
 
         // Register the collection
         \Gateway\Test\TestCollection::register();
+
+        // Register the schema
+        \Gateway\Test\TestSchema::register('test_schema');
     }
 
     public function getRegistry()
@@ -121,6 +118,16 @@ class Plugin
     public function getStandardRoutes()
     {
         return $this->standardRoutes;
+    }
+
+    public function getSchemaRegistry()
+    {
+        return $this->schemaRegistry;
+    }
+
+    public function getSchemaRoutes()
+    {
+        return $this->schemaRoutes;
     }
 
     /**

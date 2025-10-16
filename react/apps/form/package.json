@@ -1,0 +1,35 @@
+{
+  "name": "blueprint-forms",
+  "version": "1.0.0",
+  "description": "ARC Blueprint Forms React App",
+  "scripts": {
+    "build": "wp-scripts build src/index.js --output-path=build",
+    "start": "wp-scripts start src/index.js --output-path=build",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:pkg-json": "wp-scripts lint-pkg-json"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.14"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.4",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@tiptap/extension-link": "^3.6.6",
+    "@tiptap/extension-text-align": "^3.6.6",
+    "@tiptap/extension-underline": "^3.6.6",
+    "@tiptap/react": "^3.6.6",
+    "@tiptap/starter-kit": "^3.6.6",
+    "axios": "^1.6.2",
+    "easymde": "^2.20.0",
+    "react-datepicker": "^8.7.0",
+    "react-hook-form": "^7.49.2",
+    "react-simplemde-editor": "^5.2.0",
+    "zod": "^3.22.4"
+  }
+}
