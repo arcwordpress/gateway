@@ -6,11 +6,11 @@ import './index.css';
 const formElements = document.querySelectorAll('[data-blueprint-form]');
 
 formElements.forEach((element) => {
-  const schemaKey = element.getAttribute('data-schema');
+  const collectionKey = element.getAttribute('data-collection');
   const recordId = element.getAttribute('data-record-id');
 
-  if (schemaKey) {
+  if (collectionKey) {
     const root = createRoot(element);
-    root.render(<App schemaKey={schemaKey} recordId={recordId} />);
+    root.render(<App collectionKey={collectionKey} recordId={recordId} />);
   }
 });

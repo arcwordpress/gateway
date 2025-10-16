@@ -1,12 +1,12 @@
 import { useState, useEffect } from '@wordpress/element';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getSchema, createRecord, getRecord, updateRecord } from './services/api';
+import { getCollection, createRecord, getRecord, updateRecord } from './services/api';
 import { SelectField, TextField, TextareaField, CheckboxField, EmailField, MarkdownField, RelationField, NumberField, URLField, PasswordField, RangeField, RadioField, ButtonGroupField, WysiwygField, ColorPickerField, ReadOnlyField, HiddenField, SortableChildrenField, DatePickerField, TimePickerField, DateTimePickerField, ImageField, FileField, GalleryField, LinkField, OEmbedField, PostObjectField, UserField } from './components/field-types';
 import { generateZodSchema } from './utils/zodSchemaGenerator';
 
-const App = ({ schemaKey, recordId }) => {
-  const [schema, setSchema] = useState(null);
+const App = ({ collectionKey, recordId }) => {
+  const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -18,33 +18,35 @@ const App = ({ schemaKey, recordId }) => {
   });
 
   useEffect(() => {
-    if (schemaKey) {
-      loadSchema();
+    if (collectionKey) {
+      loadCollection();
     }
-  }, [schemaKey]);
+  }, [collectionKey]);
 
   useEffect(() => {
-    if (recordId && schema) {
+    if (recordId && collection) {
       loadRecord();
     }
-  }, [recordId, schema]);
+  }, [recordId, collection]);
 
-  const loadSchema = async () => {
+  const loadCollection = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getSchema(schemaKey);
-      console.log('Schema response:', response);
-      setSchema(response.data);
+      const response = await getCollection(collectionKey);
+      console.log('Collection response:', response);
+      setCollection(response.data);
 
-      // Generate Zod validation schema
-      const zodSchema = generateZodSchema(response.data);
-      setValidationSchema(zodSchema);
-      console.log('Zod schema generated:', zodSchema);
+      // Generate Zod validation schema if we have fields
+      if (response.data?.fields) {
+        const zodSchema = generateZodSchema(response.data);
+        setValidationSchema(zodSchema);
+        console.log('Zod schema generated:', zodSchema);
+      }
     } catch (err) {
       const errorMessage = err.response?.status === 404
-        ? `Schema "${schemaKey}" not found`
-        : err.message || 'Failed to load schema';
+        ? `Collection "${collectionKey}" not found`
+        : err.message || 'Failed to load collection';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -55,7 +57,11 @@ const App = ({ schemaKey, recordId }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getRecord(schema.collection.routes.endpoint, recordId);
+      const endpoint = collection.routes?.endpoint;
+      if (!endpoint) {
+        throw new Error('No endpoint available for this collection');
+      }
+      const response = await getRecord(endpoint, recordId);
       console.log('Record loaded:', response);
 
       // Populate form with existing data
@@ -74,7 +80,8 @@ const App = ({ schemaKey, recordId }) => {
   };
 
   const onSubmit = async (data) => {
-    if (!schema?.collection?.routes?.endpoint) {
+    const endpoint = collection?.routes?.endpoint;
+    if (!endpoint) {
       setError('No endpoint available for submission');
       return;
     }
@@ -86,10 +93,10 @@ const App = ({ schemaKey, recordId }) => {
 
       let response;
       if (isEditMode && recordId) {
-        response = await updateRecord(schema.collection.routes.endpoint, recordId, data);
+        response = await updateRecord(endpoint, recordId, data);
         setSuccess('Record updated successfully!');
       } else {
-        response = await createRecord(schema.collection.routes.endpoint, data);
+        response = await createRecord(endpoint, data);
         setSuccess('Record created successfully!');
         reset(); // Clear form only on create
       }
@@ -120,18 +127,18 @@ const App = ({ schemaKey, recordId }) => {
     return 'text';
   };
 
-  if (!schemaKey) {
+  if (!collectionKey) {
     return (
       <div className="p-6">
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-          No schema key provided. Add data-schema attribute.
+          No collection key provided. Add data-collection attribute.
         </div>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="p-6">Loading schema "{schemaKey}"...</div>;
+    return <div className="p-6">Loading collection "{collectionKey}"...</div>;
   }
 
   if (error) {
@@ -144,11 +151,11 @@ const App = ({ schemaKey, recordId }) => {
     );
   }
 
-  if (!schema || !schema.collection?.model?.fillable) {
+  if (!collection || !collection.fillable) {
     return (
       <div className="p-6">
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-          Schema "{schemaKey}" loaded but has no fillable fields.
+          Collection "{collectionKey}" loaded but has no fillable fields.
         </div>
       </div>
     );
@@ -170,9 +177,9 @@ const App = ({ schemaKey, recordId }) => {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {schema.collection.model.fillable.map((fieldName) => {
+          {collection.fillable.map((fieldName) => {
             // Check if field has configuration
-            const fieldConfig = schema.fields?.[fieldName] || {};
+            const fieldConfig = collection.fields?.[fieldName] || {};
 
             // Skip hidden fields
             if (fieldConfig.hidden) {
@@ -181,7 +188,7 @@ const App = ({ schemaKey, recordId }) => {
 
             // Check if custom type is specified in config
             const configType = fieldConfig.type;
-            const inputType = getInputType(fieldName, schema.collection.model.casts);
+            const inputType = getInputType(fieldName, collection.casts || {});
             const fieldError = errors[fieldName];
 
             // Render based on configured type or inferred type

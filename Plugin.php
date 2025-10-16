@@ -79,8 +79,9 @@ class Plugin
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);
 
-        // Initialize admin page
+        // Initialize admin pages
         Admin\Page::init();
+        Admin\FormTestPage::init();
     }
 
     public function onInit()

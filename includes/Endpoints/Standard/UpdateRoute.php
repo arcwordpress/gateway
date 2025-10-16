@@ -41,8 +41,8 @@ class UpdateRoute extends BaseEndpoint
         unset($data['id'], $data['route'], $data['rest_route']);
 
         try {
-            $modelClass = $this->collection->getModelClass();
-            $model = $modelClass::find($id);
+            // Collection IS the model - find the record
+            $model = $this->collection->find($id);
 
             if (!$model) {
                 return $this->sendErrorResponse(

@@ -20,7 +20,7 @@ class AdminDataRoute
 
     public function registerRoute()
     {
-        register_rest_route('arc-gateway/v1', '/admin-data', [
+        register_rest_route('gateway/v1', '/admin-data', [
             'methods' => 'GET',
             'callback' => [$this, 'getData'],
             'permission_callback' => function () {
@@ -38,10 +38,11 @@ class AdminDataRoute
         $collections = $registry->getAll();
         $collectionsData = [];
 
-        foreach ($collections as $alias => $collection) {
+        foreach ($collections as $key => $collection) {
             $collectionsData[] = [
-                'alias' => $alias,
-                'class' => get_class($collection)
+                'key' => $key,
+                'class' => get_class($collection),
+                'table' => $collection->getTable()
             ];
         }
 

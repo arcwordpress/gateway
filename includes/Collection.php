@@ -90,13 +90,12 @@ class Collection extends EloquentModel
     /**
      * Register this collection with the CollectionRegistry
      *
-     * @param string|null $alias Optional alias for the collection
      * @return static
      */
-    public static function register($alias = null)
+    public static function register()
     {
         $instance = new static();
-        return Plugin::getInstance()->getRegistry()->register($instance, $alias);
+        return Plugin::getInstance()->getRegistry()->register($instance);
     }
 
     /**

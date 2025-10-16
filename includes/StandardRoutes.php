@@ -15,52 +15,65 @@ class StandardRoutes
     public function __construct()
     {
         add_action('rest_api_init', [$this, 'registerRoutes']);
-        add_action('gateway_collection_registered', [$this, 'onCollectionRegistered'], 10, 3);
+        add_action('gateway_collection_registered', [$this, 'onCollectionRegistered'], 10, 2);
         add_action('gateway_collection_unregistered', [$this, 'onCollectionUnregistered'], 10, 1);
     }
 
     public function registerRoutes()
     {
+        error_log('=== Gateway: registerRoutes() called on rest_api_init ===');
+        error_log('Total collections to register: ' . count($this->registeredRoutes));
+        error_log('Collection names: ' . implode(', ', array_keys($this->registeredRoutes)));
+
         foreach ($this->registeredRoutes as $collectionName => $endpoints) {
+            error_log('Processing collection: ' . $collectionName . ' with ' . count($endpoints) . ' endpoints');
+
             foreach ($endpoints as $endpoint) {
+                $namespace = $endpoint->getNamespace();
+                $route = $collectionName . $endpoint->getRoute();
+                $fullRoute = $namespace . '/' . $route;
+
+                error_log('Registering route: ' . $fullRoute . ' [' . $endpoint->getMethod() . ']');
+
                 register_rest_route(
-                    $endpoint->getNamespace(),
-                    $collectionName . $endpoint->getRoute(),
+                    $namespace,
+                    $route,
                     $endpoint->getArgs()
                 );
             }
         }
+
+        error_log('=== Gateway: registerRoutes() complete ===');
     }
 
-    public function onCollectionRegistered($alias, $modelClass, $config)
+    public function onCollectionRegistered($collectionClass, $collection)
     {
-        // Use alias as the collection name, fallback to a normalized model class name
-        $collectionName = $alias ?: $this->normalizeCollectionName($modelClass);
+        error_log('=== Gateway: Collection Registration Start ===');
+        error_log('Collection Class: ' . var_export($collectionClass, true));
+        error_log('Collection Instance: ' . get_class($collection));
+        error_log('Collection Key: ' . var_export($collection->getKey(), true));
+        error_log('Collection Table: ' . $collection->getTable());
+        error_log('Collection Route: ' . $collection->getRoute());
+        error_log('Collection REST Namespace: ' . $collection->getRestNamespace());
 
-        // Get the collection instance
-        $collection = Plugin::getInstance()->getRegistry()->get($modelClass);
+        // Use the collection's key or route as the collection name
+        $collectionName = $collection->getKey() ?: $collection->getRoute();
+        error_log('Resolved Collection Name: ' . $collectionName);
 
         $this->registerStandardRoutesForCollection($collection, $collectionName);
+        error_log('=== Gateway: Collection Registration End ===');
     }
 
-    public function onCollectionUnregistered($identifier)
+    public function onCollectionUnregistered($key)
     {
-        // Find collection name by identifier (could be alias or model class)
-        $registry = Plugin::getInstance()->getRegistry();
-
-        // Try to get the alias first
-        $collectionName = $registry->getAlias($identifier);
-
-        // If no alias, use normalized model class name
-        if (!$collectionName) {
-            $collectionName = $this->normalizeCollectionName($identifier);
-        }
-
-        $this->unregisterStandardRoutesForCollection($collectionName);
+        // Unregister routes for the collection by its key
+        $this->unregisterStandardRoutesForCollection($key);
     }
 
     private function registerStandardRoutesForCollection(Collection $collection, $collectionName)
     {
+        error_log('--- Registering Standard Routes for: ' . $collectionName . ' ---');
+
         $endpoints = [
             new GetManyRoute($collection, $collectionName),    // GET /collection
             new CreateRoute($collection, $collectionName),     // POST /collection
@@ -70,19 +83,30 @@ class StandardRoutes
         ];
 
         $this->registeredRoutes[$collectionName] = $endpoints;
+        error_log('Endpoints created: ' . count($endpoints));
 
         // If REST API has already been initialized, register immediately
         if (did_action('rest_api_init')) {
+            error_log('REST API already initialized - registering routes immediately');
             foreach ($endpoints as $endpoint) {
+                $namespace = $endpoint->getNamespace();
+                $route = $collectionName . $endpoint->getRoute();
+                $fullRoute = $namespace . '/' . $route;
+
+                error_log('Registering route: ' . $fullRoute . ' [' . $endpoint->getMethod() . ']');
+
                 register_rest_route(
-                    $endpoint->getNamespace(),
-                    $collectionName . $endpoint->getRoute(),
+                    $namespace,
+                    $route,
                     $endpoint->getArgs()
                 );
             }
+        } else {
+            error_log('REST API not yet initialized - routes will be registered on rest_api_init');
         }
 
         do_action('gateway_standard_routes_registered', $collectionName, $endpoints);
+        error_log('--- Standard Routes Registration Complete ---');
     }
 
     private function unregisterStandardRoutesForCollection($collectionName)
@@ -93,21 +117,6 @@ class StandardRoutes
         }
     }
 
-    private function normalizeCollectionName($modelClass)
-    {
-        // Extract class name from full namespace
-        $className = basename(str_replace('\\', '/', $modelClass));
-
-        // Convert PascalCase to kebab-case and make lowercase (e.g., "DocSet" -> "doc-set")
-        $normalized = strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $className));
-
-        // Pluralize by adding 's' (basic pluralization)
-        if (!str_ends_with($normalized, 's')) {
-            $normalized .= 's';
-        }
-
-        return $normalized;
-    }
 
     public function getRegisteredRoutes()
     {

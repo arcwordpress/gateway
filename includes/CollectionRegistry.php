@@ -5,123 +5,76 @@ namespace Gateway;
 class CollectionRegistry
 {
     protected $collections = [];
-    protected $aliases = [];
 
     /**
      * Register a collection instance
      *
      * @param Collection $collection Collection instance to register
-     * @param string|null $alias Optional alias for the collection
      * @return Collection
      */
-    public function register($collection, $alias = null)
+    public function register($collection)
     {
         if (!$collection instanceof Collection) {
             throw new \InvalidArgumentException("Must pass a Collection instance");
         }
 
-        $collectionClass = get_class($collection);
+        $key = $collection->getKey();
 
-        // Store the collection instance
-        $this->collections[$collectionClass] = $collection;
-
-        // Register alias if provided, otherwise auto-generate from collection name
-        if ($alias) {
-            if (isset($this->aliases[$alias])) {
-                throw new \InvalidArgumentException(
-                    sprintf("Alias '%s' is already registered for %s", esc_html($alias), esc_html($this->aliases[$alias]))
-                );
-            }
-            $this->aliases[$alias] = $collectionClass;
-        } else {
-            // Auto-generate alias from collection class name
-            $autoAlias = $this->generateAlias($collectionClass);
-            $this->aliases[$autoAlias] = $collectionClass;
+        // Key is required for all collections
+        if (empty($key)) {
+            throw new \InvalidArgumentException(
+                sprintf("Collection '%s' must have a \$key property set", get_class($collection))
+            );
         }
 
+        // Store the collection instance by its key
+        $this->collections[$key] = $collection;
+
         // Fire action hook
-        do_action('gateway_collection_registered', $alias, $collectionClass, $collection);
+        do_action('gateway_collection_registered', get_class($collection), $collection);
 
         return $collection;
     }
 
     /**
-     * Generate alias from collection class name
+     * Get a registered collection by key
      *
-     * @param string $collectionClass
-     * @return string
-     */
-    protected function generateAlias($collectionClass)
-    {
-        $className = class_basename($collectionClass);
-        // Remove "Collection" suffix if present
-        $alias = str_replace('Collection', '', $className);
-        return $alias;
-    }
-
-    /**
-     * Get a registered collection
-     *
-     * @param string $identifier Model class name or alias
+     * @param string $key Collection key
      * @return Collection
      */
-    public function get($identifier)
+    public function get($key)
     {
-        // Check if it's an alias first
-        if (isset($this->aliases[$identifier])) {
-            $identifier = $this->aliases[$identifier];
-        }
-
-        if (!isset($this->collections[$identifier])) {
+        if (!isset($this->collections[$key])) {
             throw new \InvalidArgumentException(
-                sprintf("Collection for '%s' is not registered", esc_html($identifier))
+                sprintf("Collection with key '%s' is not registered", esc_html($key))
             );
         }
 
-        return $this->collections[$identifier];
+        return $this->collections[$key];
     }
 
     /**
-     * Check if a collection is registered
+     * Check if a collection is registered by key
      *
-     * @param string $identifier Model class name or alias
+     * @param string $key Collection key
      * @return bool
      */
-    public function has($identifier)
+    public function has($key)
     {
-        // Check if it's an alias first
-        if (isset($this->aliases[$identifier])) {
-            $identifier = $this->aliases[$identifier];
-        }
-
-        return isset($this->collections[$identifier]);
+        return isset($this->collections[$key]);
     }
 
     /**
-     * Unregister a collection
+     * Unregister a collection by key
      *
-     * @param string $identifier Model class name or alias
+     * @param string $key Collection key
      * @return bool
      */
-    public function unregister($identifier)
+    public function unregister($key)
     {
-        if (isset($this->aliases[$identifier])) {
-            $modelClass = $this->aliases[$identifier];
-            unset($this->aliases[$identifier]);
-            $identifier = $modelClass;
-        }
-
-        if (isset($this->collections[$identifier])) {
-            unset($this->collections[$identifier]);
-
-            // Remove all aliases pointing to this model
-            foreach ($this->aliases as $alias => $modelClass) {
-                if ($modelClass === $identifier) {
-                    unset($this->aliases[$alias]);
-                }
-            }
-
-            do_action('gateway_collection_unregistered', $identifier);
+        if (isset($this->collections[$key])) {
+            unset($this->collections[$key]);
+            do_action('gateway_collection_unregistered', $key);
             return true;
         }
 
@@ -139,34 +92,13 @@ class CollectionRegistry
     }
 
     /**
-     * Get all aliases
-     *
-     * @return array
-     */
-    public function getAliases()
-    {
-        return $this->aliases;
-    }
-
-    /**
-     * Get all registered model classes
+     * Get all registered collection keys
      *
      * @return array
      */
     public function getRegistered()
     {
         return array_keys($this->collections);
-    }
-
-    /**
-     * Get alias for a collection class
-     *
-     * @param string $collectionClass
-     * @return string|null
-     */
-    public function getAlias($collectionClass)
-    {
-        return array_search($collectionClass, $this->aliases) ?: null;
     }
 
     /**
@@ -185,7 +117,6 @@ class CollectionRegistry
     public function clear()
     {
         $this->collections = [];
-        $this->aliases = [];
         do_action('gateway_collection_registry_cleared');
     }
 
@@ -198,13 +129,12 @@ class CollectionRegistry
     {
         $export = [];
 
-        foreach ($this->collections as $collectionClass => $collection) {
-            $alias = $this->getAlias($collectionClass);
+        foreach ($this->collections as $key => $collection) {
             $export[] = [
-                'collection_class' => $collectionClass,
+                'key' => $key,
+                'collection_class' => get_class($collection),
                 'table' => $collection->getTable(),
                 'routes' => $collection->getRoutes(),
-                'alias' => $alias,
                 'fields' => $collection->getFields(),
             ];
         }
@@ -221,15 +151,14 @@ class CollectionRegistry
     {
         $stats = [
             'total_collections' => count($this->collections),
-            'total_aliases' => count($this->aliases),
             'collections' => [],
         ];
 
-        foreach ($this->collections as $collectionClass => $collection) {
+        foreach ($this->collections as $key => $collection) {
             $stats['collections'][] = [
-                'collection' => $collectionClass,
+                'key' => $key,
+                'collection' => get_class($collection),
                 'table' => $collection->getTable(),
-                'alias' => $this->getAlias($collectionClass),
                 'route' => $collection->getRoute(),
                 'fillable_count' => count($collection->getFillable()),
                 'enabled_routes' => array_keys(array_filter($collection->getRoutes()['methods'])),

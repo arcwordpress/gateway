@@ -9,19 +9,19 @@ const api = axios.create({
 });
 
 /**
- * Get all schemas
+ * Get all collections
  */
-export const getSchemas = async () => {
-  const response = await api.get('gateway/v1/schemas');
+export const getCollections = async () => {
+  const response = await api.get('gateway/v1/collections');
   return response.data;
 };
 
 /**
- * Get a single schema by key
- * @param {string} key - Schema key (lowercase with underscores)
+ * Get a single collection by key
+ * @param {string} key - Collection key (lowercase with underscores)
  */
-export const getSchema = async (key) => {
-  const response = await api.get(`gateway/v1/schemas/${key}`);
+export const getCollection = async (key) => {
+  const response = await api.get(`gateway/v1/collections/${key}`);
   return response.data;
 };
 
