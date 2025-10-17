@@ -10,7 +10,6 @@ function Dashboard() {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Collection</h3>
           <Grid collectionKey="tests" />
         </div>
       </div>

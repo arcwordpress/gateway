@@ -127,19 +127,6 @@ const App = ({ collectionKey }) => {
 
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {collection?.name || collectionKey}
-        </h2>
-        {collection?.table && (
-          <p className="text-sm text-gray-500 mt-1">
-            Table: {collection.table}
-          </p>
-        )}
-      </div>
-
-      {/* Data Table */}
       <DataTable data={data} columns={columns} loading={loading} />
     </div>
   );

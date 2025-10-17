@@ -4,7 +4,11 @@ import axios from 'axios';
  * Get the WordPress REST API base URL
  */
 const getApiBaseUrl = () => {
-  // WordPress provides wpApiSettings global object
+  // Check gatewayAdminScript first (set by Gateway plugin)
+  if (window.gatewayAdminScript && window.gatewayAdminScript.apiUrl) {
+    return window.gatewayAdminScript.apiUrl;
+  }
+  // Fallback to wpApiSettings global object
   if (window.wpApiSettings && window.wpApiSettings.root) {
     return window.wpApiSettings.root;
   }
@@ -16,6 +20,11 @@ const getApiBaseUrl = () => {
  * Get the WordPress REST API nonce for authentication
  */
 const getNonce = () => {
+  // Check gatewayAdminScript first (set by Gateway plugin)
+  if (window.gatewayAdminScript && window.gatewayAdminScript.nonce) {
+    return window.gatewayAdminScript.nonce;
+  }
+  // Fallback to wpApiSettings
   if (window.wpApiSettings && window.wpApiSettings.nonce) {
     return window.wpApiSettings.nonce;
   }
@@ -119,61 +128,6 @@ export const fetchRecord = async (namespace, route, id) => {
     return response.data;
   } catch (error) {
     console.error(`Error fetching record ${id} from ${namespace}/${route}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Create a new record in a collection
- * @param {string} namespace - REST API namespace
- * @param {string} route - Collection route
- * @param {Object} data - Record data
- * @returns {Promise} Promise resolving to created record
- */
-export const createRecord = async (namespace, route, data) => {
-  try {
-    const url = `${namespace}/${route}`;
-    const response = await apiClient.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error creating record in ${namespace}/${route}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Update a record in a collection
- * @param {string} namespace - REST API namespace
- * @param {string} route - Collection route
- * @param {number} id - Record ID
- * @param {Object} data - Updated record data
- * @returns {Promise} Promise resolving to updated record
- */
-export const updateRecord = async (namespace, route, id, data) => {
-  try {
-    const url = `${namespace}/${route}/${id}`;
-    const response = await apiClient.put(url, data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating record ${id} in ${namespace}/${route}:`, error);
-    throw error;
-  }
-};
-
-/**
- * Delete a record from a collection
- * @param {string} namespace - REST API namespace
- * @param {string} route - Collection route
- * @param {number} id - Record ID
- * @returns {Promise} Promise resolving to deletion confirmation
- */
-export const deleteRecord = async (namespace, route, id) => {
-  try {
-    const url = `${namespace}/${route}/${id}`;
-    const response = await apiClient.delete(url);
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting record ${id} from ${namespace}/${route}:`, error);
     throw error;
   }
 };

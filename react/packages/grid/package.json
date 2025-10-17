@@ -1,0 +1,16 @@
+{
+  "name": "@gateway/grid",
+  "version": "1.0.0",
+  "description": "Gateway Grid React component library with TanStack Table",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "files": ["src"],
+  "dependencies": {
+    "@tanstack/react-table": "^8.20.5",
+    "axios": "^1.6.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

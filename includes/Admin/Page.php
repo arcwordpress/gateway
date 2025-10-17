@@ -51,6 +51,16 @@ class Page
             [],
             $asset['version']
         );
+
+        // Localize script with API settings and nonce
+        wp_localize_script(
+            'gateway-admin',
+            'gatewayAdminScript',
+            [
+                'apiUrl' => rest_url(),
+                'nonce' => wp_create_nonce('wp_rest'),
+            ]
+        );
     }
 
     /**
