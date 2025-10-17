@@ -21,20 +21,11 @@ class StandardRoutes
 
     public function registerRoutes()
     {
-        error_log('=== Gateway: registerRoutes() called on rest_api_init ===');
-        error_log('Total collections to register: ' . count($this->registeredRoutes));
-        error_log('Collection names: ' . implode(', ', array_keys($this->registeredRoutes)));
-
         foreach ($this->registeredRoutes as $collectionName => $endpoints) {
-            error_log('Processing collection: ' . $collectionName . ' with ' . count($endpoints) . ' endpoints');
-
             foreach ($endpoints as $endpoint) {
                 $namespace = $endpoint->getNamespace();
                 $route = $collectionName . $endpoint->getRoute();
-                $fullRoute = $namespace . '/' . $route;
-
-                error_log('Registering route: ' . $fullRoute . ' [' . $endpoint->getMethod() . ']');
-
+                
                 register_rest_route(
                     $namespace,
                     $route,
@@ -42,26 +33,13 @@ class StandardRoutes
                 );
             }
         }
-
-        error_log('=== Gateway: registerRoutes() complete ===');
     }
 
     public function onCollectionRegistered($collectionClass, $collection)
     {
-        error_log('=== Gateway: Collection Registration Start ===');
-        error_log('Collection Class: ' . var_export($collectionClass, true));
-        error_log('Collection Instance: ' . get_class($collection));
-        error_log('Collection Key: ' . var_export($collection->getKey(), true));
-        error_log('Collection Table: ' . $collection->getTable());
-        error_log('Collection Route: ' . $collection->getRoute());
-        error_log('Collection REST Namespace: ' . $collection->getRestNamespace());
-
         // Use the collection's key or route as the collection name
         $collectionName = $collection->getKey() ?: $collection->getRoute();
-        error_log('Resolved Collection Name: ' . $collectionName);
-
         $this->registerStandardRoutesForCollection($collection, $collectionName);
-        error_log('=== Gateway: Collection Registration End ===');
     }
 
     public function onCollectionUnregistered($key)
@@ -72,8 +50,6 @@ class StandardRoutes
 
     private function registerStandardRoutesForCollection(Collection $collection, $collectionName)
     {
-        error_log('--- Registering Standard Routes for: ' . $collectionName . ' ---');
-
         $endpoints = [
             new GetManyRoute($collection, $collectionName),    // GET /collection
             new CreateRoute($collection, $collectionName),     // POST /collection
@@ -83,30 +59,22 @@ class StandardRoutes
         ];
 
         $this->registeredRoutes[$collectionName] = $endpoints;
-        error_log('Endpoints created: ' . count($endpoints));
 
         // If REST API has already been initialized, register immediately
         if (did_action('rest_api_init')) {
-            error_log('REST API already initialized - registering routes immediately');
             foreach ($endpoints as $endpoint) {
                 $namespace = $endpoint->getNamespace();
                 $route = $collectionName . $endpoint->getRoute();
-                $fullRoute = $namespace . '/' . $route;
-
-                error_log('Registering route: ' . $fullRoute . ' [' . $endpoint->getMethod() . ']');
-
+                
                 register_rest_route(
                     $namespace,
                     $route,
                     $endpoint->getArgs()
                 );
             }
-        } else {
-            error_log('REST API not yet initialized - routes will be registered on rest_api_init');
         }
 
         do_action('gateway_standard_routes_registered', $collectionName, $endpoints);
-        error_log('--- Standard Routes Registration Complete ---');
     }
 
     private function unregisterStandardRoutesForCollection($collectionName)
@@ -116,7 +84,6 @@ class StandardRoutes
             do_action('gateway_standard_routes_unregistered', $collectionName);
         }
     }
-
 
     public function getRegisteredRoutes()
     {
@@ -144,7 +111,7 @@ class StandardRoutes
                 $info[$collectionName][] = [
                     'method'      => $endpoint->getMethod(),
                     'route'       => $endpoint->getFullRoute(),
-                    'type'        => $endpoint->getType(), // <-- use the route type from the endpoint
+                    'type'        => $endpoint->getType(),
                     'description' => $this->getRouteDescription($endpoint)
                 ];
             }
@@ -173,5 +140,4 @@ class StandardRoutes
                 return "Perform {$method} operation on {$collectionName}";
         }
     }
-
 }

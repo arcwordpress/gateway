@@ -1,7 +1,10 @@
 {
   "private": true,
   "workspaces": [
+    "apps/studio",
     "apps/admin",
-    "packages/grid"
+    "apps/form",
+    "packages/grid",
+    "packages/forms"
   ]
 }

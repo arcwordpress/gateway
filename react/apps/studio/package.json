@@ -1,7 +1,7 @@
 {
-  "name": "gateway-admin",
+  "name": "gateway-studio",
   "version": "1.0.0",
-  "description": "Gateway Admin React App",
+  "description": "Gateway Studio React App",
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",

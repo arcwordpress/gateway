@@ -81,6 +81,7 @@ class Plugin
 
         // Initialize admin pages
         Admin\Page::init();
+        Admin\CollectionMenus::init();
 
     }
 
