@@ -81,28 +81,12 @@ class Plugin
 
         // Initialize admin pages
         Admin\Page::init();
-        Admin\FormTestPage::init();
+
     }
 
     public function onInit()
     {
-        // Register test collection
-        $this->registerTestCollection();
-
         do_action('gateway_loaded');
-    }
-
-    /**
-     * Register test collection for development/testing
-     */
-    private function registerTestCollection()
-    {
-        // Load test files
-        require_once GATEWAY_PATH . 'test/TestCollection.php';
-
-        // Register the collection
-        \Gateway\Test\TestCollection::register();
-
     }
 
     public function getRegistry()
