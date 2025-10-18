@@ -6,7 +6,7 @@ import { fetchCollection, fetchCollectionData } from './services/collectionServi
  * Main Grid App Component
  * Displays a data grid for a Gateway collection
  */
-const App = ({ collectionKey }) => {
+const App = ({ collectionKey, onEdit, showActions = true }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,43 +70,68 @@ const App = ({ collectionKey }) => {
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
+    let baseColumns = [];
+
     // If collection has fields defined, use those
     if (collection?.fields && Object.keys(collection.fields).length > 0) {
-      return Object.entries(collection.fields).map(([key, field]) => ({
+      baseColumns = Object.entries(collection.fields).map(([key, field]) => ({
         accessorKey: key,
         header: field.label || key,
         enableSorting: true,
         enableColumnFilter: true,
       }));
+    } else {
+      // Otherwise, generate columns from the first data record
+      const firstRecord = data[0];
+      if (!firstRecord) return [];
+
+      baseColumns = Object.keys(firstRecord).map((key) => ({
+        accessorKey: key,
+        header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+        enableSorting: true,
+        enableColumnFilter: true,
+        cell: ({ getValue }) => {
+          const value = getValue();
+          // Handle null/undefined values
+          if (value === null || value === undefined) return '-';
+          // Handle objects and arrays
+          if (typeof value === 'object') return JSON.stringify(value);
+          // Handle dates
+          if (key.includes('_at') && typeof value === 'string') {
+            try {
+              return new Date(value).toLocaleString();
+            } catch {
+              return value;
+            }
+          }
+          return String(value);
+        },
+      }));
     }
 
-    // Otherwise, generate columns from the first data record
-    const firstRecord = data[0];
-    if (!firstRecord) return [];
+    // Add actions column if enabled
+    if (showActions && onEdit) {
+      baseColumns.push({
+        id: 'actions',
+        header: 'Actions',
+        enableSorting: false,
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const recordId = row.original.id;
+          return (
+            <button
+              onClick={() => onEdit(recordId)}
+              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            >
+              Edit
+            </button>
+          );
+        },
+      });
+    }
 
-    return Object.keys(firstRecord).map((key) => ({
-      accessorKey: key,
-      header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
-      enableSorting: true,
-      enableColumnFilter: true,
-      cell: ({ getValue }) => {
-        const value = getValue();
-        // Handle null/undefined values
-        if (value === null || value === undefined) return '-';
-        // Handle objects and arrays
-        if (typeof value === 'object') return JSON.stringify(value);
-        // Handle dates
-        if (key.includes('_at') && typeof value === 'string') {
-          try {
-            return new Date(value).toLocaleString();
-          } catch {
-            return value;
-          }
-        }
-        return String(value);
-      },
-    }));
-  }, [data, collection]);
+    return baseColumns;
+  }, [data, collection, showActions, onEdit]);
 
   if (error) {
     return (

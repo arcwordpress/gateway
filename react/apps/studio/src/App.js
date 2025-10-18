@@ -1,6 +1,7 @@
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
 import Dashboard from './pages/Dashboard';
+import CollectionForm from './pages/CollectionForm';
 
 function AppContent() {
   const { collections, loading } = useCollections();
@@ -37,13 +38,9 @@ function AppContent() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          {collections.map((collection) => (
-            <Route
-              key={collection.key}
-              path={`/collection/${collection.key}`}
-              element={<Dashboard collectionKey={collection.key} />}
-            />
-          ))}
+          <Route path="/collection/:collectionKey" element={<Dashboard />} />
+          <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
+          <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
         </Routes>
       </main>
     </div>

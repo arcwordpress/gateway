@@ -1,8 +1,11 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import { Grid } from '@gateway/grid';
 import { useCollections } from '../context/CollectionsContext';
 
-function Dashboard({ collectionKey }) {
+function Dashboard() {
   const { collections } = useCollections();
+  const navigate = useNavigate();
+  const { collectionKey } = useParams();
 
   // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
@@ -15,9 +18,28 @@ function Dashboard({ collectionKey }) {
     );
   }
 
+  const handleEdit = (recordId) => {
+    navigate(`/collection/${activeKey}/edit/${recordId}`);
+  };
+
+  const handleCreate = () => {
+    navigate(`/collection/${activeKey}/create`);
+  };
+
   return (
     <div className="px-4 py-6 sm:px-0">
-      <Grid collectionKey={activeKey} />
+      <div className="mb-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900 capitalize">
+          {activeKey.replace(/_/g, ' ')}
+        </h1>
+        <button
+          onClick={handleCreate}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+        >
+          Create New
+        </button>
+      </div>
+      <Grid collectionKey={activeKey} onEdit={handleEdit} />
     </div>
   );
 }
