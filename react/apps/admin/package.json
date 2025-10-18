@@ -10,13 +10,17 @@
     "packages-update": "wp-scripts packages-update"
   },
   "dependencies": {
+    "@gateway/forms": "^1.0.0",
+    "@gateway/grid": "^1.0.0",
+    "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.12.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^27.0.0",
     "@tailwindcss/postcss": "^4.0.0",
+    "@wordpress/scripts": "^27.0.0",
     "tailwindcss": "^4.0.0"
   }
 }

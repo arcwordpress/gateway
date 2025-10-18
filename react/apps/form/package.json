@@ -1,5 +1,5 @@
 {
-  "name": "blueprint-forms",
+  "name": "form",
   "version": "1.0.0",
   "description": "ARC Blueprint Forms React App",
   "scripts": {
@@ -18,18 +18,6 @@
     "tailwindcss": "^4.1.14"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.3.4",
-    "@tailwindcss/postcss": "^4.1.14",
-    "@tiptap/extension-link": "^3.6.6",
-    "@tiptap/extension-text-align": "^3.6.6",
-    "@tiptap/extension-underline": "^3.6.6",
-    "@tiptap/react": "^3.6.6",
-    "@tiptap/starter-kit": "^3.6.6",
-    "axios": "^1.6.2",
-    "easymde": "^2.20.0",
-    "react-datepicker": "^8.7.0",
-    "react-hook-form": "^7.49.2",
-    "react-simplemde-editor": "^5.2.0",
-    "zod": "^3.22.4"
+    "@gateway/forms": "^1.0.0"
   }
 }
