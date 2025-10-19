@@ -66,6 +66,11 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
     loadData();
   }, [collection]);
 
+  // Get filters from collection metadata - MUST be before any early returns
+  const filters = useMemo(() => {
+    return collection?.filters || [];
+  }, [collection]);
+
   // Generate columns from collection fields or data
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -152,7 +157,7 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
 
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
-      <DataTable data={data} columns={columns} loading={loading} />
+      <DataTable data={data} columns={columns} filters={filters} loading={loading} />
     </div>
   );
 };
