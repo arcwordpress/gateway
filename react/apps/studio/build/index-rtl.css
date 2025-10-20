@@ -1436,6 +1436,9 @@ h2.react-datepicker__current-month {
   .mb-6 {
     margin-bottom: calc(var(--spacing) * 6);
   }
+  .-ml-\[22px\] {
+    margin-right: calc(22px * -1);
+  }
   .-ml-px {
     margin-right: -1px;
   }
@@ -1444,6 +1447,12 @@ h2.react-datepicker__current-month {
   }
   .ml-2 {
     margin-right: calc(var(--spacing) * 2);
+  }
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
   .block {
     display: block;
@@ -1462,6 +1471,9 @@ h2.react-datepicker__current-month {
   }
   .inline {
     display: inline;
+  }
+  .inline\! {
+    display: inline !important;
   }
   .inline-block {
     display: inline-block;
@@ -1541,6 +1553,9 @@ h2.react-datepicker__current-month {
   .w-20 {
     width: calc(var(--spacing) * 20);
   }
+  .w-24 {
+    width: calc(var(--spacing) * 24);
+  }
   .w-48 {
     width: calc(var(--spacing) * 48);
   }
@@ -1559,14 +1574,20 @@ h2.react-datepicker__current-month {
   .max-w-full {
     max-width: 100%;
   }
+  .max-w-md {
+    max-width: var(--container-md);
+  }
   .max-w-none {
     max-width: none;
   }
-  .max-w-sm {
-    max-width: var(--container-sm);
-  }
   .min-w-0 {
     min-width: calc(var(--spacing) * 0);
+  }
+  .min-w-\[150px\] {
+    min-width: 150px;
+  }
+  .min-w-\[200px\] {
+    min-width: 200px;
   }
   .flex-1 {
     flex: 1;
@@ -1586,6 +1607,9 @@ h2.react-datepicker__current-month {
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
+  .cursor-help {
+    cursor: help;
+  }
   .cursor-move {
     cursor: move;
   }
@@ -1603,6 +1627,12 @@ h2.react-datepicker__current-month {
   }
   .grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .flex-col {
+    flex-direction: column;
+  }
+  .flex-row {
+    flex-direction: row;
   }
   .flex-wrap {
     flex-wrap: wrap;
@@ -1665,6 +1695,9 @@ h2.react-datepicker__current-month {
     :where(& > :not(:last-child)) {
       border-color: var(--color-gray-200);
     }
+  }
+  .self-end {
+    align-self: flex-end;
   }
   .truncate {
     overflow: hidden;
@@ -1884,6 +1917,9 @@ h2.react-datepicker__current-month {
   .pr-10 {
     padding-left: calc(var(--spacing) * 10);
   }
+  .pb-2 {
+    padding-bottom: calc(var(--spacing) * 2);
+  }
   .text-center {
     text-align: center;
   }
@@ -1931,9 +1967,6 @@ h2.react-datepicker__current-month {
   }
   .break-all {
     word-break: break-all;
-  }
-  .whitespace-nowrap {
-    white-space: nowrap;
   }
   .text-amber-600 {
     color: var(--color-amber-600);

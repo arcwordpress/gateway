@@ -47,6 +47,7 @@ class Plugin
     private $registry;
     private $standardRoutes;
     private $collectionRoutes;
+    private $adminDataRoute;
 
     public static function getInstance()
     {
@@ -61,6 +62,7 @@ class Plugin
         $this->registry = new CollectionRegistry();
         $this->standardRoutes = new StandardRoutes();
         $this->collectionRoutes = new CollectionRoutes();
+        $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->init();
     }
 

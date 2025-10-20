@@ -66,6 +66,11 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
     loadData();
   }, [collection]);
 
+  // Get filters from collection metadata - MUST be before any early returns
+  const filters = useMemo(() => {
+    return collection?.filters || [];
+  }, [collection]);
+
   // Generate columns from collection fields or data
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -79,6 +84,29 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
         header: field.label || key,
         enableSorting: true,
         enableColumnFilter: true,
+        cell: ({ getValue }) => {
+          const value = getValue();
+          // Handle null/undefined values
+          if (value === null || value === undefined) return '-';
+          // Handle objects and arrays
+          if (typeof value === 'object') return JSON.stringify(value);
+
+          const stringValue = String(value);
+
+          // For textarea, markdown, and other long text field types, show with tooltip
+          const isLongTextField = ['textarea', 'markdown', 'wysiwyg'].includes(field.type) ||
+                                  ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+
+          if (isLongTextField && stringValue.length > 100) {
+            return (
+              <span title={stringValue} className="cursor-help">
+                {stringValue}
+              </span>
+            );
+          }
+
+          return stringValue;
+        },
       }));
     } else {
       // Otherwise, generate columns from the first data record
@@ -104,7 +132,20 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
               return value;
             }
           }
-          return String(value);
+          // Convert to string
+          const stringValue = String(value);
+
+          // For long text fields (description, content, etc.), show truncated version with title
+          const isLongTextField = ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+          if (isLongTextField && stringValue.length > 100) {
+            return (
+              <span title={stringValue} className="cursor-help">
+                {stringValue}
+              </span>
+            );
+          }
+
+          return stringValue;
         },
       }));
     }
@@ -152,7 +193,7 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
 
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
-      <DataTable data={data} columns={columns} loading={loading} />
+      <DataTable data={data} columns={columns} filters={filters} loading={loading} />
     </div>
   );
 };

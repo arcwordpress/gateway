@@ -1,7 +1,6 @@
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Collections from './pages/Collections';
-import Schemas from './pages/Schemas';
 
 function App() {
   return (
@@ -27,12 +26,6 @@ function App() {
                   >
                     Collections
                   </Link>
-                  <Link
-                    to="/schemas"
-                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  >
-                    Schemas
-                  </Link>
                 </div>
               </div>
             </div>
@@ -43,7 +36,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/collections" element={<Collections />} />
-            <Route path="/schemas" element={<Schemas />} />
           </Routes>
         </main>
       </div>

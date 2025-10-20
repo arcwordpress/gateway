@@ -38,33 +38,69 @@ class AdminDataRoute
         $collections = $registry->getAll();
         $collectionsData = [];
 
+        // Get actual registered routes
+        $actualRoutes = $standardRoutes->getActualRegisteredRoutes();
+
         foreach ($collections as $key => $collection) {
+            $fqcn = get_class($collection);
+            $className = class_basename($fqcn);
+
+            // Get title and titlePlural from collection
+            $title = $collection->getTitle();
+            $titlePlural = $collection->getTitlePlural();
+
+            // Get routes for this specific collection
+            $collectionRoutes = [];
+            if (isset($actualRoutes[$key])) {
+                foreach ($actualRoutes[$key] as $route) {
+                    $collectionRoutes[] = [
+                        'type' => $route['type'],
+                        'method' => $route['method'],
+                        'route' => $route['full_route'],
+                        'displayRoute' => $this->getFriendlyRoute($route['full_route']),
+                        'namespace' => $route['namespace'],
+                        'path' => $route['route'],
+                    ];
+                }
+            }
+
+            // Get table name with WordPress prefix
+            global $wpdb;
+            $tableName = $collection->getTable();
+            $fullTableName = $wpdb->prefix . $tableName;
+
             $collectionsData[] = [
                 'key' => $key,
-                'class' => get_class($collection),
-                'table' => $collection->getTable()
+                'title' => $title,
+                'titlePlural' => $titlePlural,
+                'className' => $className,
+                'fqcn' => $fqcn,
+                'table' => $fullTableName,
+                'routes' => $collectionRoutes
             ];
         }
 
-        // Get all routes
-        $routes = $standardRoutes->getRouteInfo();
-        $routesData = [];
-
-        foreach ($routes as $collectionName => $endpoints) {
-            $routesForCollection = [];
-            foreach ($endpoints as $route) {
-                $routesForCollection[] = [
-                    'type' => $route['type'],
-                    'method' => $route['method'],
-                    'route' => $route['route']
-                ];
-            }
-            $routesData[$collectionName] = $routesForCollection;
-        }
-
         return [
-            'collections' => $collectionsData,
-            'routes' => $routesData
+            'collections' => $collectionsData
         ];
     }
+
+    /**
+     * Convert route pattern to friendly display format
+     * Replaces regex patterns like (?P<id>\d+) with [id]
+     *
+     * @param string $route
+     * @return string
+     */
+    private function getFriendlyRoute($route)
+    {
+        // Replace named regex patterns like (?P<id>\d+) with [id]
+        $friendlyRoute = preg_replace('/\(\?P<([^>]+)>[^)]+\)/', '[$1]', $route);
+
+        // Replace other common regex patterns
+        $friendlyRoute = preg_replace('/\(\?:([^)]+)\)/', '[$1]', $friendlyRoute);
+
+        return $friendlyRoute;
+    }
+
 }

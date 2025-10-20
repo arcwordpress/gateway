@@ -22,7 +22,7 @@ class CollectionMenus
     }
 
     /**
-     * Add admin menu items for each registered collection
+     * Add a single Collections submenu item
      */
     public static function add_collection_menus()
     {
@@ -33,21 +33,15 @@ class CollectionMenus
             return;
         }
 
-        foreach ($collections as $key => $collection) {
-            $title = self::getCollectionTitle($collection);
-            $menu_slug = 'gateway-collection-' . $key;
-
-            add_submenu_page(
-                'gateway', // Parent slug
-                $title, // Page title
-                $title, // Menu title
-                'manage_options', // Capability
-                $menu_slug, // Menu slug
-                function() use ($collection, $title) {
-                    self::render_collection_page($collection, $title);
-                }
-            );
-        }
+        // Add single "Collections" submenu item
+        add_submenu_page(
+            'gateway', // Parent slug
+            'Collections', // Page title
+            'Collections', // Menu title
+            'manage_options', // Capability
+            'gateway-collections', // Menu slug
+            [__CLASS__, 'render_collection_page']
+        );
     }
 
     /**
@@ -55,8 +49,8 @@ class CollectionMenus
      */
     public static function enqueue_studio_app($hook)
     {
-        // Only load on collection pages (gateway-collection-*)
-        if (strpos($hook, 'gateway_page_gateway-collection-') !== 0) {
+        // Only load on the collections page
+        if ($hook !== 'gateway_page_gateway-collections') {
             return;
         }
 
@@ -127,12 +121,9 @@ class CollectionMenus
     }
 
     /**
-     * Render a collection admin page
-     *
-     * @param \Gateway\Collection $collection
-     * @param string $title
+     * Render the collections admin page
      */
-    private static function render_collection_page($collection, $title)
+    public static function render_collection_page()
     {
         ?>
         <div id="gateway-admin-root"></div>

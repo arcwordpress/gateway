@@ -177,6 +177,9 @@ class CollectionRoutes
         // Fields are part of the collection
         $fields = method_exists($collection, 'getFields') ? $collection->getFields() : [];
 
+        // Filters are part of the collection
+        $filters = method_exists($collection, 'getFilters') ? $collection->getFilters() : [];
+
         // Since Collection extends Eloquent Model, we can get model data directly
         $table = method_exists($collection, 'getTable') ? $collection->getTable() : null;
         $fillable = method_exists($collection, 'getFillable') ? $collection->getFillable() : [];
@@ -193,8 +196,14 @@ class CollectionRoutes
         // Get the collection key
         $key = method_exists($collection, 'getKey') ? $collection->getKey() : null;
 
+        // Get title and titlePlural
+        $title = method_exists($collection, 'getTitle') ? $collection->getTitle() : null;
+        $titlePlural = method_exists($collection, 'getTitlePlural') ? $collection->getTitlePlural() : null;
+
         return [
             'key' => $key,
+            'title' => $title,
+            'titlePlural' => $titlePlural,
             'class' => $collectionClass,
             'name' => basename(str_replace('\\', '/', $collectionClass)),
             'table' => $table,
@@ -207,6 +216,7 @@ class CollectionRoutes
                 'methods' => $routes['methods'] ?? [],
             ],
             'fields' => $fields,
+            'filters' => $filters,
         ];
     }
 }

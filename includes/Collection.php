@@ -46,8 +46,10 @@ class Collection extends EloquentModel
     protected $table;
 
     protected $title;
+    protected $titlePlural;
     protected $key;
     protected $fields = [];
+    protected $filters = [];
     protected $routes = [
         'enabled' => true,
         'namespace' => 'gateway',
@@ -123,7 +125,8 @@ class Collection extends EloquentModel
     protected function generateRoute()
     {
         if ($this->key) {
-            return $this->key;
+            // Convert underscores to hyphens for the route
+            return str_replace('_', '-', $this->key);
         }
 
         $collectionName = class_basename(static::class);
@@ -173,5 +176,114 @@ class Collection extends EloquentModel
     public function getKey()
     {
         return $this->key;
+    }
+
+    public function getFilters()
+    {
+        return $this->filters;
+    }
+
+    /**
+     * Get the collection title (singular)
+     * Falls back to generating from key or class name
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        if ($this->title) {
+            return $this->title;
+        }
+
+        // Try to generate from key
+        if ($this->key) {
+            return $this->generateTitleFromKey($this->key);
+        }
+
+        // Fall back to class name
+        $className = class_basename(static::class);
+        $name = str_replace('Collection', '', $className);
+
+        // Convert PascalCase to Title Case with spaces
+        return preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
+    }
+
+    /**
+     * Get the collection title (plural)
+     * Falls back to simple pluralization of title
+     *
+     * @return string
+     */
+    public function getTitlePlural()
+    {
+        if ($this->titlePlural) {
+            return $this->titlePlural;
+        }
+
+        // Get singular title and pluralize it
+        $title = $this->getTitle();
+        return $this->pluralize($title);
+    }
+
+    /**
+     * Generate a title from a key (e.g., 'doc_groups' -> 'Doc Group')
+     *
+     * @param string $key
+     * @return string
+     */
+    protected function generateTitleFromKey($key)
+    {
+        // Remove trailing 's' for singular form
+        $singular = rtrim($key, 's');
+
+        // Convert underscores and hyphens to spaces
+        $title = str_replace(['_', '-'], ' ', $singular);
+
+        // Convert to title case
+        return ucwords($title);
+    }
+
+    /**
+     * Simple pluralization
+     *
+     * @param string $word
+     * @return string
+     */
+    protected function pluralize($word)
+    {
+        // Handle common irregular plurals
+        $irregulars = [
+            'person' => 'people',
+            'child' => 'children',
+            'man' => 'men',
+            'woman' => 'women',
+            'foot' => 'feet',
+            'tooth' => 'teeth',
+            'goose' => 'geese',
+            'mouse' => 'mice',
+        ];
+
+        $lowerWord = strtolower($word);
+        if (isset($irregulars[$lowerWord])) {
+            return ucfirst($irregulars[$lowerWord]);
+        }
+
+        // Already plural?
+        if (substr($word, -1) === 's') {
+            return $word;
+        }
+
+        // Handle words ending in 'y'
+        if (substr($word, -1) === 'y' && !in_array(substr($word, -2, 1), ['a', 'e', 'i', 'o', 'u'])) {
+            return substr($word, 0, -1) . 'ies';
+        }
+
+        // Handle words ending in 's', 'x', 'z', 'ch', 'sh'
+        if (preg_match('/(s|x|z|ch|sh)$/i', $word)) {
+            return $word . 'es';
+        }
+
+        // Default: add 's'
+        return $word . 's';
     }
 }

@@ -100652,9 +100652,12 @@ const RelationField = ({
       try {
         setLoading(true);
         setFetchError(null);
+
+        // Get nonce from gatewayAdminScript (primary) or wpApiSettings (fallback)
+        const nonce = window.gatewayAdminScript?.nonce || window.wpApiSettings?.nonce || '';
         const response = await axios__WEBPACK_IMPORTED_MODULE_2__["default"].get(endpoint, {
           headers: {
-            'X-WP-Nonce': window.wpApiSettings?.nonce || ''
+            'X-WP-Nonce': nonce
           }
         });
 
@@ -102245,6 +102248,11 @@ const App = ({
     loadData();
   }, [collection]);
 
+  // Get filters from collection metadata - MUST be before any early returns
+  const filters = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    return collection?.filters || [];
+  }, [collection]);
+
   // Generate columns from collection fields or data
   const columns = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
     if (!data || data.length === 0) return [];
@@ -102256,7 +102264,27 @@ const App = ({
         accessorKey: key,
         header: field.label || key,
         enableSorting: true,
-        enableColumnFilter: true
+        enableColumnFilter: true,
+        cell: ({
+          getValue
+        }) => {
+          const value = getValue();
+          // Handle null/undefined values
+          if (value === null || value === undefined) return '-';
+          // Handle objects and arrays
+          if (typeof value === 'object') return JSON.stringify(value);
+          const stringValue = String(value);
+
+          // For textarea, markdown, and other long text field types, show with tooltip
+          const isLongTextField = ['textarea', 'markdown', 'wysiwyg'].includes(field.type) || ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+          if (isLongTextField && stringValue.length > 100) {
+            return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+              title: stringValue,
+              className: "cursor-help"
+            }, stringValue);
+          }
+          return stringValue;
+        }
       }));
     } else {
       // Otherwise, generate columns from the first data record
@@ -102283,7 +102311,18 @@ const App = ({
               return value;
             }
           }
-          return String(value);
+          // Convert to string
+          const stringValue = String(value);
+
+          // For long text fields (description, content, etc.), show truncated version with title
+          const isLongTextField = ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+          if (isLongTextField && stringValue.length > 100) {
+            return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+              title: stringValue,
+              className: "cursor-help"
+            }, stringValue);
+          }
+          return stringValue;
         }
       }));
     }
@@ -102329,6 +102368,7 @@ const App = ({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_DataTable__WEBPACK_IMPORTED_MODULE_2__["default"], {
     data: data,
     columns: columns,
+    filters: filters,
     loading: loading
   }));
 };
@@ -102353,6 +102393,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @tanstack/react-table */ "../../node_modules/@tanstack/react-table/build/lib/index.mjs");
 /* harmony import */ var _tanstack_react_table__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @tanstack/react-table */ "../../node_modules/@tanstack/table-core/build/lib/index.mjs");
+/* harmony import */ var _filters_Filters__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./filters/Filters */ "../../packages/grid/src/components/filters/Filters.js");
+/* harmony import */ var _filters_Filter__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./filters/Filter */ "../../packages/grid/src/components/filters/Filter.js");
+
+
 
 
 
@@ -102364,7 +102408,8 @@ __webpack_require__.r(__webpack_exports__);
 const DataTable = ({
   data = [],
   columns = [],
-  loading = false
+  loading = false,
+  filters = []
 }) => {
   const [sorting, setSorting] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
   const [columnFilters, setColumnFilters] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
@@ -102373,8 +102418,116 @@ const DataTable = ({
     pageIndex: 0,
     pageSize: 10
   });
+  // Initialize filter values based on filter configs
+  const initialFilterValues = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    const values = {};
+    filters.forEach(filter => {
+      if (filter.type === 'date_range' || filter.type === 'range') {
+        values[filter.field] = filter.type === 'date_range' ? {
+          start: '',
+          end: ''
+        } : {
+          min: '',
+          max: ''
+        };
+      } else {
+        values[filter.field] = '';
+      }
+    });
+    return values;
+  }, [filters]);
+  const [filterValues, setFilterValues] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(initialFilterValues);
+
+  // Update filter values when filters prop changes
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    setFilterValues(initialFilterValues);
+  }, [initialFilterValues]);
+
+  // Pre-filter data for filters that don't rely on columns (like date_range)
+  const preFilteredData = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    let filtered = data;
+    filters.forEach(filter => {
+      const value = filterValues[filter.field];
+      if (filter.type === 'date_range' && value && (value.start || value.end)) {
+        // Apply date range filter
+        filtered = filtered.filter(row => {
+          const cellValue = row[filter.field];
+          if (!cellValue) return false;
+          const cellDate = new Date(cellValue);
+          if (isNaN(cellDate.getTime())) return false;
+          if (value.start) {
+            const startDate = new Date(value.start);
+            startDate.setHours(0, 0, 0, 0);
+            if (cellDate < startDate) return false;
+          }
+          if (value.end) {
+            const endDate = new Date(value.end);
+            endDate.setHours(23, 59, 59, 999);
+            if (cellDate > endDate) return false;
+          }
+          return true;
+        });
+      }
+    });
+    return filtered;
+  }, [data, filterValues, filters]);
+
+  // Process filter configurations - add dynamic choices for select filters
+  const filterConfigs = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => {
+    return filters.map(filter => {
+      // For select filters, auto-generate choices from data if not provided
+      if (filter.type === 'select' && !filter.choices) {
+        const choices = new Set();
+        data.forEach(row => {
+          const value = row[filter.field];
+          if (value) {
+            choices.add(value);
+          }
+        });
+        return {
+          ...filter,
+          choices: Array.from(choices).map(value => ({
+            value,
+            label: typeof value === 'string' ? value.charAt(0).toUpperCase() + value.slice(1) : String(value)
+          }))
+        };
+      }
+      return filter;
+    });
+  }, [filters, data]);
+
+  // Handle filter changes
+  const handleFilterChange = (field, value) => {
+    setFilterValues(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Find the filter config for this field
+    const filterConfig = filters.find(f => f.field === field);
+    if (!filterConfig) return;
+
+    // Handle different filter types
+    if (filterConfig.type === 'text') {
+      // Text filters use global filter
+      setGlobalFilter(value);
+    } else if (filterConfig.type === 'select') {
+      // Select filters use column filters
+      if (value) {
+        const otherFilters = columnFilters.filter(f => f.id !== field);
+        setColumnFilters([...otherFilters, {
+          id: field,
+          value
+        }]);
+      } else {
+        setColumnFilters(columnFilters.filter(f => f.id !== field));
+      }
+    }
+    // Note: date_range and range filters are handled via pre-filtering
+  };
   const table = (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__.useReactTable)({
-    data,
+    data: preFilteredData,
+    // Use pre-filtered data instead of raw data
     columns,
     state: {
       sorting,
@@ -102391,6 +102544,8 @@ const DataTable = ({
     getSortedRowModel: (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_3__.getSortedRowModel)(),
     getPaginationRowModel: (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_3__.getPaginationRowModel)()
   });
+
+  // Handle loading and empty states in render instead of early returns
   if (loading) {
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
       className: "flex items-center justify-center p-8"
@@ -102407,17 +102562,14 @@ const DataTable = ({
   }
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "w-full space-y-4"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center gap-2"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
-    type: "text",
-    value: globalFilter !== null && globalFilter !== void 0 ? globalFilter : '',
-    onChange: e => setGlobalFilter(e.target.value),
-    placeholder: "Search all columns...",
-    className: "px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-sm"
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "text-sm text-gray-500"
-  }, table.getFilteredRowModel().rows.length, " of ", data.length, " row(s)")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_filters_Filters__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    direction: "row"
+  }, filterConfigs.map(filterConfig => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_filters_Filter__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    key: filterConfig.field,
+    filter: filterConfig,
+    value: filterValues[filterConfig.field],
+    onChange: value => handleFilterChange(filterConfig.field, value)
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "overflow-x-auto border border-gray-200 rounded-lg shadow-sm"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("table", {
     className: "w-full divide-y divide-gray-200"
@@ -102454,8 +102606,10 @@ const DataTable = ({
     className: "hover:bg-gray-50"
   }, row.getVisibleCells().map(cell => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
     key: cell.id,
-    className: "px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-  }, (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__.flexRender)(cell.column.columnDef.cell, cell.getContext())))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "px-6 py-4 text-sm text-gray-900 max-w-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "line-clamp-3"
+  }, (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__.flexRender)(cell.column.columnDef.cell, cell.getContext()))))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center justify-between"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-2"
@@ -102476,6 +102630,8 @@ const DataTable = ({
     disabled: !table.getCanNextPage(),
     className: "px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
   }, '>>')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-sm text-gray-500"
+  }, table.getFilteredRowModel().rows.length, " of ", data.length, " row(s)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-700"
@@ -102491,6 +102647,455 @@ const DataTable = ({
   }, "Show ", pageSize))))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (DataTable);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/DateRangeFilter.js":
+/*!*********************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/DateRangeFilter.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+/**
+ * DateRangeFilter Component
+ * Date range filter with start/end date inputs
+ *
+ * @param {Object} props
+ * @param {Object} props.value - Current filter value {start: string, end: string}
+ * @param {Function} props.onChange - Change handler receives {start, end}
+ * @param {string} props.label - Label text for the date range
+ * @param {string} props.startPlaceholder - Placeholder for start date
+ * @param {string} props.endPlaceholder - Placeholder for end date
+ * @param {string} props.className - Additional CSS classes
+ */
+const DateRangeFilter = ({
+  value = {
+    start: '',
+    end: ''
+  },
+  onChange,
+  label = '',
+  startPlaceholder = 'Start Date',
+  endPlaceholder = 'End Date',
+  className = ''
+}) => {
+  const handleStartChange = e => {
+    const newStart = e.target.value;
+    if (onChange) {
+      onChange({
+        start: newStart,
+        end: value.end
+      });
+    }
+  };
+  const handleEndChange = e => {
+    const newEnd = e.target.value;
+    if (onChange) {
+      onChange({
+        start: value.start,
+        end: newEnd
+      });
+    }
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: `flex flex-col gap-1 ${className}`.trim()
+  }, label && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium text-gray-700"
+  }, label), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "date",
+    value: value.start,
+    onChange: handleStartChange,
+    placeholder: startPlaceholder,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-gray-500 text-sm"
+  }, "to"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "date",
+    value: value.end,
+    onChange: handleEndChange,
+    placeholder: endPlaceholder,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+  })));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (DateRangeFilter);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/Filter.js":
+/*!************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/Filter.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _SelectFilter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./SelectFilter */ "../../packages/grid/src/components/filters/SelectFilter.js");
+/* harmony import */ var _TextFilter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./TextFilter */ "../../packages/grid/src/components/filters/TextFilter.js");
+/* harmony import */ var _RangeFilter__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./RangeFilter */ "../../packages/grid/src/components/filters/RangeFilter.js");
+/* harmony import */ var _DateRangeFilter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DateRangeFilter */ "../../packages/grid/src/components/filters/DateRangeFilter.js");
+
+
+
+
+
+
+/**
+ * Filter Component
+ * Generic filter component that renders the appropriate filter type based on config
+ *
+ * @param {Object} props
+ * @param {Object} props.filter - Filter configuration object
+ * @param {string} props.filter.type - Filter type ('select', 'text', 'range', 'date_range')
+ * @param {string} props.filter.label - Filter label
+ * @param {string} props.filter.field - Field name to filter on
+ * @param {Array} props.filter.choices - Options for select filter
+ * @param {number} props.filter.min - Min value for range filter
+ * @param {number} props.filter.max - Max value for range filter
+ * @param {*} props.value - Current filter value
+ * @param {Function} props.onChange - Change handler
+ * @param {string} props.className - Additional CSS classes
+ */
+const Filter = ({
+  filter,
+  value,
+  onChange,
+  className = ''
+}) => {
+  if (!filter || !filter.type) {
+    console.warn('Filter component requires a filter config with a type property');
+    return null;
+  }
+  const {
+    type,
+    label,
+    choices,
+    placeholder,
+    min,
+    max,
+    field
+  } = filter;
+  switch (type) {
+    case 'select':
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_SelectFilter__WEBPACK_IMPORTED_MODULE_1__["default"], {
+        label: label,
+        choices: choices || [],
+        value: value || '',
+        onChange: onChange,
+        placeholder: placeholder || 'Select...',
+        className: className
+      });
+    case 'text':
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_TextFilter__WEBPACK_IMPORTED_MODULE_2__["default"], {
+        label: label,
+        value: value || '',
+        onChange: onChange,
+        placeholder: placeholder || 'Search...',
+        className: className
+      });
+    case 'range':
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_RangeFilter__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        label: label,
+        value: value || {
+          min: '',
+          max: ''
+        },
+        onChange: onChange,
+        min: min,
+        max: max,
+        minPlaceholder: placeholder?.min || 'Min',
+        maxPlaceholder: placeholder?.max || 'Max',
+        className: className
+      });
+    case 'date_range':
+      return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_DateRangeFilter__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        label: label,
+        value: value || {
+          start: '',
+          end: ''
+        },
+        onChange: onChange,
+        startPlaceholder: placeholder?.start || 'Start Date',
+        endPlaceholder: placeholder?.end || 'End Date',
+        className: className
+      });
+    default:
+      console.warn(`Unknown filter type: ${type}`);
+      return null;
+  }
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Filter);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/Filters.js":
+/*!*************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/Filters.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+/**
+ * Filters Component
+ * Layout container for filter components with configurable direction (row/stack)
+ */
+const Filters = ({
+  children,
+  direction = 'row',
+  className = ''
+}) => {
+  const baseClasses = 'flex gap-4';
+  const directionClasses = {
+    row: 'flex-row items-center',
+    stack: 'flex-col items-start'
+  };
+  const combinedClasses = `${baseClasses} ${directionClasses[direction] || directionClasses.row} ${className}`.trim();
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: combinedClasses
+  }, children);
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Filters);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/RangeFilter.js":
+/*!*****************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/RangeFilter.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+/**
+ * RangeFilter Component
+ * Min/max numeric range filter
+ *
+ * @param {Object} props
+ * @param {Object} props.value - Current filter value {min: number, max: number}
+ * @param {Function} props.onChange - Change handler receives {min, max}
+ * @param {string} props.label - Label text for the range
+ * @param {number} props.min - Minimum allowed value
+ * @param {number} props.max - Maximum allowed value
+ * @param {string} props.minPlaceholder - Placeholder for min input
+ * @param {string} props.maxPlaceholder - Placeholder for max input
+ * @param {string} props.className - Additional CSS classes
+ */
+const RangeFilter = ({
+  value = {
+    min: '',
+    max: ''
+  },
+  onChange,
+  label = '',
+  min,
+  max,
+  minPlaceholder = 'Min',
+  maxPlaceholder = 'Max',
+  className = ''
+}) => {
+  const handleMinChange = e => {
+    const newMin = e.target.value;
+    if (onChange) {
+      onChange({
+        min: newMin,
+        max: value.max
+      });
+    }
+  };
+  const handleMaxChange = e => {
+    const newMax = e.target.value;
+    if (onChange) {
+      onChange({
+        min: value.min,
+        max: newMax
+      });
+    }
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: `flex flex-col gap-1 ${className}`.trim()
+  }, label && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium text-gray-700"
+  }, label), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "number",
+    value: value.min,
+    onChange: handleMinChange,
+    placeholder: minPlaceholder,
+    min: min,
+    max: max,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-24"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-gray-500 text-sm"
+  }, "to"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "number",
+    value: value.max,
+    onChange: handleMaxChange,
+    placeholder: maxPlaceholder,
+    min: min,
+    max: max,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-24"
+  })));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (RangeFilter);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/SelectFilter.js":
+/*!******************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/SelectFilter.js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+/**
+ * SelectFilter Component
+ * HTML5 select box filter with configurable options
+ *
+ * @param {Object} props
+ * @param {Array} props.choices - Array of {value, label} objects
+ * @param {string} props.value - Current selected value
+ * @param {Function} props.onChange - Change handler
+ * @param {string} props.label - Label text for the select
+ * @param {string} props.placeholder - Placeholder option text
+ * @param {string} props.className - Additional CSS classes
+ */
+const SelectFilter = ({
+  choices = [],
+  value = '',
+  onChange,
+  label = '',
+  placeholder = 'Select...',
+  className = ''
+}) => {
+  const handleChange = e => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: `flex flex-col gap-1 ${className}`.trim()
+  }, label && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium text-gray-700"
+  }, label), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: value,
+    onChange: handleChange,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm min-w-[150px]"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: ""
+  }, placeholder), choices.map(choice => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    key: choice.value,
+    value: choice.value
+  }, choice.label))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (SelectFilter);
+
+/***/ }),
+
+/***/ "../../packages/grid/src/components/filters/TextFilter.js":
+/*!****************************************************************!*\
+  !*** ../../packages/grid/src/components/filters/TextFilter.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+/**
+ * TextFilter Component
+ * Text input filter with debouncing for search functionality
+ *
+ * @param {Object} props
+ * @param {string} props.value - Current filter value
+ * @param {Function} props.onChange - Change handler
+ * @param {string} props.label - Label text for the input
+ * @param {string} props.placeholder - Placeholder text
+ * @param {number} props.debounce - Debounce delay in ms (default: 300)
+ * @param {string} props.className - Additional CSS classes
+ */
+const TextFilter = ({
+  value = '',
+  onChange,
+  label = '',
+  placeholder = 'Search...',
+  debounce = 300,
+  className = ''
+}) => {
+  const [localValue, setLocalValue] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(value);
+
+  // Debounce the onChange callback
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    const timer = setTimeout(() => {
+      if (onChange && localValue !== value) {
+        onChange(localValue);
+      }
+    }, debounce);
+    return () => clearTimeout(timer);
+  }, [localValue, debounce, onChange, value]);
+
+  // Update local value when prop changes externally
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    setLocalValue(value);
+  }, [value]);
+  const handleChange = e => {
+    setLocalValue(e.target.value);
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: `flex flex-col gap-1 ${className}`.trim()
+  }, label && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "text-sm font-medium text-gray-700"
+  }, label), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: localValue,
+    onChange: handleChange,
+    placeholder: placeholder,
+    className: "px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[200px]"
+  }));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (TextFilter);
 
 /***/ }),
 
@@ -102704,7 +103309,7 @@ function AppContent() {
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, "Loading...");
   }
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "min-h-screen bg-gray-50"
+    className: "-ml-[22px] min-h-screen bg-gray-50"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
     className: "bg-white shadow-sm border-b border-gray-200"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -102723,7 +103328,7 @@ function AppContent() {
     key: collection.key,
     to: `/collection/${collection.key}`,
     className: "inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-  }, collection.title || collection.key))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
+  }, collection.titlePlural || collection.title || collection.key))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
     className: "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Routes, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/",
