@@ -94,6 +94,17 @@ abstract class BaseEndpoint
             return true;
         }
 
+        // Handle simple capability string format (e.g., 'read', 'edit_posts')
+        if (is_string($permissionConfig)) {
+            // Convert to standard format
+            $permissionConfig = [
+                'type' => 'cookie_authentication',
+                'settings' => [
+                    'capability' => $permissionConfig
+                ]
+            ];
+        }
+
         // Get auth type and settings
         $authType = $permissionConfig['type'] ?? 'cookie_authentication';
         $settings = $permissionConfig['settings'] ?? [];
@@ -217,6 +228,27 @@ abstract class BaseEndpoint
 
     protected function checkCookieAuthentication($settings)
     {
+        // Check nonce for cookie authentication (CSRF protection)
+        $nonce = null;
+
+        // Check for nonce in header first (standard for REST API)
+        if (isset($_SERVER['HTTP_X_WP_NONCE'])) {
+            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
+        }
+
+        // Fall back to _wpnonce parameter
+        if (!$nonce && isset($_REQUEST['_wpnonce'])) {
+            $nonce = $_REQUEST['_wpnonce'];
+        }
+
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new WP_Error(
+                'rest_cookie_invalid_nonce',
+                'Cookie nonce is invalid',
+                ['status' => 403]
+            );
+        }
+
         $capability = $settings['capability'] ?? null;
 
         // If no capability specified, just require login

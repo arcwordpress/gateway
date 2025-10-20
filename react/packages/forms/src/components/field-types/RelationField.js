@@ -26,9 +26,12 @@ const RelationField = ({ fieldName, fieldConfig, register, error }) => {
         setLoading(true);
         setFetchError(null);
 
+        // Get nonce from gatewayAdminScript (primary) or wpApiSettings (fallback)
+        const nonce = window.gatewayAdminScript?.nonce || window.wpApiSettings?.nonce || '';
+
         const response = await axios.get(endpoint, {
           headers: {
-            'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+            'X-WP-Nonce': nonce,
           },
         });
 

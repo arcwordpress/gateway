@@ -124,7 +124,8 @@ class Collection extends EloquentModel
     protected function generateRoute()
     {
         if ($this->key) {
-            return $this->key;
+            // Convert underscores to hyphens for the route
+            return str_replace('_', '-', $this->key);
         }
 
         $collectionName = class_basename(static::class);

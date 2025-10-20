@@ -11,6 +11,7 @@ use Gateway\Endpoints\Standard\DeleteRoute;
 class StandardRoutes
 {
     private $registeredRoutes = [];
+    private $actualRegisteredRoutes = [];
 
     public function __construct()
     {
@@ -22,23 +23,40 @@ class StandardRoutes
     public function registerRoutes()
     {
         foreach ($this->registeredRoutes as $collectionName => $endpoints) {
+            if (!isset($this->actualRegisteredRoutes[$collectionName])) {
+                $this->actualRegisteredRoutes[$collectionName] = [];
+            }
+
             foreach ($endpoints as $endpoint) {
                 $namespace = $endpoint->getNamespace();
                 $route = $collectionName . $endpoint->getRoute();
-                
+
+                // Allow filtering of the route before registration
+                $filteredRoute = apply_filters('gateway_register_route', $route, $collectionName, $endpoint);
+                $filteredNamespace = apply_filters('gateway_register_namespace', $namespace, $collectionName, $endpoint);
+
                 register_rest_route(
-                    $namespace,
-                    $route,
+                    $filteredNamespace,
+                    $filteredRoute,
                     $endpoint->getArgs()
                 );
+
+                // Store the actual registered route
+                $this->actualRegisteredRoutes[$collectionName][] = [
+                    'namespace' => $filteredNamespace,
+                    'route' => $filteredRoute,
+                    'full_route' => rtrim($filteredNamespace, '/') . '/' . ltrim($filteredRoute, '/'),
+                    'method' => $endpoint->getMethod(),
+                    'type' => $endpoint->getType(),
+                ];
             }
         }
     }
 
     public function onCollectionRegistered($collectionClass, $collection)
     {
-        // Use the collection's key or route as the collection name
-        $collectionName = $collection->getKey() ?: $collection->getRoute();
+        // Use the collection's route (which converts underscores to hyphens)
+        $collectionName = $collection->getRoute();
         $this->registerStandardRoutesForCollection($collection, $collectionName);
     }
 
@@ -62,15 +80,32 @@ class StandardRoutes
 
         // If REST API has already been initialized, register immediately
         if (did_action('rest_api_init')) {
+            if (!isset($this->actualRegisteredRoutes[$collectionName])) {
+                $this->actualRegisteredRoutes[$collectionName] = [];
+            }
+
             foreach ($endpoints as $endpoint) {
                 $namespace = $endpoint->getNamespace();
                 $route = $collectionName . $endpoint->getRoute();
-                
+
+                // Allow filtering of the route before registration
+                $filteredRoute = apply_filters('gateway_register_route', $route, $collectionName, $endpoint);
+                $filteredNamespace = apply_filters('gateway_register_namespace', $namespace, $collectionName, $endpoint);
+
                 register_rest_route(
-                    $namespace,
-                    $route,
+                    $filteredNamespace,
+                    $filteredRoute,
                     $endpoint->getArgs()
                 );
+
+                // Store the actual registered route
+                $this->actualRegisteredRoutes[$collectionName][] = [
+                    'namespace' => $filteredNamespace,
+                    'route' => $filteredRoute,
+                    'full_route' => rtrim($filteredNamespace, '/') . '/' . ltrim($filteredRoute, '/'),
+                    'method' => $endpoint->getMethod(),
+                    'type' => $endpoint->getType(),
+                ];
             }
         }
 
@@ -100,24 +135,71 @@ class StandardRoutes
         return isset($this->registeredRoutes[$collectionName]);
     }
 
+    public function getActualRegisteredRoutes()
+    {
+        return $this->actualRegisteredRoutes;
+    }
+
+    public function getActualRoutesForCollection($collectionName)
+    {
+        return $this->actualRegisteredRoutes[$collectionName] ?? [];
+    }
+
     public function getRouteInfo()
     {
         $info = [];
 
-        foreach ($this->registeredRoutes as $collectionName => $endpoints) {
-            $info[$collectionName] = [];
+        // Use actual registered routes if available (after rest_api_init)
+        if (!empty($this->actualRegisteredRoutes)) {
+            foreach ($this->actualRegisteredRoutes as $collectionName => $routes) {
+                $info[$collectionName] = [];
 
-            foreach ($endpoints as $endpoint) {
-                $info[$collectionName][] = [
-                    'method'      => $endpoint->getMethod(),
-                    'route'       => $endpoint->getFullRoute(),
-                    'type'        => $endpoint->getType(),
-                    'description' => $this->getRouteDescription($endpoint)
-                ];
+                foreach ($routes as $route) {
+                    $info[$collectionName][] = [
+                        'method'      => $route['method'],
+                        'route'       => $route['full_route'],
+                        'namespace'   => $route['namespace'],
+                        'path'        => $route['route'],
+                        'type'        => $route['type'],
+                        'description' => $this->getRouteDescriptionByType($route['type'], $collectionName)
+                    ];
+                }
+            }
+        } else {
+            // Fallback: construct from endpoint objects (before rest_api_init)
+            foreach ($this->registeredRoutes as $collectionName => $endpoints) {
+                $info[$collectionName] = [];
+
+                foreach ($endpoints as $endpoint) {
+                    $info[$collectionName][] = [
+                        'method'      => $endpoint->getMethod(),
+                        'route'       => $endpoint->getFullRoute(),
+                        'type'        => $endpoint->getType(),
+                        'description' => $this->getRouteDescription($endpoint)
+                    ];
+                }
             }
         }
 
         return $info;
+    }
+
+    private function getRouteDescriptionByType($type, $collectionName)
+    {
+        switch ($type) {
+            case 'get_one':
+                return "Get a single {$collectionName} item";
+            case 'get_many':
+                return "Get all {$collectionName} items";
+            case 'create':
+                return "Create a new {$collectionName} item";
+            case 'update':
+                return "Update a {$collectionName} item";
+            case 'delete':
+                return "Delete a {$collectionName} item";
+            default:
+                return "Perform operation on {$collectionName}";
+        }
     }
 
     private function getRouteDescription($endpoint)
