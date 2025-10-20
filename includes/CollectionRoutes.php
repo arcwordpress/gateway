@@ -196,8 +196,14 @@ class CollectionRoutes
         // Get the collection key
         $key = method_exists($collection, 'getKey') ? $collection->getKey() : null;
 
+        // Get title and titlePlural
+        $title = method_exists($collection, 'getTitle') ? $collection->getTitle() : null;
+        $titlePlural = method_exists($collection, 'getTitlePlural') ? $collection->getTitlePlural() : null;
+
         return [
             'key' => $key,
+            'title' => $title,
+            'titlePlural' => $titlePlural,
             'class' => $collectionClass,
             'name' => basename(str_replace('\\', '/', $collectionClass)),
             'table' => $table,

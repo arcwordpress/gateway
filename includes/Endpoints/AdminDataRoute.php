@@ -45,8 +45,9 @@ class AdminDataRoute
             $fqcn = get_class($collection);
             $className = class_basename($fqcn);
 
-            // Get title from collection
-            $title = $this->getCollectionTitle($collection);
+            // Get title and titlePlural from collection
+            $title = $collection->getTitle();
+            $titlePlural = $collection->getTitlePlural();
 
             // Get routes for this specific collection
             $collectionRoutes = [];
@@ -71,6 +72,7 @@ class AdminDataRoute
             $collectionsData[] = [
                 'key' => $key,
                 'title' => $title,
+                'titlePlural' => $titlePlural,
                 'className' => $className,
                 'fqcn' => $fqcn,
                 'table' => $fullTableName,
@@ -101,34 +103,4 @@ class AdminDataRoute
         return $friendlyRoute;
     }
 
-    /**
-     * Get the title for a collection
-     *
-     * @param \Gateway\Collection $collection
-     * @return string
-     */
-    private function getCollectionTitle($collection)
-    {
-        // Check if collection has a title property
-        $reflectionClass = new \ReflectionClass($collection);
-
-        if ($reflectionClass->hasProperty('title')) {
-            $property = $reflectionClass->getProperty('title');
-            $property->setAccessible(true);
-            $title = $property->getValue($collection);
-
-            if (!empty($title)) {
-                return $title;
-            }
-        }
-
-        // Fallback: Generate title from class name
-        $className = class_basename(get_class($collection));
-        $name = str_replace('Collection', '', $className);
-
-        // Convert PascalCase to Title Case with spaces
-        $title = preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
-
-        return ucwords($title);
-    }
 }

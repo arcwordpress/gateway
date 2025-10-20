@@ -180,9 +180,6 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
             onChange={(value) => handleFilterChange(filterConfig.field, value)}
           />
         ))}
-        <div className="text-sm text-gray-500 self-end pb-2">
-          {table.getFilteredRowModel().rows.length} of {data.length} row(s)
-        </div>
       </Filters>
 
       {/* Table */}
@@ -245,9 +242,11 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                    className="px-6 py-4 text-sm text-gray-900 max-w-md"
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <div className="line-clamp-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </div>
                   </td>
                 ))}
               </tr>
@@ -287,6 +286,10 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
           >
             {'>>'}
           </button>
+        </div>
+
+        <div className="text-sm text-gray-500">
+          {table.getFilteredRowModel().rows.length} of {data.length} row(s)
         </div>
 
         <div className="flex items-center gap-2">

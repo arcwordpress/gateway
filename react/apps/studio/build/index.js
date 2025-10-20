@@ -102264,7 +102264,27 @@ const App = ({
         accessorKey: key,
         header: field.label || key,
         enableSorting: true,
-        enableColumnFilter: true
+        enableColumnFilter: true,
+        cell: ({
+          getValue
+        }) => {
+          const value = getValue();
+          // Handle null/undefined values
+          if (value === null || value === undefined) return '-';
+          // Handle objects and arrays
+          if (typeof value === 'object') return JSON.stringify(value);
+          const stringValue = String(value);
+
+          // For textarea, markdown, and other long text field types, show with tooltip
+          const isLongTextField = ['textarea', 'markdown', 'wysiwyg'].includes(field.type) || ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+          if (isLongTextField && stringValue.length > 100) {
+            return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+              title: stringValue,
+              className: "cursor-help"
+            }, stringValue);
+          }
+          return stringValue;
+        }
       }));
     } else {
       // Otherwise, generate columns from the first data record
@@ -102291,7 +102311,18 @@ const App = ({
               return value;
             }
           }
-          return String(value);
+          // Convert to string
+          const stringValue = String(value);
+
+          // For long text fields (description, content, etc.), show truncated version with title
+          const isLongTextField = ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+          if (isLongTextField && stringValue.length > 100) {
+            return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+              title: stringValue,
+              className: "cursor-help"
+            }, stringValue);
+          }
+          return stringValue;
         }
       }));
     }
@@ -102538,9 +102569,7 @@ const DataTable = ({
     filter: filterConfig,
     value: filterValues[filterConfig.field],
     onChange: value => handleFilterChange(filterConfig.field, value)
-  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "text-sm text-gray-500 self-end pb-2"
-  }, table.getFilteredRowModel().rows.length, " of ", data.length, " row(s)")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "overflow-x-auto border border-gray-200 rounded-lg shadow-sm"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("table", {
     className: "w-full divide-y divide-gray-200"
@@ -102577,8 +102606,10 @@ const DataTable = ({
     className: "hover:bg-gray-50"
   }, row.getVisibleCells().map(cell => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
     key: cell.id,
-    className: "px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-  }, (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__.flexRender)(cell.column.columnDef.cell, cell.getContext())))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "px-6 py-4 text-sm text-gray-900 max-w-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "line-clamp-3"
+  }, (0,_tanstack_react_table__WEBPACK_IMPORTED_MODULE_2__.flexRender)(cell.column.columnDef.cell, cell.getContext()))))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center justify-between"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-2"
@@ -102599,6 +102630,8 @@ const DataTable = ({
     disabled: !table.getCanNextPage(),
     className: "px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
   }, '>>')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-sm text-gray-500"
+  }, table.getFilteredRowModel().rows.length, " of ", data.length, " row(s)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "flex items-center gap-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "text-sm text-gray-700"
@@ -103276,7 +103309,7 @@ function AppContent() {
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, "Loading...");
   }
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "min-h-screen bg-gray-50"
+    className: "-ml-[22px] min-h-screen bg-gray-50"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
     className: "bg-white shadow-sm border-b border-gray-200"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -103295,7 +103328,7 @@ function AppContent() {
     key: collection.key,
     to: `/collection/${collection.key}`,
     className: "inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-  }, collection.title || collection.key))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
+  }, collection.titlePlural || collection.title || collection.key))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
     className: "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Routes, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/",
