@@ -28,7 +28,15 @@ class GetManyRoute extends BaseEndpoint
     {
         try {
             $page = max(1, (int) $request->get_param('page') ?: 1);
-            $per_page = min(100, max(1, (int) $request->get_param('per_page') ?: 10));
+            // Default to -1 (fetch all) since filtering/sorting is done client-side
+            $per_page_param = $request->get_param('per_page') !== null
+                ? (int) $request->get_param('per_page')
+                : -1;
+
+            // Check if per_page is -1 (fetch all records)
+            $fetch_all = $per_page_param === -1;
+            $per_page = $fetch_all ? -1 : min(100, max(1, $per_page_param));
+
             $search = $request->get_param('search');
             $order_by = $request->get_param('order_by');
             $order = strtolower($request->get_param('order') ?: 'asc');
@@ -51,17 +59,19 @@ class GetManyRoute extends BaseEndpoint
 
                 $total = count($items);
 
-                // Manual pagination on array
-                $offset = ($page - 1) * $per_page;
-                $items = array_slice($items, $offset, $per_page);
+                // Apply pagination only if not fetching all
+                if (!$fetch_all) {
+                    $offset = ($page - 1) * $per_page;
+                    $items = array_slice($items, $offset, $per_page);
+                }
 
                 $response = [
                     'items' => $items,
                     'pagination' => [
-                        'page' => $page,
-                        'per_page' => $per_page,
+                        'page' => $fetch_all ? 1 : $page,
+                        'per_page' => $fetch_all ? $total : $per_page,
                         'record_count' => $total,
-                        'total_pages' => ceil($total / $per_page)
+                        'total_pages' => $fetch_all ? 1 : ceil($total / $per_page)
                     ]
                 ];
 
@@ -93,9 +103,13 @@ class GetManyRoute extends BaseEndpoint
             // Get total count before pagination
             $total = $query->count();
 
-            // Apply pagination
-            $offset = ($page - 1) * $per_page;
-            $models = $query->offset($offset)->limit($per_page)->get();
+            // Apply pagination only if not fetching all
+            if (!$fetch_all) {
+                $offset = ($page - 1) * $per_page;
+                $models = $query->offset($offset)->limit($per_page)->get();
+            } else {
+                $models = $query->get();
+            }
 
             // Convert to arrays
             $items = [];
@@ -108,10 +122,10 @@ class GetManyRoute extends BaseEndpoint
             $response = [
                 'items' => $items,
                 'pagination' => [
-                    'page' => $page,
-                    'per_page' => $per_page,
+                    'page' => $fetch_all ? 1 : $page,
+                    'per_page' => $fetch_all ? $total : $per_page,
                     'record_count' => $total,
-                    'total_pages' => ceil($total / $per_page)
+                    'total_pages' => $fetch_all ? 1 : ceil($total / $per_page)
                 ]
             ];
 
@@ -139,12 +153,15 @@ class GetManyRoute extends BaseEndpoint
                 'sanitize_callback' => 'absint',
             ],
             'per_page' => [
-                'default' => 10,
+                'default' => -1,
                 'type' => 'integer',
-                'minimum' => 1,
+                'minimum' => -1,
                 'maximum' => 100,
-                'description' => 'Number of items per page',
-                'sanitize_callback' => 'absint',
+                'description' => 'Number of items per page. Default is -1 (fetch all records). Set to a positive number (max 100) to enable pagination.',
+                'sanitize_callback' => function($value) {
+                    $int_value = (int) $value;
+                    return $int_value === -1 ? -1 : absint($value);
+                },
             ],
             'search' => [
                 'type' => 'string',

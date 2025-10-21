@@ -34,11 +34,17 @@ class DatabaseConnection
 
         // Parse DB_HOST for port if included (e.g., localhost:3307)
         $host = DB_HOST;
-        $port = 10011; // Hardcoded port until UI settings are implemented
+        $port = 3306; // Default MySQL port
 
         if (strpos(DB_HOST, ':') !== false) {
             list($host, $port) = explode(':', DB_HOST, 2);
             $port = intval($port);
+        }
+
+        // Check for custom port setting (for Local WP and other dynamic environments)
+        $custom_port = get_option('gateway_connection_port', '');
+        if (!empty($custom_port)) {
+            $port = intval($custom_port);
         }
 
         self::$capsule->addConnection([

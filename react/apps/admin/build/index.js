@@ -8234,6 +8234,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "../../node_modules/react-router/dist/index.js");
 /* harmony import */ var _pages_Dashboard__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pages/Dashboard */ "./src/pages/Dashboard.js");
 /* harmony import */ var _pages_Collections__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pages/Collections */ "./src/pages/Collections.js");
+/* harmony import */ var _pages_Settings__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pages/Settings */ "./src/pages/Settings.js");
+
 
 
 
@@ -8261,7 +8263,10 @@ function App() {
   }, "Dashboard"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Link, {
     to: "/collections",
     className: "inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-  }, "Collections")))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
+  }, "Collections"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Link, {
+    to: "/settings",
+    className: "inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+  }, "Settings")))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
     className: "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Routes, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/",
@@ -8269,6 +8274,9 @@ function App() {
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/collections",
     element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Collections__WEBPACK_IMPORTED_MODULE_4__["default"], null)
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+    path: "/settings",
+    element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_Settings__WEBPACK_IMPORTED_MODULE_5__["default"], null)
   })))));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
@@ -8592,6 +8600,190 @@ function Dashboard() {
   })));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Dashboard);
+
+/***/ }),
+
+/***/ "./src/pages/Settings.js":
+/*!*******************************!*\
+  !*** ./src/pages/Settings.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const Settings = () => {
+  const [port, setPort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [localPort, setLocalPort] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [saving, setSaving] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
+  const [error, setError] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [success, setSuccess] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [testing, setTesting] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [testResult, setTestResult] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    loadSettings();
+  }, []);
+  const loadSettings = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/settings`, {
+        headers: {
+          'X-WP-Nonce': window.gatewayAdminScript.nonce
+        }
+      });
+      const data = await response.json();
+      setPort(data.port || '');
+      setLocalPort(data.port || '');
+    } catch (err) {
+      setError('Failed to load settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSave = async e => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': window.gatewayAdminScript.nonce
+        },
+        body: JSON.stringify({
+          port: localPort
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setPort(localPort);
+        setSuccess(data.message || 'Settings saved successfully.');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Failed to save settings');
+      }
+    } catch (err) {
+      setError('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleReset = () => {
+    setLocalPort('');
+  };
+  const testConnection = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/test-connection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': window.gatewayAdminScript.nonce
+        }
+      });
+      const data = await response.json();
+      setTestResult(data);
+    } catch (err) {
+      setTestResult({
+        success: false,
+        error: err.message
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
+  if (loading) {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      className: "p-6"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+      className: "text-gray-600"
+    }, "Loading settings..."));
+  }
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-6 space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white shadow rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-lg font-semibold text-gray-900 mb-4"
+  }, "Database Port Settings"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
+    onSubmit: handleSave,
+    className: "space-y-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    htmlFor: "port",
+    className: "block text-sm font-medium text-gray-700 mb-1"
+  }, "Database Port"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "number",
+    id: "port",
+    min: "1",
+    max: "65535",
+    value: localPort,
+    onChange: e => setLocalPort(e.target.value),
+    placeholder: "3306",
+    className: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "mt-1 text-sm text-gray-500"
+  }, "Enter a custom port number for database connections. Leave empty to use default (3306). For Local WP, check the site overview for the correct MySQL port.")), error && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-4 bg-red-50 border border-red-200 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-red-600 text-sm flex items-center"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "mr-2"
+  }, "\u2717"), error)), success && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "p-4 bg-green-50 border border-green-200 rounded"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-green-600 text-sm flex items-center"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "mr-2"
+  }, "\u2713"), success)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex space-x-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "submit",
+    disabled: saving,
+    className: `px-4 py-2 rounded font-medium transition-colors ${saving ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`
+  }, saving ? 'Saving...' : 'Save Settings'), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: handleReset,
+    className: "px-4 py-2 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+  }, "Reset to Default")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white shadow rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-lg font-semibold text-gray-900 mb-4"
+  }, "Test Database Connection"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: testConnection,
+    disabled: testing,
+    className: `px-4 py-2 rounded font-medium transition-colors ${testing ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`
+  }, testing ? 'Testing...' : 'Test Connection'), testResult && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: `mt-4 p-4 rounded ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`
+  }, testResult.success ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-green-600 font-semibold"
+  }, "\u2713 Connection Successful"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-4 space-y-2 text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "font-medium"
+  }, "Server Version:"), ' ', testResult.server_version), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "font-medium"
+  }, "Tables Found:"), ' ', testResult.table_count), testResult.custom_port && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "font-medium"
+  }, "Custom Port:"), ' ', testResult.custom_port))) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-red-600 font-semibold"
+  }, "\u2717 Connection Failed"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mt-2 text-sm text-red-700 font-mono bg-red-100 p-3 rounded"
+  }, testResult.error)))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Settings);
 
 /***/ }),
 

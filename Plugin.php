@@ -48,6 +48,8 @@ class Plugin
     private $standardRoutes;
     private $collectionRoutes;
     private $adminDataRoute;
+    private $settingsRoute;
+    private $testConnectionRoute;
 
     public static function getInstance()
     {
@@ -63,6 +65,8 @@ class Plugin
         $this->standardRoutes = new StandardRoutes();
         $this->collectionRoutes = new CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
+        $this->settingsRoute = new Endpoints\SettingsRoute();
+        $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->init();
     }
 
