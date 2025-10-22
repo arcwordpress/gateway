@@ -1,6 +1,6 @@
 {
   "name": "@gateway/grid",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Gateway Grid React component library with TanStack Table",
   "main": "src/index.js",
   "module": "src/index.js",

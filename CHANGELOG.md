@@ -2,6 +2,12 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.1] - 2025-10-21
+
+### Changed
+- Updated RELEASE.md documentation with specific file paths for version management
+- Improved release process documentation
+
 ## [1.1.0] - 2025-10-20
 
 ### Added

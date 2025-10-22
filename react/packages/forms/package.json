@@ -1,6 +1,6 @@
 {
   "name": "@gateway/forms",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Gateway Forms React component library with form field types and validation",
   "main": "src/index.js",
   "module": "src/index.js",
