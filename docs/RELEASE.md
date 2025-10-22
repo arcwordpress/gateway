@@ -67,11 +67,17 @@ Steps
 - git commit -m "release: vNEW_VERSION — update versions and changelog"
 - git push origin BRANCH
 
-8. Create annotated tag and push
-- git tag -a vNEW_VERSION -m "Release vNEW_VERSION"
-- git push origin vNEW_VERSION
-- OR push all tags:
-    - git push origin --tags
+8. Create release candidate tag first
+- ALWAYS create a release candidate (RC) tag before the final release tag
+- First RC: git tag -a vNEW_VERSION-rc1 -m "Release candidate vNEW_VERSION-rc1"
+- Push RC tag: git push origin vNEW_VERSION-rc1
+- If testing reveals issues:
+    - Fix issues and commit
+    - Increment RC number: git tag -a vNEW_VERSION-rc2 -m "Release candidate vNEW_VERSION-rc2"
+    - Push: git push origin vNEW_VERSION-rc2
+- Once RC testing succeeds, create final release tag:
+    - git tag -a vNEW_VERSION -m "Release vNEW_VERSION"
+    - git push origin vNEW_VERSION
 
 9. Post-release tasks (optional)
 - Create GitHub/GitLab release using the changelog entry.
@@ -87,6 +93,7 @@ Notes for automation (Claude Code)
 
 End state required
 - Repository BRANCH contains the committed version changes.
-- Annotated git tag vNEW_VERSION exists and is pushed to origin.
+- Annotated git tag vNEW_VERSION-rc1 (or higher RC number) exists for testing.
+- After successful testing, annotated git tag vNEW_VERSION exists and is pushed to origin.
 
 Replace all placeholders (NEW_VERSION / BRANCH) before execution. Final step must tag and push to origin as above.
