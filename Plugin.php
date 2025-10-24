@@ -89,6 +89,10 @@ class Plugin
         Admin\Page::init();
         Admin\CollectionMenus::init();
 
+        // Initialize front-end forms
+        Forms\Render::init();
+        Forms\Shortcode::init();
+
     }
 
     public function onInit()
