@@ -54,6 +54,12 @@ export const generateZodSchema = (collection) => {
       // Relation field: typically stores an ID (integer or string depending on DB)
       // Coerce to number if it's an integer foreign key
       fieldSchema = z.coerce.number().int().positive();
+    } else if (configType === 'file' || configType === 'image') {
+      // File and Image fields: store WordPress attachment ID (integer)
+      fieldSchema = z.coerce.number().int().positive();
+    } else if (configType === 'gallery') {
+      // Gallery field: stores JSON array of attachment IDs
+      fieldSchema = z.string();
     } else if (configType === 'select' || configType === 'radio' || configType === 'button_group' || configType === 'textarea' || configType === 'markdown' || configType === 'wysiwyg' || configType === 'color') {
       fieldSchema = z.string();
     } else {
@@ -79,7 +85,12 @@ export const generateZodSchema = (collection) => {
     } else {
       // Make field optional - email and url already handle empty with .or(z.literal(''))
       if (!(configType === 'email' || fieldName.includes('email') || configType === 'url' || fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link'))) {
-        fieldSchema = fieldSchema.optional();
+        // File and image fields can be empty string or undefined when optional
+        if (configType === 'file' || configType === 'image') {
+          fieldSchema = fieldSchema.or(z.literal('')).or(z.literal(0)).optional();
+        } else {
+          fieldSchema = fieldSchema.optional();
+        }
       }
     }
 

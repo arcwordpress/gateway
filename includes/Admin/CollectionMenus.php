@@ -63,6 +63,9 @@ class CollectionMenus
         $asset = require $asset_file;
         $build_url = GATEWAY_URL . 'react/apps/studio/build/';
 
+        // Enqueue WordPress media library for file/image/gallery fields
+        wp_enqueue_media();
+
         wp_enqueue_script(
             'gateway-studio',
             $build_url . 'index.js',
