@@ -82,6 +82,9 @@ class Render
         $asset = require $asset_file;
         $build_url = GATEWAY_URL . 'react/apps/form/build/';
 
+        // Enqueue WordPress media library for file/image/gallery fields
+        wp_enqueue_media();
+
         wp_enqueue_script(
             'gateway-forms',
             $build_url . 'index.js',

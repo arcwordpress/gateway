@@ -6,7 +6,7 @@ import './index.css';
 const formElements = document.querySelectorAll('[data-blueprint-form]');
 
 formElements.forEach((element) => {
-  const collectionKey = element.getAttribute('data-collection');
+  const collectionKey = element.getAttribute('data-schema');
   const recordId = element.getAttribute('data-record-id');
 
   if (collectionKey) {

@@ -58,7 +58,7 @@ This creates the necessary build files in `react/apps/form/build/`.
 
 ## Usage Methods
 
-There are three ways to render forms on the front-end:
+There are two ways to render forms on the front-end:
 
 ### Shortcode
 
@@ -78,17 +78,6 @@ The simplest method for content editors.
 ```
 [blueprint_form schema="support" class="my-custom-form" id="support-form"]
 ```
-
-### Gutenberg Block
-
-Available in the block editor under the "Widgets" category.
-
-**Block Name:** `arc-blueprint/form`
-
-**Attributes:**
-- Schema (required)
-- Record ID (optional)
-- Additional CSS class(es) (optional)
 
 ### PHP Function
 
@@ -145,14 +134,6 @@ For programmatic rendering in templates.
     'data-custom' => 'value'
 ]
 ```
-
-### Gutenberg Block Attributes
-
-| Attribute | Field Type | Description |
-|-----------|------------|-------------|
-| `schema` | String | Collection schema name (required) |
-| `recordId` | String | Record ID for editing |
-| `className` | String | Additional CSS classes |
 
 ---
 
