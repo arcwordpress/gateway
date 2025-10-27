@@ -9,7 +9,7 @@ class Shortcode
      */
     public static function init()
     {
-        add_shortcode('blueprint_form', [__CLASS__, 'render']);
+        add_shortcode('gateway_form', [__CLASS__, 'render']);
     }
 
     /**
@@ -29,7 +29,7 @@ class Shortcode
 
         // Validate schema is provided
         if (empty($atts['schema'])) {
-            return '<p><strong>Blueprint Form Error:</strong> No schema specified.</p>';
+            return '<p><strong>Gateway Form Error:</strong> No schema specified.</p>';
         }
 
         // Build attributes array

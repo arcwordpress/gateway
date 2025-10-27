@@ -22,6 +22,11 @@ function Dashboard() {
     navigate(`/collection/${activeKey}/edit/${recordId}`);
   };
 
+  const handleDelete = (recordId) => {
+    console.log('Record deleted:', recordId);
+    // Optional: Add any additional logic after delete (e.g., show notification)
+  };
+
   const handleCreate = () => {
     navigate(`/collection/${activeKey}/create`);
   };
@@ -39,7 +44,7 @@ function Dashboard() {
           Create New
         </button>
       </div>
-      <Grid collectionKey={activeKey} onEdit={handleEdit} />
+      <Grid collectionKey={activeKey} onEdit={handleEdit} onDelete={handleDelete} />
     </div>
   );
 }

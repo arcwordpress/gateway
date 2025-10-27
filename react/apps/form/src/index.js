@@ -2,8 +2,8 @@ import { createRoot } from '@wordpress/element';
 import App from './App';
 import './index.css';
 
-// Find all elements with data-blueprint-form attribute
-const formElements = document.querySelectorAll('[data-blueprint-form]');
+// Find all elements with data-gateway-form attribute
+const formElements = document.querySelectorAll('[data-gateway-form]');
 
 formElements.forEach((element) => {
   const collectionKey = element.getAttribute('data-schema');

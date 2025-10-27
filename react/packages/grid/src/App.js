@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import DataTable from './components/DataTable';
-import { fetchCollection, fetchCollectionData } from './services/collectionService';
+import { fetchCollection, fetchCollectionData, deleteRecord } from './services/collectionService';
 
 /**
  * Main Grid App Component
  * Displays a data grid for a Gateway collection
  */
-const App = ({ collectionKey, onEdit, showActions = true }) => {
+const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, loading }
 
   // Fetch collection metadata
   useEffect(() => {
@@ -70,6 +71,42 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
   const filters = useMemo(() => {
     return collection?.filters || [];
   }, [collection]);
+
+  // Handle delete with confirmation
+  const handleDeleteClick = (recordId) => {
+    setDeleteConfirm({ id: recordId, loading: false });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm || !collection) return;
+
+    setDeleteConfirm({ ...deleteConfirm, loading: true });
+
+    try {
+      const namespace = collection.routes.namespace;
+      const route = collection.routes.route;
+
+      await deleteRecord(namespace, route, deleteConfirm.id);
+
+      // Remove the deleted record from the data
+      setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
+
+      // Call the onDelete callback if provided
+      if (onDelete) {
+        onDelete(deleteConfirm.id);
+      }
+
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Error deleting record:', err);
+      alert(`Failed to delete record: ${err.message}`);
+      setDeleteConfirm({ ...deleteConfirm, loading: false });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm(null);
+  };
 
   // Generate columns from collection fields or data
   const columns = useMemo(() => {
@@ -151,7 +188,7 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
     }
 
     // Add actions column if enabled
-    if (showActions && onEdit) {
+    if (showActions && (onEdit || onDelete)) {
       baseColumns.push({
         id: 'actions',
         header: 'Actions',
@@ -160,19 +197,31 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
         cell: ({ row }) => {
           const recordId = row.original.id;
           return (
-            <button
-              onClick={() => onEdit(recordId)}
-              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-            >
-              Edit
-            </button>
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(recordId)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                >
+                  Edit
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => handleDeleteClick(recordId)}
+                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           );
         },
       });
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit]);
+  }, [data, collection, showActions, onEdit, onDelete]);
 
   if (error) {
     return (
@@ -194,6 +243,36 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
       <DataTable data={data} columns={columns} filters={filters} loading={loading} />
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirm Delete
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this record? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={deleteConfirm.loading}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteConfirm.loading}
+                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteConfirm.loading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
