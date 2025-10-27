@@ -93,6 +93,9 @@ class Plugin
         Forms\Render::init();
         Forms\Shortcode::init();
 
+        // Initialize front-end grids
+        Grid\Render::init();
+
     }
 
     public function onInit()
