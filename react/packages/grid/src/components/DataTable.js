@@ -216,19 +216,6 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
                             </span>
                           )}
                         </div>
-                        {header.column.getCanFilter() && (
-                          <div className="mt-1">
-                            <input
-                              type="text"
-                              value={(header.column.getFilterValue() ?? '')}
-                              onChange={(e) =>
-                                header.column.setFilterValue(e.target.value)
-                              }
-                              placeholder={`Filter...`}
-                              className="px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
-                            />
-                          </div>
-                        )}
                       </div>
                     )}
                   </th>

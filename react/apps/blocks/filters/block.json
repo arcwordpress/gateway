@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/filters",
+	"version": "1.0.0",
+	"title": "Gateway Filters",
+	"category": "widgets",
+	"icon": "filter",
+	"description": "Display Gateway collection filters.",
+	"keywords": ["gateway", "filters", "search"],
+	"textdomain": "gateway",
+	"supports": {
+		"html": false
+	},
+	"attributes": {
+		"collectionKey": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./build/index.js",
+	"editorStyle": "file:./build/index.css"
+}

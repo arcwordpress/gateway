@@ -1,3 +1,6 @@
+/*!*******************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./src/index.css ***!
+  \*******************************************************************************************************************************************************************/
 /* Grid app styles */
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
@@ -479,9 +482,6 @@ video {
 .mb-6 {
   margin-bottom: 1.5rem;
 }
-.mt-1 {
-  margin-top: 0.25rem;
-}
 .line-clamp-3 {
   overflow: hidden;
   display: -webkit-box;
@@ -803,3 +803,5 @@ video {
   opacity: 0.5;
 }
 
+
+/*# sourceMappingURL=index.css.map*/

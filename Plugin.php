@@ -96,6 +96,12 @@ class Plugin
         // Initialize front-end grids
         Grid\Render::init();
 
+        // Initialize front-end filters
+        Filters\Render::init();
+
+        // Initialize Gutenberg blocks
+        Gutenberg\BlockRegistry::init();
+
     }
 
     public function onInit()
