@@ -5,6 +5,8 @@ function Collections() {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [migrationModal, setMigrationModal] = useState({ isOpen: false, migration: null, loading: false });
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -43,6 +45,44 @@ function Collections() {
       setError(err.message);
       setLoading(false);
     }
+  };
+
+  const generateMigration = async (collectionKey) => {
+    setMigrationModal({ isOpen: true, migration: null, loading: true });
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${collectionKey}`,
+        {
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate migration');
+      }
+
+      const data = await response.json();
+      setMigrationModal({ isOpen: true, migration: data.migration, loading: false });
+    } catch (err) {
+      alert('Error generating migration: ' + err.message);
+      setMigrationModal({ isOpen: false, migration: null, loading: false });
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (migrationModal.migration?.code) {
+      navigator.clipboard.writeText(migrationModal.migration.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const closeMigrationModal = () => {
+    setMigrationModal({ isOpen: false, migration: null, loading: false });
+    setCopied(false);
   };
 
   if (loading) {
@@ -85,9 +125,17 @@ function Collections() {
               key={collection.key}
               className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {collection.title}
-              </h3>
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {collection.title}
+                </h3>
+                <button
+                  onClick={() => generateMigration(collection.key)}
+                  className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  Generate Migration
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
@@ -175,6 +223,87 @@ function Collections() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Migration Modal */}
+      {migrationModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {migrationModal.loading ? 'Generating Migration...' : 'Database Migration'}
+              </h3>
+              <button
+                onClick={closeMigrationModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {migrationModal.loading ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">Generating migration code...</p>
+                </div>
+              ) : migrationModal.migration ? (
+                <div className="space-y-4">
+                  {/* Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 mb-2">Usage Instructions:</h4>
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                      <li>Save this file to your plugin (e.g., <code className="bg-blue-100 px-1 rounded">/lib/{migrationModal.migration.className}.php</code>)</li>
+                      <li>Require the file in your plugin</li>
+                      <li>Call <code className="bg-blue-100 px-1 rounded">{migrationModal.migration.className}::create()</code> from your activation hook</li>
+                    </ol>
+                  </div>
+
+                  {/* Notes */}
+                  {migrationModal.migration.notes && migrationModal.migration.notes.length > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-yellow-900 mb-2">Notes:</h4>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-yellow-800">
+                        {migrationModal.migration.notes.map((note, index) => (
+                          <li key={index}>{note}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Code */}
+                  <div className="relative">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-semibold text-gray-900">Generated Code:</h4>
+                      <button
+                        onClick={copyToClipboard}
+                        className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 transition-colors"
+                      >
+                        {copied ? 'Copied!' : 'Copy to Clipboard'}
+                      </button>
+                    </div>
+                    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                      <code>{migrationModal.migration.code}</code>
+                    </pre>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={closeMigrationModal}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

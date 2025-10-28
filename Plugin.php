@@ -50,6 +50,7 @@ class Plugin
     private $adminDataRoute;
     private $settingsRoute;
     private $testConnectionRoute;
+    private $migrationGeneratorRoute;
 
     public static function getInstance()
     {
@@ -67,6 +68,7 @@ class Plugin
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
+        $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->init();
     }
 
