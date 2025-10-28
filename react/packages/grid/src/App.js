@@ -108,18 +108,18 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
     setDeleteConfirm(null);
   };
 
-  // Generate columns from collection fields or data
+  // Generate columns from collection grid config or data
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     let baseColumns = [];
 
-    // If collection has fields defined, use those
-    if (collection?.fields && Object.keys(collection.fields).length > 0) {
-      baseColumns = Object.entries(collection.fields).map(([key, field]) => ({
-        accessorKey: key,
-        header: field.label || key,
-        enableSorting: true,
+    // Priority 1: Use grid.columns if defined
+    if (collection?.grid?.columns && Array.isArray(collection.grid.columns)) {
+      baseColumns = collection.grid.columns.map((colDef) => ({
+        accessorKey: colDef.field,
+        header: colDef.label || colDef.field,
+        enableSorting: colDef.sortable !== false, // Default to true unless explicitly false
         enableColumnFilter: true,
         cell: ({ getValue }) => {
           const value = getValue();
@@ -130,7 +130,37 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
 
           const stringValue = String(value);
 
-          // For textarea, markdown, and other long text field types, show with tooltip
+          // Get field config for additional context
+          const fieldConfig = collection?.fields?.[colDef.field];
+          const isLongTextField = fieldConfig && ['textarea', 'markdown', 'wysiwyg'].includes(fieldConfig.type) ||
+                                  ['description', 'content', 'body', 'text', 'message', 'notes'].includes(colDef.field.toLowerCase());
+
+          if (isLongTextField && stringValue.length > 100) {
+            return (
+              <span title={stringValue} className="cursor-help">
+                {stringValue}
+              </span>
+            );
+          }
+
+          return stringValue;
+        },
+      }));
+    }
+    // Priority 2: Use collection fields (auto-generate, limited to 5)
+    else if (collection?.fields && Object.keys(collection.fields).length > 0) {
+      const fieldEntries = Object.entries(collection.fields).slice(0, 5); // Limit to first 5
+      baseColumns = fieldEntries.map(([key, field]) => ({
+        accessorKey: key,
+        header: field.label || key,
+        enableSorting: true,
+        enableColumnFilter: true,
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (value === null || value === undefined) return '-';
+          if (typeof value === 'object') return JSON.stringify(value);
+
+          const stringValue = String(value);
           const isLongTextField = ['textarea', 'markdown', 'wysiwyg'].includes(field.type) ||
                                   ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
 
@@ -145,23 +175,22 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
           return stringValue;
         },
       }));
-    } else {
-      // Otherwise, generate columns from the first data record
+    }
+    // Priority 3: Generate from first data record (auto-generate, limited to 5)
+    else {
       const firstRecord = data[0];
       if (!firstRecord) return [];
 
-      baseColumns = Object.keys(firstRecord).map((key) => ({
+      const keys = Object.keys(firstRecord).slice(0, 5); // Limit to first 5
+      baseColumns = keys.map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         enableSorting: true,
         enableColumnFilter: true,
         cell: ({ getValue }) => {
           const value = getValue();
-          // Handle null/undefined values
           if (value === null || value === undefined) return '-';
-          // Handle objects and arrays
           if (typeof value === 'object') return JSON.stringify(value);
-          // Handle dates
           if (key.includes('_at') && typeof value === 'string') {
             try {
               return new Date(value).toLocaleString();
@@ -169,11 +198,10 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
               return value;
             }
           }
-          // Convert to string
-          const stringValue = String(value);
 
-          // For long text fields (description, content, etc.), show truncated version with title
+          const stringValue = String(value);
           const isLongTextField = ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+
           if (isLongTextField && stringValue.length > 100) {
             return (
               <span title={stringValue} className="cursor-help">
