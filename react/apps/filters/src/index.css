@@ -1,4 +1,2 @@
 /* Filters app styles */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";

@@ -9,8 +9,14 @@ class Render
 
     /**
      * Render a Gateway grid trigger element
+     *
+     * @param string $collection_key The collection key
+     * @param array  $attributes     Additional HTML attributes
+     * @param array  $config         Configuration options for the grid
+     *                              - showFilters: bool (default true)
+     *                              - externalFilters: array (default [])
      */
-    public static function grid($collection_key, $attributes = [])
+    public static function grid($collection_key, $attributes = [], $config = [])
     {
         // Flag that we need to enqueue scripts
         self::$grids_registered = true;
@@ -23,6 +29,11 @@ class Render
             'data-gateway-grid' => '',
             'data-collection' => esc_attr($collection_key),
         ];
+
+        // Add config as JSON if provided
+        if (!empty($config)) {
+            $data_attrs['data-config'] = esc_attr(json_encode($config));
+        }
 
         // Merge with custom attributes
         $all_attrs = array_merge($attributes, $data_attrs);
@@ -72,6 +83,11 @@ class Render
         $asset_file = GATEWAY_PATH . 'react/apps/grid/build/index.asset.php';
 
         if (!file_exists($asset_file)) {
+            // Log error for developers
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('Gateway Grid: Build files not found at ' . $asset_file);
+                error_log('Gateway Grid: Run "npm run build" in react/apps/grid/ to build the grid app');
+            }
             return;
         }
 

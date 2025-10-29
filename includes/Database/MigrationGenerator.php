@@ -239,60 +239,54 @@ class MigrationGenerator
             $notesSection .= "     */\n";
         }
 
-        $code = <<<'PHP'
-<?php
-
-/**
- * Database Migration: {$className}
- *
- * This class creates the database table for the collection.
- *
- * USAGE INSTRUCTIONS:
- * 1. Save this file to your plugin (e.g., /lib/{$className}.php)
- * 2. Require the file in your plugin
- * 3. Call {$className}::create() from your plugin activation hook
- *
- * Example:
- * register_activation_hook(__FILE__, function() {
- *     require_once plugin_dir_path(__FILE__) . 'lib/{$className}.php';
- *     {$className}::create();
- * });
- */
-class {$className}
-{{$notesSection}
-    /**
-     * Create or update the database table
-     *
-     * This method uses WordPress's dbDelta() function which safely
-     * handles both table creation and updates.
-     */
-    public static function create()
-    {{
-        global \$wpdb;
-
-        \$table_name = \$wpdb->prefix . '{$tableName}';
-        \$charset_collate = \$wpdb->get_charset_collate();
-
-        \$sql = "CREATE TABLE \$table_name (
-            {$columnsStr}
-        ) \$charset_collate;";
-
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta(\$sql);
-    }}
-
-    /**
-     * Drop the database table (use with caution!)
-     */
-    public static function drop()
-    {{
-        global \$wpdb;
-        \$table_name = \$wpdb->prefix . '{$tableName}';
-        \$wpdb->query("DROP TABLE IF EXISTS \$table_name");
-    }}
-}}
-
-PHP;
+        // Build code using string concatenation to avoid heredoc issues in namespaced files
+        $code = "<?php\n\n";
+        $code .= "/**\n";
+        $code .= " * Database Migration: {$className}\n";
+        $code .= " *\n";
+        $code .= " * This class creates the database table for the collection.\n";
+        $code .= " *\n";
+        $code .= " * USAGE INSTRUCTIONS:\n";
+        $code .= " * 1. Save this file to your plugin (e.g., /lib/{$className}.php)\n";
+        $code .= " * 2. Require the file in your plugin\n";
+        $code .= " * 3. Call {$className}::create() from your plugin activation hook\n";
+        $code .= " *\n";
+        $code .= " * Example:\n";
+        $code .= " * register_activation_hook(__FILE__, function() {\n";
+        $code .= " *     require_once plugin_dir_path(__FILE__) . 'lib/{$className}.php';\n";
+        $code .= " *     {$className}::create();\n";
+        $code .= " * });\n";
+        $code .= " */\n";
+        $code .= "class {$className}\n";
+        $code .= "{\n";
+        $code .= $notesSection;
+        $code .= "    /**\n";
+        $code .= "     * Create or update the database table\n";
+        $code .= "     *\n";
+        $code .= "     * This method uses WordPress's dbDelta() function which safely\n";
+        $code .= "     * handles both table creation and updates.\n";
+        $code .= "     */\n";
+        $code .= "    public static function create()\n";
+        $code .= "    {\n";
+        $code .= "        global \$wpdb;\n\n";
+        $code .= "        \$table_name = \$wpdb->prefix . '{$tableName}';\n";
+        $code .= "        \$charset_collate = \$wpdb->get_charset_collate();\n\n";
+        $code .= "        \$sql = \"CREATE TABLE \$table_name (\n";
+        $code .= "            {$columnsStr}\n";
+        $code .= "        ) \$charset_collate;\";\n\n";
+        $code .= "        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');\n";
+        $code .= "        dbDelta(\$sql);\n";
+        $code .= "    }\n\n";
+        $code .= "    /**\n";
+        $code .= "     * Drop the database table (use with caution!)\n";
+        $code .= "     */\n";
+        $code .= "    public static function drop()\n";
+        $code .= "    {\n";
+        $code .= "        global \$wpdb;\n";
+        $code .= "        \$table_name = \$wpdb->prefix . '{$tableName}';\n";
+        $code .= "        \$wpdb->query(\"DROP TABLE IF EXISTS \$table_name\");\n";
+        $code .= "    }\n";
+        $code .= "}\n";
 
         return $code;
     }
@@ -315,5 +309,3 @@ PHP;
         return $migrations;
     }
 }
-
-PHP;

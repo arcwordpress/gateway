@@ -6,7 +6,7 @@ import { fetchCollection, fetchCollectionData, deleteRecord } from './services/c
  * Main Grid App Component
  * Displays a data grid for a Gateway collection
  */
-const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
+const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters = true, externalFilters = {} }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -270,7 +270,13 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true }) => {
 
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
-      <DataTable data={data} columns={columns} filters={filters} loading={loading} />
+      <DataTable
+        data={data}
+        columns={columns}
+        filters={showFilters ? filters : []}
+        loading={loading}
+        externalFilters={externalFilters}
+      />
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirm && (

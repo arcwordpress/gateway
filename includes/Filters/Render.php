@@ -72,6 +72,22 @@ class Render
         $asset_file = GATEWAY_PATH . 'react/apps/filters/build/index.asset.php';
 
         if (!file_exists($asset_file)) {
+            // Log error for developers
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('Gateway Filters: Build files not found at ' . $asset_file);
+                error_log('Gateway Filters: Run "npm run build" in react/apps/filters/ to build the filters app');
+            }
+
+            // Add admin notice if in admin or current user can manage options
+            if (is_admin() || current_user_can('manage_options')) {
+                add_action('admin_notices', function() {
+                    echo '<div class="notice notice-error"><p>';
+                    echo '<strong>Gateway Filters:</strong> Build files not found. ';
+                    echo 'Run <code>npm run build</code> in <code>react/apps/filters/</code> to build the filters app.';
+                    echo '</p></div>';
+                });
+            }
+
             return;
         }
 

@@ -26,8 +26,13 @@ if (empty($collection_key)) {
 $wrapper_attributes = get_block_wrapper_attributes([
     'class' => 'gateway-grid-block'
 ]);
+
+// Grid block config: disable filters (use separate filters block instead)
+$grid_config = [
+    'showFilters' => false
+];
 ?>
 
 <div <?php echo $wrapper_attributes; ?>>
-    <?php \Gateway\Grid\Render::grid($collection_key); ?>
+    <?php \Gateway\Grid\Render::grid($collection_key, [], $grid_config); ?>
 </div>

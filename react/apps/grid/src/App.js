@@ -2,10 +2,10 @@ import { useState, useEffect } from '@wordpress/element';
 import { Grid } from '@gateway/grid';
 import stateManager from './StateManager';
 
-const App = ({ collectionKey }) => {
-  const [externalFilters, setExternalFilters] = useState({});
+const App = ({ collectionKey, showFilters = true, externalFilters: initialExternalFilters = {} }) => {
+  const [externalFilters, setExternalFilters] = useState(initialExternalFilters);
 
-  // Subscribe to external filter changes
+  // Subscribe to external filter changes from filters app (if using separate filters block)
   useEffect(() => {
     if (!collectionKey) return;
 
@@ -22,6 +22,7 @@ const App = ({ collectionKey }) => {
     <Grid
       collectionKey={collectionKey}
       showActions={false}
+      showFilters={showFilters}
       externalFilters={externalFilters}
     />
   );

@@ -104,6 +104,9 @@ class Plugin
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
 
+        // Initialize test page hooks (for development/testing)
+        Testing\TestPageHook::init();
+
     }
 
     public function onInit()

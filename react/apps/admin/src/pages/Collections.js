@@ -72,11 +72,38 @@ function Collections() {
     }
   };
 
-  const copyToClipboard = () => {
-    if (migrationModal.migration?.code) {
-      navigator.clipboard.writeText(migrationModal.migration.code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const copyToClipboard = async () => {
+    if (!migrationModal.migration?.code) return;
+
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(migrationModal.migration.code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = migrationModal.migration.code;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+          document.execCommand('copy');
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          console.error('Fallback copy failed:', err);
+          alert('Failed to copy to clipboard. Please copy manually.');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (err) {
+      console.error('Copy to clipboard failed:', err);
+      alert('Failed to copy to clipboard. Please copy manually.');
     }
   };
 
