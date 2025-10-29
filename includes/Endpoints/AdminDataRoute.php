@@ -50,9 +50,11 @@ class AdminDataRoute
             $titlePlural = $collection->getTitlePlural();
 
             // Get routes for this specific collection
+            // Use getRoute() to match how routes are stored in StandardRoutes
+            $routeKey = $collection->getRoute();
             $collectionRoutes = [];
-            if (isset($actualRoutes[$key])) {
-                foreach ($actualRoutes[$key] as $route) {
+            if (isset($actualRoutes[$routeKey])) {
+                foreach ($actualRoutes[$routeKey] as $route) {
                     $collectionRoutes[] = [
                         'type' => $route['type'],
                         'method' => $route['method'],

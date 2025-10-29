@@ -132,4 +132,22 @@ export const fetchRecord = async (namespace, route, id) => {
   }
 };
 
+/**
+ * Delete a record from a collection
+ * @param {string} namespace - REST API namespace (e.g., 'gateway/v1')
+ * @param {string} route - Collection route (e.g., 'tickets')
+ * @param {number} id - Record ID
+ * @returns {Promise} Promise resolving when delete is successful
+ */
+export const deleteRecord = async (namespace, route, id) => {
+  try {
+    const url = `${namespace}/${route}/${id}`;
+    const response = await apiClient.delete(url);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting record ${id} from ${namespace}/${route}:`, error);
+    throw error;
+  }
+};
+
 export default apiClient;

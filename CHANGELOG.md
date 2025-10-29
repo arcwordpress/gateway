@@ -2,6 +2,21 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.2] - 2025-10-28
+
+### Added
+- Filter and grid editor blocks
+- Grid package updates
+- Filter app functionality
+
+### Changed
+- Updated grid to app architecture
+
+### Fixed
+- Front-end form rendering issues
+- Missing delete button
+- File field validation
+
 ## [1.1.1] - 2025-10-21
 
 ### Changed

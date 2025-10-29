@@ -50,6 +50,7 @@ class Collection extends EloquentModel
     protected $key;
     protected $fields = [];
     protected $filters = [];
+    protected $grid = [];
     protected $routes = [
         'enabled' => true,
         'namespace' => 'gateway',
@@ -181,6 +182,11 @@ class Collection extends EloquentModel
     public function getFilters()
     {
         return $this->filters;
+    }
+
+    public function getGrid()
+    {
+        return $this->grid;
     }
 
     /**

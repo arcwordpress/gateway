@@ -4,6 +4,10 @@
     "apps/studio",
     "apps/admin",
     "apps/form",
+    "apps/grid",
+    "apps/filters",
+    "apps/blocks/grid",
+    "apps/blocks/filters",
     "packages/grid",
     "packages/forms"
   ]

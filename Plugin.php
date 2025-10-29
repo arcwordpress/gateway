@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.1');
+define('GATEWAY_VERSION', '1.1.2');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -50,6 +50,7 @@ class Plugin
     private $adminDataRoute;
     private $settingsRoute;
     private $testConnectionRoute;
+    private $migrationGeneratorRoute;
 
     public static function getInstance()
     {
@@ -67,6 +68,7 @@ class Plugin
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
+        $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->init();
     }
 
@@ -92,6 +94,18 @@ class Plugin
         // Initialize front-end forms
         Forms\Render::init();
         Forms\Shortcode::init();
+
+        // Initialize front-end grids
+        Grid\Render::init();
+
+        // Initialize front-end filters
+        Filters\Render::init();
+
+        // Initialize Gutenberg blocks
+        Gutenberg\BlockRegistry::init();
+
+        // Initialize test page hooks (for development/testing)
+        Testing\TestPageHook::init();
 
     }
 

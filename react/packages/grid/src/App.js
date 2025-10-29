@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import DataTable from './components/DataTable';
-import { fetchCollection, fetchCollectionData } from './services/collectionService';
+import { fetchCollection, fetchCollectionData, deleteRecord } from './services/collectionService';
 
 /**
  * Main Grid App Component
  * Displays a data grid for a Gateway collection
  */
-const App = ({ collectionKey, onEdit, showActions = true }) => {
+const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters = true, externalFilters = {} }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, loading }
 
   // Fetch collection metadata
   useEffect(() => {
@@ -71,18 +72,54 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
     return collection?.filters || [];
   }, [collection]);
 
-  // Generate columns from collection fields or data
+  // Handle delete with confirmation
+  const handleDeleteClick = (recordId) => {
+    setDeleteConfirm({ id: recordId, loading: false });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm || !collection) return;
+
+    setDeleteConfirm({ ...deleteConfirm, loading: true });
+
+    try {
+      const namespace = collection.routes.namespace;
+      const route = collection.routes.route;
+
+      await deleteRecord(namespace, route, deleteConfirm.id);
+
+      // Remove the deleted record from the data
+      setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
+
+      // Call the onDelete callback if provided
+      if (onDelete) {
+        onDelete(deleteConfirm.id);
+      }
+
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Error deleting record:', err);
+      alert(`Failed to delete record: ${err.message}`);
+      setDeleteConfirm({ ...deleteConfirm, loading: false });
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm(null);
+  };
+
+  // Generate columns from collection grid config or data
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
     let baseColumns = [];
 
-    // If collection has fields defined, use those
-    if (collection?.fields && Object.keys(collection.fields).length > 0) {
-      baseColumns = Object.entries(collection.fields).map(([key, field]) => ({
-        accessorKey: key,
-        header: field.label || key,
-        enableSorting: true,
+    // Priority 1: Use grid.columns if defined
+    if (collection?.grid?.columns && Array.isArray(collection.grid.columns)) {
+      baseColumns = collection.grid.columns.map((colDef) => ({
+        accessorKey: colDef.field,
+        header: colDef.label || colDef.field,
+        enableSorting: colDef.sortable !== false, // Default to true unless explicitly false
         enableColumnFilter: true,
         cell: ({ getValue }) => {
           const value = getValue();
@@ -93,7 +130,37 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
 
           const stringValue = String(value);
 
-          // For textarea, markdown, and other long text field types, show with tooltip
+          // Get field config for additional context
+          const fieldConfig = collection?.fields?.[colDef.field];
+          const isLongTextField = fieldConfig && ['textarea', 'markdown', 'wysiwyg'].includes(fieldConfig.type) ||
+                                  ['description', 'content', 'body', 'text', 'message', 'notes'].includes(colDef.field.toLowerCase());
+
+          if (isLongTextField && stringValue.length > 100) {
+            return (
+              <span title={stringValue} className="cursor-help">
+                {stringValue}
+              </span>
+            );
+          }
+
+          return stringValue;
+        },
+      }));
+    }
+    // Priority 2: Use collection fields (auto-generate, limited to 5)
+    else if (collection?.fields && Object.keys(collection.fields).length > 0) {
+      const fieldEntries = Object.entries(collection.fields).slice(0, 5); // Limit to first 5
+      baseColumns = fieldEntries.map(([key, field]) => ({
+        accessorKey: key,
+        header: field.label || key,
+        enableSorting: true,
+        enableColumnFilter: true,
+        cell: ({ getValue }) => {
+          const value = getValue();
+          if (value === null || value === undefined) return '-';
+          if (typeof value === 'object') return JSON.stringify(value);
+
+          const stringValue = String(value);
           const isLongTextField = ['textarea', 'markdown', 'wysiwyg'].includes(field.type) ||
                                   ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
 
@@ -108,23 +175,22 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
           return stringValue;
         },
       }));
-    } else {
-      // Otherwise, generate columns from the first data record
+    }
+    // Priority 3: Generate from first data record (auto-generate, limited to 5)
+    else {
       const firstRecord = data[0];
       if (!firstRecord) return [];
 
-      baseColumns = Object.keys(firstRecord).map((key) => ({
+      const keys = Object.keys(firstRecord).slice(0, 5); // Limit to first 5
+      baseColumns = keys.map((key) => ({
         accessorKey: key,
         header: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
         enableSorting: true,
         enableColumnFilter: true,
         cell: ({ getValue }) => {
           const value = getValue();
-          // Handle null/undefined values
           if (value === null || value === undefined) return '-';
-          // Handle objects and arrays
           if (typeof value === 'object') return JSON.stringify(value);
-          // Handle dates
           if (key.includes('_at') && typeof value === 'string') {
             try {
               return new Date(value).toLocaleString();
@@ -132,11 +198,10 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
               return value;
             }
           }
-          // Convert to string
-          const stringValue = String(value);
 
-          // For long text fields (description, content, etc.), show truncated version with title
+          const stringValue = String(value);
           const isLongTextField = ['description', 'content', 'body', 'text', 'message', 'notes'].includes(key.toLowerCase());
+
           if (isLongTextField && stringValue.length > 100) {
             return (
               <span title={stringValue} className="cursor-help">
@@ -151,7 +216,7 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
     }
 
     // Add actions column if enabled
-    if (showActions && onEdit) {
+    if (showActions && (onEdit || onDelete)) {
       baseColumns.push({
         id: 'actions',
         header: 'Actions',
@@ -160,19 +225,31 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
         cell: ({ row }) => {
           const recordId = row.original.id;
           return (
-            <button
-              onClick={() => onEdit(recordId)}
-              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-            >
-              Edit
-            </button>
+            <div className="flex items-center gap-2">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(recordId)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                >
+                  Edit
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => handleDeleteClick(recordId)}
+                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           );
         },
       });
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit]);
+  }, [data, collection, showActions, onEdit, onDelete]);
 
   if (error) {
     return (
@@ -193,7 +270,43 @@ const App = ({ collectionKey, onEdit, showActions = true }) => {
 
   return (
     <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
-      <DataTable data={data} columns={columns} filters={filters} loading={loading} />
+      <DataTable
+        data={data}
+        columns={columns}
+        filters={showFilters ? filters : []}
+        loading={loading}
+        externalFilters={externalFilters}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirm Delete
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this record? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={deleteConfirm.loading}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteConfirm.loading}
+                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteConfirm.loading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

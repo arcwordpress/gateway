@@ -8405,6 +8405,12 @@ function Collections() {
   const [collections, setCollections] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
   const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
   const [error, setError] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [migrationModal, setMigrationModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    isOpen: false,
+    migration: null,
+    loading: false
+  });
+  const [copied, setCopied] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     fetchCollections();
   }, []);
@@ -8435,6 +8441,76 @@ function Collections() {
       setError(err.message);
       setLoading(false);
     }
+  };
+  const generateMigration = async collectionKey => {
+    setMigrationModal({
+      isOpen: true,
+      migration: null,
+      loading: true
+    });
+    try {
+      const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${collectionKey}`, {
+        headers: {
+          'X-WP-Nonce': window.gatewayAdminScript.nonce
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to generate migration');
+      }
+      const data = await response.json();
+      setMigrationModal({
+        isOpen: true,
+        migration: data.migration,
+        loading: false
+      });
+    } catch (err) {
+      alert('Error generating migration: ' + err.message);
+      setMigrationModal({
+        isOpen: false,
+        migration: null,
+        loading: false
+      });
+    }
+  };
+  const copyToClipboard = async () => {
+    if (!migrationModal.migration?.code) return;
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(migrationModal.migration.code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = migrationModal.migration.code;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          console.error('Fallback copy failed:', err);
+          alert('Failed to copy to clipboard. Please copy manually.');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+    } catch (err) {
+      console.error('Copy to clipboard failed:', err);
+      alert('Failed to copy to clipboard. Please copy manually.');
+    }
+  };
+  const closeMigrationModal = () => {
+    setMigrationModal({
+      isOpen: false,
+      migration: null,
+      loading: false
+    });
+    setCopied(false);
   };
   if (loading) {
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -8471,9 +8547,14 @@ function Collections() {
   }, collections.map(collection => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     key: collection.key,
     className: "bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between items-start mb-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "text-lg font-semibold text-gray-900 mb-4"
-  }, collection.title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-lg font-semibold text-gray-900"
+  }, collection.title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => generateMigration(collection.key),
+    className: "px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+  }, "Generate Migration")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("dt", {
     className: "text-sm font-medium text-gray-500"
@@ -8524,7 +8605,70 @@ function Collections() {
         className: "ml-2 text-sm text-gray-900"
       }, route.path)))
     }))
-  }))))));
+  }))))), migrationModal.isOpen && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "text-xl font-semibold text-gray-900"
+  }, migrationModal.loading ? 'Generating Migration...' : 'Database Migration'), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: closeMigrationModal,
+    className: "text-gray-400 hover:text-gray-600 transition-colors"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+    className: "w-6 h-6",
+    fill: "none",
+    stroke: "currentColor",
+    viewBox: "0 0 24 24"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    strokeWidth: 2,
+    d: "M6 18L18 6M6 6l12 12"
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1 overflow-y-auto px-6 py-4"
+  }, migrationModal.loading ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "text-center py-12"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-gray-500"
+  }, "Generating migration code...")) : migrationModal.migration ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-blue-50 border border-blue-200 rounded-lg p-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold text-blue-900 mb-2"
+  }, "Usage Instructions:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ol", {
+    className: "list-decimal list-inside space-y-1 text-sm text-blue-800"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", null, "Save this file to your plugin (e.g., ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("code", {
+    className: "bg-blue-100 px-1 rounded"
+  }, "/lib/", migrationModal.migration.className, ".php"), ")"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", null, "Require the file in your plugin"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", null, "Call ", (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("code", {
+    className: "bg-blue-100 px-1 rounded"
+  }, migrationModal.migration.className, "::create()"), " from your activation hook"))), migrationModal.migration.notes && migrationModal.migration.notes.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold text-yellow-900 mb-2"
+  }, "Notes:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", {
+    className: "list-disc list-inside space-y-1 text-sm text-yellow-800"
+  }, migrationModal.migration.notes.map((note, index) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+    key: index
+  }, note)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "relative"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex justify-between items-center mb-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "font-semibold text-gray-900"
+  }, "Generated Code:"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: copyToClipboard,
+    className: "px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-800 transition-colors"
+  }, copied ? 'Copied!' : 'Copy to Clipboard')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("pre", {
+    className: "bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("code", null, migrationModal.migration.code)))) : null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "px-6 py-4 border-t border-gray-200 flex justify-end"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: closeMigrationModal,
+    className: "px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+  }, "Close")))));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Collections);
 

@@ -8,7 +8,7 @@ class Render
     private static $scripts_enqueued = false;
 
     /**
-     * Render a Blueprint form trigger element
+     * Render a Gateway form trigger element
      */
     public static function form($schema, $record_id = null, $attributes = [])
     {
@@ -20,7 +20,7 @@ class Render
 
         // Build data attributes
         $data_attrs = [
-            'data-blueprint-form' => '',
+            'data-gateway-form' => '',
             'data-schema' => esc_attr($schema),
         ];
 

@@ -180,6 +180,9 @@ class CollectionRoutes
         // Filters are part of the collection
         $filters = method_exists($collection, 'getFilters') ? $collection->getFilters() : [];
 
+        // Grid configuration
+        $grid = method_exists($collection, 'getGrid') ? $collection->getGrid() : [];
+
         // Since Collection extends Eloquent Model, we can get model data directly
         $table = method_exists($collection, 'getTable') ? $collection->getTable() : null;
         $fillable = method_exists($collection, 'getFillable') ? $collection->getFillable() : [];
@@ -217,6 +220,7 @@ class CollectionRoutes
             ],
             'fields' => $fields,
             'filters' => $filters,
+            'grid' => $grid,
         ];
     }
 }
