@@ -1,0 +1,39 @@
+{
+  "name": "@gateway/filters",
+  "version": "1.0.0",
+  "description": "Reusable filter components for Gateway collections - supports select, text, range, and date range filters",
+  "main": "src/index.js",
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "keywords": [
+    "gateway",
+    "filters",
+    "react",
+    "wordpress",
+    "components",
+    "ui",
+    "select-filter",
+    "text-filter",
+    "range-filter",
+    "date-range-filter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arcwordpress/gateway-filters.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arcwordpress/gateway-filters/issues"
+  },
+  "homepage": "https://github.com/arcwordpress/gateway-filters#readme",
+  "peerDependencies": {
+    "@wordpress/element": "^5.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
