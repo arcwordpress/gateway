@@ -1,12 +1,33 @@
 {
-  "name": "@gateway/grid",
+  "name": "@arcwp/gateway-grid",
   "version": "1.1.1",
   "description": "Gateway Grid React component library with TanStack Table",
   "main": "src/index.js",
   "module": "src/index.js",
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "keywords": [
+    "gateway",
+    "grid",
+    "react",
+    "wordpress",
+    "components",
+    "tanstack-table"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arcwordpress/gateway-grid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arcwordpress/gateway-grid/issues"
+  },
+  "homepage": "https://github.com/arcwordpress/gateway-grid#readme",
   "files": ["src"],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@gateway/filters": "file:../filters",
+    "@arcwp/gateway-filters": "^1.0.0",
     "@tanstack/react-table": "^8.20.5",
     "axios": "^1.6.2"
   },

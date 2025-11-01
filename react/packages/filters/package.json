@@ -1,5 +1,5 @@
 {
-  "name": "@gateway/filters",
+  "name": "@arcwp/gateway-filters",
   "version": "1.0.0",
   "description": "Reusable filter components for Gateway collections - supports select, text, range, and date range filters",
   "main": "src/index.js",
