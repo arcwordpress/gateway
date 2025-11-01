@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { FormBuilder } from '@gateway/forms';
+import { FormBuilder } from '@arcwp/gateway-forms';
 
 function CollectionForm() {
   const { collectionKey, id } = useParams();

@@ -1,6 +1,5 @@
 import { useState, useEffect } from '@wordpress/element';
-import { Filters, Filter } from '@gateway/grid';
-import { fetchCollection } from '@gateway/grid';
+import { Filters, Filter, fetchCollection } from '@arcwp/gateway-filters';
 import stateManager from './StateManager';
 
 /**

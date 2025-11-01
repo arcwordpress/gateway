@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@gateway/grid';
+import { Grid } from '@arcwp/gateway-grid';
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {

@@ -1,6 +1,6 @@
 {
-  "name": "filters",
-  "version": "1.0.0",
+  "name": "gateway-filters-app",
+  "version": "1.0.1",
   "description": "Gateway Filters App",
   "main": "src/index.js",
   "scripts": {
@@ -8,14 +8,11 @@
     "start": "wp-scripts start src/index.js --output-path=build"
   },
   "dependencies": {
-    "@gateway/grid": "file:../../packages/grid",
+    "@arcwp/gateway-filters": "^1.0.2",
     "@wordpress/element": "^5.20.0",
     "axios": "^1.6.2"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^26.16.0",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "@wordpress/scripts": "^26.16.0"
   }
 }

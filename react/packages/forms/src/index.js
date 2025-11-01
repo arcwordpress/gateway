@@ -1,7 +1,7 @@
 // Main FormBuilder component
 export { default as FormBuilder } from './components/FormBuilder';
 
-// Re-export field type components from @arcwp/gateway-fields
+// Re-export field type components.
 export {
   SelectField,
   TextField,

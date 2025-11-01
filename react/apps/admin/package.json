@@ -10,8 +10,8 @@
     "packages-update": "wp-scripts packages-update"
   },
   "dependencies": {
-    "@gateway/forms": "^1.1.1",
-    "@gateway/grid": "^1.1.1",
+    "@arcwp/gateway-forms": "^1.2.0",
+    "@arcwp/gateway-grid": "^1.1.1",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.12.2",
     "react": "^18.2.0",

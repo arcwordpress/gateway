@@ -1,11 +1,15 @@
 {
   "name": "@arcwp/gateway-fields",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Gateway Fields React component library with form field types",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "prepublishOnly": "npm run build"
+  },
   "keywords": [
     "gateway",
     "fields",
@@ -22,9 +26,15 @@
     "url": "https://github.com/arcwordpress/gateway-fields/issues"
   },
   "homepage": "https://github.com/arcwordpress/gateway-fields#readme",
-  "files": ["src"],
+  "files": ["dist"],
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0"
   },
   "dependencies": {
     "@tiptap/extension-link": "^3.6.6",

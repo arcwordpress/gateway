@@ -1,5 +1,5 @@
 import { createRoot } from '@wordpress/element';
-import FiltersApp from './FiltersApp';
+import App from './App';
 import './index.css';
 
 // Find all elements with data-gateway-filters attribute
@@ -10,6 +10,6 @@ filterElements.forEach((element) => {
 
   if (collectionKey) {
     const root = createRoot(element);
-    root.render(<FiltersApp collectionKey={collectionKey} />);
+    root.render(<App collectionKey={collectionKey} />);
   }
 });

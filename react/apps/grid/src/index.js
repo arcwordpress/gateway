@@ -1,6 +1,5 @@
 import { createRoot } from '@wordpress/element';
 import App from './App';
-import './index.css';
 
 // Find all elements with data-gateway-grid attribute
 const gridElements = document.querySelectorAll('[data-gateway-grid]');
