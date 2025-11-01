@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../services/api';
-import { SelectField, TextField, TextareaField, CheckboxField, EmailField, MarkdownField, RelationField, NumberField, URLField, PasswordField, RangeField, RadioField, ButtonGroupField, WysiwygField, ColorPickerField, ReadOnlyField, HiddenField, SortableChildrenField, DatePickerField, TimePickerField, DateTimePickerField, ImageField, FileField, GalleryField, LinkField, OEmbedField, PostObjectField, UserField } from './field-types';
+import { SelectField, TextField, TextareaField, CheckboxField, EmailField, MarkdownField, RelationField, NumberField, URLField, PasswordField, RangeField, RadioField, ButtonGroupField, WysiwygField, ColorPickerField, ReadOnlyField, HiddenField, SortableChildrenField, DatePickerField, TimePickerField, DateTimePickerField, ImageField, FileField, GalleryField, LinkField, OEmbedField, PostObjectField, UserField } from '@arcwp/gateway-fields';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
 
 const FormBuilder = ({ collectionKey, recordId }) => {
