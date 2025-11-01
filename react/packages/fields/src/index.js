@@ -30,3 +30,25 @@ export { default as UserField } from './components/field-types/UserField';
 
 // Field types namespace export for convenient access
 export * as fieldTypes from './components/field-types';
+
+// Field Registry System
+export {
+  registerField,
+  getFieldDefinition,
+  getRegisteredFieldTypes,
+  isFieldTypeRegistered,
+  useField,
+  getFieldDisplay,
+  getFieldInput,
+  clearFieldRegistry,
+} from './fieldRegistry';
+
+// Field Initialization
+export { initializeFields } from './fields';
+
+// Export specific field definitions and display components
+export {
+  RelationFieldDisplay,
+  relationFieldDefinition,
+  useRelationField,
+} from './components/field-types/RelationField';

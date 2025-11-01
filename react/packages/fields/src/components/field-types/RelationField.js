@@ -1,7 +1,8 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import axios from 'axios';
 
-const RelationField = ({ fieldName, fieldConfig, register, error }) => {
+// Input Component (for forms)
+const RelationFieldInput = ({ fieldName, fieldConfig, register, error }) => {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -102,4 +103,45 @@ const RelationField = ({ fieldName, fieldConfig, register, error }) => {
   );
 };
 
+// Display Component (for grids and read-only views)
+export const RelationFieldDisplay = ({ value, config }) => {
+  // Handle null/undefined/empty values
+  if (value === null || value === undefined || value === '') {
+    return <span className="text-gray-400">-</span>;
+  }
+
+  const labelField = config?.labelField || 'title';
+
+  // If value is an object (the full related record), extract the label
+  if (typeof value === 'object' && value !== null) {
+    const label = value[labelField] || value.name || value.title || value.label;
+    return <span>{label || '-'}</span>;
+  }
+
+  // If value is just an ID or string, return as-is
+  return <span>{String(value)}</span>;
+};
+
+// Field Definition for registry
+export const relationFieldDefinition = {
+  type: 'relation',
+  Input: RelationFieldInput,
+  Display: RelationFieldDisplay,
+  defaultConfig: {
+    labelField: 'title',
+    valueField: 'id',
+    placeholder: 'Select an option...',
+  },
+};
+
+// Hook for easy usage
+export const useRelationField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <RelationFieldInput {...props} config={config} />,
+    Display: (props) => <RelationFieldDisplay {...props} config={config} />
+  }), [config]);
+};
+
+// Default export for backward compatibility
+const RelationField = RelationFieldInput;
 export default RelationField;
