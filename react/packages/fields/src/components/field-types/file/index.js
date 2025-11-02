@@ -1,6 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
+import './style.css';
 
-const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [file, setFile] = useState(null);
   const [fileId, setFileId] = useState(null);
@@ -17,10 +18,8 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
   }, []);
 
   useEffect(() => {
-    // If currentValue is set, it's the attachment ID
     if (currentValue) {
       setFileId(currentValue);
-      // Fetch file data from attachment ID
       fetchFileData(currentValue);
     }
   }, [currentValue]);
@@ -52,16 +51,13 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
   };
 
   const openMediaLibrary = () => {
-    // Check if wp.media is available
     if (!window.wp || !window.wp.media) {
       console.error('WordPress media library not available');
       return;
     }
 
-    // Get allowed file types from config
     const allowedTypes = fieldConfig.allowedTypes || null;
 
-    // Create media frame
     const frameConfig = {
       title: fieldConfig.mediaTitle || 'Select File',
       button: {
@@ -70,7 +66,6 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
       multiple: false,
     };
 
-    // Add file type restrictions if specified
     if (allowedTypes) {
       frameConfig.library = {
         type: allowedTypes,
@@ -79,7 +74,6 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
 
     const frame = window.wp.media(frameConfig);
 
-    // Handle selection
     frame.on('select', () => {
       const attachment = frame.state().get('selection').first().toJSON();
 
@@ -95,7 +89,6 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
       });
     });
 
-    // Open the frame
     frame.open();
   };
 
@@ -128,42 +121,42 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
     return '📄';
   };
 
+  const inputClasses = ['file-field__container'];
+  if (error) {
+    inputClasses.push('file-field__container--error');
+  }
+
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="file-field">
+      <label htmlFor={fieldName} className="file-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="file-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="file-field__help">{fieldConfig.helpText}</p>
       )}
 
-      <div className={`border-2 border-dashed rounded-md p-4 ${
-        error ? 'border-red-500' : 'border-gray-300'
-      }`}>
+      <div className={inputClasses.join(' ')}>
         {file ? (
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
-              <div className="text-3xl flex-shrink-0">
+          <div className="file-field__preview">
+            <div className="file-field__file-info">
+              <div className="file-field__file-icon">
                 {getFileIcon(file.mime_type)}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm text-gray-900 truncate">
+              <div className="file-field__file-details">
+                <div className="file-field__file-name">
                   {file.filename}
                 </div>
-                <div className="flex gap-3 mt-1">
+                <div className="file-field__file-meta">
                   {file.filesize && (
-                    <span className="text-xs text-gray-500">
+                    <span className="file-field__file-size">
                       {formatFileSize(file.filesize)}
                     </span>
                   )}
                   {file.mime_type && (
-                    <span className="text-xs text-gray-500">
+                    <span className="file-field__file-type">
                       {file.mime_type}
                     </span>
                   )}
@@ -172,40 +165,40 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:text-blue-700 mt-1 inline-block"
+                  className="file-field__file-link"
                 >
                   View file →
                 </a>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="file-field__actions">
               <button
                 type="button"
                 onClick={openMediaLibrary}
-                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 border border-gray-300"
+                className="file-field__button file-field__button--change"
               >
                 Change File
               </button>
               <button
                 type="button"
                 onClick={removeFile}
-                className="px-3 py-2 bg-red-50 text-red-600 rounded-md text-sm hover:bg-red-100 border border-red-300"
+                className="file-field__button file-field__button--remove"
               >
                 Remove
               </button>
             </div>
 
             {fileId && (
-              <div className="text-xs text-gray-500">
+              <div className="file-field__id">
                 Attachment ID: {fileId}
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center">
+          <div className="file-field__empty">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="file-field__empty-icon"
               stroke="currentColor"
               fill="none"
               viewBox="0 0 48 48"
@@ -217,20 +210,20 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
                 strokeLinejoin="round"
               />
             </svg>
-            <div className="mt-2">
+            <div>
               <button
                 type="button"
                 onClick={openMediaLibrary}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                className="file-field__button file-field__button--select"
               >
                 {fieldConfig.buttonText || 'Select File'}
               </button>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="file-field__empty-description">
               {fieldConfig.description || 'Click to select a file from the media library'}
             </p>
             {fieldConfig.allowedTypes && (
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="file-field__empty-types">
                 Allowed types: {Array.isArray(fieldConfig.allowedTypes)
                   ? fieldConfig.allowedTypes.join(', ')
                   : fieldConfig.allowedTypes}
@@ -241,10 +234,70 @@ const FileField = ({ fieldName, fieldConfig, register, setValue, watch, error })
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="file-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default FileField;
+export const FileFieldDisplay = ({ value, config }) => {
+  const [file, setFile] = useState(null);
+
+  useEffect(() => {
+    if (value) {
+      fetchFileData(value);
+    }
+  }, [value]);
+
+  const fetchFileData = async (attachmentId) => {
+    try {
+      const response = await fetch(`/wp-json/wp/v2/media/${attachmentId}`);
+      if (response.ok) {
+        const media = await response.json();
+        setFile({
+          url: media.source_url,
+          filename: media.title?.rendered || 'File',
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching file:', err);
+    }
+  };
+
+  if (value === null || value === undefined || value === '') {
+    return <span className="file-field__display file-field__display--empty">-</span>;
+  }
+
+  if (!file) {
+    return <span className="file-field__display">Loading...</span>;
+  }
+
+  return (
+    <a
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="file-field__display file-field__display--link"
+    >
+      {file.filename}
+    </a>
+  );
+};
+
+export const fileFieldDefinition = {
+  type: 'file',
+  Input: FileFieldInput,
+  Display: FileFieldDisplay,
+  defaultConfig: {
+    allowedTypes: null,
+  },
+};
+
+export const useFileField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'file',
+  };
+};
+
+export default FileFieldInput;

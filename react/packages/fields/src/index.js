@@ -1,7 +1,6 @@
 // Field type components (legacy - not yet in registry)
 export { default as SelectField } from './components/field-types/SelectField';
 export { default as TextareaField } from './components/field-types/TextareaField';
-export { default as EmailField } from './components/field-types/EmailField';
 export { default as MarkdownField } from './components/field-types/MarkdownField';
 export { default as NumberField } from './components/field-types/NumberField';
 export { default as URLField } from './components/field-types/URLField';
@@ -9,17 +8,9 @@ export { default as PasswordField } from './components/field-types/PasswordField
 export { default as RangeField } from './components/field-types/RangeField';
 export { default as RadioField } from './components/field-types/RadioField';
 export { default as WysiwygField } from './components/field-types/WysiwygField';
-export { default as ColorPickerField } from './components/field-types/ColorPickerField';
 export { default as ReadOnlyField } from './components/field-types/ReadOnlyField';
-export { default as HiddenField } from './components/field-types/HiddenField';
 export { default as SortableChildrenField } from './components/field-types/SortableChildrenField';
-export { default as DatePickerField } from './components/field-types/DatePickerField';
 export { default as TimePickerField } from './components/field-types/TimePickerField';
-export { default as DateTimePickerField } from './components/field-types/DateTimePickerField';
-export { default as ImageField } from './components/field-types/ImageField';
-export { default as FileField } from './components/field-types/FileField';
-export { default as GalleryField } from './components/field-types/GalleryField';
-export { default as LinkField } from './components/field-types/LinkField';
 export { default as OEmbedField } from './components/field-types/OEmbedField';
 export { default as PostObjectField } from './components/field-types/PostObjectField';
 export { default as UserField } from './components/field-types/UserField';
@@ -66,3 +57,57 @@ export {
   checkboxFieldDefinition,
   useCheckboxField,
 } from './components/field-types/checkbox';
+
+export {
+  ColorPickerFieldDisplay,
+  colorPickerFieldDefinition,
+  useColorPickerField,
+} from './components/field-types/color-picker';
+
+export {
+  DatePickerFieldDisplay,
+  datePickerFieldDefinition,
+  useDatePickerField,
+} from './components/field-types/date-picker';
+
+export {
+  DateTimePickerFieldDisplay,
+  dateTimePickerFieldDefinition,
+  useDateTimePickerField,
+} from './components/field-types/datetime-picker';
+
+export {
+  EmailFieldDisplay,
+  emailFieldDefinition,
+  useEmailField,
+} from './components/field-types/email';
+
+export {
+  FileFieldDisplay,
+  fileFieldDefinition,
+  useFileField,
+} from './components/field-types/file';
+
+export {
+  GalleryFieldDisplay,
+  galleryFieldDefinition,
+  useGalleryField,
+} from './components/field-types/gallery';
+
+export {
+  HiddenFieldDisplay,
+  hiddenFieldDefinition,
+  useHiddenField,
+} from './components/field-types/hidden';
+
+export {
+  ImageFieldDisplay,
+  imageFieldDefinition,
+  useImageField,
+} from './components/field-types/image';
+
+export {
+  LinkFieldDisplay,
+  linkFieldDefinition,
+  useLinkField,
+} from './components/field-types/link';

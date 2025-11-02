@@ -1,6 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
+import './style.css';
 
-const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [imageUrl, setImageUrl] = useState('');
   const [imageId, setImageId] = useState(null);
@@ -17,10 +18,8 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
   }, []);
 
   useEffect(() => {
-    // If currentValue is set, it's the attachment ID
     if (currentValue) {
       setImageId(currentValue);
-      // Fetch image URL from attachment ID
       fetchImageUrl(currentValue);
     }
   }, [currentValue]);
@@ -40,7 +39,6 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
         const media = await response.json();
         const size = fieldConfig.imageSize || 'medium';
 
-        // Get the appropriate size URL
         if (media.media_details?.sizes?.[size]?.source_url) {
           setImageUrl(media.media_details.sizes[size].source_url);
         } else {
@@ -53,13 +51,11 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
   };
 
   const openMediaLibrary = () => {
-    // Check if wp.media is available
     if (!window.wp || !window.wp.media) {
       console.error('WordPress media library not available');
       return;
     }
 
-    // Create media frame
     const frame = window.wp.media({
       title: fieldConfig.mediaTitle || 'Select Image',
       button: {
@@ -71,14 +67,12 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
       },
     });
 
-    // Handle selection
     frame.on('select', () => {
       const attachment = frame.state().get('selection').first().toJSON();
 
       setImageId(attachment.id);
       setValue(fieldName, attachment.id);
 
-      // Get appropriate size URL for preview
       const size = fieldConfig.imageSize || 'medium';
       if (attachment.sizes && attachment.sizes[size]) {
         setImageUrl(attachment.sizes[size].url);
@@ -87,7 +81,6 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
       }
     });
 
-    // Open the frame
     frame.open();
   };
 
@@ -97,61 +90,61 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
     setValue(fieldName, '');
   };
 
+  const containerClasses = ['image-field__container'];
+  if (error) {
+    containerClasses.push('image-field__container--error');
+  }
+
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="image-field">
+      <label htmlFor={fieldName} className="image-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="image-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="image-field__help">{fieldConfig.helpText}</p>
       )}
 
-      <div className={`border-2 border-dashed rounded-md p-4 ${
-        error ? 'border-red-500' : 'border-gray-300'
-      }`}>
+      <div className={containerClasses.join(' ')}>
         {imageUrl ? (
-          <div className="space-y-3">
-            <div className="relative inline-block">
+          <div className="image-field__preview">
+            <div className="image-field__image-wrapper">
               <img
                 src={imageUrl}
                 alt="Selected image"
-                className="max-w-full h-auto rounded-md"
+                className="image-field__image"
                 style={{ maxHeight: fieldConfig.previewHeight || '200px' }}
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="image-field__actions">
               <button
                 type="button"
                 onClick={openMediaLibrary}
-                className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 border border-gray-300"
+                className="image-field__button image-field__button--change"
               >
                 Change Image
               </button>
               <button
                 type="button"
                 onClick={removeImage}
-                className="px-3 py-2 bg-red-50 text-red-600 rounded-md text-sm hover:bg-red-100 border border-red-300"
+                className="image-field__button image-field__button--remove"
               >
                 Remove
               </button>
             </div>
 
             {imageId && (
-              <div className="text-xs text-gray-500">
+              <div className="image-field__id">
                 Attachment ID: {imageId}
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center">
+          <div className="image-field__empty">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="image-field__empty-icon"
               stroke="currentColor"
               fill="none"
               viewBox="0 0 48 48"
@@ -163,16 +156,16 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
                 strokeLinejoin="round"
               />
             </svg>
-            <div className="mt-2">
+            <div>
               <button
                 type="button"
                 onClick={openMediaLibrary}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                className="image-field__button image-field__button--select"
               >
                 {fieldConfig.buttonText || 'Select Image'}
               </button>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="image-field__empty-description">
               {fieldConfig.description || 'Click to select an image from the media library'}
             </p>
           </div>
@@ -180,10 +173,70 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="image-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default ImageField;
+export const ImageFieldDisplay = ({ value, config }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+
+  useEffect(() => {
+    if (value) {
+      fetchImageUrl(value);
+    }
+  }, [value]);
+
+  const fetchImageUrl = async (attachmentId) => {
+    try {
+      const response = await fetch(`/wp-json/wp/v2/media/${attachmentId}`);
+      if (response.ok) {
+        const media = await response.json();
+        const size = 'thumbnail';
+        if (media.media_details?.sizes?.[size]?.source_url) {
+          setImageUrl(media.media_details.sizes[size].source_url);
+        } else {
+          setImageUrl(media.source_url);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching image:', err);
+    }
+  };
+
+  if (value === null || value === undefined || value === '') {
+    return <span className="image-field__display image-field__display--empty">-</span>;
+  }
+
+  if (!imageUrl) {
+    return <span className="image-field__display">Loading...</span>;
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt="Image"
+      className="image-field__display-image"
+    />
+  );
+};
+
+export const imageFieldDefinition = {
+  type: 'image',
+  Input: ImageFieldInput,
+  Display: ImageFieldDisplay,
+  defaultConfig: {
+    imageSize: 'medium',
+    previewHeight: '200px',
+  },
+};
+
+export const useImageField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'image',
+  };
+};
+
+export default ImageFieldInput;

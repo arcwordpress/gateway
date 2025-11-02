@@ -1,0 +1,12 @@
+.hidden-field__input {
+  /* Hidden field - no visual styles needed */
+}
+
+.hidden-field__display {
+  color: #1d2327;
+}
+
+.hidden-field__display--empty {
+  color: #9ca3af;
+  font-style: italic;
+}

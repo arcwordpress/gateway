@@ -1,6 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
+import './style.css';
 
-const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [isEditing, setIsEditing] = useState(false);
   const [linkData, setLinkData] = useState({
@@ -21,7 +22,6 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
   }, []);
 
   useEffect(() => {
-    // Parse current value - expecting JSON object
     if (currentValue) {
       try {
         const data = typeof currentValue === 'string' ? JSON.parse(currentValue) : currentValue;
@@ -39,7 +39,6 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
   }, [currentValue]);
 
   const updateFormValue = (data) => {
-    // Only save if URL is present
     if (data.url) {
       setValue(fieldName, JSON.stringify(data));
     } else {
@@ -72,30 +71,29 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
 
   const hasLink = linkData.url && !isEditing;
 
+  const containerClasses = ['link-field__container'];
+  if (error) {
+    containerClasses.push('link-field__container--error');
+  }
+
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="link-field">
+      <label htmlFor={fieldName} className="link-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="link-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="link-field__help">{fieldConfig.helpText}</p>
       )}
 
-      <div className={`border rounded-md ${
-        error ? 'border-red-500' : 'border-gray-300'
-      }`}>
+      <div className={containerClasses.join(' ')}>
         {hasLink ? (
-          // Display mode - show link info
-          <div className="p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-1">
+          <div className="link-field__preview">
+            <div className="link-field__link-info">
+              <div className="link-field__link-icon">
                 <svg
-                  className="w-5 h-5 text-blue-600"
+                  className="link-field__icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -109,79 +107,78 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
                 </svg>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 mb-1">
+              <div className="link-field__link-details">
+                <div className="link-field__link-title">
                   {linkData.title || 'Link'}
                 </div>
                 <a
                   href={linkData.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:text-blue-700 break-all"
+                  className="link-field__link-url"
                 >
                   {linkData.url}
                 </a>
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="link-field__link-target">
                   Target: {linkData.target === '_blank' ? 'New window' : 'Same window'}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-gray-200">
+            <div className="link-field__actions">
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 border border-gray-300"
+                className="link-field__button link-field__button--edit"
               >
                 Edit Link
               </button>
               <button
                 type="button"
                 onClick={handleRemove}
-                className="px-3 py-1.5 bg-red-50 text-red-600 rounded-md text-sm hover:bg-red-100 border border-red-300"
+                className="link-field__button link-field__button--remove"
               >
                 Remove
               </button>
             </div>
           </div>
         ) : (
-          // Edit mode - show form
-          <div className="p-4 space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                URL <span className="text-red-500">*</span>
+          <div className="link-field__form">
+            <div className="link-field__form-group">
+              <label className="link-field__form-label">
+                URL <span className="link-field__required">*</span>
               </label>
               <input
                 type="url"
                 value={linkData.url}
                 onChange={(e) => handleChange('url', e.target.value)}
                 placeholder={fieldConfig.urlPlaceholder || 'https://example.com'}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="link-field__input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Link Text {fieldConfig.requireTitle && <span className="text-red-500">*</span>}
+            <div className="link-field__form-group">
+              <label className="link-field__form-label">
+                Link Text {fieldConfig.requireTitle && <span className="link-field__required">*</span>}
               </label>
               <input
                 type="text"
                 value={linkData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
                 placeholder={fieldConfig.titlePlaceholder || 'Click here'}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="link-field__input"
               />
             </div>
 
             {fieldConfig.enableTarget !== false && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="link-field__form-group">
+                <label className="link-field__form-label">
                   Link Target
                 </label>
                 <select
                   value={linkData.target}
                   onChange={(e) => handleChange('target', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="link-field__select"
                 >
                   <option value="_self">Same window</option>
                   <option value="_blank">New window</option>
@@ -189,13 +186,13 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
               </div>
             )}
 
-            <div className="flex gap-2 pt-2 border-t border-gray-200">
+            <div className="link-field__actions">
               {linkData.url ? (
                 <>
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    className="link-field__button link-field__button--save"
                   >
                     Save Link
                   </button>
@@ -203,7 +200,7 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
                     <button
                       type="button"
                       onClick={handleRemove}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 border border-gray-300"
+                      className="link-field__button link-field__button--cancel"
                     >
                       Cancel
                     </button>
@@ -213,7 +210,7 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                  className="link-field__button link-field__button--add"
                   disabled={!linkData.url}
                 >
                   {fieldConfig.addButtonText || 'Add Link'}
@@ -221,18 +218,18 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
               )}
             </div>
 
-            <p className="text-xs text-gray-500 italic">
+            <p className="link-field__hint">
               Enter a URL to enable saving
             </p>
           </div>
         )}
 
         {!hasLink && !isEditing && (
-          <div className="p-4 text-center">
+          <div className="link-field__empty">
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+              className="link-field__button link-field__button--add"
             >
               {fieldConfig.addButtonText || 'Add Link'}
             </button>
@@ -241,10 +238,53 @@ const LinkField = ({ fieldName, fieldConfig, register, setValue, watch, error })
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="link-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default LinkField;
+export const LinkFieldDisplay = ({ value, config }) => {
+  if (value === null || value === undefined || value === '') {
+    return <span className="link-field__display link-field__display--empty">-</span>;
+  }
+
+  try {
+    const data = typeof value === 'string' ? JSON.parse(value) : value;
+    if (data && typeof data === 'object' && data.url) {
+      return (
+        <a
+          href={data.url}
+          target={data.target || '_self'}
+          rel="noopener noreferrer"
+          className="link-field__display link-field__display--link"
+        >
+          {data.title || data.url}
+        </a>
+      );
+    }
+  } catch (err) {
+    console.error('Error parsing link value:', err);
+  }
+
+  return <span className="link-field__display link-field__display--empty">-</span>;
+};
+
+export const linkFieldDefinition = {
+  type: 'link',
+  Input: LinkFieldInput,
+  Display: LinkFieldDisplay,
+  defaultConfig: {
+    enableTarget: true,
+    requireTitle: false,
+  },
+};
+
+export const useLinkField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'link',
+  };
+};
+
+export default LinkFieldInput;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
+import './style.css';
 
-const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [images, setImages] = useState([]);
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -17,7 +18,6 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
   }, []);
 
   useEffect(() => {
-    // Parse current value - expecting JSON array of attachment IDs
     if (currentValue) {
       try {
         const ids = typeof currentValue === 'string' ? JSON.parse(currentValue) : currentValue;
@@ -32,7 +32,6 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
 
   const fetchImages = async (attachmentIds) => {
     try {
-      // Fetch all images in parallel
       const promises = attachmentIds.map(id =>
         fetch(`/wp-json/wp/v2/media/${id}`, {
           headers: {
@@ -85,7 +84,6 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
       },
     });
 
-    // Pre-select existing images
     frame.on('open', () => {
       const selection = frame.state().get('selection');
       const ids = images.map(img => img.id);
@@ -97,7 +95,6 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
       });
     });
 
-    // Handle selection
     frame.on('select', () => {
       const attachments = frame.state().get('selection').toJSON();
       const size = fieldConfig.thumbnailSize || 'thumbnail';
@@ -119,7 +116,6 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
 
   const updateFormValue = (imageList) => {
     const ids = imageList.map(img => img.id);
-    // Store as JSON array string
     setValue(fieldName, JSON.stringify(ids));
   };
 
@@ -143,10 +139,7 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
     const newImages = [...images];
     const draggedItem = newImages[draggedIndex];
 
-    // Remove from old position
     newImages.splice(draggedIndex, 1);
-
-    // Insert at new position
     newImages.splice(index, 0, draggedItem);
 
     setImages(newImages);
@@ -161,99 +154,99 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
   const maxImages = fieldConfig.maxImages || null;
   const canAddMore = !maxImages || images.length < maxImages;
 
+  const containerClasses = ['gallery-field__container'];
+  if (error) {
+    containerClasses.push('gallery-field__container--error');
+  }
+
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="gallery-field">
+      <label htmlFor={fieldName} className="gallery-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="gallery-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="gallery-field__help">{fieldConfig.helpText}</p>
       )}
 
-      <div className={`border-2 border-dashed rounded-md p-4 ${
-        error ? 'border-red-500' : 'border-gray-300'
-      }`}>
+      <div className={containerClasses.join(' ')}>
         {images.length > 0 ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {images.map((image, index) => (
-                <div
-                  key={image.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`relative group cursor-move rounded-md overflow-hidden border-2 transition-opacity ${
-                    draggedIndex === index
-                      ? 'opacity-50 border-blue-500'
-                      : 'opacity-100 border-gray-200 hover:border-blue-400'
-                  }`}
-                >
-                  <div className="aspect-square bg-gray-100">
-                    <img
-                      src={image.url}
-                      alt={image.alt || `Gallery image ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+          <div className="gallery-field__preview">
+            <div className="gallery-field__grid">
+              {images.map((image, index) => {
+                const itemClasses = ['gallery-field__item'];
+                if (draggedIndex === index) {
+                  itemClasses.push('gallery-field__item--dragging');
+                }
 
-                  {/* Drag handle indicator */}
-                  <div className="absolute top-1 left-1 bg-black/50 text-white px-1.5 py-0.5 rounded text-xs">
-                    <svg
-                      className="w-3 h-3"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
-                    </svg>
-                  </div>
-
-                  {/* Remove button */}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-600 text-white p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-                    title="Remove image"
+                return (
+                  <div
+                    key={image.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={itemClasses.join(' ')}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
+                    <div className="gallery-field__image-wrapper">
+                      <img
+                        src={image.url}
+                        alt={image.alt || `Gallery image ${index + 1}`}
+                        className="gallery-field__image"
                       />
-                    </svg>
-                  </button>
+                    </div>
 
-                  {/* Order number */}
-                  <div className="absolute bottom-1 right-1 bg-black/50 text-white px-2 py-0.5 rounded text-xs font-medium">
-                    #{index + 1}
+                    <div className="gallery-field__drag-handle">
+                      <svg
+                        className="gallery-field__drag-icon"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z" />
+                      </svg>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="gallery-field__remove"
+                      title="Remove image"
+                    >
+                      <svg
+                        className="gallery-field__remove-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+
+                    <div className="gallery-field__order">
+                      #{index + 1}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-              <div className="text-sm text-gray-600">
+            <div className="gallery-field__footer">
+              <div className="gallery-field__count">
                 {images.length} {images.length === 1 ? 'image' : 'images'}
                 {maxImages && ` (max ${maxImages})`}
               </div>
-              <div className="flex gap-2">
+              <div className="gallery-field__actions">
                 {canAddMore && (
                   <button
                     type="button"
                     onClick={openMediaLibrary}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    className="gallery-field__button gallery-field__button--edit"
                   >
                     {images.length > 0 ? 'Edit Gallery' : 'Add Images'}
                   </button>
@@ -265,7 +258,7 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
                       setImages([]);
                       setValue(fieldName, '');
                     }}
-                    className="px-3 py-2 bg-red-50 text-red-600 rounded-md text-sm hover:bg-red-100 border border-red-300"
+                    className="gallery-field__button gallery-field__button--clear"
                   >
                     Clear All
                   </button>
@@ -273,14 +266,14 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 italic">
+            <p className="gallery-field__hint">
               Drag and drop images to reorder
             </p>
           </div>
         ) : (
-          <div className="text-center py-8">
+          <div className="gallery-field__empty">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="gallery-field__empty-icon"
               stroke="currentColor"
               fill="none"
               viewBox="0 0 48 48"
@@ -292,20 +285,20 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
                 strokeLinejoin="round"
               />
             </svg>
-            <div className="mt-4">
+            <div>
               <button
                 type="button"
                 onClick={openMediaLibrary}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                className="gallery-field__button gallery-field__button--add"
               >
                 {fieldConfig.buttonText || 'Add Images'}
               </button>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="gallery-field__empty-description">
               {fieldConfig.description || 'Click to select images from the media library'}
             </p>
             {maxImages && (
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="gallery-field__empty-max">
                 Maximum {maxImages} images
               </p>
             )}
@@ -314,10 +307,48 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="gallery-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default GalleryField;
+export const GalleryFieldDisplay = ({ value, config }) => {
+  if (value === null || value === undefined || value === '') {
+    return <span className="gallery-field__display gallery-field__display--empty">-</span>;
+  }
+
+  try {
+    const ids = typeof value === 'string' ? JSON.parse(value) : value;
+    if (Array.isArray(ids) && ids.length > 0) {
+      return (
+        <span className="gallery-field__display">
+          {ids.length} {ids.length === 1 ? 'image' : 'images'}
+        </span>
+      );
+    }
+  } catch (err) {
+    console.error('Error parsing gallery value:', err);
+  }
+
+  return <span className="gallery-field__display gallery-field__display--empty">-</span>;
+};
+
+export const galleryFieldDefinition = {
+  type: 'gallery',
+  Input: GalleryFieldInput,
+  Display: GalleryFieldDisplay,
+  defaultConfig: {
+    maxImages: null,
+    thumbnailSize: 'thumbnail',
+  },
+};
+
+export const useGalleryField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'gallery',
+  };
+};
+
+export default GalleryFieldInput;

@@ -1,8 +1,10 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import './style.css';
 
-const DateTimePickerField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+// Input Component (for forms)
+const DateTimePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [selectedDateTime, setSelectedDateTime] = useState(null);
 
@@ -48,17 +50,17 @@ const DateTimePickerField = ({ fieldName, fieldConfig, register, setValue, watch
   const timeIntervals = fieldConfig.timeIntervals || 15; // Default 15 min intervals
 
   return (
-    <div>
+    <div className="datetime-picker-field">
       <label
         htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
+        className="datetime-picker-field__label"
       >
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="datetime-picker-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="datetime-picker-field__help">{fieldConfig.helpText}</p>
       )}
 
       <DatePicker
@@ -75,18 +77,61 @@ const DateTimePickerField = ({ fieldName, fieldConfig, register, setValue, watch
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-          error
-            ? 'border-red-500 focus:ring-red-500'
-            : 'border-gray-300 focus:ring-blue-500'
-        }`}
+        className={`datetime-picker-field__input ${error ? 'datetime-picker-field__input--error' : ''}`}
       />
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="datetime-picker-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
+// Display Component (for grids and read-only views)
+export const DateTimePickerFieldDisplay = ({ value, config }) => {
+  // Handle null/undefined/empty values
+  if (value === null || value === undefined || value === '') {
+    return <span className="datetime-picker-field__display datetime-picker-field__display--empty">-</span>;
+  }
+
+  // Parse and format the datetime
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    return <span className="datetime-picker-field__display datetime-picker-field__display--invalid">Invalid date</span>;
+  }
+
+  const formattedDateTime = date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  return <span className="datetime-picker-field__display">{formattedDateTime}</span>;
+};
+
+// Field Definition for registry
+export const dateTimePickerFieldDefinition = {
+  type: 'datetime-picker',
+  Input: DateTimePickerFieldInput,
+  Display: DateTimePickerFieldDisplay,
+  defaultConfig: {
+    dateTimeFormat: 'MM/dd/yyyy h:mm aa',
+    placeholder: 'Select date and time...',
+    timeIntervals: 15,
+  },
+};
+
+// Hook for easy usage
+export const useDateTimePickerField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <DateTimePickerFieldInput {...props} config={config} />,
+    Display: (props) => <DateTimePickerFieldDisplay {...props} config={config} />
+  }), [config]);
+};
+
+// Default export for backward compatibility
+const DateTimePickerField = DateTimePickerFieldInput;
 export default DateTimePickerField;

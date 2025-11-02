@@ -3,6 +3,15 @@ import { relationFieldDefinition } from '../components/field-types/RelationField
 import { textFieldDefinition } from '../components/field-types/text';
 import { buttonGroupFieldDefinition } from '../components/field-types/button-group';
 import { checkboxFieldDefinition } from '../components/field-types/checkbox';
+import { colorPickerFieldDefinition } from '../components/field-types/color-picker';
+import { datePickerFieldDefinition } from '../components/field-types/date-picker';
+import { dateTimePickerFieldDefinition } from '../components/field-types/datetime-picker';
+import { emailFieldDefinition } from '../components/field-types/email';
+import { fileFieldDefinition } from '../components/field-types/file';
+import { galleryFieldDefinition } from '../components/field-types/gallery';
+import { hiddenFieldDefinition } from '../components/field-types/hidden';
+import { imageFieldDefinition } from '../components/field-types/image';
+import { linkFieldDefinition } from '../components/field-types/link';
 
 /**
  * Initialize all field types in the registry
@@ -20,6 +29,33 @@ export const initializeFields = () => {
 
   // Register Checkbox field
   registerField(checkboxFieldDefinition);
+
+  // Register Color Picker field
+  registerField(colorPickerFieldDefinition);
+
+  // Register Date Picker field
+  registerField(datePickerFieldDefinition);
+
+  // Register DateTime Picker field
+  registerField(dateTimePickerFieldDefinition);
+
+  // Register Email field
+  registerField(emailFieldDefinition);
+
+  // Register File field
+  registerField(fileFieldDefinition);
+
+  // Register Gallery field
+  registerField(galleryFieldDefinition);
+
+  // Register Hidden field
+  registerField(hiddenFieldDefinition);
+
+  // Register Image field
+  registerField(imageFieldDefinition);
+
+  // Register Link field
+  registerField(linkFieldDefinition);
 
   // Future field types - uncomment as they are implemented with Display/Input components
   // registerField(textareaFieldDefinition);
