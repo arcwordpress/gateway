@@ -81,3 +81,12 @@
   font-size: 0.875rem;
   color: #dc2626;
 }
+
+.button-group-field__display {
+  color: #1d2327;
+}
+
+.button-group-field__display--empty {
+  color: #9ca3af;
+  font-style: italic;
+}

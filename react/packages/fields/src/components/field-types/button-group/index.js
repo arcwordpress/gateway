@@ -1,7 +1,8 @@
-import { useState, useEffect } from '@wordpress/element';
-import './ButtonGroupField.css';
+import { useState, useEffect, useMemo } from '@wordpress/element';
+import './style.css';
 
-const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+// Input Component (for forms)
+const ButtonGroupFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const options = fieldConfig.options || [];
   const currentValue = watch ? watch(fieldName) : '';
 
@@ -73,4 +74,49 @@ const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, e
   );
 };
 
+// Display Component (for grids and read-only views)
+export const ButtonGroupFieldDisplay = ({ value, config }) => {
+  // Handle null/undefined/empty values
+  if (value === null || value === undefined || value === '') {
+    return <span className="button-group-field__display button-group-field__display--empty">-</span>;
+  }
+
+  // Get options from config
+  const options = config?.options || [];
+
+  // Normalize options to {label, value} format
+  const normalizedOptions = options.map(option => {
+    if (typeof option === 'string') {
+      return { label: option, value: option };
+    }
+    return option;
+  });
+
+  // Find the selected option's label
+  const selectedOption = normalizedOptions.find(opt => opt.value === value);
+  const displayValue = selectedOption ? selectedOption.label : String(value);
+
+  return <span className="button-group-field__display">{displayValue}</span>;
+};
+
+// Field Definition for registry
+export const buttonGroupFieldDefinition = {
+  type: 'button-group',
+  Input: ButtonGroupFieldInput,
+  Display: ButtonGroupFieldDisplay,
+  defaultConfig: {
+    options: [],
+  },
+};
+
+// Hook for easy usage
+export const useButtonGroupField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <ButtonGroupFieldInput {...props} config={config} />,
+    Display: (props) => <ButtonGroupFieldDisplay {...props} config={config} />
+  }), [config]);
+};
+
+// Default export for backward compatibility
+const ButtonGroupField = ButtonGroupFieldInput;
 export default ButtonGroupField;

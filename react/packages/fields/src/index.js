@@ -1,17 +1,13 @@
-// Field type components
+// Field type components (legacy - not yet in registry)
 export { default as SelectField } from './components/field-types/SelectField';
-export { default as TextField } from './components/field-types/TextField';
 export { default as TextareaField } from './components/field-types/TextareaField';
-export { default as CheckboxField } from './components/field-types/CheckboxField';
 export { default as EmailField } from './components/field-types/EmailField';
 export { default as MarkdownField } from './components/field-types/MarkdownField';
-export { default as RelationField } from './components/field-types/RelationField';
 export { default as NumberField } from './components/field-types/NumberField';
 export { default as URLField } from './components/field-types/URLField';
 export { default as PasswordField } from './components/field-types/PasswordField';
 export { default as RangeField } from './components/field-types/RangeField';
 export { default as RadioField } from './components/field-types/RadioField';
-export { default as ButtonGroupField } from './components/field-types/ButtonGroupField';
 export { default as WysiwygField } from './components/field-types/WysiwygField';
 export { default as ColorPickerField } from './components/field-types/ColorPickerField';
 export { default as ReadOnlyField } from './components/field-types/ReadOnlyField';
@@ -52,3 +48,21 @@ export {
   relationFieldDefinition,
   useRelationField,
 } from './components/field-types/RelationField';
+
+export {
+  TextFieldDisplay,
+  textFieldDefinition,
+  useTextField,
+} from './components/field-types/text';
+
+export {
+  ButtonGroupFieldDisplay,
+  buttonGroupFieldDefinition,
+  useButtonGroupField,
+} from './components/field-types/button-group';
+
+export {
+  CheckboxFieldDisplay,
+  checkboxFieldDefinition,
+  useCheckboxField,
+} from './components/field-types/checkbox';
