@@ -12,6 +12,16 @@ import { galleryFieldDefinition } from '../components/field-types/gallery';
 import { hiddenFieldDefinition } from '../components/field-types/hidden';
 import { imageFieldDefinition } from '../components/field-types/image';
 import { linkFieldDefinition } from '../components/field-types/link';
+import { markdownFieldDefinition } from '../components/field-types/markdown';
+import { numberFieldDefinition } from '../components/field-types/number';
+import { oembedFieldDefinition } from '../components/field-types/oembed';
+import { passwordFieldDefinition } from '../components/field-types/password';
+import { postObjectFieldDefinition } from '../components/field-types/post-object';
+import { radioFieldDefinition } from '../components/field-types/radio';
+import { rangeFieldDefinition } from '../components/field-types/range';
+import { readonlyFieldDefinition } from '../components/field-types/readonly';
+import { selectFieldDefinition } from '../components/field-types/select';
+import { sortableChildrenFieldDefinition } from '../components/field-types/sortable-children';
 
 /**
  * Initialize all field types in the registry
@@ -56,6 +66,36 @@ export const initializeFields = () => {
 
   // Register Link field
   registerField(linkFieldDefinition);
+
+  // Register Markdown field
+  registerField(markdownFieldDefinition);
+
+  // Register Number field
+  registerField(numberFieldDefinition);
+
+  // Register OEmbed field
+  registerField(oembedFieldDefinition);
+
+  // Register Password field
+  registerField(passwordFieldDefinition);
+
+  // Register Post Object field
+  registerField(postObjectFieldDefinition);
+
+  // Register Radio field
+  registerField(radioFieldDefinition);
+
+  // Register Range field
+  registerField(rangeFieldDefinition);
+
+  // Register Read Only field
+  registerField(readonlyFieldDefinition);
+
+  // Register Select field
+  registerField(selectFieldDefinition);
+
+  // Register Sortable Children field
+  registerField(sortableChildrenFieldDefinition);
 
   // Future field types - uncomment as they are implemented with Display/Input components
   // registerField(textareaFieldDefinition);

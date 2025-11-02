@@ -1,18 +1,8 @@
 // Field type components (legacy - not yet in registry)
-export { default as SelectField } from './components/field-types/SelectField';
 export { default as TextareaField } from './components/field-types/TextareaField';
-export { default as MarkdownField } from './components/field-types/MarkdownField';
-export { default as NumberField } from './components/field-types/NumberField';
 export { default as URLField } from './components/field-types/URLField';
-export { default as PasswordField } from './components/field-types/PasswordField';
-export { default as RangeField } from './components/field-types/RangeField';
-export { default as RadioField } from './components/field-types/RadioField';
 export { default as WysiwygField } from './components/field-types/WysiwygField';
-export { default as ReadOnlyField } from './components/field-types/ReadOnlyField';
-export { default as SortableChildrenField } from './components/field-types/SortableChildrenField';
 export { default as TimePickerField } from './components/field-types/TimePickerField';
-export { default as OEmbedField } from './components/field-types/OEmbedField';
-export { default as PostObjectField } from './components/field-types/PostObjectField';
 export { default as UserField } from './components/field-types/UserField';
 
 // Field types namespace export for convenient access
@@ -111,3 +101,63 @@ export {
   linkFieldDefinition,
   useLinkField,
 } from './components/field-types/link';
+
+export {
+  MarkdownFieldDisplay,
+  markdownFieldDefinition,
+  useMarkdownField,
+} from './components/field-types/markdown';
+
+export {
+  NumberFieldDisplay,
+  numberFieldDefinition,
+  useNumberField,
+} from './components/field-types/number';
+
+export {
+  OEmbedFieldDisplay,
+  oembedFieldDefinition,
+  useOEmbedField,
+} from './components/field-types/oembed';
+
+export {
+  PasswordFieldDisplay,
+  passwordFieldDefinition,
+  usePasswordField,
+} from './components/field-types/password';
+
+export {
+  PostObjectFieldDisplay,
+  postObjectFieldDefinition,
+  usePostObjectField,
+} from './components/field-types/post-object';
+
+export {
+  RadioFieldDisplay,
+  radioFieldDefinition,
+  useRadioField,
+} from './components/field-types/radio';
+
+export {
+  RangeFieldDisplay,
+  rangeFieldDefinition,
+  useRangeField,
+} from './components/field-types/range';
+
+export {
+  ReadOnlyFieldDisplay,
+  readonlyFieldDefinition,
+  useReadOnlyField,
+} from './components/field-types/readonly';
+
+export {
+  SelectFieldDisplay,
+  selectFieldDefinition,
+  useSelectField,
+} from './components/field-types/select';
+
+export {
+  SortableChildrenFieldDisplay,
+  sortableChildrenFieldDefinition,
+  useSortableChildrenField,
+} from './components/field-types/sortable-children';

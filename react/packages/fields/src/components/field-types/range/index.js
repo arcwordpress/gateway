@@ -1,6 +1,7 @@
 import { useState, useEffect } from '@wordpress/element';
+import './style.css';
 
-const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }) => {
+const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, watch }) => {
   const min = fieldConfig.min ?? 0;
   const max = fieldConfig.max ?? 100;
   const step = fieldConfig.step ?? 1;
@@ -8,7 +9,6 @@ const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }
 
   const [currentValue, setCurrentValue] = useState(defaultValue);
 
-  // Watch for value changes from react-hook-form
   const watchedValue = watch ? watch(fieldName) : undefined;
 
   useEffect(() => {
@@ -25,22 +25,18 @@ const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }
     }
   };
 
-  // Calculate percentage for visual feedback
   const percentage = ((currentValue - min) / (max - min)) * 100;
 
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="range-field">
+      <label htmlFor={fieldName} className="range-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="range-field__required">*</span>}
       </label>
 
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <div className="relative">
+      <div className="range-field__wrapper">
+        <div className="range-field__slider-container">
+          <div className="range-field__slider-wrapper">
             <input
               type="range"
               id={fieldName}
@@ -50,7 +46,7 @@ const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }
               step={step}
               value={currentValue}
               onChange={handleChange}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="range-field__slider"
               style={{
                 background: `linear-gradient(to right, #2563eb 0%, #2563eb ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
               }}
@@ -58,15 +54,15 @@ const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }
           </div>
 
           {(fieldConfig.showMinMax || fieldConfig.showMinMax === undefined) && (
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>{min}</span>
-              <span>{max}</span>
+            <div className="range-field__minmax">
+              <span className="range-field__min">{min}</span>
+              <span className="range-field__max">{max}</span>
             </div>
           )}
         </div>
 
-        <div className="flex-shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="range-field__value-container">
+          <div className="range-field__value-wrapper">
             <input
               type="number"
               value={currentValue}
@@ -74,26 +70,60 @@ const RangeField = ({ fieldName, fieldConfig, register, error, setValue, watch }
               min={min}
               max={max}
               step={step}
-              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="range-field__number-input"
             />
             {fieldConfig.append && (
-              <span className="text-sm text-gray-600">{fieldConfig.append}</span>
+              <span className="range-field__append">{fieldConfig.append}</span>
             )}
             {fieldConfig.prepend && (
-              <span className="text-sm text-gray-600">{fieldConfig.prepend}</span>
+              <span className="range-field__prepend">{fieldConfig.prepend}</span>
             )}
           </div>
         </div>
       </div>
 
       {fieldConfig.helpText && (
-        <p className="mt-1 text-sm text-gray-500">{fieldConfig.helpText}</p>
+        <p className="range-field__help">{fieldConfig.helpText}</p>
       )}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="range-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default RangeField;
+export const RangeFieldDisplay = ({ value, config }) => {
+  if (value === null || value === undefined || value === '') {
+    return <span className="range-field__display range-field__display--empty">-</span>;
+  }
+
+  const append = config?.append || '';
+  const prepend = config?.prepend || '';
+
+  return (
+    <span className="range-field__display">
+      {prepend}{String(value)}{append}
+    </span>
+  );
+};
+
+export const rangeFieldDefinition = {
+  type: 'range',
+  Input: RangeFieldInput,
+  Display: RangeFieldDisplay,
+  defaultConfig: {
+    min: 0,
+    max: 100,
+    step: 1,
+    showMinMax: true,
+  },
+};
+
+export const useRangeField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'range',
+  };
+};
+
+export default RangeFieldInput;

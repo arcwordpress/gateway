@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import axios from 'axios';
+import './style.css';
 
-const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
+const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const currentValue = watch(fieldName);
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
@@ -17,7 +18,6 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
     register(fieldName);
   }, [fieldName, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
       setValue(fieldName, fieldConfig.default || '');
@@ -30,7 +30,6 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
     }
   }, [currentValue]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -81,7 +80,6 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
         _fields: 'id,title,type,status',
       };
 
-      // Add status filter if specified
       if (fieldConfig.postStatus) {
         params.status = fieldConfig.postStatus;
       }
@@ -136,35 +134,38 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
   const handleFocus = () => {
     setIsOpen(true);
     if (!searchTerm) {
-      // Load initial results
       searchPosts('');
     }
   };
 
+  const selectedClasses = ['post-object-field__selected'];
+  if (error) {
+    selectedClasses.push('post-object-field__selected--error');
+  }
+
+  const inputClasses = ['post-object-field__input'];
+  if (error) {
+    inputClasses.push('post-object-field__input--error');
+  }
+
   return (
-    <div>
-      <label
-        htmlFor={fieldName}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="post-object-field">
+      <label htmlFor={fieldName} className="post-object-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="post-object-field__required">*</span>}
       </label>
 
       {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+        <p className="post-object-field__help">{fieldConfig.helpText}</p>
       )}
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="post-object-field__wrapper" ref={dropdownRef}>
         {selectedPost ? (
-          // Display selected post
-          <div className={`flex items-center justify-between p-3 border rounded-md bg-gray-50 ${
-            error ? 'border-red-500' : 'border-gray-300'
-          }`}>
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="flex-shrink-0">
+          <div className={selectedClasses.join(' ')}>
+            <div className="post-object-field__post-info">
+              <div className="post-object-field__post-icon">
                 <svg
-                  className="w-5 h-5 text-blue-600"
+                  className="post-object-field__icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -178,16 +179,16 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
                 </svg>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 truncate">
+              <div className="post-object-field__post-details">
+                <div className="post-object-field__post-title">
                   {selectedPost.title}
                 </div>
-                <div className="flex gap-2 mt-0.5">
-                  <span className="text-xs text-gray-500">
+                <div className="post-object-field__post-meta">
+                  <span className="post-object-field__post-id">
                     ID: {selectedPost.id}
                   </span>
                   {selectedPost.status && selectedPost.status !== 'publish' && (
-                    <span className="text-xs text-amber-600">
+                    <span className="post-object-field__post-status">
                       ({selectedPost.status})
                     </span>
                   )}
@@ -198,13 +199,12 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
             <button
               type="button"
               onClick={handleClear}
-              className="ml-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-md text-sm hover:bg-red-100 border border-red-300 flex-shrink-0"
+              className="post-object-field__button post-object-field__button--remove"
             >
               Remove
             </button>
           </div>
         ) : (
-          // Search input
           <div>
             <input
               type="text"
@@ -212,36 +212,33 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
               onChange={handleSearchChange}
               onFocus={handleFocus}
               placeholder={fieldConfig.placeholder || `Search ${postType}...`}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                error ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={inputClasses.join(' ')}
             />
 
-            {/* Dropdown results */}
             {isOpen && (searchResults.length > 0 || searching) && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+              <div className="post-object-field__dropdown">
                 {searching ? (
-                  <div className="px-4 py-3 text-sm text-gray-500">
+                  <div className="post-object-field__dropdown-message">
                     Searching...
                   </div>
                 ) : (
-                  <ul>
+                  <ul className="post-object-field__results">
                     {searchResults.map((post) => (
-                      <li key={post.id}>
+                      <li key={post.id} className="post-object-field__result-item">
                         <button
                           type="button"
                           onClick={() => handleSelectPost(post)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                          className="post-object-field__result-button"
                         >
-                          <div className="font-medium text-gray-900">
+                          <div className="post-object-field__result-title">
                             {post.title}
                           </div>
-                          <div className="flex gap-2 mt-0.5">
-                            <span className="text-xs text-gray-500">
+                          <div className="post-object-field__result-meta">
+                            <span className="post-object-field__result-id">
                               ID: {post.id}
                             </span>
                             {post.status && post.status !== 'publish' && (
-                              <span className="text-xs text-amber-600">
+                              <span className="post-object-field__result-status">
                                 ({post.status})
                               </span>
                             )}
@@ -255,14 +252,18 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
             )}
 
             {isOpen && !searching && searchTerm.length >= 2 && searchResults.length === 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg px-4 py-3 text-sm text-gray-500">
-                No {postType} found
+              <div className="post-object-field__dropdown">
+                <div className="post-object-field__dropdown-message">
+                  No {postType} found
+                </div>
               </div>
             )}
 
             {isOpen && searchTerm.length > 0 && searchTerm.length < 2 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg px-4 py-3 text-sm text-gray-500">
-                Type at least 2 characters to search
+              <div className="post-object-field__dropdown">
+                <div className="post-object-field__dropdown-message">
+                  Type at least 2 characters to search
+                </div>
               </div>
             )}
           </div>
@@ -270,10 +271,66 @@ const PostObjectField = ({ fieldName, fieldConfig, register, setValue, watch, er
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="post-object-field__error">{error.message}</p>
       )}
     </div>
   );
 };
 
-export default PostObjectField;
+export const PostObjectFieldDisplay = ({ value, config }) => {
+  const [post, setPost] = useState(null);
+  const postType = config?.postType || 'post';
+
+  useEffect(() => {
+    if (value) {
+      fetchPost(value);
+    }
+  }, [value]);
+
+  const fetchPost = async (postId) => {
+    try {
+      const response = await axios.get(`/wp-json/wp/v2/${postType}/${postId}`);
+      if (response.data) {
+        setPost({
+          title: response.data.title?.rendered || 'Untitled',
+          id: response.data.id,
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching post:', err);
+    }
+  };
+
+  if (value === null || value === undefined || value === '') {
+    return <span className="post-object-field__display post-object-field__display--empty">-</span>;
+  }
+
+  if (!post) {
+    return <span className="post-object-field__display">Loading...</span>;
+  }
+
+  return (
+    <span className="post-object-field__display">
+      {post.title} <span className="post-object-field__display-id">(ID: {post.id})</span>
+    </span>
+  );
+};
+
+export const postObjectFieldDefinition = {
+  type: 'post-object',
+  Input: PostObjectFieldInput,
+  Display: PostObjectFieldDisplay,
+  defaultConfig: {
+    postType: 'post',
+    resultsPerPage: 10,
+  },
+};
+
+export const usePostObjectField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'post-object',
+  };
+};
+
+export default PostObjectFieldInput;

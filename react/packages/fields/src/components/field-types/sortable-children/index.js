@@ -1,0 +1,292 @@
+import { useState, useEffect } from '@wordpress/element';
+import axios from 'axios';
+import './style.css';
+
+const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const config = fieldConfig.sortable_children || {};
+  const {
+    endpoint,
+    updateEndpoint = endpoint,
+    filterBy,
+    labelField = 'title',
+    positionField = 'position',
+    idField = 'id',
+  } = config;
+
+  useEffect(() => {
+    if (!recordId || !endpoint || !filterBy) {
+      setLoading(false);
+      return;
+    }
+
+    fetchChildren();
+  }, [recordId, endpoint, filterBy]);
+
+  const fetchChildren = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `${endpoint}?${filterBy}=${recordId}`;
+      const response = await axios.get(url, {
+        headers: {
+          'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+        },
+      });
+
+      const childItems = response.data?.data?.items || [];
+
+      childItems.sort((a, b) => (a[positionField] || 0) - (b[positionField] || 0));
+
+      setItems(childItems);
+      setHasChanges(false);
+    } catch (err) {
+      console.error('Error fetching children:', err);
+      setError(err.message || 'Failed to load items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDragStart = (index) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+
+    if (draggedIndex === null || draggedIndex === index) {
+      return;
+    }
+
+    const newItems = [...items];
+    const draggedItem = newItems[draggedIndex];
+
+    newItems.splice(draggedIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+
+    setItems(newItems);
+    setDraggedIndex(index);
+    setHasChanges(true);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+
+    try {
+      const updatePromises = items.map((item, index) => {
+        const newPosition = index + 1;
+        const itemId = item[idField];
+
+        if (item[positionField] !== newPosition) {
+          return axios.patch(
+            `${updateEndpoint}/${itemId}`,
+            { [positionField]: newPosition },
+            {
+              headers: {
+                'X-WP-Nonce': window.wpApiSettings?.nonce || '',
+              },
+            }
+          );
+        }
+
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+      await fetchChildren();
+
+      setHasChanges(false);
+    } catch (err) {
+      console.error('Error updating positions:', err);
+      setError(err.message || 'Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    fetchChildren();
+    setHasChanges(false);
+  };
+
+  if (!recordId) {
+    return (
+      <div className="sortable-children-field__placeholder">
+        <label className="sortable-children-field__label">
+          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        </label>
+        <div className="sortable-children-field__message">
+          Save this record first to manage its children.
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="sortable-children-field__placeholder">
+        <label className="sortable-children-field__label">
+          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        </label>
+        <div className="sortable-children-field__message">
+          Loading {fieldConfig.label?.toLowerCase() || 'items'}...
+        </div>
+      </div>
+    );
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <div className="sortable-children-field__error-container">
+        <label className="sortable-children-field__label">
+          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        </label>
+        <div className="sortable-children-field__error-title">Error</div>
+        <div className="sortable-children-field__error-message">{error}</div>
+        <button
+          onClick={fetchChildren}
+          className="sortable-children-field__button sortable-children-field__button--retry"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="sortable-children-field">
+      <label className="sortable-children-field__label">
+        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+      </label>
+
+      {fieldConfig.helpText && (
+        <p className="sortable-children-field__help">{fieldConfig.helpText}</p>
+      )}
+
+      {items.length === 0 ? (
+        <div className="sortable-children-field__empty">
+          <div className="sortable-children-field__message">
+            No {fieldConfig.label?.toLowerCase() || 'items'} found.
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="sortable-children-field__container">
+            <div className="sortable-children-field__header">
+              <div className="sortable-children-field__count">
+                {items.length} {items.length === 1 ? 'item' : 'items'}
+              </div>
+              {hasChanges && (
+                <div className="sortable-children-field__actions">
+                  <button
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="sortable-children-field__button sortable-children-field__button--cancel"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="sortable-children-field__button sortable-children-field__button--save"
+                  >
+                    {saving ? 'Saving...' : 'Save Order'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="sortable-children-field__list">
+              {items.map((item, index) => {
+                const itemClasses = ['sortable-children-field__item'];
+                if (draggedIndex === index) {
+                  itemClasses.push('sortable-children-field__item--dragging');
+                }
+
+                return (
+                  <div
+                    key={item[idField]}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={itemClasses.join(' ')}
+                  >
+                    <div className="sortable-children-field__drag-handle">
+                      <svg
+                        className="sortable-children-field__drag-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 8h16M4 16h16"
+                        />
+                      </svg>
+                    </div>
+
+                    <div className="sortable-children-field__item-content">
+                      <div className="sortable-children-field__item-title">
+                        {item[labelField] || 'Untitled'}
+                      </div>
+                    </div>
+
+                    <div className="sortable-children-field__item-position">
+                      #{index + 1}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {hasChanges && (
+            <div className="sortable-children-field__warning">
+              <div className="sortable-children-field__warning-text">
+                You have unsaved changes. Click "Save Order" to update positions.
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+export const SortableChildrenFieldDisplay = ({ value, config }) => {
+  return <span className="sortable-children-field__display">-</span>;
+};
+
+export const sortableChildrenFieldDefinition = {
+  type: 'sortable-children',
+  Input: SortableChildrenFieldInput,
+  Display: SortableChildrenFieldDisplay,
+  defaultConfig: {
+    sortable_children: {},
+  },
+};
+
+export const useSortableChildrenField = (fieldName) => {
+  return {
+    fieldName,
+    fieldType: 'sortable-children',
+  };
+};
+
+export default SortableChildrenFieldInput;
