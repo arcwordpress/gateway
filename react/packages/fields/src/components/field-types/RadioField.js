@@ -25,6 +25,7 @@ const RadioField = ({ fieldName, fieldConfig, register, error }) => {
               id={`${fieldName}-${index}`}
               value={option.value}
               {...register(fieldName)}
+              defaultChecked={fieldConfig.default === option.value}
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
             />
             <label
@@ -37,8 +38,8 @@ const RadioField = ({ fieldName, fieldConfig, register, error }) => {
         ))}
       </div>
 
-      {fieldConfig.helpText && (
-        <p className="mt-2 text-sm text-gray-500">{fieldConfig.helpText}</p>
+      {(fieldConfig.help || fieldConfig.helpText) && (
+        <p className="mt-2 text-sm text-gray-500">{fieldConfig.help || fieldConfig.helpText}</p>
       )}
       {error && (
         <p className="mt-1 text-sm text-red-600">{error.message}</p>

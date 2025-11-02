@@ -188,6 +188,13 @@ const WysiwygField = ({ fieldName, fieldConfig, register, setValue, watch, error
     }
   }, [fieldName, register]);
 
+  // Initialize value on mount
+  useEffect(() => {
+    if (setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default || '');
+    }
+  }, []);
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">

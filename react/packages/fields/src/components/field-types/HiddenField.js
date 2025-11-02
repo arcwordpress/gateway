@@ -1,10 +1,12 @@
 const HiddenField = ({ fieldName, fieldConfig, register }) => {
+  const fieldValue = fieldConfig.value || fieldConfig.default || '';
+
   return (
     <input
       type="hidden"
       id={fieldName}
       {...register(fieldName)}
-      value={fieldConfig.value || ''}
+      defaultValue={fieldValue}
     />
   );
 };

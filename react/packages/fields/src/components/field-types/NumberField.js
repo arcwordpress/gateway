@@ -12,6 +12,7 @@ const NumberField = ({ fieldName, fieldConfig, register, error }) => {
         type="number"
         id={fieldName}
         {...register(fieldName, { valueAsNumber: true })}
+        defaultValue={fieldConfig.default !== undefined ? fieldConfig.default : ''}
         placeholder={fieldConfig.placeholder || ''}
         min={fieldConfig.min}
         max={fieldConfig.max}
@@ -22,8 +23,8 @@ const NumberField = ({ fieldName, fieldConfig, register, error }) => {
             : 'border-gray-300 focus:ring-blue-500'
         }`}
       />
-      {fieldConfig.helpText && (
-        <p className="mt-1 text-sm text-gray-500">{fieldConfig.helpText}</p>
+      {(fieldConfig.help || fieldConfig.helpText) && (
+        <p className="mt-1 text-sm text-gray-500">{fieldConfig.help || fieldConfig.helpText}</p>
       )}
       {error && (
         <p className="mt-1 text-sm text-red-600">{error.message}</p>

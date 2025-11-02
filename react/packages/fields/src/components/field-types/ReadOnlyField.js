@@ -1,4 +1,6 @@
-const ReadOnlyField = ({ fieldName, fieldConfig, register }) => {
+const ReadOnlyField = ({ fieldName, fieldConfig, register, value }) => {
+  const fieldValue = value || fieldConfig.value || fieldConfig.default || '';
+
   return (
     <div>
       <label
@@ -11,6 +13,7 @@ const ReadOnlyField = ({ fieldName, fieldConfig, register }) => {
         type="text"
         id={fieldName}
         {...register(fieldName)}
+        defaultValue={fieldValue}
         readOnly
         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed focus:outline-none"
       />

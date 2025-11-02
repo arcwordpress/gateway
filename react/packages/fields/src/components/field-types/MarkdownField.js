@@ -4,7 +4,8 @@ import 'easymde/dist/easymde.min.css';
 
 const MarkdownField = ({ fieldName, fieldConfig, register, error, setValue, watch }) => {
   const [isReady, setIsReady] = useState(false);
-  const initialValue = useRef(watch ? watch(fieldName) : '');
+  const currentValue = watch ? watch(fieldName) : '';
+  const initialValue = useRef(currentValue || fieldConfig.default || '');
 
   // Register the field with react-hook-form
   useEffect(() => {
@@ -13,6 +14,13 @@ const MarkdownField = ({ fieldName, fieldConfig, register, error, setValue, watc
     }
     setIsReady(true);
   }, [fieldName, register]);
+
+  // Set default value only once on mount if undefined
+  useEffect(() => {
+    if (fieldConfig.default && setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default);
+    }
+  }, []);
 
   const handleChange = (value) => {
     if (setValue) {

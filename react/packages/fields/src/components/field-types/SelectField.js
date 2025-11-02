@@ -24,6 +24,7 @@ const SelectField = ({ fieldName, fieldConfig, register, error }) => {
       <select
         id={fieldName}
         {...register(fieldName)}
+        defaultValue={fieldConfig.default || ''}
         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
           error
             ? 'border-red-500 focus:ring-red-500'
@@ -43,6 +44,9 @@ const SelectField = ({ fieldName, fieldConfig, register, error }) => {
           );
         })}
       </select>
+      {fieldConfig.help && (
+        <p className="mt-1 text-sm text-gray-500">{fieldConfig.help}</p>
+      )}
       {error && (
         <p className="mt-1 text-sm text-red-600">{error.message}</p>
       )}

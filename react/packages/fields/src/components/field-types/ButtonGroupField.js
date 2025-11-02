@@ -1,4 +1,5 @@
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
+import './ButtonGroupField.css';
 
 const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
   const options = fieldConfig.options || [];
@@ -12,6 +13,13 @@ const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, e
     return option;
   });
 
+  // Set default value only once on mount if undefined
+  useEffect(() => {
+    if (fieldConfig.default && setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default);
+    }
+  }, []);
+
   const handleClick = (value) => {
     if (setValue) {
       setValue(fieldName, value, { shouldValidate: true });
@@ -19,46 +27,35 @@ const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, e
   };
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="button-group-field">
+      <label className="button-group-field__label">
         {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {fieldConfig.required && <span className="button-group-field__required">*</span>}
       </label>
 
       {/* Hidden input for form registration */}
       <input type="hidden" {...register(fieldName)} />
 
-      <div className="inline-flex rounded-md shadow-sm" role="group">
+      <div className="button-group-field__buttons" role="group">
         {normalizedOptions.map((option, index) => {
           const isFirst = index === 0;
           const isLast = index === normalizedOptions.length - 1;
           const isSelected = currentValue === option.value;
 
-          let roundedClass = '';
-          if (isFirst && isLast) {
-            roundedClass = 'rounded-md';
-          } else if (isFirst) {
-            roundedClass = 'rounded-l-md';
-          } else if (isLast) {
-            roundedClass = 'rounded-r-md';
-          }
+          const classes = [
+            'button-group-field__button',
+            isFirst && 'button-group-field__button--first',
+            isLast && 'button-group-field__button--last',
+            isSelected && 'button-group-field__button--selected',
+            !isFirst && 'button-group-field__button--not-first'
+          ].filter(Boolean).join(' ');
 
           return (
             <button
               key={index}
               type="button"
               onClick={() => handleClick(option.value)}
-              className={`
-                px-4 py-2 text-sm font-medium border
-                ${roundedClass}
-                ${!isFirst ? '-ml-px' : ''}
-                ${isSelected
-                  ? 'bg-blue-600 text-white border-blue-600 z-10'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-gray-900'
-                }
-                focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500
-                transition-colors duration-150
-              `.trim().replace(/\s+/g, ' ')}
+              className={classes}
             >
               {option.label}
             </button>
@@ -66,11 +63,11 @@ const ButtonGroupField = ({ fieldName, fieldConfig, register, setValue, watch, e
         })}
       </div>
 
-      {fieldConfig.helpText && (
-        <p className="mt-2 text-sm text-gray-500">{fieldConfig.helpText}</p>
+      {(fieldConfig.help || fieldConfig.helpText) && (
+        <p className="button-group-field__help">{fieldConfig.help || fieldConfig.helpText}</p>
       )}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error.message}</p>
+        <p className="button-group-field__error">{error.message}</p>
       )}
     </div>
   );

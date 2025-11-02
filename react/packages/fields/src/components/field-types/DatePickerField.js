@@ -35,6 +35,14 @@ const DatePickerField = ({ fieldName, fieldConfig, register, setValue, watch, er
     register(fieldName);
   }, [fieldName, register]);
 
+  // Set initial/default value only once on mount
+  useEffect(() => {
+    if (setValue && currentValue === undefined) {
+      const initialValue = fieldConfig.default || '';
+      setValue(fieldName, initialValue);
+    }
+  }, []);
+
   return (
     <div>
       <label
@@ -45,8 +53,8 @@ const DatePickerField = ({ fieldName, fieldConfig, register, setValue, watch, er
         {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+      {(fieldConfig.help || fieldConfig.helpText) && (
+        <p className="text-sm text-gray-500 mb-2">{fieldConfig.help || fieldConfig.helpText}</p>
       )}
 
       <DatePicker

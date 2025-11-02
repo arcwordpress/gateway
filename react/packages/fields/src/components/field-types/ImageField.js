@@ -9,6 +9,13 @@ const ImageField = ({ fieldName, fieldConfig, register, setValue, watch, error }
     register(fieldName);
   }, [fieldName, register]);
 
+  // Initialize value on mount
+  useEffect(() => {
+    if (setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default || '');
+    }
+  }, []);
+
   useEffect(() => {
     // If currentValue is set, it's the attachment ID
     if (currentValue) {

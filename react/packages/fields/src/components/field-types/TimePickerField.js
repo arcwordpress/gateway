@@ -41,6 +41,13 @@ const TimePickerField = ({ fieldName, fieldConfig, register, setValue, watch, er
     register(fieldName);
   }, [fieldName, register]);
 
+  // Initialize value on mount
+  useEffect(() => {
+    if (setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default || '');
+    }
+  }, []);
+
   const timeIntervals = fieldConfig.timeIntervals || 15; // Default 15 min intervals
 
   return (

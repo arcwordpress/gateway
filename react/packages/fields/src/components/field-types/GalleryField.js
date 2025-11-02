@@ -9,6 +9,13 @@ const GalleryField = ({ fieldName, fieldConfig, register, setValue, watch, error
     register(fieldName);
   }, [fieldName, register]);
 
+  // Initialize value on mount
+  useEffect(() => {
+    if (setValue && currentValue === undefined) {
+      setValue(fieldName, fieldConfig.default || '');
+    }
+  }, []);
+
   useEffect(() => {
     // Parse current value - expecting JSON array of attachment IDs
     if (currentValue) {
