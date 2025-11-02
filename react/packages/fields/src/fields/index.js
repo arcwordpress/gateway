@@ -28,6 +28,7 @@ import { sortableChildrenFieldDefinition } from '../components/field-types/sorta
  * This must be called before any field components are used
  */
 export const initializeFields = () => {
+  
   // Register Relation field
   registerField(relationFieldDefinition);
 
@@ -97,31 +98,4 @@ export const initializeFields = () => {
   // Register Sortable Children field
   registerField(sortableChildrenFieldDefinition);
 
-  // Future field types - uncomment as they are implemented with Display/Input components
-  // registerField(textareaFieldDefinition);
-  // registerField(selectFieldDefinition);
-  // registerField(checkboxFieldDefinition);
-  // registerField(emailFieldDefinition);
-  // registerField(markdownFieldDefinition);
-  // registerField(numberFieldDefinition);
-  // registerField(urlFieldDefinition);
-  // registerField(passwordFieldDefinition);
-  // registerField(rangeFieldDefinition);
-  // registerField(radioFieldDefinition);
-  // registerField(buttonGroupFieldDefinition);
-  // registerField(wysiwygFieldDefinition);
-  // registerField(colorPickerFieldDefinition);
-  // registerField(readOnlyFieldDefinition);
-  // registerField(hiddenFieldDefinition);
-  // registerField(sortableChildrenFieldDefinition);
-  // registerField(datePickerFieldDefinition);
-  // registerField(timePickerFieldDefinition);
-  // registerField(dateTimePickerFieldDefinition);
-  // registerField(imageFieldDefinition);
-  // registerField(fileFieldDefinition);
-  // registerField(galleryFieldDefinition);
-  // registerField(linkFieldDefinition);
-  // registerField(oEmbedFieldDefinition);
-  // registerField(postObjectFieldDefinition);
-  // registerField(userFieldDefinition);
 };

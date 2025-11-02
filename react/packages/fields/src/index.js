@@ -1,13 +1,3 @@
-// Field type components (legacy - not yet in registry)
-export { default as TextareaField } from './components/field-types/TextareaField';
-export { default as URLField } from './components/field-types/URLField';
-export { default as WysiwygField } from './components/field-types/WysiwygField';
-export { default as TimePickerField } from './components/field-types/TimePickerField';
-export { default as UserField } from './components/field-types/UserField';
-
-// Field types namespace export for convenient access
-export * as fieldTypes from './components/field-types';
-
 // Field Registry System
 export {
   registerField,

@@ -51,15 +51,20 @@ export const isFieldTypeRegistered = (type) => {
 
 /**
  * Hook to use a field type dynamically
- * @param {string} type - Field type identifier
- * @param {Object} config - Field configuration object (should be memoized by caller to prevent unnecessary re-renders)
- * @returns {Object} Object with Input and Display components
+ * @param {string} type - Field type identifier (e.g., 'text')
+ * @param {Object} [config={}] - Optional field configuration object (memoize if dynamic to prevent re-renders)
+ * @returns {Object} Object with type-specific Input and Display components (e.g., { TextField, TextFieldDisplay })
  * @throws {Error} If field type is not registered
  *
  * @example
- * // Memoize config to prevent re-renders
- * const config = useMemo(() => ({ labelField: 'name' }), []);
- * const { Display } = useField('relation', config);
+ * // Config-optional: Uses defaults
+ * const { TextField, TextFieldDisplay } = useField('text');
+ * <TextField value="Hello" />
+ *
+ * @example
+ * // With config (memoize for perf)
+ * const config = useMemo(() => ({ variant: 'outlined' }), []);
+ * const { EmailField } = useField('email', config);
  */
 export const useField = (type, config = {}) => {
   const definition = getFieldDefinition(type);
@@ -71,10 +76,22 @@ export const useField = (type, config = {}) => {
     );
   }
 
-  return useMemo(() => ({
-    Input: (props) => <definition.Input {...props} config={config} />,
-    Display: (props) => <definition.Display {...props} config={config} />
-  }), [definition, config]);
+  const pascalType = capitalize(type);
+
+  // Memo deps: Exclude config if empty to optimize static usage
+  const memoDeps = [definition, config];
+  if (Object.keys(config).length === 0) {
+    memoDeps.pop(); // Skip config in deps for pure static calls
+  }
+
+  return useMemo(() => {
+    const InputComponent = (props) => <definition.Input {...props} config={config} />;
+    const DisplayComponent = (props) => <definition.Display {...props} config={config} />;
+    return {
+      [`${pascalType}Field`]: InputComponent,
+      [`${pascalType}FieldDisplay`]: DisplayComponent
+    };
+  }, memoDeps);
 };
 
 /**
