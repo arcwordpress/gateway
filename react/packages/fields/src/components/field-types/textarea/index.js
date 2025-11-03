@@ -1,14 +1,10 @@
-import { createElement } from '@wordpress/element';
+import { createElement, useMemo } from '@wordpress/element';
 import './style.css';
 
-/**
- * TextareaInput Component
- * Renders a textarea input field for multi-line text entry
- */
-export const TextareaInput = ({ config = {}, error, register, setValue, watch }) => {
+const TextareaFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
     const name = config.name;
     if (!name) {
-        console.warn('TextareaInput: No "name" provided in config');
+        console.warn('TextareaFieldTypeInput: No "name" provided in config');
         return null;
     }
 
@@ -43,30 +39,24 @@ export const TextareaInput = ({ config = {}, error, register, setValue, watch })
     );
 };
 
-/**
- * TextareaDisplay Component
- * Displays textarea content in a formatted pre-wrap display
- */
-export const TextareaDisplay = ({ value, fieldConfig = {} }) => {
-    const { label = '' } = fieldConfig;
+const TextareaFieldTypeDisplay = ({ value, config }) => {
+    if (!value || value.trim() === '') {
+        return <span className="textarea-field__display textarea-field__display--empty">-</span>;
+    }
 
     return (
-        <div className="textarea-field">
-            {label && <span className="textarea-field__label">{label}</span>}
-            <div className="textarea-field__display">
-                {value || <span className="textarea-field__display--empty">No content</span>}
-            </div>
+        <div className="textarea-field__display">
+            {value.split('\n').map((line, index) => (
+                <p key={index}>{line || '\u00A0'}</p>
+            ))}
         </div>
     );
 };
 
-/**
- * Field Definition for Registry
- */
-export const textareaFieldDefinition = {
+export const textareaFieldType = {
     type: 'textarea',
-    Input: TextareaInput,
-    Display: TextareaDisplay,
+    Input: TextareaFieldTypeInput,
+    Display: TextareaFieldTypeDisplay,
     defaultConfig: {
         label: '',
         placeholder: '',
@@ -76,18 +66,11 @@ export const textareaFieldDefinition = {
     }
 };
 
-/**
- * Custom Hook for Textarea Field
- */
-export const useTextareaField = (fieldName, fieldConfig, formMethods) => {
-    const { register, watch } = formMethods;
-    const value = watch(fieldName);
-
-    return {
-        value,
-        register,
-        isEmpty: !value || value.trim() === ''
-    };
+export const useTextareaField = (config) => {
+    return useMemo(() => ({
+        Input: (props) => <TextareaFieldTypeInput {...props} config={config} />,
+        Display: (props) => <TextareaFieldTypeDisplay {...props} config={config} />
+    }), [config]);
 };
 
 export default TextareaInput;

@@ -1,5 +1,5 @@
 import { createElement } from '@wordpress/element';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
 import axios from 'axios';
 import './style.css';
 
@@ -7,10 +7,10 @@ import './style.css';
  * UserInput Component
  * Renders a user selection field with search and dropdown
  */
-export const UserInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const UserFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
     const name = inputProps.name || config.name;
     if (!name) {
-        console.warn('UserInput: No "name" provided in props or config');
+        console.warn('UserFieldTypeInput: No "name" provided in props or config');
         return null;
     }
 
@@ -236,8 +236,7 @@ export const UserInput = ({ config = {}, error, register, setValue, watch, ...in
  * UserDisplay Component
  * Displays selected user with avatar and details
  */
-export const UserDisplay = ({ value, fieldConfig = {} }) => {
-    const { label = '' } = fieldConfig;
+const UserFieldTypeDisplay = ({ value, config }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -273,7 +272,7 @@ export const UserDisplay = ({ value, fieldConfig = {} }) => {
 
     return (
         <div className="user-field">
-            {label && <span className="user-field__label">{label}</span>}
+            {config.label && <span className="user-field__label">{config.label}</span>}
             <div className="user-field__display">
                 {loading ? (
                     <span className="user-field__loading">Loading user...</span>
@@ -313,10 +312,10 @@ export const UserDisplay = ({ value, fieldConfig = {} }) => {
 /**
  * Field Definition for Registry
  */
-export const userFieldDefinition = {
+export const userFieldType = {
     type: 'user',
-    Input: UserInput,
-    Display: UserDisplay,
+    Input: UserFieldTypeInput,
+    Display: UserFieldTypeDisplay,
     defaultConfig: {
         label: '',
         placeholder: 'Search for a user...',
@@ -330,19 +329,9 @@ export const userFieldDefinition = {
 /**
  * Custom Hook for User Field
  */
-export const useUserField = (fieldName, fieldConfig, formMethods) => {
-    const { watch, setValue } = formMethods;
-    const value = watch(fieldName);
-
-    const clearUser = () => {
-        setValue(fieldName, null);
-    };
-
-    return {
-        value,
-        clearUser,
-        hasValue: !!value
-    };
+export const useUserField = (config) => {
+    return useMemo(() => ({
+        Input: (props) => <UserFieldTypeInput {...props} config={config} />,
+        Display: (props) => <UserFieldTypeDisplay {...props} config={config} />
+    }), [config]);
 };
-
-export default UserInput;

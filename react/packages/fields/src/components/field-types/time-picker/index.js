@@ -1,5 +1,5 @@
 import { createElement } from '@wordpress/element';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
@@ -100,9 +100,11 @@ export const TimePickerInput = ({ config = {}, error, register, setValue, watch,
 export const TimePickerDisplay = ({ value, config = {} }) => {
     const { label = '' } = config;
 
-    const formatTime = (timeString) => {
-        if (!timeString) return 'No time selected';
+    if (!value) {
+        return <span className="time-picker-field__display time-picker-field__display--empty">-</span>;
+    }
 
+    const formatTime = (timeString) => {
         const [hours, minutes] = timeString.split(':');
         const date = new Date();
         date.setHours(parseInt(hours, 10));

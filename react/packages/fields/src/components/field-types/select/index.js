@@ -1,9 +1,10 @@
+import { useMemo } from '@wordpress/element';
 import './style.css';
 
-const SelectFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+const SelectFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
   const name = config.name;
   if (!name) {
-    console.warn('SelectFieldInput: No "name" provided in config');
+    console.warn('SelectFieldTypeInput: No "name" provided in config');
     return null;
   }
 
@@ -65,7 +66,7 @@ const SelectFieldInput = ({ config = {}, error, register, setValue, watch }) => 
   );
 };
 
-export const SelectFieldDisplay = ({ value, config }) => {
+const SelectFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="select-field__display select-field__display--empty">-</span>;
   }
@@ -91,20 +92,19 @@ export const SelectFieldDisplay = ({ value, config }) => {
   return <span className="select-field__display">{displayValue}</span>;
 };
 
-export const selectFieldDefinition = {
+export const selectFieldType = {
   type: 'select',
-  Input: SelectFieldInput,
-  Display: SelectFieldDisplay,
+  Input: SelectFieldTypeInput,
+  Display: SelectFieldTypeDisplay,
   defaultConfig: {
     options: [],
+    placeholder: 'Select an option'
   },
 };
 
-export const useSelectField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'select',
-  };
+export const useSelectField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <SelectFieldTypeInput {...props} config={config} />,
+    Display: (props) => <SelectFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default SelectFieldInput;

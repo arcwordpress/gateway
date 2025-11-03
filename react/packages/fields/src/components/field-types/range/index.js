@@ -1,10 +1,10 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
-const RangeFieldInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
+const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('RangeFieldInput: No "name" provided in props or config');
+    console.warn('RangeFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -109,7 +109,7 @@ const RangeFieldInput = ({ config = {}, error, setValue, watch, ...inputProps })
   );
 };
 
-export const RangeFieldDisplay = ({ value, config }) => {
+const RangeFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="range-field__display range-field__display--empty">-</span>;
   }
@@ -124,10 +124,10 @@ export const RangeFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const rangeFieldDefinition = {
+export const rangeFieldType = {
   type: 'range',
-  Input: RangeFieldInput,
-  Display: RangeFieldDisplay,
+  Input: RangeFieldTypeInput,
+  Display: RangeFieldTypeDisplay,
   defaultConfig: {
     min: 0,
     max: 100,
@@ -136,11 +136,9 @@ export const rangeFieldDefinition = {
   },
 };
 
-export const useRangeField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'range',
-  };
+export const useRangeField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <RangeFieldTypeInput {...props} config={config} />,
+    Display: (props) => <RangeFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default RangeFieldInput;

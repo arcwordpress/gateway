@@ -1,11 +1,11 @@
 import { useMemo } from '@wordpress/element';
 import './style.css';
 
-// Input Component (for forms) — Unified interface accepts register, setValue, watch
-const TextFieldInput = ({ config = {}, error, register, setValue, watch, inputType = 'text' }) => {
+// Input Component (for forms)
+const TextFieldTypeInput = ({ config = {}, error, register, setValue, watch, inputType = 'text' }) => {
   const name = config.name;
   if (!name) {
-    console.warn('TextFieldInput: No "name" provided in config — skipping render.');
+    console.warn('TextFieldTypeInput: No "name" provided in config');
     return null;
   }
 
@@ -49,9 +49,8 @@ const TextFieldInput = ({ config = {}, error, register, setValue, watch, inputTy
   );
 };
 
-// Display Component (unchanged, but add config default for safety)
-export const TextFieldDisplay = ({ value, config = {} }) => {
-  // Handle null/undefined/empty values
+// Display Component
+const TextFieldTypeDisplay = ({ value, config = {} }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="text-field__display text-field__display--empty">-</span>;
   }
@@ -59,26 +58,22 @@ export const TextFieldDisplay = ({ value, config = {} }) => {
   return <span className="text-field__display">{String(value)}</span>;
 };
 
-// Field Definition for registry (unchanged, but add name to defaultConfig for array usage)
-export const textFieldDefinition = {
+// Field Type Definition for registry
+export const textFieldType = {
   type: 'text',
-  Input: TextFieldInput,
-  Display: TextFieldDisplay,
+  Input: TextFieldTypeInput,
+  Display: TextFieldTypeDisplay,
   defaultConfig: {
-    name: '',  // Optional: For array defs
+    name: '',
     placeholder: '',
     inputType: 'text',
   },
 };
 
-// Hook for easy usage (unchanged—now aligns perfectly with refactored Input)
+// Hook for easy usage
 export const useTextField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <TextFieldInput {...props} config={config} />,
-    Display: (props) => <TextFieldDisplay {...props} config={config} />
+    Input: (props) => <TextFieldTypeInput {...props} config={config} />,
+    Display: (props) => <TextFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility (wraps Input)
-const TextField = (props) => <TextFieldInput {...props} />;
-export default TextField;

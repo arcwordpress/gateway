@@ -1,9 +1,10 @@
+import { useMemo } from '@wordpress/element';
 import './style.css';
 
-const ReadOnlyFieldInput = ({ config = {}, register, value, ...inputProps }) => {
+const ReadOnlyFieldTypeInput = ({ config = {}, register, value, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('ReadOnlyFieldInput: No "name" provided in props or config');
+    console.warn('ReadOnlyFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -36,7 +37,7 @@ const ReadOnlyFieldInput = ({ config = {}, register, value, ...inputProps }) => 
   );
 };
 
-export const ReadOnlyFieldDisplay = ({ value, config }) => {
+const ReadOnlyFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="readonly-field__display readonly-field__display--empty">-</span>;
   }
@@ -44,18 +45,16 @@ export const ReadOnlyFieldDisplay = ({ value, config }) => {
   return <span className="readonly-field__display">{String(value)}</span>;
 };
 
-export const readonlyFieldDefinition = {
+export const readonlyFieldType = {
   type: 'readonly',
-  Input: ReadOnlyFieldInput,
-  Display: ReadOnlyFieldDisplay,
+  Input: ReadOnlyFieldTypeInput,
+  Display: ReadOnlyFieldTypeDisplay,
   defaultConfig: {},
 };
 
-export const useReadOnlyField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'readonly',
-  };
+export const useReadOnlyField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <ReadOnlyFieldTypeInput {...props} config={config} />,
+    Display: (props) => <ReadOnlyFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default ReadOnlyFieldInput;

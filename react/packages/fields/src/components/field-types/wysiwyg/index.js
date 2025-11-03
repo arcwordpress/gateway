@@ -1,5 +1,5 @@
 import { createElement } from '@wordpress/element';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -11,10 +11,10 @@ import './style.css';
  * WysiwygInput Component
  * Renders a WYSIWYG editor using TipTap
  */
-export const WysiwygInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const WysiwygFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
     const name = inputProps.name || config.name;
     if (!name) {
-        console.warn('WysiwygInput: No "name" provided in props or config');
+        console.warn('WysiwygFieldTypeInput: No "name" provided in props or config');
         return null;
     }
 
@@ -223,58 +223,42 @@ export const WysiwygInput = ({ config = {}, error, register, setValue, watch, ..
  * WysiwygDisplay Component
  * Displays WYSIWYG content as rendered HTML
  */
-export const WysiwygDisplay = ({ value, fieldConfig = {} }) => {
-    const { label = '' } = fieldConfig;
+const WysiwygFieldTypeDisplay = ({ value, config }) => {
+  if (!value) {
+    return <span className="wysiwyg-field__display wysiwyg-field__display--empty">-</span>;
+  }
 
-    return (
-        <div className="wysiwyg-field">
-            {label && <span className="wysiwyg-field__label">{label}</span>}
-            <div
-                className="wysiwyg-field__display"
-                dangerouslySetInnerHTML={{ __html: value || '<p class="wysiwyg-field__display--empty">No content</p>' }}
-            />
-        </div>
-    );
+  return (
+    <div 
+      className="wysiwyg-field__display"
+      dangerouslySetInnerHTML={{ __html: value }}
+    />
+  );
 };
 
-/**
- * Field Definition for Registry
- */
-export const wysiwygFieldDefinition = {
-    type: 'wysiwyg',
-    Input: WysiwygInput,
-    Display: WysiwygDisplay,
-    defaultConfig: {
-        label: '',
-        help: '',
-        default: '',
-        placeholder: 'Start typing...'
-    }
+export const wysiwygFieldType = {
+  type: 'wysiwyg',
+  Input: WysiwygFieldTypeInput,
+  Display: WysiwygFieldTypeDisplay,
+  defaultConfig: {
+    label: '',
+    help: '',
+    default: '',
+    placeholder: 'Start typing...'
+  }
 };
 
-/**
- * Custom Hook for WYSIWYG Field
- */
-export const useWysiwygField = (fieldName, fieldConfig, formMethods) => {
-    const { watch, setValue } = formMethods;
-    const value = watch(fieldName);
-
-    const clearContent = () => {
-        setValue(fieldName, '');
-    };
-
-    const stripHtml = (html) => {
+export const useWysiwygField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <WysiwygFieldTypeInput {...props} config={config} />,
+    Display: (props) => <WysiwygFieldTypeDisplay {...props} config={config} />,
+    utils: {
+      stripHtml: (html) => {
         const tmp = document.createElement('div');
         tmp.innerHTML = html;
         return tmp.textContent || tmp.innerText || '';
-    };
-
-    return {
-        value,
-        clearContent,
-        isEmpty: !value || stripHtml(value).trim() === '',
-        plainText: stripHtml(value)
-    };
+      },
+      isEmpty: (value) => !value || value.trim() === ''
+    }
+  }), [config]);
 };
-
-export default WysiwygInput;

@@ -1,8 +1,8 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import axios from 'axios';
 import './style.css';
 
-const SortableChildrenFieldInput = ({ config = {}, recordId, ...inputProps }) => {
+const SortableChildrenFieldTypeInput = ({ config = {}, recordId, ...inputProps }) => {
   const name = inputProps.name || config.name;
   // Note: This field doesn't use setValue/watch/register as it manages its own state
   // It's a special field that manages children records externally
@@ -279,24 +279,33 @@ const SortableChildrenFieldInput = ({ config = {}, recordId, ...inputProps }) =>
   );
 };
 
-export const SortableChildrenFieldDisplay = ({ value, config }) => {
-  return <span className="sortable-children-field__display">-</span>;
+const SortableChildrenFieldTypeDisplay = ({ value, config }) => {
+  if (!value || !Array.isArray(value) || value.length === 0) {
+    return <span className="sortable-children-field__display sortable-children-field__display--empty">-</span>;
+  }
+
+  return (
+    <span className="sortable-children-field__display">
+      {value.length} {value.length === 1 ? 'item' : 'items'}
+    </span>
+  );
 };
 
-export const sortableChildrenFieldDefinition = {
+export const sortableChildrenFieldType = {
   type: 'sortable-children',
-  Input: SortableChildrenFieldInput,
-  Display: SortableChildrenFieldDisplay,
+  Input: SortableChildrenFieldTypeInput,
+  Display: SortableChildrenFieldTypeDisplay,
   defaultConfig: {
     sortable_children: {},
+    labelField: 'title',
+    positionField: 'position',
+    idField: 'id',
   },
 };
 
-export const useSortableChildrenField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'sortable-children',
-  };
+export const useSortableChildrenField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <SortableChildrenFieldTypeInput {...props} config={config} />,
+    Display: (props) => <SortableChildrenFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default SortableChildrenFieldInput;
