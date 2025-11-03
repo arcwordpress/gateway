@@ -2,10 +2,10 @@ import { useState, useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const ColorPickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('ColorPickerFieldInput: No "name" provided in props or config');
+    console.warn('ColorPickerFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -125,8 +125,8 @@ const ColorPickerFieldInput = ({ config = {}, error, register, setValue, watch, 
   );
 };
 
-// Display Component (for grids and read-only views)
-export const ColorPickerFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views) — not exported directly
+const ColorPickerFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="color-picker-field__display color-picker-field__display--empty">-</span>;
@@ -144,25 +144,21 @@ export const ColorPickerFieldDisplay = ({ value, config }) => {
   );
 };
 
-// Field Definition for registry
-export const colorPickerFieldDefinition = {
+// Field Type Definition for registry
+export const colorPickerFieldType = {
   type: 'color-picker',
-  Input: ColorPickerFieldInput,
-  Display: ColorPickerFieldDisplay,
+  Input: ColorPickerFieldTypeInput,
+  Display: ColorPickerFieldTypeDisplay,
   defaultConfig: {
     default: '#000000',
     showSwatches: true,
   },
 };
 
-// Hook for easy usage
+// Hook for easy usage (preferred)
 export const useColorPickerField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <ColorPickerFieldInput {...props} config={config} />,
-    Display: (props) => <ColorPickerFieldDisplay {...props} config={config} />
+    Input: (props) => <ColorPickerFieldTypeInput {...props} config={config} />,
+    Display: (props) => <ColorPickerFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const ColorPickerField = ColorPickerFieldInput;
-export default ColorPickerField;

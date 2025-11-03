@@ -4,10 +4,10 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
 
 // Input Component (for forms)
-const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('DatePickerFieldInput: No "name" provided in props or config');
+    console.warn('DatePickerFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -23,7 +23,7 @@ const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, .
     maxDate,
   } = config;
 
-  const currentValue = watch(name);
+  const currentValue = watch ? watch(name) : undefined;
   const [selectedDate, setSelectedDate] = useState(null);
 
   // Parse initial value
@@ -44,15 +44,19 @@ const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, .
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      setValue(name, `${year}-${month}-${day}`);
-    } else {
+      if (setValue) {
+        setValue(name, `${year}-${month}-${day}`);
+      }
+    } else if (setValue) {
       setValue(name, '');
     }
   };
 
-  // Register the field with react-hook-form
+  // Register the field with react-hook-form if register provided
   useEffect(() => {
-    register(name);
+    if (register && typeof register === 'function') {
+      register(name);
+    }
   }, [name, register]);
 
   // Set initial/default value only once on mount
@@ -60,6 +64,8 @@ const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, .
     if (setValue && currentValue === undefined) {
       setValue(name, defaultValue);
     }
+    // intentionally no deps to run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -98,7 +104,7 @@ const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, .
 };
 
 // Display Component (for grids and read-only views)
-export const DatePickerFieldDisplay = ({ value, config }) => {
+const DatePickerFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="date-picker-field__display date-picker-field__display--empty">-</span>;
@@ -110,7 +116,6 @@ export const DatePickerFieldDisplay = ({ value, config }) => {
     return <span className="date-picker-field__display date-picker-field__display--invalid">Invalid date</span>;
   }
 
-  const dateFormat = config?.dateFormat || 'MM/dd/yyyy';
   const formattedDate = date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: '2-digit',
@@ -120,11 +125,11 @@ export const DatePickerFieldDisplay = ({ value, config }) => {
   return <span className="date-picker-field__display">{formattedDate}</span>;
 };
 
-// Field Definition for registry
-export const datePickerFieldDefinition = {
+// Field Type Definition for registry
+export const datePickerFieldType = {
   type: 'date-picker',
-  Input: DatePickerFieldInput,
-  Display: DatePickerFieldDisplay,
+  Input: DatePickerFieldTypeInput,
+  Display: DatePickerFieldTypeDisplay,
   defaultConfig: {
     dateFormat: 'MM/dd/yyyy',
     placeholder: 'Select date...',
@@ -134,11 +139,7 @@ export const datePickerFieldDefinition = {
 // Hook for easy usage
 export const useDatePickerField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <DatePickerFieldInput {...props} config={config} />,
-    Display: (props) => <DatePickerFieldDisplay {...props} config={config} />
+    Input: (props) => <DatePickerFieldTypeInput {...props} config={config} />,
+    Display: (props) => <DatePickerFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const DatePickerField = DatePickerFieldInput;
-export default DatePickerField;
