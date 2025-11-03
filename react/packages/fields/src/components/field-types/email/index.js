@@ -77,7 +77,3 @@ export const useEmailField = (config) => {
     Display: (props) => <EmailFieldDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const EmailField = EmailFieldInput;
-export default EmailField;

@@ -4,10 +4,10 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
 
 // Input Component (for forms)
-const DateTimePickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const DateTimePickerFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('DateTimePickerFieldInput: No "name" provided in props or config');
+    console.warn('DateTimePickerFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -104,7 +104,7 @@ const DateTimePickerFieldInput = ({ config = {}, error, register, setValue, watc
 };
 
 // Display Component (for grids and read-only views)
-export const DateTimePickerFieldDisplay = ({ value, config }) => {
+const DateTimePickerFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="datetime-picker-field__display datetime-picker-field__display--empty">-</span>;
@@ -128,11 +128,11 @@ export const DateTimePickerFieldDisplay = ({ value, config }) => {
   return <span className="datetime-picker-field__display">{formattedDateTime}</span>;
 };
 
-// Field Definition for registry
-export const dateTimePickerFieldDefinition = {
+// Field Type Definition for registry
+export const dateTimePickerFieldType = {
   type: 'datetime-picker',
-  Input: DateTimePickerFieldInput,
-  Display: DateTimePickerFieldDisplay,
+  Input: DateTimePickerFieldTypeInput,
+  Display: DateTimePickerFieldTypeDisplay,
   defaultConfig: {
     dateTimeFormat: 'MM/dd/yyyy h:mm aa',
     placeholder: 'Select date and time...',
@@ -143,11 +143,7 @@ export const dateTimePickerFieldDefinition = {
 // Hook for easy usage
 export const useDateTimePickerField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <DateTimePickerFieldInput {...props} config={config} />,
-    Display: (props) => <DateTimePickerFieldDisplay {...props} config={config} />
+    Input: (props) => <DateTimePickerFieldTypeInput {...props} config={config} />,
+    Display: (props) => <DateTimePickerFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const DateTimePickerField = DateTimePickerFieldInput;
-export default DateTimePickerField;

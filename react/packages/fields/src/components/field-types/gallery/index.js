@@ -1,10 +1,11 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
-const GalleryFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+// Input Component (for forms)
+const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('GalleryFieldInput: No "name" provided in props or config');
+    console.warn('GalleryFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -329,7 +330,8 @@ const GalleryFieldInput = ({ config = {}, error, register, setValue, watch, ...i
   );
 };
 
-export const GalleryFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views)
+const GalleryFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="gallery-field__display gallery-field__display--empty">-</span>;
   }
@@ -350,21 +352,25 @@ export const GalleryFieldDisplay = ({ value, config }) => {
   return <span className="gallery-field__display gallery-field__display--empty">-</span>;
 };
 
-export const galleryFieldDefinition = {
+// Field Type Definition for registry
+export const galleryFieldType = {
   type: 'gallery',
-  Input: GalleryFieldInput,
-  Display: GalleryFieldDisplay,
+  Input: GalleryFieldTypeInput,
+  Display: GalleryFieldTypeDisplay,
   defaultConfig: {
     maxImages: null,
     thumbnailSize: 'thumbnail',
+    mediaTitle: 'Select Images',
+    mediaButtonText: 'Add to gallery',
+    buttonText: 'Add Images',
+    description: 'Click to select images from the media library',
   },
 };
 
-export const useGalleryField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'gallery',
-  };
+// Hook for easy usage
+export const useGalleryField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <GalleryFieldTypeInput {...props} config={config} />,
+    Display: (props) => <GalleryFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default GalleryFieldInput;

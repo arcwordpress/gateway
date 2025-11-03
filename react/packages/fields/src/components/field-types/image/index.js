@@ -1,10 +1,11 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
-const ImageFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+// Input Component (for forms)
+const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('ImageFieldInput: No "name" provided in props or config');
+    console.warn('ImageFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -196,7 +197,8 @@ const ImageFieldInput = ({ config = {}, error, register, setValue, watch, ...inp
   );
 };
 
-export const ImageFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views)
+const ImageFieldTypeDisplay = ({ value, config }) => {
   const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
@@ -239,21 +241,25 @@ export const ImageFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const imageFieldDefinition = {
+// Field Type Definition for registry
+export const imageFieldType = {
   type: 'image',
-  Input: ImageFieldInput,
-  Display: ImageFieldDisplay,
+  Input: ImageFieldTypeInput,
+  Display: ImageFieldTypeDisplay,
   defaultConfig: {
     imageSize: 'medium',
     previewHeight: '200px',
+    mediaTitle: 'Select Image',
+    mediaButtonText: 'Use this image',
+    buttonText: 'Select Image',
+    description: 'Click to select an image from the media library',
   },
 };
 
-export const useImageField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'image',
-  };
+// Hook for easy usage
+export const useImageField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <ImageFieldTypeInput {...props} config={config} />,
+    Display: (props) => <ImageFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default ImageFieldInput;

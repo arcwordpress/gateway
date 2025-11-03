@@ -185,3 +185,9 @@ export {
   wysiwygFieldDefinition,
   useWysiwygField,
 } from './components/field-types/wysiwyg';
+
+export * from './fieldTypeRegistry';
+export { registerInternalFieldTypes } from './registerInternalFieldTypes';
+
+// Initialize field types when the package is imported
+registerInternalFieldTypes();

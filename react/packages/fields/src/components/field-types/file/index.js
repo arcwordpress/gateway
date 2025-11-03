@@ -1,10 +1,11 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
-const FileFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+// Input Component (for forms)
+const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('FileFieldInput: No "name" provided in props or config');
+    console.warn('FileFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -256,7 +257,8 @@ const FileFieldInput = ({ config = {}, error, register, setValue, watch, ...inpu
   );
 };
 
-export const FileFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views)
+const FileFieldTypeDisplay = ({ value, config }) => {
   const [file, setFile] = useState(null);
 
   useEffect(() => {
@@ -300,20 +302,24 @@ export const FileFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const fileFieldDefinition = {
+// Field Type Definition for registry
+export const fileFieldType = {
   type: 'file',
-  Input: FileFieldInput,
-  Display: FileFieldDisplay,
+  Input: FileFieldTypeInput,
+  Display: FileFieldTypeDisplay,
   defaultConfig: {
     allowedTypes: null,
+    mediaTitle: 'Select File',
+    mediaButtonText: 'Use this file',
+    buttonText: 'Select File',
+    description: 'Click to select a file from the media library',
   },
 };
 
-export const useFileField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'file',
-  };
+// Hook for easy usage
+export const useFileField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <FileFieldTypeInput {...props} config={config} />,
+    Display: (props) => <FileFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default FileFieldInput;

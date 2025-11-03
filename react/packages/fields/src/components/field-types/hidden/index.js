@@ -1,9 +1,10 @@
+import { useMemo } from '@wordpress/element';
 import './style.css';
 
-const HiddenFieldInput = ({ config = {}, register, ...inputProps }) => {
+const HiddenFieldTypeInput = ({ config = {}, register, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('HiddenFieldInput: No "name" provided in props or config');
+    console.warn('HiddenFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -20,7 +21,7 @@ const HiddenFieldInput = ({ config = {}, register, ...inputProps }) => {
   );
 };
 
-export const HiddenFieldDisplay = ({ value, config }) => {
+const HiddenFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="hidden-field__display hidden-field__display--empty">-</span>;
   }
@@ -28,18 +29,21 @@ export const HiddenFieldDisplay = ({ value, config }) => {
   return <span className="hidden-field__display">{String(value)}</span>;
 };
 
-export const hiddenFieldDefinition = {
+// Field Type Definition for registry
+export const hiddenFieldType = {
   type: 'hidden',
-  Input: HiddenFieldInput,
-  Display: HiddenFieldDisplay,
-  defaultConfig: {},
+  Input: HiddenFieldTypeInput,
+  Display: HiddenFieldTypeDisplay,
+  defaultConfig: {
+    value: '',
+    default: ''
+  },
 };
 
-export const useHiddenField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'hidden',
-  };
+// Hook for easy usage
+export const useHiddenField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <HiddenFieldTypeInput {...props} config={config} />,
+    Display: (props) => <HiddenFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default HiddenFieldInput;
