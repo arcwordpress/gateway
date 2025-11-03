@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
 import axios from 'axios';
 import './style.css';
 
-const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('PostObjectFieldInput: No "name" provided in props or config');
+    console.warn('PostObjectFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -21,7 +21,7 @@ const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, .
     placeholder,
   } = config;
 
-  const currentValue = watch(name);
+  const currentValue = watch ? watch(name) : undefined;
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,20 +30,26 @@ const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, .
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    register(name);
+    if (register && typeof register === 'function') {
+      register(name);
+    }
   }, [name, register]);
 
   useEffect(() => {
     if (setValue && currentValue === undefined) {
       setValue(name, defaultValue);
     }
+    // run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (currentValue) {
       fetchSelectedPost(currentValue);
+    } else {
+      setSelectedPost(null);
     }
-  }, [currentValue]);
+  }, [currentValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -133,7 +139,9 @@ const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, .
 
   const handleSelectPost = (post) => {
     setSelectedPost(post);
-    setValue(name, post.id);
+    if (setValue) {
+      setValue(name, post.id);
+    }
     setSearchTerm('');
     setSearchResults([]);
     setIsOpen(false);
@@ -141,7 +149,9 @@ const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, .
 
   const handleClear = () => {
     setSelectedPost(null);
-    setValue(name, '');
+    if (setValue) {
+      setValue(name, '');
+    }
     setSearchTerm('');
     setSearchResults([]);
   };
@@ -292,15 +302,17 @@ const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, .
   );
 };
 
-export const PostObjectFieldDisplay = ({ value, config }) => {
+const PostObjectFieldTypeDisplay = ({ value, config }) => {
   const [post, setPost] = useState(null);
   const postType = config?.postType || 'post';
 
   useEffect(() => {
     if (value) {
       fetchPost(value);
+    } else {
+      setPost(null);
     }
-  }, [value]);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchPost = async (postId) => {
     try {
@@ -331,21 +343,19 @@ export const PostObjectFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const postObjectFieldDefinition = {
+export const postObjectFieldType = {
   type: 'post-object',
-  Input: PostObjectFieldInput,
-  Display: PostObjectFieldDisplay,
+  Input: PostObjectFieldTypeInput,
+  Display: PostObjectFieldTypeDisplay,
   defaultConfig: {
     postType: 'post',
     resultsPerPage: 10,
   },
 };
 
-export const usePostObjectField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'post-object',
-  };
+export const usePostObjectField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <PostObjectFieldTypeInput {...props} config={config} />,
+    Display: (props) => <PostObjectFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default PostObjectFieldInput;

@@ -3,10 +3,10 @@ import SimpleMDE from 'react-simplemde-editor';
 import 'easymde/dist/easymde.min.css';
 import './style.css';
 
-const MarkdownFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const MarkdownFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('MarkdownFieldInput: No "name" provided in props or config');
+    console.warn('MarkdownFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -35,6 +35,8 @@ const MarkdownFieldInput = ({ config = {}, error, register, setValue, watch, ...
     if (defaultValue && setValue && currentValue === undefined) {
       setValue(name, defaultValue);
     }
+    // run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (value) => {
@@ -102,7 +104,7 @@ const MarkdownFieldInput = ({ config = {}, error, register, setValue, watch, ...
   );
 };
 
-export const MarkdownFieldDisplay = ({ value, config }) => {
+const MarkdownFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="markdown-field__display markdown-field__display--empty">-</span>;
   }
@@ -116,21 +118,19 @@ export const MarkdownFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const markdownFieldDefinition = {
+export const markdownFieldType = {
   type: 'markdown',
-  Input: MarkdownFieldInput,
-  Display: MarkdownFieldDisplay,
+  Input: MarkdownFieldTypeInput,
+  Display: MarkdownFieldTypeDisplay,
   defaultConfig: {
     minHeight: '200px',
     maxHeight: '500px',
   },
 };
 
-export const useMarkdownField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'markdown',
-  };
+export const useMarkdownField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <MarkdownFieldTypeInput {...props} config={config} />,
+    Display: (props) => <MarkdownFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default MarkdownFieldInput;

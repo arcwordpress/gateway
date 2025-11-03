@@ -1,10 +1,10 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
-const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('OEmbedFieldInput: No "name" provided in props or config');
+    console.warn('OEmbedFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -16,7 +16,7 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
     placeholder = 'https://www.youtube.com/watch?v=...',
   } = config;
 
-  const currentValue = watch(name);
+  const currentValue = watch ? watch(name) : undefined;
   const [url, setUrl] = useState('');
   const [embedData, setEmbedData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,13 +24,17 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    register(name);
+    if (register && typeof register === 'function') {
+      register(name);
+    }
   }, [name, register]);
 
   useEffect(() => {
     if (setValue && currentValue === undefined) {
       setValue(name, defaultValue);
     }
+    // run only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
       setUrl(currentValue);
       fetchEmbed(currentValue);
     }
-  }, [currentValue]);
+  }, [currentValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchEmbed = async (embedUrl) => {
     if (!embedUrl) {
@@ -79,7 +83,9 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
   const handleSubmit = (e) => {
     e.preventDefault();
     if (url) {
-      setValue(name, url);
+      if (setValue) {
+        setValue(name, url);
+      }
       fetchEmbed(url);
     }
   };
@@ -88,7 +94,9 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
     setUrl('');
     setEmbedData(null);
     setEmbedError(null);
-    setValue(name, '');
+    if (setValue) {
+      setValue(name, '');
+    }
     setIsEditing(false);
   };
 
@@ -240,7 +248,8 @@ const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...in
   );
 };
 
-export const OEmbedFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views)
+const OEmbedFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="oembed-field__display oembed-field__display--empty">-</span>;
   }
@@ -257,18 +266,18 @@ export const OEmbedFieldDisplay = ({ value, config }) => {
   );
 };
 
-export const oembedFieldDefinition = {
+// Field Type Definition for registry
+export const oembedFieldType = {
   type: 'oembed',
-  Input: OEmbedFieldInput,
-  Display: OEmbedFieldDisplay,
+  Input: OEmbedFieldTypeInput,
+  Display: OEmbedFieldTypeDisplay,
   defaultConfig: {},
 };
 
-export const useOEmbedField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'oembed',
-  };
+// Hook for easy usage
+export const useOEmbedField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <OEmbedFieldTypeInput {...props} config={config} />,
+    Display: (props) => <OEmbedFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default OEmbedFieldInput;

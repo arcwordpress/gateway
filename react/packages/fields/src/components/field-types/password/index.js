@@ -1,10 +1,10 @@
-import { useState } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 import './style.css';
 
-const PasswordFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+const PasswordFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
   const name = config.name;
   if (!name) {
-    console.warn('PasswordFieldInput: No "name" provided in config');
+    console.warn('PasswordFieldTypeInput: No "name" provided in config');
     return null;
   }
 
@@ -39,7 +39,7 @@ const PasswordFieldInput = ({ config = {}, error, register, setValue, watch }) =
         <input
           type={showPassword ? 'text' : 'password'}
           id={name}
-          {...register(name)}
+          {...(register ? register(name) : {})}
           placeholder={placeholder}
           autoComplete={autoComplete}
           className={inputClasses.join(' ')}
@@ -72,7 +72,7 @@ const PasswordFieldInput = ({ config = {}, error, register, setValue, watch }) =
   );
 };
 
-export const PasswordFieldDisplay = ({ value, config }) => {
+const PasswordFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="password-field__display password-field__display--empty">-</span>;
   }
@@ -80,20 +80,18 @@ export const PasswordFieldDisplay = ({ value, config }) => {
   return <span className="password-field__display password-field__display--masked">••••••••</span>;
 };
 
-export const passwordFieldDefinition = {
+export const passwordFieldType = {
   type: 'password',
-  Input: PasswordFieldInput,
-  Display: PasswordFieldDisplay,
+  Input: PasswordFieldTypeInput,
+  Display: PasswordFieldTypeDisplay,
   defaultConfig: {
     autoComplete: 'current-password',
   },
 };
 
-export const usePasswordField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'password',
-  };
+export const usePasswordField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <PasswordFieldTypeInput {...props} config={config} />,
+    Display: (props) => <PasswordFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default PasswordFieldInput;

@@ -1,10 +1,11 @@
-import { useState, useEffect } from '@wordpress/element';
+import { useMemo, useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const LinkFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+// Input Component (for forms)
+const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
   const name = inputProps.name || config.name;
   if (!name) {
-    console.warn('LinkFieldInput: No "name" provided in props or config');
+    console.warn('LinkFieldTypeInput: No "name" provided in props or config');
     return null;
   }
 
@@ -250,7 +251,8 @@ const LinkFieldInput = ({ config = {}, error, register, setValue, watch, ...inpu
   );
 };
 
-export const LinkFieldDisplay = ({ value, config }) => {
+// Display Component (for grids and read-only views)
+const LinkFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="link-field__display link-field__display--empty">-</span>;
   }
@@ -276,21 +278,21 @@ export const LinkFieldDisplay = ({ value, config }) => {
   return <span className="link-field__display link-field__display--empty">-</span>;
 };
 
-export const linkFieldDefinition = {
+// Field Type Definition for registry
+export const linkFieldType = {
   type: 'link',
-  Input: LinkFieldInput,
-  Display: LinkFieldDisplay,
+  Input: LinkFieldTypeInput,
+  Display: LinkFieldTypeDisplay,
   defaultConfig: {
-    enableTarget: true,
-    requireTitle: false,
+    placeholder: '',
+    openInNewTab: false,
   },
 };
 
-export const useLinkField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'link',
-  };
+// Hook for easy usage
+export const useLinkField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <LinkFieldTypeInput {...props} config={config} />,
+    Display: (props) => <LinkFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default LinkFieldInput;

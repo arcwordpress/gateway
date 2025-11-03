@@ -1,9 +1,10 @@
+import { useMemo } from '@wordpress/element';
 import './style.css';
 
-const RadioFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+const RadioFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
   const name = config.name;
   if (!name) {
-    console.warn('RadioFieldInput: No "name" provided in config');
+    console.warn('RadioFieldTypeInput: No "name" provided in config');
     return null;
   }
 
@@ -45,7 +46,7 @@ const RadioFieldInput = ({ config = {}, error, register, setValue, watch }) => {
               type="radio"
               id={`${name}-${index}`}
               value={option.value}
-              {...register(name)}
+              {...(register ? register(name) : {})}
               defaultChecked={defaultValue === option.value}
               className="radio-field__input"
             />
@@ -69,7 +70,7 @@ const RadioFieldInput = ({ config = {}, error, register, setValue, watch }) => {
   );
 };
 
-export const RadioFieldDisplay = ({ value, config }) => {
+const RadioFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="radio-field__display radio-field__display--empty">-</span>;
   }
@@ -88,21 +89,19 @@ export const RadioFieldDisplay = ({ value, config }) => {
   return <span className="radio-field__display">{displayValue}</span>;
 };
 
-export const radioFieldDefinition = {
+export const radioFieldType = {
   type: 'radio',
-  Input: RadioFieldInput,
-  Display: RadioFieldDisplay,
+  Input: RadioFieldTypeInput,
+  Display: RadioFieldTypeDisplay,
   defaultConfig: {
     options: [],
     layout: 'vertical',
   },
 };
 
-export const useRadioField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'radio',
-  };
+export const useRadioField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <RadioFieldTypeInput {...props} config={config} />,
+    Display: (props) => <RadioFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default RadioFieldInput;

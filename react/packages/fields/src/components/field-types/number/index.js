@@ -1,9 +1,10 @@
+import { useMemo } from '@wordpress/element';
 import './style.css';
 
-const NumberFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+const NumberFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
   const name = config.name;
   if (!name) {
-    console.warn('NumberFieldInput: No "name" provided in config');
+    console.warn('NumberFieldTypeInput: No "name" provided in config');
     return null;
   }
 
@@ -53,7 +54,7 @@ const NumberFieldInput = ({ config = {}, error, register, setValue, watch }) => 
   );
 };
 
-export const NumberFieldDisplay = ({ value, config }) => {
+const NumberFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="number-field__display number-field__display--empty">-</span>;
   }
@@ -61,20 +62,18 @@ export const NumberFieldDisplay = ({ value, config }) => {
   return <span className="number-field__display">{String(value)}</span>;
 };
 
-export const numberFieldDefinition = {
+export const numberFieldType = {
   type: 'number',
-  Input: NumberFieldInput,
-  Display: NumberFieldDisplay,
+  Input: NumberFieldTypeInput,
+  Display: NumberFieldTypeDisplay,
   defaultConfig: {
     step: 'any',
   },
 };
 
-export const useNumberField = (fieldName) => {
-  return {
-    fieldName,
-    fieldType: 'number',
-  };
+export const useNumberField = (config) => {
+  return useMemo(() => ({
+    Input: (props) => <NumberFieldTypeInput {...props} config={config} />,
+    Display: (props) => <NumberFieldTypeDisplay {...props} config={config} />
+  }), [config]);
 };
-
-export default NumberFieldInput;
