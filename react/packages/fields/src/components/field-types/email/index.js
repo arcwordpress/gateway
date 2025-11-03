@@ -2,7 +2,7 @@ import { useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const EmailFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+const EmailFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
   const name = config.name;
   if (!name) {
     console.warn('EmailFieldInput: No "name" provided in config');
@@ -47,7 +47,7 @@ const EmailFieldInput = ({ config = {}, error, register, setValue, watch }) => {
 };
 
 // Display Component (for grids and read-only views)
-export const EmailFieldDisplay = ({ value, config }) => {
+export const EmailFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="email-field__display email-field__display--empty">-</span>;
@@ -61,10 +61,10 @@ export const EmailFieldDisplay = ({ value, config }) => {
 };
 
 // Field Definition for registry
-export const emailFieldDefinition = {
+export const emailFieldType = {
   type: 'email',
-  Input: EmailFieldInput,
-  Display: EmailFieldDisplay,
+  Input: EmailFieldTypeInput,
+  Display: EmailFieldTypeDisplay,
   defaultConfig: {
     placeholder: 'Enter email address',
   },
@@ -73,7 +73,7 @@ export const emailFieldDefinition = {
 // Hook for easy usage
 export const useEmailField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <EmailFieldInput {...props} config={config} />,
-    Display: (props) => <EmailFieldDisplay {...props} config={config} />
+    Input: (props) => <EmailFieldTypeInput {...props} config={config} />,
+    Display: (props) => <EmailFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };

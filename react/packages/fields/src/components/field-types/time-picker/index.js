@@ -130,7 +130,7 @@ export const TimePickerDisplay = ({ value, config = {} }) => {
 /**
  * Field Definition for Registry
  */
-export const timePickerFieldDefinition = {
+export const timePickerFieldType = {
     type: 'time-picker',
     Input: TimePickerInput,
     Display: TimePickerDisplay,
@@ -162,5 +162,3 @@ export const useTimePickerField = (fieldName, fieldConfig, formMethods) => {
         hasValue: !!value
     };
 };
-
-export default TimePickerInput;

@@ -72,5 +72,3 @@ export const useTextareaField = (config) => {
         Display: (props) => <TextareaFieldTypeDisplay {...props} config={config} />
     }), [config]);
 };
-
-export default TextareaInput;

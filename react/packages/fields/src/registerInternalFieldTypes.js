@@ -1,5 +1,5 @@
 import { registerFieldType } from './fieldTypeRegistry';
-import { relationFieldType } from './components/field-types/RelationField';
+import { relationFieldType } from './components/field-types/relation';
 import { textFieldType } from './components/field-types/text';
 import { buttonGroupFieldType } from './components/field-types/button-group';
 import { checkboxFieldType } from './components/field-types/checkbox';

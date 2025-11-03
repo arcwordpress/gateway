@@ -111,11 +111,3 @@ export const getFieldTypeInput = (type) => {
   const definition = getFieldTypeDefinition(type);
   return definition ? definition.Input : null;
 };
-
-/**
- * Clear all registered field types from the registry
- * Useful for testing purposes
- */
-export const clearFieldTypeRegistry = () => {
-  fieldTypeRegistry.clear();
-};
