@@ -7,7 +7,13 @@ import './style.css';
  * UserInput Component
  * Renders a user selection field with search and dropdown
  */
-export const UserInput = ({ fieldName, fieldConfig = {}, register, setValue, watch, error }) => {
+export const UserInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+    const name = inputProps.name || config.name;
+    if (!name) {
+        console.warn('UserInput: No "name" provided in props or config');
+        return null;
+    }
+
     const {
         label = '',
         placeholder = 'Search for a user...',
@@ -15,7 +21,7 @@ export const UserInput = ({ fieldName, fieldConfig = {}, register, setValue, wat
         default: defaultValue = null,
         multiple = false,
         role = ''
-    } = fieldConfig;
+    } = config;
 
     const [selectedUser, setSelectedUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,14 +29,14 @@ export const UserInput = ({ fieldName, fieldConfig = {}, register, setValue, wat
     const [isSearching, setIsSearching] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
-    const currentValue = watch(fieldName);
+    const currentValue = watch(name);
 
     // Initialize value on mount
     useEffect(() => {
-        register(fieldName);
+        register(name);
 
         if (defaultValue && !currentValue) {
-            setValue(fieldName, defaultValue);
+            setValue(name, defaultValue);
             fetchSelectedUser(defaultValue);
         } else if (currentValue) {
             fetchSelectedUser(currentValue);
@@ -118,7 +124,7 @@ export const UserInput = ({ fieldName, fieldConfig = {}, register, setValue, wat
 
     const handleSelectUser = (user) => {
         setSelectedUser(user);
-        setValue(fieldName, user.id);
+        setValue(name, user.id);
         setSearchQuery('');
         setShowDropdown(false);
         setSearchResults([]);
@@ -126,14 +132,14 @@ export const UserInput = ({ fieldName, fieldConfig = {}, register, setValue, wat
 
     const handleClearSelection = () => {
         setSelectedUser(null);
-        setValue(fieldName, null);
+        setValue(name, null);
         setSearchQuery('');
     };
 
     return (
         <div className="user-field">
             {label && (
-                <label htmlFor={fieldName} className="user-field__label">
+                <label htmlFor={name} className="user-field__label">
                     {label}
                 </label>
             )}

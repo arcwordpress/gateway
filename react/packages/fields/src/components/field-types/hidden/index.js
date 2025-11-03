@@ -1,13 +1,19 @@
 import './style.css';
 
-const HiddenFieldInput = ({ fieldName, fieldConfig, register }) => {
-  const fieldValue = fieldConfig.value || fieldConfig.default || '';
+const HiddenFieldInput = ({ config = {}, register, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('HiddenFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const fieldValue = config.value || config.default || '';
 
   return (
     <input
       type="hidden"
-      id={fieldName}
-      {...register(fieldName)}
+      id={name}
+      {...register(name)}
       defaultValue={fieldValue}
       className="hidden-field__input"
     />

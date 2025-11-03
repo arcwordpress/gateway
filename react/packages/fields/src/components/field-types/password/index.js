@@ -1,7 +1,23 @@
 import { useState } from '@wordpress/element';
 import './style.css';
 
-const PasswordFieldInput = ({ fieldName, fieldConfig, register, error }) => {
+const PasswordFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('PasswordFieldInput: No "name" provided in config');
+    return null;
+  }
+
+  const {
+    label,
+    placeholder = '',
+    required = false,
+    helpText,
+    autoComplete = 'current-password'
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -15,17 +31,17 @@ const PasswordFieldInput = ({ fieldName, fieldConfig, register, error }) => {
 
   return (
     <div className="password-field">
-      <label htmlFor={fieldName} className="password-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="password-field__required">*</span>}
+      <label htmlFor={name} className="password-field__label">
+        {labelText}
+        {required && <span className="password-field__required">*</span>}
       </label>
       <div className="password-field__wrapper">
         <input
           type={showPassword ? 'text' : 'password'}
-          id={fieldName}
-          {...register(fieldName)}
-          placeholder={fieldConfig.placeholder || ''}
-          autoComplete={fieldConfig.autoComplete || 'current-password'}
+          id={name}
+          {...register(name)}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
           className={inputClasses.join(' ')}
         />
         <button
@@ -46,8 +62,8 @@ const PasswordFieldInput = ({ fieldName, fieldConfig, register, error }) => {
           )}
         </button>
       </div>
-      {fieldConfig.helpText && (
-        <p className="password-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="password-field__help">{helpText}</p>
       )}
       {error && (
         <p className="password-field__error">{error.message}</p>

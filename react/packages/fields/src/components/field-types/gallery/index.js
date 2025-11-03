@@ -1,19 +1,38 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const GalleryFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('GalleryFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    maxImages = null,
+    thumbnailSize = 'thumbnail',
+    mediaTitle = 'Select Images',
+    mediaButtonText = 'Add to gallery',
+    buttonText = 'Add Images',
+    description = 'Click to select images from the media library',
+  } = config;
+
+  const currentValue = watch(name);
   const [images, setImages] = useState([]);
   const [draggedIndex, setDraggedIndex] = useState(null);
 
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -50,12 +69,11 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
         })
       );
 
-      const size = fieldConfig.thumbnailSize || 'thumbnail';
       const imageList = mediaData
         .filter(media => media !== null)
         .map(media => ({
           id: media.id,
-          url: media.media_details?.sizes?.[size]?.source_url || media.source_url,
+          url: media.media_details?.sizes?.[thumbnailSize]?.source_url || media.source_url,
           fullUrl: media.source_url,
           alt: media.alt_text || '',
           title: media.title?.rendered || '',
@@ -74,9 +92,9 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
     }
 
     const frame = window.wp.media({
-      title: fieldConfig.mediaTitle || 'Select Images',
+      title: mediaTitle,
       button: {
-        text: fieldConfig.mediaButtonText || 'Add to gallery',
+        text: mediaButtonText,
       },
       multiple: true,
       library: {
@@ -97,11 +115,10 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
 
     frame.on('select', () => {
       const attachments = frame.state().get('selection').toJSON();
-      const size = fieldConfig.thumbnailSize || 'thumbnail';
 
       const newImages = attachments.map(attachment => ({
         id: attachment.id,
-        url: attachment.sizes?.[size]?.url || attachment.url,
+        url: attachment.sizes?.[thumbnailSize]?.url || attachment.url,
         fullUrl: attachment.url,
         alt: attachment.alt || '',
         title: attachment.title || '',
@@ -116,7 +133,7 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
 
   const updateFormValue = (imageList) => {
     const ids = imageList.map(img => img.id);
-    setValue(fieldName, JSON.stringify(ids));
+    setValue(name, JSON.stringify(ids));
   };
 
   const removeImage = (indexToRemove) => {
@@ -151,7 +168,6 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
     setDraggedIndex(null);
   };
 
-  const maxImages = fieldConfig.maxImages || null;
   const canAddMore = !maxImages || images.length < maxImages;
 
   const containerClasses = ['gallery-field__container'];
@@ -161,13 +177,13 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
 
   return (
     <div className="gallery-field">
-      <label htmlFor={fieldName} className="gallery-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="gallery-field__required">*</span>}
+      <label htmlFor={name} className="gallery-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="gallery-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="gallery-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="gallery-field__help">{helpText}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -256,7 +272,7 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
                     type="button"
                     onClick={() => {
                       setImages([]);
-                      setValue(fieldName, '');
+                      setValue(name, '');
                     }}
                     className="gallery-field__button gallery-field__button--clear"
                   >
@@ -291,11 +307,11 @@ const GalleryFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, 
                 onClick={openMediaLibrary}
                 className="gallery-field__button gallery-field__button--add"
               >
-                {fieldConfig.buttonText || 'Add Images'}
+                {buttonText}
               </button>
             </div>
             <p className="gallery-field__empty-description">
-              {fieldConfig.description || 'Click to select images from the media library'}
+              {description}
             </p>
             {maxImages && (
               <p className="gallery-field__empty-max">

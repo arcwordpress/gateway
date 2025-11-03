@@ -8,7 +8,13 @@ import './style.css';
  * TimePickerInput Component
  * Renders a time picker field using react-datepicker
  */
-export const TimePickerInput = ({ fieldName, fieldConfig = {}, register, setValue, watch, error }) => {
+export const TimePickerInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+    const name = inputProps.name || config.name;
+    if (!name) {
+        console.warn('TimePickerInput: No "name" provided in props or config');
+        return null;
+    }
+
     const {
         label = '',
         placeholder = '',
@@ -17,17 +23,17 @@ export const TimePickerInput = ({ fieldName, fieldConfig = {}, register, setValu
         timeIntervals = 15,
         timeFormat = 'h:mm aa',
         dateFormat = 'h:mm aa'
-    } = fieldConfig;
+    } = config;
 
     const [selectedTime, setSelectedTime] = useState(null);
-    const currentValue = watch(fieldName);
+    const currentValue = watch(name);
 
     // Initialize value on mount
     useEffect(() => {
-        register(fieldName);
+        register(name);
 
         if (defaultValue && !currentValue) {
-            setValue(fieldName, defaultValue);
+            setValue(name, defaultValue);
         }
 
         if (currentValue) {
@@ -55,16 +61,16 @@ export const TimePickerInput = ({ fieldName, fieldConfig = {}, register, setValu
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = '00';
-            setValue(fieldName, `${hours}:${minutes}:${seconds}`);
+            setValue(name, `${hours}:${minutes}:${seconds}`);
         } else {
-            setValue(fieldName, '');
+            setValue(name, '');
         }
     };
 
     return (
         <div className="time-picker-field">
             {label && (
-                <label htmlFor={fieldName} className="time-picker-field__label">
+                <label htmlFor={name} className="time-picker-field__label">
                     {label}
                 </label>
             )}
@@ -91,8 +97,8 @@ export const TimePickerInput = ({ fieldName, fieldConfig = {}, register, setValu
  * TimePickerDisplay Component
  * Displays time value in formatted string
  */
-export const TimePickerDisplay = ({ value, fieldConfig = {} }) => {
-    const { label = '' } = fieldConfig;
+export const TimePickerDisplay = ({ value, config = {} }) => {
+    const { label = '' } = config;
 
     const formatTime = (timeString) => {
         if (!timeString) return 'No time selected';

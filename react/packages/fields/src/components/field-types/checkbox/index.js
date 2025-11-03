@@ -2,27 +2,42 @@ import { useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const CheckboxFieldInput = ({ fieldName, fieldConfig, register, error }) => {
+const CheckboxFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('CheckboxFieldTypeInput: No "name" provided in config');
+    return null;
+  }
+
+  const {
+    label,
+    required = false,
+    help = '',
+    default: defaultChecked = false
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   return (
     <div className="checkbox-field">
       <div className="checkbox-field__container">
         <input
           type="checkbox"
-          id={fieldName}
-          {...register(fieldName)}
-          defaultChecked={fieldConfig.default || false}
+          id={name}
+          {...register(name)}
+          defaultChecked={defaultChecked}
           className={`checkbox-field__input ${error ? 'checkbox-field__input--error' : ''}`}
         />
         <label
-          htmlFor={fieldName}
+          htmlFor={name}
           className="checkbox-field__label"
         >
-          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          {fieldConfig.required && <span className="checkbox-field__required">*</span>}
+          {labelText}
+          {required && <span className="checkbox-field__required">*</span>}
         </label>
       </div>
-      {fieldConfig.help && (
-        <p className="checkbox-field__help">{fieldConfig.help}</p>
+      {help && (
+        <p className="checkbox-field__help">{help}</p>
       )}
       {error && (
         <p className="checkbox-field__error">{error.message}</p>
@@ -32,7 +47,7 @@ const CheckboxFieldInput = ({ fieldName, fieldConfig, register, error }) => {
 };
 
 // Display Component (for grids and read-only views)
-export const CheckboxFieldDisplay = ({ value, config }) => {
+const CheckboxFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined values
   if (value === null || value === undefined) {
     return <span className="checkbox-field__display checkbox-field__display--unchecked">☐</span>;
@@ -48,11 +63,11 @@ export const CheckboxFieldDisplay = ({ value, config }) => {
   );
 };
 
-// Field Definition for registry
-export const checkboxFieldDefinition = {
+// Field Type Definition for registry
+export const checkboxFieldType = {
   type: 'checkbox',
-  Input: CheckboxFieldInput,
-  Display: CheckboxFieldDisplay,
+  Input: CheckboxFieldTypeInput,
+  Display: CheckboxFieldTypeDisplay,
   defaultConfig: {
     default: false,
   },
@@ -61,11 +76,7 @@ export const checkboxFieldDefinition = {
 // Hook for easy usage
 export const useCheckboxField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <CheckboxFieldInput {...props} config={config} />,
-    Display: (props) => <CheckboxFieldDisplay {...props} config={config} />
+    Input: (props) => <CheckboxFieldTypeInput {...props} config={config} />,
+    Display: (props) => <CheckboxFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const CheckboxField = CheckboxFieldInput;
-export default CheckboxField;

@@ -1,23 +1,36 @@
 import './style.css';
 
-const ReadOnlyFieldInput = ({ fieldName, fieldConfig, register, value }) => {
-  const fieldValue = value || fieldConfig.value || fieldConfig.default || '';
+const ReadOnlyFieldInput = ({ config = {}, register, value, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('ReadOnlyFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    help,
+    value: configValue,
+    default: defaultValue = '',
+  } = config;
+
+  const fieldValue = value || configValue || defaultValue;
 
   return (
     <div className="readonly-field">
-      <label htmlFor={fieldName} className="readonly-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+      <label htmlFor={name} className="readonly-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
       </label>
       <input
         type="text"
-        id={fieldName}
-        {...register(fieldName)}
+        id={name}
+        {...register(name)}
         defaultValue={fieldValue}
         readOnly
         className="readonly-field__input"
       />
-      {fieldConfig.help && (
-        <p className="readonly-field__help">{fieldConfig.help}</p>
+      {help && (
+        <p className="readonly-field__help">{help}</p>
       )}
     </div>
   );

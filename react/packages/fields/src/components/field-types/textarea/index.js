@@ -5,27 +5,33 @@ import './style.css';
  * TextareaInput Component
  * Renders a textarea input field for multi-line text entry
  */
-export const TextareaInput = ({ fieldName, fieldConfig = {}, register, error }) => {
+export const TextareaInput = ({ config = {}, error, register, setValue, watch }) => {
+    const name = config.name;
+    if (!name) {
+        console.warn('TextareaInput: No "name" provided in config');
+        return null;
+    }
+
     const {
         label = '',
         placeholder = '',
         help = '',
         rows = 5,
         default: defaultValue = ''
-    } = fieldConfig;
+    } = config;
 
     return (
         <div className="textarea-field">
             {label && (
-                <label htmlFor={fieldName} className="textarea-field__label">
+                <label htmlFor={name} className="textarea-field__label">
                     {label}
                 </label>
             )}
 
             <textarea
-                id={fieldName}
+                id={name}
                 className="textarea-field__input"
-                {...register(fieldName)}
+                {...register(name)}
                 defaultValue={defaultValue}
                 rows={rows}
                 placeholder={placeholder}

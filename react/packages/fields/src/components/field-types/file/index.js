@@ -1,19 +1,37 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const FileFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('FileFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    allowedTypes = null,
+    mediaTitle = 'Select File',
+    mediaButtonText = 'Use this file',
+    buttonText = 'Select File',
+    description = 'Click to select a file from the media library',
+  } = config;
+
+  const currentValue = watch(name);
   const [file, setFile] = useState(null);
   const [fileId, setFileId] = useState(null);
 
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -56,12 +74,10 @@ const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
       return;
     }
 
-    const allowedTypes = fieldConfig.allowedTypes || null;
-
     const frameConfig = {
-      title: fieldConfig.mediaTitle || 'Select File',
+      title: mediaTitle,
       button: {
-        text: fieldConfig.mediaButtonText || 'Use this file',
+        text: mediaButtonText,
       },
       multiple: false,
     };
@@ -78,7 +94,7 @@ const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
       const attachment = frame.state().get('selection').first().toJSON();
 
       setFileId(attachment.id);
-      setValue(fieldName, attachment.id);
+      setValue(name, attachment.id);
 
       setFile({
         id: attachment.id,
@@ -95,7 +111,7 @@ const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
   const removeFile = () => {
     setFileId(null);
     setFile(null);
-    setValue(fieldName, '');
+    setValue(name, '');
   };
 
   const formatFileSize = (bytes) => {
@@ -128,13 +144,13 @@ const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
 
   return (
     <div className="file-field">
-      <label htmlFor={fieldName} className="file-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="file-field__required">*</span>}
+      <label htmlFor={name} className="file-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="file-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="file-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="file-field__help">{helpText}</p>
       )}
 
       <div className={inputClasses.join(' ')}>
@@ -216,17 +232,17 @@ const FileFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
                 onClick={openMediaLibrary}
                 className="file-field__button file-field__button--select"
               >
-                {fieldConfig.buttonText || 'Select File'}
+                {buttonText}
               </button>
             </div>
             <p className="file-field__empty-description">
-              {fieldConfig.description || 'Click to select a file from the media library'}
+              {description}
             </p>
-            {fieldConfig.allowedTypes && (
+            {allowedTypes && (
               <p className="file-field__empty-types">
-                Allowed types: {Array.isArray(fieldConfig.allowedTypes)
-                  ? fieldConfig.allowedTypes.join(', ')
-                  : fieldConfig.allowedTypes}
+                Allowed types: {Array.isArray(allowedTypes)
+                  ? allowedTypes.join(', ')
+                  : allowedTypes}
               </p>
             )}
           </div>

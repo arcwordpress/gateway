@@ -2,26 +2,42 @@ import { useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const EmailFieldInput = ({ fieldName, fieldConfig, register, error }) => {
+const EmailFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('EmailFieldInput: No "name" provided in config');
+    return null;
+  }
+
+  const {
+    label,
+    placeholder = 'Enter email address',
+    required = false,
+    help,
+    default: defaultValue = ''
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   return (
     <div className="email-field">
       <label
-        htmlFor={fieldName}
+        htmlFor={name}
         className="email-field__label"
       >
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="email-field__required">*</span>}
+        {labelText}
+        {required && <span className="email-field__required">*</span>}
       </label>
       <input
         type="email"
-        id={fieldName}
-        {...register(fieldName)}
-        defaultValue={fieldConfig.default || ''}
-        placeholder={fieldConfig.placeholder || 'Enter email address'}
+        id={name}
+        {...register(name)}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
         className={`email-field__input ${error ? 'email-field__input--error' : ''}`}
       />
-      {fieldConfig.help && (
-        <p className="email-field__help">{fieldConfig.help}</p>
+      {help && (
+        <p className="email-field__help">{help}</p>
       )}
       {error && (
         <p className="email-field__error">{error.message}</p>

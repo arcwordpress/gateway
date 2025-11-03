@@ -2,18 +2,30 @@ import { useState, useEffect, useMemo } from '@wordpress/element';
 import axios from 'axios';
 
 // Input Component (for forms)
-const RelationFieldInput = ({ fieldName, fieldConfig, register, error }) => {
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
+const RelationFieldInput = ({ config = {}, error, register, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('RelationFieldInput: No "name" provided in props or config');
+    return null;
+  }
 
-  const relationConfig = fieldConfig.relation || {};
+  const {
+    label,
+    required,
+    helpText,
+    relation: relationConfig = {},
+  } = config;
+
   const {
     endpoint,
     labelField = 'title',
     valueField = 'id',
     placeholder = 'Select an option...',
   } = relationConfig;
+
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
     if (!endpoint) {
@@ -58,15 +70,15 @@ const RelationFieldInput = ({ fieldName, fieldConfig, register, error }) => {
   return (
     <div>
       <label
-        htmlFor={fieldName}
+        htmlFor={name}
         className="block text-sm font-medium text-gray-700 mb-1"
       >
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="text-sm text-gray-500 mb-2">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="text-sm text-gray-500 mb-2">{helpText}</p>
       )}
 
       {loading ? (
@@ -79,8 +91,8 @@ const RelationFieldInput = ({ fieldName, fieldConfig, register, error }) => {
         </div>
       ) : (
         <select
-          id={fieldName}
-          {...register(fieldName)}
+          id={name}
+          {...register(name)}
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
             error
               ? 'border-red-500 focus:ring-red-500'

@@ -2,14 +2,28 @@ import { useState, useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const ColorPickerFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch ? watch(fieldName) : (fieldConfig.default || '#000000');
+const ColorPickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('ColorPickerFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    swatches: customSwatches,
+    showSwatches = true,
+    default: defaultValue = '#000000',
+  } = config;
+
+  const currentValue = watch ? watch(name) : defaultValue;
   const [showPicker, setShowPicker] = useState(false);
 
   const handleColorChange = (e) => {
     const color = e.target.value;
     if (setValue) {
-      setValue(fieldName, color, { shouldValidate: true });
+      setValue(name, color, { shouldValidate: true });
     }
   };
 
@@ -18,18 +32,17 @@ const ColorPickerFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
     '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'
   ];
 
-  const swatches = fieldConfig.swatches || defaultSwatches;
-  const showSwatches = fieldConfig.showSwatches !== false;
+  const swatches = customSwatches || defaultSwatches;
 
   return (
     <div className="color-picker-field">
       <label className="color-picker-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="color-picker-field__required">*</span>}
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="color-picker-field__required">*</span>}
       </label>
 
       {/* Hidden input for form registration */}
-      <input type="hidden" {...register(fieldName)} />
+      <input type="hidden" {...register(name)} />
 
       <div className="color-picker-field__controls">
         {/* Color preview with picker */}
@@ -68,7 +81,7 @@ const ColorPickerFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
             onChange={(e) => {
               const color = e.target.value;
               if (setValue) {
-                setValue(fieldName, color, { shouldValidate: true });
+                setValue(name, color, { shouldValidate: true });
               }
             }}
             placeholder="#000000"
@@ -86,7 +99,7 @@ const ColorPickerFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
                 type="button"
                 onClick={() => {
                   if (setValue) {
-                    setValue(fieldName, color, { shouldValidate: true });
+                    setValue(name, color, { shouldValidate: true });
                   }
                 }}
                 className={`color-picker-field__swatch ${
@@ -102,8 +115,8 @@ const ColorPickerFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
         )}
       </div>
 
-      {fieldConfig.helpText && (
-        <p className="color-picker-field__help">{fieldConfig.helpText}</p>
+      {config.helpText && (
+        <p className="color-picker-field__help">{config.helpText}</p>
       )}
       {error && (
         <p className="color-picker-field__error">{error.message}</p>

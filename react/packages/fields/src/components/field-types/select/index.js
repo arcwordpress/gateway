@@ -1,7 +1,13 @@
 import './style.css';
 
-const SelectFieldInput = ({ fieldName, fieldConfig, register, error }) => {
-  let options = fieldConfig.options || [];
+const SelectFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('SelectFieldInput: No "name" provided in config');
+    return null;
+  }
+
+  let options = config.options || [];
 
   if (!Array.isArray(options) && typeof options === 'object') {
     options = Object.entries(options).map(([value, label]) => ({
@@ -10,7 +16,15 @@ const SelectFieldInput = ({ fieldName, fieldConfig, register, error }) => {
     }));
   }
 
-  const placeholder = fieldConfig.placeholder || 'Select an option';
+  const {
+    label,
+    placeholder = 'Select an option',
+    required = false,
+    help = '',
+    default: defaultValue = ''
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const selectClasses = ['select-field__select'];
   if (error) {
@@ -19,14 +33,14 @@ const SelectFieldInput = ({ fieldName, fieldConfig, register, error }) => {
 
   return (
     <div className="select-field">
-      <label htmlFor={fieldName} className="select-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="select-field__required">*</span>}
+      <label htmlFor={name} className="select-field__label">
+        {labelText}
+        {required && <span className="select-field__required">*</span>}
       </label>
       <select
-        id={fieldName}
-        {...register(fieldName)}
-        defaultValue={fieldConfig.default || ''}
+        id={name}
+        {...register(name)}
+        defaultValue={defaultValue}
         className={selectClasses.join(' ')}
       >
         <option value="">{placeholder}</option>
@@ -41,8 +55,8 @@ const SelectFieldInput = ({ fieldName, fieldConfig, register, error }) => {
           );
         })}
       </select>
-      {fieldConfig.help && (
-        <p className="select-field__help">{fieldConfig.help}</p>
+      {help && (
+        <p className="select-field__help">{help}</p>
       )}
       {error && (
         <p className="select-field__error">{error.message}</p>

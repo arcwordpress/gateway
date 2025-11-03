@@ -2,8 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../services/api';
-import { SelectField, TextField, TextareaField, CheckboxField, EmailField, MarkdownField, RelationField, NumberField, URLField, PasswordField, RangeField, RadioField, ButtonGroupField, WysiwygField, ColorPickerField, ReadOnlyField, HiddenField, SortableChildrenField, DatePickerField, TimePickerField, DateTimePickerField, ImageField, FileField, GalleryField, LinkField, OEmbedField, PostObjectField, UserField } from '@arcwp/gateway-fields';
+import { useField } from '@arcwp/gateway-fields';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
+
+// Simple Field Renderer - uses the unified field interface
+const FieldRenderer = ({ fieldConfig, register, setValue, watch, error }) => {
+  const { Input } = useField(fieldConfig);
+  return <Input config={fieldConfig} error={error} register={register} setValue={setValue} watch={watch} />;
+};
 
 const FormBuilder = ({ collectionKey, recordId }) => {
   const [collection, setCollection] = useState(null);
@@ -110,20 +116,58 @@ const FormBuilder = ({ collectionKey, recordId }) => {
     }
   };
 
-  const getInputType = (fieldName, casts = {}) => {
-    // Check casts first
+  // Map collection config types to field registry types
+  const mapConfigTypeToFieldType = (configType, fieldName, casts = {}) => {
+    // Direct mapping from config type to field type
+    const typeMapping = {
+      'sortable_children': 'sortable-children',
+      'relation': 'relation',
+      'select': 'select',
+      'radio': 'radio',
+      'button_group': 'button-group',
+      'email': 'email',
+      'url': 'url',
+      'markdown': 'markdown',
+      'wysiwyg': 'wysiwyg',
+      'textarea': 'textarea',
+      'number': 'number',
+      'password': 'password',
+      'range': 'range',
+      'color': 'color-picker',
+      'readonly': 'readonly',
+      'hidden': 'hidden',
+      'date_picker': 'date-picker',
+      'time_picker': 'time-picker',
+      'datetime_picker': 'datetime-picker',
+      'image': 'image',
+      'file': 'file',
+      'gallery': 'gallery',
+      'link': 'link',
+      'oembed': 'oembed',
+      'post_object': 'post-object',
+      'user': 'user'
+    };
+
+    // If explicit config type, use it
+    if (configType && typeMapping[configType]) {
+      return typeMapping[configType];
+    }
+
+    // Check casts
     if (casts[fieldName]) {
       const cast = casts[fieldName];
-      if (cast === 'datetime' || cast === 'date') return 'date';
+      if (cast === 'datetime' || cast === 'date') return 'date-picker';
       if (cast === 'integer' || cast === 'int') return 'number';
       if (cast === 'boolean') return 'checkbox';
     }
 
     // Infer from field name
+    if (fieldName.includes('email')) return 'email';
     if (fieldName.includes('password')) return 'password';
-    if (fieldName.includes('date')) return 'date';
-    if (fieldName.includes('time')) return 'time';
+    if (fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link')) return 'url';
+    if (fieldName === 'description') return 'textarea';
 
+    // Default to text
     return 'text';
   };
 

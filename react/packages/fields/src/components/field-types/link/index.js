@@ -1,8 +1,14 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const LinkFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('LinkFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const currentValue = watch(name);
   const [isEditing, setIsEditing] = useState(false);
   const [linkData, setLinkData] = useState({
     url: '',
@@ -11,13 +17,13 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
   });
 
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, config.default || '');
     }
   }, []);
 
@@ -40,9 +46,9 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
 
   const updateFormValue = (data) => {
     if (data.url) {
-      setValue(fieldName, JSON.stringify(data));
+      setValue(name, JSON.stringify(data));
     } else {
-      setValue(fieldName, '');
+      setValue(name, '');
     }
   };
 
@@ -65,7 +71,7 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
       title: '',
       target: '_self',
     });
-    setValue(fieldName, '');
+    setValue(name, '');
     setIsEditing(false);
   };
 
@@ -78,13 +84,13 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
 
   return (
     <div className="link-field">
-      <label htmlFor={fieldName} className="link-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="link-field__required">*</span>}
+      <label htmlFor={name} className="link-field__label">
+        {config.label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {config.required && <span className="link-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="link-field__help">{fieldConfig.helpText}</p>
+      {config.helpText && (
+        <p className="link-field__help">{config.helpText}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -152,25 +158,25 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
                 type="url"
                 value={linkData.url}
                 onChange={(e) => handleChange('url', e.target.value)}
-                placeholder={fieldConfig.urlPlaceholder || 'https://example.com'}
+                placeholder={config.urlPlaceholder || 'https://example.com'}
                 className="link-field__input"
               />
             </div>
 
             <div className="link-field__form-group">
               <label className="link-field__form-label">
-                Link Text {fieldConfig.requireTitle && <span className="link-field__required">*</span>}
+                Link Text {config.requireTitle && <span className="link-field__required">*</span>}
               </label>
               <input
                 type="text"
                 value={linkData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
-                placeholder={fieldConfig.titlePlaceholder || 'Click here'}
+                placeholder={config.titlePlaceholder || 'Click here'}
                 className="link-field__input"
               />
             </div>
 
-            {fieldConfig.enableTarget !== false && (
+            {config.enableTarget !== false && (
               <div className="link-field__form-group">
                 <label className="link-field__form-label">
                   Link Target
@@ -196,7 +202,7 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
                   >
                     Save Link
                   </button>
-                  {!fieldConfig.required && (
+                  {!config.required && (
                     <button
                       type="button"
                       onClick={handleRemove}
@@ -213,7 +219,7 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
                   className="link-field__button link-field__button--add"
                   disabled={!linkData.url}
                 >
-                  {fieldConfig.addButtonText || 'Add Link'}
+                  {config.addButtonText || 'Add Link'}
                 </button>
               )}
             </div>
@@ -231,7 +237,7 @@ const LinkFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, err
               onClick={() => setIsEditing(true)}
               className="link-field__button link-field__button--add"
             >
-              {fieldConfig.addButtonText || 'Add Link'}
+              {config.addButtonText || 'Add Link'}
             </button>
           </div>
         )}

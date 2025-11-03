@@ -1,101 +1,130 @@
-import { registerField } from '../fieldRegistry';
-import { relationFieldDefinition } from '../components/field-types/RelationField';
-import { textFieldDefinition } from '../components/field-types/text';
-import { buttonGroupFieldDefinition } from '../components/field-types/button-group';
-import { checkboxFieldDefinition } from '../components/field-types/checkbox';
-import { colorPickerFieldDefinition } from '../components/field-types/color-picker';
-import { datePickerFieldDefinition } from '../components/field-types/date-picker';
-import { dateTimePickerFieldDefinition } from '../components/field-types/datetime-picker';
-import { emailFieldDefinition } from '../components/field-types/email';
-import { fileFieldDefinition } from '../components/field-types/file';
-import { galleryFieldDefinition } from '../components/field-types/gallery';
-import { hiddenFieldDefinition } from '../components/field-types/hidden';
-import { imageFieldDefinition } from '../components/field-types/image';
-import { linkFieldDefinition } from '../components/field-types/link';
-import { markdownFieldDefinition } from '../components/field-types/markdown';
-import { numberFieldDefinition } from '../components/field-types/number';
-import { oembedFieldDefinition } from '../components/field-types/oembed';
-import { passwordFieldDefinition } from '../components/field-types/password';
-import { postObjectFieldDefinition } from '../components/field-types/post-object';
-import { radioFieldDefinition } from '../components/field-types/radio';
-import { rangeFieldDefinition } from '../components/field-types/range';
-import { readonlyFieldDefinition } from '../components/field-types/readonly';
-import { selectFieldDefinition } from '../components/field-types/select';
-import { sortableChildrenFieldDefinition } from '../components/field-types/sortable-children';
+import { registerFieldType } from '../fieldTypeRegistry';
+import { relationFieldType } from '../components/field-types/RelationField';
+import { textFieldType } from '../components/field-types/text';
+import { buttonGroupFieldType } from '../components/field-types/button-group';
+import { checkboxFieldType } from '../components/field-types/checkbox';
+import { colorPickerFieldType } from '../components/field-types/color-picker';
+import { datePickerFieldType } from '../components/field-types/date-picker';
+import { dateTimePickerFieldType } from '../components/field-types/datetime-picker';
+import { emailFieldType } from '../components/field-types/email';
+import { fileFieldType } from '../components/field-types/file';
+import { galleryFieldType } from '../components/field-types/gallery';
+import { hiddenFieldType } from '../components/field-types/hidden';
+import { imageFieldType } from '../components/field-types/image';
+import { linkFieldType } from '../components/field-types/link';
+import { markdownFieldType } from '../components/field-types/markdown';
+import { numberFieldType } from '../components/field-types/number';
+import { oembedFieldType } from '../components/field-types/oembed';
+import { passwordFieldType } from '../components/field-types/password';
+import { postObjectFieldType } from '../components/field-types/post-object';
+import { radioFieldType } from '../components/field-types/radio';
+import { rangeFieldType } from '../components/field-types/range';
+import { readonlyFieldType } from '../components/field-types/readonly';
+import { selectFieldType } from '../components/field-types/select';
+import { sortableChildrenFieldType } from '../components/field-types/sortable-children';
+import { textareaFieldType } from '../components/field-types/textarea';
+import { timePickerFieldType } from '../components/field-types/time-picker';
+import { urlFieldType } from '../components/field-types/url';
+import { userFieldType } from '../components/field-types/user';
+import { wysiwygFieldType } from '../components/field-types/wysiwyg';
+
+// Track initialization state to prevent duplicate registrations
+let isInitialized = false;
 
 /**
  * Initialize all field types in the registry
- * This must be called before any field components are used
+ * Auto-called when package is imported, but can be called manually if needed
+ * Safe to call multiple times - will only initialize once
  */
-export const initializeFields = () => {
-  
-  // Register Relation field
-  registerField(relationFieldDefinition);
+export const initializeFieldTypes = () => {
+  // Prevent duplicate initialization
+  if (isInitialized) {
+    return;
+  }
 
-  // Register Text field
-  registerField(textFieldDefinition);
+  isInitialized = true;
 
-  // Register Button Group field
-  registerField(buttonGroupFieldDefinition);
+  // Register Relation field type
+  registerFieldType(relationFieldType);
 
-  // Register Checkbox field
-  registerField(checkboxFieldDefinition);
+  // Register Text field type
+  registerFieldType(textFieldType);
 
-  // Register Color Picker field
-  registerField(colorPickerFieldDefinition);
+  // Register Button Group field type
+  registerFieldType(buttonGroupFieldType);
 
-  // Register Date Picker field
-  registerField(datePickerFieldDefinition);
+  // Register Checkbox field type
+  registerFieldType(checkboxFieldType);
 
-  // Register DateTime Picker field
-  registerField(dateTimePickerFieldDefinition);
+  // Register Color Picker field type
+  registerFieldType(colorPickerFieldType);
 
-  // Register Email field
-  registerField(emailFieldDefinition);
+  // Register Date Picker field type
+  registerFieldType(datePickerFieldType);
 
-  // Register File field
-  registerField(fileFieldDefinition);
+  // Register DateTime Picker field type
+  registerFieldType(dateTimePickerFieldType);
 
-  // Register Gallery field
-  registerField(galleryFieldDefinition);
+  // Register Email field type
+  registerFieldType(emailFieldType);
 
-  // Register Hidden field
-  registerField(hiddenFieldDefinition);
+  // Register File field type
+  registerFieldType(fileFieldType);
 
-  // Register Image field
-  registerField(imageFieldDefinition);
+  // Register Gallery field type
+  registerFieldType(galleryFieldType);
 
-  // Register Link field
-  registerField(linkFieldDefinition);
+  // Register Hidden field type
+  registerFieldType(hiddenFieldType);
 
-  // Register Markdown field
-  registerField(markdownFieldDefinition);
+  // Register Image field type
+  registerFieldType(imageFieldType);
 
-  // Register Number field
-  registerField(numberFieldDefinition);
+  // Register Link field type
+  registerFieldType(linkFieldType);
 
-  // Register OEmbed field
-  registerField(oembedFieldDefinition);
+  // Register Markdown field type
+  registerFieldType(markdownFieldType);
 
-  // Register Password field
-  registerField(passwordFieldDefinition);
+  // Register Number field type
+  registerFieldType(numberFieldType);
 
-  // Register Post Object field
-  registerField(postObjectFieldDefinition);
+  // Register OEmbed field type
+  registerFieldType(oembedFieldType);
 
-  // Register Radio field
-  registerField(radioFieldDefinition);
+  // Register Password field type
+  registerFieldType(passwordFieldType);
 
-  // Register Range field
-  registerField(rangeFieldDefinition);
+  // Register Post Object field type
+  registerFieldType(postObjectFieldType);
 
-  // Register Read Only field
-  registerField(readonlyFieldDefinition);
+  // Register Radio field type
+  registerFieldType(radioFieldType);
 
-  // Register Select field
-  registerField(selectFieldDefinition);
+  // Register Range field type
+  registerFieldType(rangeFieldType);
 
-  // Register Sortable Children field
-  registerField(sortableChildrenFieldDefinition);
+  // Register Read Only field type
+  registerFieldType(readonlyFieldType);
 
+  // Register Select field type
+  registerFieldType(selectFieldType);
+
+  // Register Sortable Children field type
+  registerFieldType(sortableChildrenFieldType);
+
+  // Register Textarea field type
+  registerFieldType(textareaFieldType);
+
+  // Register Time Picker field type
+  registerFieldType(timePickerFieldType);
+
+  // Register URL field type
+  registerFieldType(urlFieldType);
+
+  // Register User field type
+  registerFieldType(userFieldType);
+
+  // Register WYSIWYG field type
+  registerFieldType(wysiwygFieldType);
 };

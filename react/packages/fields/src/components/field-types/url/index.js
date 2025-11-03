@@ -5,27 +5,33 @@ import './style.css';
  * URLInput Component
  * Renders a URL input field with HTML5 validation
  */
-export const URLInput = ({ fieldName, fieldConfig = {}, register, error }) => {
+export const URLInput = ({ config = {}, error, register, setValue, watch }) => {
+    const name = config.name;
+    if (!name) {
+        console.warn('URLInput: No "name" provided in config');
+        return null;
+    }
+
     const {
         label = '',
         placeholder = 'https://example.com',
         help = '',
         default: defaultValue = ''
-    } = fieldConfig;
+    } = config;
 
     return (
         <div className="url-field">
             {label && (
-                <label htmlFor={fieldName} className="url-field__label">
+                <label htmlFor={name} className="url-field__label">
                     {label}
                 </label>
             )}
 
             <input
                 type="url"
-                id={fieldName}
+                id={name}
                 className="url-field__input"
-                {...register(fieldName)}
+                {...register(name)}
                 defaultValue={defaultValue}
                 placeholder={placeholder}
             />

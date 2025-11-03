@@ -4,8 +4,26 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
 
 // Input Component (for forms)
-const DatePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const DatePickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('DatePickerFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    help,
+    helpText,
+    default: defaultValue = '',
+    dateFormat = 'MM/dd/yyyy',
+    placeholder = 'Select date...',
+    minDate,
+    maxDate,
+  } = config;
+
+  const currentValue = watch(name);
   const [selectedDate, setSelectedDate] = useState(null);
 
   // Parse initial value
@@ -26,47 +44,46 @@ const DatePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      setValue(fieldName, `${year}-${month}-${day}`);
+      setValue(name, `${year}-${month}-${day}`);
     } else {
-      setValue(fieldName, '');
+      setValue(name, '');
     }
   };
 
   // Register the field with react-hook-form
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Set initial/default value only once on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      const initialValue = fieldConfig.default || '';
-      setValue(fieldName, initialValue);
+      setValue(name, defaultValue);
     }
   }, []);
 
   return (
     <div className="date-picker-field">
       <label
-        htmlFor={fieldName}
+        htmlFor={name}
         className="date-picker-field__label"
       >
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="date-picker-field__required">*</span>}
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="date-picker-field__required">*</span>}
       </label>
 
-      {(fieldConfig.help || fieldConfig.helpText) && (
-        <p className="date-picker-field__help">{fieldConfig.help || fieldConfig.helpText}</p>
+      {(help || helpText) && (
+        <p className="date-picker-field__help">{help || helpText}</p>
       )}
 
       <DatePicker
         selected={selectedDate}
         onChange={handleChange}
-        dateFormat={fieldConfig.dateFormat || 'MM/dd/yyyy'}
-        placeholderText={fieldConfig.placeholder || 'Select date...'}
-        minDate={fieldConfig.minDate ? new Date(fieldConfig.minDate) : null}
-        maxDate={fieldConfig.maxDate ? new Date(fieldConfig.maxDate) : null}
-        isClearable={!fieldConfig.required}
+        dateFormat={dateFormat}
+        placeholderText={placeholder}
+        minDate={minDate ? new Date(minDate) : null}
+        maxDate={maxDate ? new Date(maxDate) : null}
+        isClearable={!required}
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"

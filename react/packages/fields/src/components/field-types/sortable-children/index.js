@@ -2,7 +2,16 @@ import { useState, useEffect } from '@wordpress/element';
 import axios from 'axios';
 import './style.css';
 
-const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
+const SortableChildrenFieldInput = ({ config = {}, recordId, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  // Note: This field doesn't use setValue/watch/register as it manages its own state
+  // It's a special field that manages children records externally
+
+  const {
+    label,
+    helpText,
+    sortable_children: sortableConfig = {},
+  } = config;
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,7 +19,6 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const config = fieldConfig.sortable_children || {};
   const {
     endpoint,
     updateEndpoint = endpoint,
@@ -18,7 +26,7 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
     labelField = 'title',
     positionField = 'position',
     idField = 'id',
-  } = config;
+  } = sortableConfig;
 
   useEffect(() => {
     if (!recordId || !endpoint || !filterBy) {
@@ -122,11 +130,13 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
     setHasChanges(false);
   };
 
+  const fieldLabel = label || (name ? name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Sortable Children');
+
   if (!recordId) {
     return (
       <div className="sortable-children-field__placeholder">
         <label className="sortable-children-field__label">
-          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {fieldLabel}
         </label>
         <div className="sortable-children-field__message">
           Save this record first to manage its children.
@@ -139,10 +149,10 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
     return (
       <div className="sortable-children-field__placeholder">
         <label className="sortable-children-field__label">
-          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {fieldLabel}
         </label>
         <div className="sortable-children-field__message">
-          Loading {fieldConfig.label?.toLowerCase() || 'items'}...
+          Loading {label?.toLowerCase() || 'items'}...
         </div>
       </div>
     );
@@ -152,7 +162,7 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
     return (
       <div className="sortable-children-field__error-container">
         <label className="sortable-children-field__label">
-          {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {fieldLabel}
         </label>
         <div className="sortable-children-field__error-title">Error</div>
         <div className="sortable-children-field__error-message">{error}</div>
@@ -169,17 +179,17 @@ const SortableChildrenFieldInput = ({ fieldName, fieldConfig, recordId }) => {
   return (
     <div className="sortable-children-field">
       <label className="sortable-children-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {fieldLabel}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="sortable-children-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="sortable-children-field__help">{helpText}</p>
       )}
 
       {items.length === 0 ? (
         <div className="sortable-children-field__empty">
           <div className="sortable-children-field__message">
-            No {fieldConfig.label?.toLowerCase() || 'items'} found.
+            No {label?.toLowerCase() || 'items'} found.
           </div>
         </div>
       ) : (

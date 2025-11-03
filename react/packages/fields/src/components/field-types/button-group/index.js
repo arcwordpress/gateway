@@ -2,9 +2,24 @@ import { useState, useEffect, useMemo } from '@wordpress/element';
 import './style.css';
 
 // Input Component (for forms)
-const ButtonGroupFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const options = fieldConfig.options || [];
-  const currentValue = watch ? watch(fieldName) : '';
+const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('ButtonGroupFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required = false,
+    options = [],
+    help,
+    helpText,
+    default: defaultValue
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const currentValue = watch ? watch(name) : '';
 
   // Normalize options to {label, value} format
   const normalizedOptions = options.map(option => {
@@ -16,26 +31,26 @@ const ButtonGroupFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
 
   // Set default value only once on mount if undefined
   useEffect(() => {
-    if (fieldConfig.default && setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default);
+    if (defaultValue && setValue && currentValue === undefined) {
+      setValue(name, defaultValue);
     }
   }, []);
 
   const handleClick = (value) => {
     if (setValue) {
-      setValue(fieldName, value, { shouldValidate: true });
+      setValue(name, value, { shouldValidate: true });
     }
   };
 
   return (
     <div className="button-group-field">
       <label className="button-group-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="button-group-field__required">*</span>}
+        {labelText}
+        {required && <span className="button-group-field__required">*</span>}
       </label>
 
       {/* Hidden input for form registration */}
-      <input type="hidden" {...register(fieldName)} />
+      <input type="hidden" {...inputProps} />
 
       <div className="button-group-field__buttons" role="group">
         {normalizedOptions.map((option, index) => {
@@ -64,8 +79,8 @@ const ButtonGroupFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
         })}
       </div>
 
-      {(fieldConfig.help || fieldConfig.helpText) && (
-        <p className="button-group-field__help">{fieldConfig.help || fieldConfig.helpText}</p>
+      {(help || helpText) && (
+        <p className="button-group-field__help">{help || helpText}</p>
       )}
       {error && (
         <p className="button-group-field__error">{error.message}</p>
@@ -75,7 +90,7 @@ const ButtonGroupFieldInput = ({ fieldName, fieldConfig, register, setValue, wat
 };
 
 // Display Component (for grids and read-only views)
-export const ButtonGroupFieldDisplay = ({ value, config }) => {
+export const ButtonGroupFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="button-group-field__display button-group-field__display--empty">-</span>;
@@ -99,11 +114,11 @@ export const ButtonGroupFieldDisplay = ({ value, config }) => {
   return <span className="button-group-field__display">{displayValue}</span>;
 };
 
-// Field Definition for registry
-export const buttonGroupFieldDefinition = {
+// Field Type Definition for registry
+export const buttonGroupFieldType = {
   type: 'button-group',
-  Input: ButtonGroupFieldInput,
-  Display: ButtonGroupFieldDisplay,
+  Input: ButtonGroupFieldTypeInput,
+  Display: ButtonGroupFieldTypeDisplay,
   defaultConfig: {
     options: [],
   },
@@ -112,11 +127,7 @@ export const buttonGroupFieldDefinition = {
 // Hook for easy usage
 export const useButtonGroupField = (config) => {
   return useMemo(() => ({
-    Input: (props) => <ButtonGroupFieldInput {...props} config={config} />,
-    Display: (props) => <ButtonGroupFieldDisplay {...props} config={config} />
+    Input: (props) => <ButtonGroupFieldTypeInput {...props} config={config} />,
+    Display: (props) => <ButtonGroupFieldTypeDisplay {...props} config={config} />
   }), [config]);
 };
-
-// Default export for backward compatibility
-const ButtonGroupField = ButtonGroupFieldInput;
-export default ButtonGroupField;

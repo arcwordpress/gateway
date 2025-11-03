@@ -11,22 +11,28 @@ import './style.css';
  * WysiwygInput Component
  * Renders a WYSIWYG editor using TipTap
  */
-export const WysiwygInput = ({ fieldName, fieldConfig = {}, register, setValue, watch, error }) => {
+export const WysiwygInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+    const name = inputProps.name || config.name;
+    if (!name) {
+        console.warn('WysiwygInput: No "name" provided in props or config');
+        return null;
+    }
+
     const {
         label = '',
         help = '',
         default: defaultValue = '',
         placeholder = 'Start typing...'
-    } = fieldConfig;
+    } = config;
 
-    const currentValue = watch(fieldName);
+    const currentValue = watch(name);
 
     // Initialize value on mount
     useEffect(() => {
-        register(fieldName);
+        register(name);
 
         if (defaultValue && !currentValue) {
-            setValue(fieldName, defaultValue);
+            setValue(name, defaultValue);
         }
     }, []);
 
@@ -45,7 +51,7 @@ export const WysiwygInput = ({ fieldName, fieldConfig = {}, register, setValue, 
         onUpdate: ({ editor }) => {
             const html = editor.getHTML();
             if (setValue) {
-                setValue(fieldName, html);
+                setValue(name, html);
             }
         },
     });
@@ -69,7 +75,7 @@ export const WysiwygInput = ({ fieldName, fieldConfig = {}, register, setValue, 
     return (
         <div className="wysiwyg-field">
             {label && (
-                <label htmlFor={fieldName} className="wysiwyg-field__label">
+                <label htmlFor={name} className="wysiwyg-field__label">
                     {label}
                 </label>
             )}

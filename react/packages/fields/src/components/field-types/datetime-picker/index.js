@@ -4,8 +4,26 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
 
 // Input Component (for forms)
-const DateTimePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const DateTimePickerFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('DateTimePickerFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    timeIntervals = 15,
+    dateTimeFormat = 'MM/dd/yyyy h:mm aa',
+    placeholder = 'Select date and time...',
+    minDate,
+    maxDate,
+  } = config;
+
+  const currentValue = watch(name);
   const [selectedDateTime, setSelectedDateTime] = useState(null);
 
   // Parse initial value (expects MySQL datetime format: YYYY-MM-DD HH:MM:SS)
@@ -29,38 +47,36 @@ const DateTimePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, 
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
       const seconds = String(date.getSeconds()).padStart(2, '0');
-      setValue(fieldName, `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
+      setValue(name, `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
     } else {
-      setValue(fieldName, '');
+      setValue(name, '');
     }
   };
 
   // Register the field with react-hook-form
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
-
-  const timeIntervals = fieldConfig.timeIntervals || 15; // Default 15 min intervals
 
   return (
     <div className="datetime-picker-field">
       <label
-        htmlFor={fieldName}
+        htmlFor={name}
         className="datetime-picker-field__label"
       >
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="datetime-picker-field__required">*</span>}
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="datetime-picker-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="datetime-picker-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="datetime-picker-field__help">{helpText}</p>
       )}
 
       <DatePicker
@@ -69,11 +85,11 @@ const DateTimePickerFieldInput = ({ fieldName, fieldConfig, register, setValue, 
         showTimeSelect
         timeIntervals={timeIntervals}
         timeCaption="Time"
-        dateFormat={fieldConfig.dateTimeFormat || 'MM/dd/yyyy h:mm aa'}
-        placeholderText={fieldConfig.placeholder || 'Select date and time...'}
-        minDate={fieldConfig.minDate ? new Date(fieldConfig.minDate) : null}
-        maxDate={fieldConfig.maxDate ? new Date(fieldConfig.maxDate) : null}
-        isClearable={!fieldConfig.required}
+        dateFormat={dateTimeFormat}
+        placeholderText={placeholder}
+        minDate={minDate ? new Date(minDate) : null}
+        maxDate={maxDate ? new Date(maxDate) : null}
+        isClearable={!required}
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"

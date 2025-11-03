@@ -1,15 +1,32 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, watch }) => {
-  const min = fieldConfig.min ?? 0;
-  const max = fieldConfig.max ?? 100;
-  const step = fieldConfig.step ?? 1;
-  const defaultValue = fieldConfig.default ?? min;
+const RangeFieldInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('RangeFieldInput: No "name" provided in props or config');
+    return null;
+  }
 
-  const [currentValue, setCurrentValue] = useState(defaultValue);
+  const {
+    label,
+    required = false,
+    min = 0,
+    max = 100,
+    step = 1,
+    default: defaultValue,
+    showMinMax = true,
+    append,
+    prepend,
+    helpText
+  } = config;
 
-  const watchedValue = watch ? watch(fieldName) : undefined;
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const initialValue = defaultValue ?? min;
+
+  const [currentValue, setCurrentValue] = useState(initialValue);
+
+  const watchedValue = watch ? watch(name) : undefined;
 
   useEffect(() => {
     if (watchedValue !== undefined && watchedValue !== currentValue) {
@@ -21,7 +38,7 @@ const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, wa
     const newValue = parseFloat(e.target.value);
     setCurrentValue(newValue);
     if (setValue) {
-      setValue(fieldName, newValue);
+      setValue(name, newValue);
     }
   };
 
@@ -29,9 +46,9 @@ const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, wa
 
   return (
     <div className="range-field">
-      <label htmlFor={fieldName} className="range-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="range-field__required">*</span>}
+      <label htmlFor={name} className="range-field__label">
+        {labelText}
+        {required && <span className="range-field__required">*</span>}
       </label>
 
       <div className="range-field__wrapper">
@@ -39,8 +56,8 @@ const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, wa
           <div className="range-field__slider-wrapper">
             <input
               type="range"
-              id={fieldName}
-              {...register(fieldName, { valueAsNumber: true })}
+              id={name}
+              {...inputProps}
               min={min}
               max={max}
               step={step}
@@ -53,7 +70,7 @@ const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, wa
             />
           </div>
 
-          {(fieldConfig.showMinMax || fieldConfig.showMinMax === undefined) && (
+          {(showMinMax || showMinMax === undefined) && (
             <div className="range-field__minmax">
               <span className="range-field__min">{min}</span>
               <span className="range-field__max">{max}</span>
@@ -72,18 +89,18 @@ const RangeFieldInput = ({ fieldName, fieldConfig, register, error, setValue, wa
               step={step}
               className="range-field__number-input"
             />
-            {fieldConfig.append && (
-              <span className="range-field__append">{fieldConfig.append}</span>
+            {append && (
+              <span className="range-field__append">{append}</span>
             )}
-            {fieldConfig.prepend && (
-              <span className="range-field__prepend">{fieldConfig.prepend}</span>
+            {prepend && (
+              <span className="range-field__prepend">{prepend}</span>
             )}
           </div>
         </div>
       </div>
 
-      {fieldConfig.helpText && (
-        <p className="range-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="range-field__help">{helpText}</p>
       )}
       {error && (
         <p className="range-field__error">{error.message}</p>

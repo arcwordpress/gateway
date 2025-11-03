@@ -1,6 +1,26 @@
 import './style.css';
 
-const NumberFieldInput = ({ fieldName, fieldConfig, register, error }) => {
+const NumberFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('NumberFieldInput: No "name" provided in config');
+    return null;
+  }
+
+  const {
+    label,
+    placeholder = '',
+    required = false,
+    help,
+    helpText,
+    min,
+    max,
+    step = 'any',
+    default: defaultValue
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   const inputClasses = ['number-field__input'];
   if (error) {
     inputClasses.push('number-field__input--error');
@@ -8,23 +28,23 @@ const NumberFieldInput = ({ fieldName, fieldConfig, register, error }) => {
 
   return (
     <div className="number-field">
-      <label htmlFor={fieldName} className="number-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="number-field__required">*</span>}
+      <label htmlFor={name} className="number-field__label">
+        {labelText}
+        {required && <span className="number-field__required">*</span>}
       </label>
       <input
         type="number"
-        id={fieldName}
-        {...register(fieldName, { valueAsNumber: true })}
-        defaultValue={fieldConfig.default !== undefined ? fieldConfig.default : ''}
-        placeholder={fieldConfig.placeholder || ''}
-        min={fieldConfig.min}
-        max={fieldConfig.max}
-        step={fieldConfig.step || 'any'}
+        id={name}
+        {...register(name)}
+        defaultValue={defaultValue !== undefined ? defaultValue : ''}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
         className={inputClasses.join(' ')}
       />
-      {(fieldConfig.help || fieldConfig.helpText) && (
-        <p className="number-field__help">{fieldConfig.help || fieldConfig.helpText}</p>
+      {(help || helpText) && (
+        <p className="number-field__help">{help || helpText}</p>
       )}
       {error && (
         <p className="number-field__error">{error.message}</p>

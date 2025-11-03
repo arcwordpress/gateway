@@ -1,8 +1,23 @@
 import './style.css';
 
-const RadioFieldInput = ({ fieldName, fieldConfig, register, error }) => {
-  const options = fieldConfig.options || [];
-  const layout = fieldConfig.layout || 'vertical';
+const RadioFieldInput = ({ config = {}, error, register, setValue, watch }) => {
+  const name = config.name;
+  if (!name) {
+    console.warn('RadioFieldInput: No "name" provided in config');
+    return null;
+  }
+
+  const {
+    label,
+    required = false,
+    options = [],
+    layout = 'vertical',
+    help,
+    helpText,
+    default: defaultValue
+  } = config;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const normalizedOptions = options.map(option => {
     if (typeof option === 'string') {
@@ -19,8 +34,8 @@ const RadioFieldInput = ({ fieldName, fieldConfig, register, error }) => {
   return (
     <div className="radio-field">
       <label className="radio-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="radio-field__required">*</span>}
+        {labelText}
+        {required && <span className="radio-field__required">*</span>}
       </label>
 
       <div className={containerClasses.join(' ')}>
@@ -28,14 +43,14 @@ const RadioFieldInput = ({ fieldName, fieldConfig, register, error }) => {
           <div key={index} className="radio-field__option">
             <input
               type="radio"
-              id={`${fieldName}-${index}`}
+              id={`${name}-${index}`}
               value={option.value}
-              {...register(fieldName)}
-              defaultChecked={fieldConfig.default === option.value}
+              {...register(name)}
+              defaultChecked={defaultValue === option.value}
               className="radio-field__input"
             />
             <label
-              htmlFor={`${fieldName}-${index}`}
+              htmlFor={`${name}-${index}`}
               className="radio-field__option-label"
             >
               {option.label}
@@ -44,8 +59,8 @@ const RadioFieldInput = ({ fieldName, fieldConfig, register, error }) => {
         ))}
       </div>
 
-      {(fieldConfig.help || fieldConfig.helpText) && (
-        <p className="radio-field__help">{fieldConfig.help || fieldConfig.helpText}</p>
+      {(help || helpText) && (
+        <p className="radio-field__help">{help || helpText}</p>
       )}
       {error && (
         <p className="radio-field__error">{error.message}</p>

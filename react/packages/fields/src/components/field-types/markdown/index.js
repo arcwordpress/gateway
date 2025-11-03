@@ -3,33 +3,49 @@ import SimpleMDE from 'react-simplemde-editor';
 import 'easymde/dist/easymde.min.css';
 import './style.css';
 
-const MarkdownFieldInput = ({ fieldName, fieldConfig, register, error, setValue, watch }) => {
+const MarkdownFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('MarkdownFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    placeholder = 'Enter markdown text...',
+    minHeight = '200px',
+    maxHeight = '500px',
+  } = config;
+
   const [isReady, setIsReady] = useState(false);
-  const currentValue = watch ? watch(fieldName) : '';
-  const initialValue = useRef(currentValue || fieldConfig.default || '');
+  const currentValue = watch ? watch(name) : '';
+  const initialValue = useRef(currentValue || defaultValue);
 
   useEffect(() => {
     if (register) {
-      register(fieldName);
+      register(name);
     }
     setIsReady(true);
-  }, [fieldName, register]);
+  }, [name, register]);
 
   useEffect(() => {
-    if (fieldConfig.default && setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default);
+    if (defaultValue && setValue && currentValue === undefined) {
+      setValue(name, defaultValue);
     }
   }, []);
 
   const handleChange = (value) => {
     if (setValue) {
-      setValue(fieldName, value, { shouldValidate: true });
+      setValue(name, value, { shouldValidate: true });
     }
   };
 
   const editorOptions = useMemo(() => ({
     spellChecker: false,
-    placeholder: fieldConfig.placeholder || 'Enter markdown text...',
+    placeholder,
     status: false,
     toolbar: [
       'bold',
@@ -49,9 +65,9 @@ const MarkdownFieldInput = ({ fieldName, fieldConfig, register, error, setValue,
       '|',
       'guide'
     ],
-    minHeight: fieldConfig.minHeight || '200px',
-    maxHeight: fieldConfig.maxHeight || '500px',
-  }), [fieldConfig.placeholder, fieldConfig.minHeight, fieldConfig.maxHeight]);
+    minHeight,
+    maxHeight,
+  }), [placeholder, minHeight, maxHeight]);
 
   if (!isReady) {
     return <div className="markdown-field__loading">Loading editor...</div>;
@@ -64,16 +80,16 @@ const MarkdownFieldInput = ({ fieldName, fieldConfig, register, error, setValue,
 
   return (
     <div className="markdown-field">
-      <label htmlFor={fieldName} className="markdown-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="markdown-field__required">*</span>}
+      <label htmlFor={name} className="markdown-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="markdown-field__required">*</span>}
       </label>
-      {fieldConfig.helpText && (
-        <p className="markdown-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="markdown-field__help">{helpText}</p>
       )}
       <div className={wrapperClasses.join(' ')}>
         <SimpleMDE
-          id={fieldName}
+          id={name}
           value={initialValue.current || ''}
           onChange={handleChange}
           options={editorOptions}

@@ -2,8 +2,26 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import axios from 'axios';
 import './style.css';
 
-const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const PostObjectFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('PostObjectFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    postType = 'post',
+    multiple = false,
+    resultsPerPage = 10,
+    postStatus,
+    placeholder,
+  } = config;
+
+  const currentValue = watch(name);
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,16 +29,13 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const postType = fieldConfig.postType || 'post';
-  const multiple = fieldConfig.multiple || false;
-
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -76,12 +91,12 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
     try {
       const params = {
         search: term,
-        per_page: fieldConfig.resultsPerPage || 10,
+        per_page: resultsPerPage,
         _fields: 'id,title,type,status',
       };
 
-      if (fieldConfig.postStatus) {
-        params.status = fieldConfig.postStatus;
+      if (postStatus) {
+        params.status = postStatus;
       }
 
       const response = await axios.get(
@@ -118,7 +133,7 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
 
   const handleSelectPost = (post) => {
     setSelectedPost(post);
-    setValue(fieldName, post.id);
+    setValue(name, post.id);
     setSearchTerm('');
     setSearchResults([]);
     setIsOpen(false);
@@ -126,7 +141,7 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
 
   const handleClear = () => {
     setSelectedPost(null);
-    setValue(fieldName, '');
+    setValue(name, '');
     setSearchTerm('');
     setSearchResults([]);
   };
@@ -150,13 +165,13 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
 
   return (
     <div className="post-object-field">
-      <label htmlFor={fieldName} className="post-object-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="post-object-field__required">*</span>}
+      <label htmlFor={name} className="post-object-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="post-object-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="post-object-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="post-object-field__help">{helpText}</p>
       )}
 
       <div className="post-object-field__wrapper" ref={dropdownRef}>
@@ -211,7 +226,7 @@ const PostObjectFieldInput = ({ fieldName, fieldConfig, register, setValue, watc
               value={searchTerm}
               onChange={handleSearchChange}
               onFocus={handleFocus}
-              placeholder={fieldConfig.placeholder || `Search ${postType}...`}
+              placeholder={placeholder || `Search ${postType}...`}
               className={inputClasses.join(' ')}
             />
 

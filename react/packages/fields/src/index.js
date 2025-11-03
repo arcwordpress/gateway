@@ -10,8 +10,12 @@ export {
   clearFieldRegistry,
 } from './fieldRegistry';
 
-// Field Initialization
+// Field Initialization (exported for advanced use cases, but auto-initialized below)
 export { initializeFields } from './fields';
+
+// Auto-initialize fields when package is imported
+import { initializeFields } from './fields';
+initializeFields();
 
 // Export specific field definitions and display components
 export {
@@ -151,3 +155,33 @@ export {
   sortableChildrenFieldDefinition,
   useSortableChildrenField,
 } from './components/field-types/sortable-children';
+
+export {
+  TextareaDisplay,
+  textareaFieldDefinition,
+  useTextareaField,
+} from './components/field-types/textarea';
+
+export {
+  TimePickerDisplay,
+  timePickerFieldDefinition,
+  useTimePickerField,
+} from './components/field-types/time-picker';
+
+export {
+  URLDisplay,
+  urlFieldDefinition,
+  useURLField,
+} from './components/field-types/url';
+
+export {
+  UserDisplay,
+  userFieldDefinition,
+  useUserField,
+} from './components/field-types/user';
+
+export {
+  WysiwygDisplay,
+  wysiwygFieldDefinition,
+  useWysiwygField,
+} from './components/field-types/wysiwyg';

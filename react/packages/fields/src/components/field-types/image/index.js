@@ -1,19 +1,38 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const ImageFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('ImageFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    imageSize = 'medium',
+    previewHeight = '200px',
+    mediaTitle = 'Select Image',
+    mediaButtonText = 'Use this image',
+    buttonText = 'Select Image',
+    description = 'Click to select an image from the media library',
+  } = config;
+
+  const currentValue = watch(name);
   const [imageUrl, setImageUrl] = useState('');
   const [imageId, setImageId] = useState(null);
 
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   // Initialize value on mount
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -37,10 +56,9 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
 
       if (response.ok) {
         const media = await response.json();
-        const size = fieldConfig.imageSize || 'medium';
 
-        if (media.media_details?.sizes?.[size]?.source_url) {
-          setImageUrl(media.media_details.sizes[size].source_url);
+        if (media.media_details?.sizes?.[imageSize]?.source_url) {
+          setImageUrl(media.media_details.sizes[imageSize].source_url);
         } else {
           setImageUrl(media.source_url);
         }
@@ -57,9 +75,9 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
     }
 
     const frame = window.wp.media({
-      title: fieldConfig.mediaTitle || 'Select Image',
+      title: mediaTitle,
       button: {
-        text: fieldConfig.mediaButtonText || 'Use this image',
+        text: mediaButtonText,
       },
       multiple: false,
       library: {
@@ -71,11 +89,10 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
       const attachment = frame.state().get('selection').first().toJSON();
 
       setImageId(attachment.id);
-      setValue(fieldName, attachment.id);
+      setValue(name, attachment.id);
 
-      const size = fieldConfig.imageSize || 'medium';
-      if (attachment.sizes && attachment.sizes[size]) {
-        setImageUrl(attachment.sizes[size].url);
+      if (attachment.sizes && attachment.sizes[imageSize]) {
+        setImageUrl(attachment.sizes[imageSize].url);
       } else {
         setImageUrl(attachment.url);
       }
@@ -87,7 +104,7 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
   const removeImage = () => {
     setImageId(null);
     setImageUrl('');
-    setValue(fieldName, '');
+    setValue(name, '');
   };
 
   const containerClasses = ['image-field__container'];
@@ -97,13 +114,13 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
 
   return (
     <div className="image-field">
-      <label htmlFor={fieldName} className="image-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="image-field__required">*</span>}
+      <label htmlFor={name} className="image-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="image-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="image-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="image-field__help">{helpText}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -114,7 +131,7 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
                 src={imageUrl}
                 alt="Selected image"
                 className="image-field__image"
-                style={{ maxHeight: fieldConfig.previewHeight || '200px' }}
+                style={{ maxHeight: previewHeight }}
               />
             </div>
 
@@ -162,11 +179,11 @@ const ImageFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, er
                 onClick={openMediaLibrary}
                 className="image-field__button image-field__button--select"
               >
-                {fieldConfig.buttonText || 'Select Image'}
+                {buttonText}
               </button>
             </div>
             <p className="image-field__empty-description">
-              {fieldConfig.description || 'Click to select an image from the media library'}
+              {description}
             </p>
           </div>
         )}

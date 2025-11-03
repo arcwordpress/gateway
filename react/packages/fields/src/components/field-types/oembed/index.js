@@ -1,8 +1,22 @@
 import { useState, useEffect } from '@wordpress/element';
 import './style.css';
 
-const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, error }) => {
-  const currentValue = watch(fieldName);
+const OEmbedFieldInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
+  const name = inputProps.name || config.name;
+  if (!name) {
+    console.warn('OEmbedFieldInput: No "name" provided in props or config');
+    return null;
+  }
+
+  const {
+    label,
+    required,
+    helpText,
+    default: defaultValue = '',
+    placeholder = 'https://www.youtube.com/watch?v=...',
+  } = config;
+
+  const currentValue = watch(name);
   const [url, setUrl] = useState('');
   const [embedData, setEmbedData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -10,12 +24,12 @@ const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, e
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    register(fieldName);
-  }, [fieldName, register]);
+    register(name);
+  }, [name, register]);
 
   useEffect(() => {
     if (setValue && currentValue === undefined) {
-      setValue(fieldName, fieldConfig.default || '');
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -65,7 +79,7 @@ const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, e
   const handleSubmit = (e) => {
     e.preventDefault();
     if (url) {
-      setValue(fieldName, url);
+      setValue(name, url);
       fetchEmbed(url);
     }
   };
@@ -74,7 +88,7 @@ const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, e
     setUrl('');
     setEmbedData(null);
     setEmbedError(null);
-    setValue(fieldName, '');
+    setValue(name, '');
     setIsEditing(false);
   };
 
@@ -92,13 +106,13 @@ const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, e
 
   return (
     <div className="oembed-field">
-      <label htmlFor={fieldName} className="oembed-field__label">
-        {fieldConfig.label || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {fieldConfig.required && <span className="oembed-field__required">*</span>}
+      <label htmlFor={name} className="oembed-field__label">
+        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {required && <span className="oembed-field__required">*</span>}
       </label>
 
-      {fieldConfig.helpText && (
-        <p className="oembed-field__help">{fieldConfig.helpText}</p>
+      {helpText && (
+        <p className="oembed-field__help">{helpText}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -174,7 +188,7 @@ const OEmbedFieldInput = ({ fieldName, fieldConfig, register, setValue, watch, e
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder={fieldConfig.placeholder || 'https://www.youtube.com/watch?v=...'}
+                  placeholder={placeholder}
                   className="oembed-field__input"
                   disabled={loading}
                 />
