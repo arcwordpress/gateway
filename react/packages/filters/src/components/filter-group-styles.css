@@ -1,0 +1,14 @@
+.filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.filters--row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.filters--stack {
+  flex-direction: column;
+  align-items: flex-start;
+}

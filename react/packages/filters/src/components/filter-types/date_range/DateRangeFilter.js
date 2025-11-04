@@ -1,3 +1,5 @@
+import './style.css';
+
 /**
  * DateRangeFilter Component
  * Date range filter with start/end date inputs
@@ -33,27 +35,27 @@ const DateRangeFilter = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`.trim()}>
+    <div className={['date-range-filter', className].filter(Boolean).join(' ')}>
       {label && (
-        <label className="text-sm font-medium text-gray-700">
+        <label className="date-range-filter__label">
           {label}
         </label>
       )}
-      <div className="flex items-center gap-2">
+      <div className="date-range-filter__inputs">
         <input
           type="date"
           value={value.start}
           onChange={handleStartChange}
           placeholder={startPlaceholder}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="date-range-filter__input"
         />
-        <span className="text-gray-500 text-sm">to</span>
+        <span className="date-range-filter__separator">to</span>
         <input
           type="date"
           value={value.end}
           onChange={handleEndChange}
           placeholder={endPlaceholder}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="date-range-filter__input"
         />
       </div>
     </div>

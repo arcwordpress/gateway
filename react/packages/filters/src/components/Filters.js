@@ -1,15 +1,23 @@
+import './filter-group-style.css';
+
 /**
- * Filters Component
+ * FilterGroup Component
  * Layout container for filter components with configurable direction (row/stack)
  */
-const Filters = ({ children, direction = 'row', className = '' }) => {
-  const baseClasses = 'flex gap-4';
+const FilterGroup = ({ children, direction = 'row', className = '' }) => {
+  const baseClass = 'filters';
   const directionClasses = {
-    row: 'flex-row items-center',
-    stack: 'flex-col items-start',
+    row: 'filters--row',
+    stack: 'filters--stack',
   };
 
-  const combinedClasses = `${baseClasses} ${directionClasses[direction] || directionClasses.row} ${className}`.trim();
+  const combinedClasses = [
+    baseClass,
+    directionClasses[direction] || directionClasses.row,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={combinedClasses}>
@@ -18,4 +26,7 @@ const Filters = ({ children, direction = 'row', className = '' }) => {
   );
 };
 
-export default Filters;
+const Filters = FilterGroup;
+
+export { FilterGroup, Filters };
+export default FilterGroup;

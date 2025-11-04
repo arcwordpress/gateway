@@ -1,7 +1,7 @@
-import SelectFilter from './SelectFilter';
-import TextFilter from './TextFilter';
-import RangeFilter from './RangeFilter';
-import DateRangeFilter from './DateRangeFilter';
+import SelectFilter from './filter-types/select/SelectFilter';
+import TextFilter from './filter-types/text/TextFilter';
+import RangeFilter from './filter-types/range/RangeFilter';
+import DateRangeFilter from './filter-types/date_range/DateRangeFilter';
 
 /**
  * Filter Component

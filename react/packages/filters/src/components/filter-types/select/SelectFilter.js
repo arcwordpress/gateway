@@ -1,3 +1,5 @@
+import './style.css';
+
 /**
  * SelectFilter Component
  * HTML5 select box filter with configurable options
@@ -25,16 +27,16 @@ const SelectFilter = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`.trim()}>
+    <div className={['select-filter', className].filter(Boolean).join(' ')}>
       {label && (
-        <label className="text-sm font-medium text-gray-700">
+        <label className="select-filter__label">
           {label}
         </label>
       )}
       <select
         value={value}
         onChange={handleChange}
-        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-sm min-w-[150px]"
+        className="select-filter__control"
       >
         <option value="">{placeholder}</option>
         {choices.map((choice) => (

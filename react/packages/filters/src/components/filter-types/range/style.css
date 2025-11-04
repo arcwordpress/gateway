@@ -1,0 +1,37 @@
+.range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.range-filter__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.range-filter__inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.range-filter__input {
+  width: 6rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.range-filter__input:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+}
+
+.range-filter__separator {
+  font-size: 0.875rem;
+  color: #6b7280;
+}

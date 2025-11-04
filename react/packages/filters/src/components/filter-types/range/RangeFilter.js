@@ -1,3 +1,5 @@
+import './style.css';
+
 /**
  * RangeFilter Component
  * Min/max numeric range filter
@@ -37,13 +39,13 @@ const RangeFilter = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`.trim()}>
+    <div className={['range-filter', className].filter(Boolean).join(' ')}>
       {label && (
-        <label className="text-sm font-medium text-gray-700">
+        <label className="range-filter__label">
           {label}
         </label>
       )}
-      <div className="flex items-center gap-2">
+      <div className="range-filter__inputs">
         <input
           type="number"
           value={value.min}
@@ -51,9 +53,9 @@ const RangeFilter = ({
           placeholder={minPlaceholder}
           min={min}
           max={max}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-24"
+          className="range-filter__input"
         />
-        <span className="text-gray-500 text-sm">to</span>
+        <span className="range-filter__separator">to</span>
         <input
           type="number"
           value={value.max}
@@ -61,7 +63,7 @@ const RangeFilter = ({
           placeholder={maxPlaceholder}
           min={min}
           max={max}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-24"
+          className="range-filter__input"
         />
       </div>
     </div>
