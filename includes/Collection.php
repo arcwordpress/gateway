@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
  */
 class Collection extends EloquentModel
 {
+
+    protected $key;
+
     /**
      * Indicates if the model should be timestamped.
      *
@@ -47,7 +50,7 @@ class Collection extends EloquentModel
 
     protected $title;
     protected $titlePlural;
-    protected $key;
+    
     protected $fields = [];
     protected $filters = [];
     protected $grid = [];
@@ -257,22 +260,6 @@ class Collection extends EloquentModel
      */
     protected function pluralize($word)
     {
-        // Handle common irregular plurals
-        $irregulars = [
-            'person' => 'people',
-            'child' => 'children',
-            'man' => 'men',
-            'woman' => 'women',
-            'foot' => 'feet',
-            'tooth' => 'teeth',
-            'goose' => 'geese',
-            'mouse' => 'mice',
-        ];
-
-        $lowerWord = strtolower($word);
-        if (isset($irregulars[$lowerWord])) {
-            return ucfirst($irregulars[$lowerWord]);
-        }
 
         // Already plural?
         if (substr($word, -1) === 's') {
