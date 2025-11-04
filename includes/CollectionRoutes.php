@@ -49,7 +49,59 @@ class CollectionRoutes
      */
     public function checkPermission()
     {
-        return current_user_can('manage_options');
+
+        // Check for Basic Auth header
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        $authHeader = '';
+        if (isset($headers['Authorization'])) {
+            $authHeader = $headers['Authorization'];
+        } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        }
+
+        if (stripos($authHeader, 'Basic ') === 0) {
+            // Decode credentials
+            $encoded = substr($authHeader, 6);
+            $decoded = base64_decode($encoded);
+            list($username, $password) = explode(':', $decoded, 2);
+
+            // Authenticate user directly
+            $user = wp_authenticate($username, $password);
+
+            if (is_wp_error($user) || !$user || empty($user->ID)) {
+                return new \WP_Error(
+                    'rest_basic_auth_failed',
+                    'Basic Auth failed: Invalid username or password.',
+                    ['status' => 401]
+                );
+            }
+
+            // Optionally, check for required capability
+            if (!user_can($user, 'manage_options')) {
+                return new \WP_Error(
+                    'rest_forbidden',
+                    'Authenticated, but user does not have permission.',
+                    ['status' => 403]
+                );
+            }
+
+            // Set the current user for this request
+            wp_set_current_user($user->ID);
+
+            return true;
+        }
+
+        // Fallback: allow WordPress default authentication (cookie/nonce)
+        if (is_user_logged_in() && current_user_can('manage_options')) {
+            return true;
+        }
+
+        // If neither Basic Auth nor cookie/nonce auth is valid, deny access
+        return new \WP_Error(
+            'rest_forbidden',
+            'Authentication required: valid Basic Auth or logged-in user with permission.',
+            ['status' => 401]
+        );
     }
 
     /**
