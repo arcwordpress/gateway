@@ -2,10 +2,25 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../services/api';
-import { SelectField, TextField, TextareaField, CheckboxField, EmailField, MarkdownField, RelationField, NumberField, URLField, PasswordField, RangeField, RadioField, ButtonGroupField, WysiwygField, ColorPickerField, ReadOnlyField, HiddenField, SortableChildrenField, DatePickerField, TimePickerField, DateTimePickerField, ImageField, FileField, GalleryField, LinkField, OEmbedField, PostObjectField, UserField } from './field-types';
+import { useFieldType } from '@arcwp/gateway-fields';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
 
-const FormBuilder = ({ collectionKey, recordId }) => {
+// Memoized field renderer
+const FieldRenderer = React.memo(({ fieldConfig, register, setValue, watch, error }) => {
+    const { Input } = useFieldType(fieldConfig);
+    return (
+        <Input
+            config={fieldConfig}
+            error={error}
+            register={register}
+            setValue={setValue}
+            watch={watch}
+        />
+    );
+});
+
+// Add apiAuth to props
+const FormBuilder = ({ collectionKey, recordId, apiAuth }) => {
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -40,7 +55,7 @@ const FormBuilder = ({ collectionKey, recordId }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getCollection(collectionKey);
+      const response = await getCollection(collectionKey, { auth: apiAuth });
       console.log('Collection response:', response);
       setCollection(response.data);
     } catch (err) {
@@ -61,7 +76,7 @@ const FormBuilder = ({ collectionKey, recordId }) => {
       if (!endpoint) {
         throw new Error('No endpoint available for this collection');
       }
-      const response = await getRecord(endpoint, recordId);
+      const response = await getRecord(endpoint, recordId, { auth: apiAuth });
       console.log('Record loaded:', response);
 
       // Populate form with existing data
@@ -93,10 +108,10 @@ const FormBuilder = ({ collectionKey, recordId }) => {
 
       let response;
       if (isEditMode && recordId) {
-        response = await updateRecord(endpoint, recordId, data);
+        response = await updateRecord(endpoint, recordId, data, { auth: apiAuth });
         setSuccess('Record updated successfully!');
       } else {
-        response = await createRecord(endpoint, data);
+        response = await createRecord(endpoint, data, { auth: apiAuth });
         setSuccess('Record created successfully!');
         reset(); // Clear form only on create
       }
@@ -110,20 +125,58 @@ const FormBuilder = ({ collectionKey, recordId }) => {
     }
   };
 
-  const getInputType = (fieldName, casts = {}) => {
-    // Check casts first
+  // Map collection config types to field registry types
+  const mapConfigTypeToFieldType = (configType, fieldName, casts = {}) => {
+    // Direct mapping from config type to field type
+    const typeMapping = {
+      'sortable_children': 'sortable-children',
+      'relation': 'relation',
+      'select': 'select',
+      'radio': 'radio',
+      'button_group': 'button-group',
+      'email': 'email',
+      'url': 'url',
+      'markdown': 'markdown',
+      'wysiwyg': 'wysiwyg',
+      'textarea': 'textarea',
+      'number': 'number',
+      'password': 'password',
+      'range': 'range',
+      'color': 'color-picker',
+      'readonly': 'readonly',
+      'hidden': 'hidden',
+      'date_picker': 'date-picker',
+      'time_picker': 'time-picker',
+      'datetime_picker': 'datetime-picker',
+      'image': 'image',
+      'file': 'file',
+      'gallery': 'gallery',
+      'link': 'link',
+      'oembed': 'oembed',
+      'post_object': 'post-object',
+      'user': 'user'
+    };
+
+    // If explicit config type, use it
+    if (configType && typeMapping[configType]) {
+      return typeMapping[configType];
+    }
+
+    // Check casts
     if (casts[fieldName]) {
       const cast = casts[fieldName];
-      if (cast === 'datetime' || cast === 'date') return 'date';
+      if (cast === 'datetime' || cast === 'date') return 'date-picker';
       if (cast === 'integer' || cast === 'int') return 'number';
       if (cast === 'boolean') return 'checkbox';
     }
 
     // Infer from field name
+    if (fieldName.includes('email')) return 'email';
     if (fieldName.includes('password')) return 'password';
-    if (fieldName.includes('date')) return 'date';
-    if (fieldName.includes('time')) return 'time';
+    if (fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link')) return 'url';
+    if (fieldName === 'description') return 'textarea';
 
+    // Default to text
     return 'text';
   };
 
@@ -178,383 +231,22 @@ const FormBuilder = ({ collectionKey, recordId }) => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {collection.fillable.map((fieldName) => {
-            // Check if field has configuration
-            const fieldConfig = collection.fields?.[fieldName] || {};
+  // Ensure fieldConfig includes the field name
+  const fieldConfig = { name: fieldName, ...(collection.fields?.[fieldName] || {}) };
+  if (fieldConfig.hidden) return null;
+  const fieldError = errors[fieldName];
 
-            // Skip hidden fields
-            if (fieldConfig.hidden) {
-              return null;
-            }
-
-            // Check if custom type is specified in config
-            const configType = fieldConfig.type;
-            const inputType = getInputType(fieldName, collection.casts || {});
-            const fieldError = errors[fieldName];
-
-            // Render based on configured type or inferred type
-            if (configType === 'sortable_children') {
-              return (
-                <SortableChildrenField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  recordId={recordId}
-                />
-              );
-            }
-
-            if (configType === 'relation') {
-              return (
-                <RelationField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'select') {
-              return (
-                <SelectField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'radio') {
-              return (
-                <RadioField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'button_group') {
-              return (
-                <ButtonGroupField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'email' || fieldName.includes('email')) {
-              return (
-                <EmailField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'url' || fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link')) {
-              return (
-                <URLField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'markdown') {
-              return (
-                <MarkdownField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'wysiwyg') {
-              return (
-                <WysiwygField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'textarea' || fieldName === 'description') {
-              return (
-                <TextareaField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (inputType === 'checkbox') {
-              return (
-                <CheckboxField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'number' || inputType === 'number') {
-              return (
-                <NumberField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'password' || inputType === 'password') {
-              return (
-                <PasswordField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'range') {
-              return (
-                <RangeField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'color') {
-              return (
-                <ColorPickerField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'readonly') {
-              return (
-                <ReadOnlyField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                />
-              );
-            }
-
-            if (configType === 'hidden') {
-              return (
-                <HiddenField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                />
-              );
-            }
-
-            if (configType === 'date_picker') {
-              return (
-                <DatePickerField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'time_picker') {
-              return (
-                <TimePickerField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'datetime_picker') {
-              return (
-                <DateTimePickerField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'image') {
-              return (
-                <ImageField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'file') {
-              return (
-                <FileField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'gallery') {
-              return (
-                <GalleryField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'link') {
-              return (
-                <LinkField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'oembed') {
-              return (
-                <OEmbedField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'post_object') {
-              return (
-                <PostObjectField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            if (configType === 'user') {
-              return (
-                <UserField
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  error={fieldError}
-                />
-              );
-            }
-
-            // Default to TextField
-            return (
-              <TextField
-                key={fieldName}
-                fieldName={fieldName}
-                fieldConfig={fieldConfig}
-                inputType={inputType}
-                register={register}
-                error={fieldError}
-              />
-            );
-          })}
+  return (
+    <FieldRenderer
+      key={fieldName}
+      fieldConfig={fieldConfig}
+      register={register}
+      setValue={setValue}
+      watch={watch}
+      error={fieldError}
+    />
+  );
+})}
 
           <button
             type="submit"

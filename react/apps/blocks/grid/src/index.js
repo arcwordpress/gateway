@@ -3,7 +3,7 @@ import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, TextControl, Placeholder } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { DataTable, fetchCollection, fetchCollectionData } from '@gateway/grid';
+import { DataTable, fetchCollection, fetchCollectionData } from '@arcwp/gateway-grid';
 import './editor.scss';
 
 /**

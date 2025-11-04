@@ -7,8 +7,7 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import Filters from './filters/Filters';
-import Filter from './filters/Filter';
+import { Filters, Filter } from '@arcwp/gateway-filters';
 
 /**
  * DataTable Component with TanStack Table

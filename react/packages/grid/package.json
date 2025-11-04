@@ -1,11 +1,44 @@
 {
-  "name": "@gateway/grid",
-  "version": "1.1.1",
+  "name": "@arcwp/gateway-grid",
+  "version": "1.2.2",
   "description": "Gateway Grid React component library with TanStack Table",
-  "main": "src/index.js",
-  "module": "src/index.js",
-  "files": ["src"],
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "gateway",
+    "grid",
+    "react",
+    "wordpress",
+    "components",
+    "tanstack-table"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arcwordpress/gateway-grid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arcwordpress/gateway-grid/issues"
+  },
+  "homepage": "https://github.com/arcwordpress/gateway-grid#readme",
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0"
+  },
   "dependencies": {
+    "@arcwp/gateway-fields": "^1.1.0",
+    "@arcwp/gateway-filters": "^1.0.2",
     "@tanstack/react-table": "^8.20.5",
     "axios": "^1.6.2"
   },

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.2');
+define('GATEWAY_VERSION', '1.1.3');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -63,7 +63,7 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
-        $this->standardRoutes = new StandardRoutes();
+        $this->standardRoutes = new Endpoints\StandardRoutes();
         $this->collectionRoutes = new CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
@@ -103,9 +103,6 @@ class Plugin
 
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
-
-        // Initialize test page hooks (for development/testing)
-        Testing\TestPageHook::init();
 
     }
 

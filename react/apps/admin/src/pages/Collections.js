@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Accordion from '../components/Accordion';
+import RouteTest from '../components/RouteTest';
 
 function Collections() {
   const [collections, setCollections] = useState([]);
@@ -242,6 +243,7 @@ function Collections() {
                             <span className="text-xs font-medium text-gray-500">Path:</span>
                             <code className="ml-2 text-sm text-gray-900">{route.path}</code>
                           </div>
+                          <RouteTest route={route} collectionKey={collection.key} />
                         </div>
                       ),
                     }))}
@@ -255,7 +257,7 @@ function Collections() {
 
       {/* Migration Modal */}
       {migrationModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4" style={{ zIndex: 999999 }}>
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">

@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
  */
 class Collection extends EloquentModel
 {
+
+    protected $key;
+
     /**
      * Indicates if the model should be timestamped.
      *
@@ -47,10 +50,11 @@ class Collection extends EloquentModel
 
     protected $title;
     protected $titlePlural;
-    protected $key;
+    
     protected $fields = [];
     protected $filters = [];
     protected $grid = [];
+    protected $searchable = [];
     protected $routes = [
         'enabled' => true,
         'namespace' => 'gateway',
@@ -189,6 +193,11 @@ class Collection extends EloquentModel
         return $this->grid;
     }
 
+    public function search(string $term)
+    {
+        return $this->runDefaultSearch($term);
+    }
+
     /**
      * Get the collection title (singular)
      * Falls back to generating from key or class name
@@ -257,22 +266,6 @@ class Collection extends EloquentModel
      */
     protected function pluralize($word)
     {
-        // Handle common irregular plurals
-        $irregulars = [
-            'person' => 'people',
-            'child' => 'children',
-            'man' => 'men',
-            'woman' => 'women',
-            'foot' => 'feet',
-            'tooth' => 'teeth',
-            'goose' => 'geese',
-            'mouse' => 'mice',
-        ];
-
-        $lowerWord = strtolower($word);
-        if (isset($irregulars[$lowerWord])) {
-            return ucfirst($irregulars[$lowerWord]);
-        }
 
         // Already plural?
         if (substr($word, -1) === 's') {
@@ -291,5 +284,34 @@ class Collection extends EloquentModel
 
         // Default: add 's'
         return $word . 's';
+    }
+
+    private function runDefaultSearch(string $term)
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return static::query()->limit(0)->get();
+        }
+
+        $columns = array_values(array_filter(
+            array_map('trim', (array) $this->searchable),
+            static fn ($column) => $column !== ''
+        ));
+
+        if ($columns === []) {
+            return static::query()->limit(0)->get();
+        }
+
+        $query = static::query();
+
+        $query->where(function ($builder) use ($columns, $term) {
+            foreach ($columns as $index => $column) {
+                $method = $index === 0 ? 'where' : 'orWhere';
+                $builder->{$method}($column, 'LIKE', '%' . $term . '%');
+            }
+        });
+
+        return $query->get();
     }
 }

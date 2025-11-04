@@ -45,6 +45,20 @@ class GetManyRoute extends BaseEndpoint
                 $order = 'asc';
             }
 
+            $filterConfig = $this->collection->getFilters() ?: [];
+
+            $allowedFilterFields = $this->normalizeConfigToFields($filterConfig);
+
+            $parsedParams = [
+                'page' => $page,
+                'per_page_requested' => $per_page_param,
+                'per_page_effective' => $per_page,
+                'fetch_all' => $fetch_all,
+                'search' => $search,
+                'order_by' => $order_by,
+                'order' => $order,
+            ];
+
             // Handle search separately since it returns Collection not Builder
             if ($search && method_exists($this->collection, 'search')) {
                 $results = $this->collection->search($search);
@@ -82,34 +96,40 @@ class GetManyRoute extends BaseEndpoint
             $query = $this->collection->query();
 
             // Apply filters from request params
+            $filtersApplied = [];
+            $filtersSkipped = [];
             $filters = $request->get_params();
             foreach ($filters as $key => $value) {
                 if (!in_array($key, ['page', 'per_page', 'order_by', 'order', 'search']) && $value !== null) {
-                    $allowedFilters = $this->collection->getConfig('filters') ?: [];
-                    if (in_array($key, $allowedFilters)) {
+                    if (in_array($key, $allowedFilterFields, true)) {
                         $query->where($key, $value);
+                        $filtersApplied[$key] = $value;
+                    } else {
+                        $filtersSkipped[$key] = $value;
                     }
                 }
             }
 
             // Apply ordering
+            $orderApplied = null;
             if ($order_by) {
-                $sortable = $this->collection->getConfig('sortable') ?: [];
-                if (in_array($order_by, $sortable)) {
-                    $query->orderBy($order_by, $order);
-                }
+                $query->orderBy($order_by, $order);
+                $orderApplied = ['column' => $order_by, 'direction' => $order];
             }
 
             // Get total count before pagination
-            $total = $query->count();
+            $queryForCount = clone $query;
+            $total = $queryForCount->count();
 
             // Apply pagination only if not fetching all
+            $offset = null;
             if (!$fetch_all) {
                 $offset = ($page - 1) * $per_page;
-                $models = $query->offset($offset)->limit($per_page)->get();
-            } else {
-                $models = $query->get();
+                $query->offset($offset)->limit($per_page);
             }
+
+            $queryForLog = clone $query;
+            $models = $query->get();
 
             // Convert to arrays
             $items = [];
@@ -183,5 +203,53 @@ class GetManyRoute extends BaseEndpoint
         ];
 
         return $args;
+    }
+
+    protected function logDebug(array $context): void
+    {
+        $encoder = function_exists('wp_json_encode') ? 'wp_json_encode' : 'json_encode';
+        $message = $encoder($context);
+
+        if ($message !== false) {
+            error_log('[GetManyRoute] ' . $message);
+        }
+    }
+
+    /**
+     * Normalize filter/sort configuration arrays to a flat list of column names.
+     *
+     * @param array $config
+     * @return array
+     */
+    protected function normalizeConfigToFields(array $config): array
+    {
+        $fields = [];
+
+        foreach ($config as $key => $value) {
+            if (is_string($value)) {
+                $fields[] = $value;
+                continue;
+            }
+
+            if (is_array($value)) {
+                if (!empty($value['field']) && is_string($value['field'])) {
+                    $fields[] = $value['field'];
+                    continue;
+                }
+
+                if (!empty($value['column']) && is_string($value['column'])) {
+                    $fields[] = $value['column'];
+                    continue;
+                }
+            }
+
+            if (is_string($key) && $key !== '') {
+                $fields[] = $key;
+            }
+        }
+
+        $fields = array_unique(array_filter($fields, static fn ($field) => is_string($field) && $field !== ''));
+
+        return array_values($fields);
     }
 }

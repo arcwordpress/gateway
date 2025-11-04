@@ -15,8 +15,6 @@ class Render
         // Flag that we need to enqueue scripts
         self::$forms_registered = true;
 
-        // Enqueue immediately if we haven't yet
-        self::enqueue_scripts();
 
         // Build data attributes
         $data_attrs = [

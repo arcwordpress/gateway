@@ -22,7 +22,7 @@ class CollectionMenus
     }
 
     /**
-     * Add a single Collections submenu item
+     * Add a single Records submenu item
      */
     public static function add_collection_menus()
     {
@@ -33,11 +33,11 @@ class CollectionMenus
             return;
         }
 
-        // Add single "Collections" submenu item
+        // Add single "Records" submenu item
         add_submenu_page(
             'gateway', // Parent slug
-            'Collections', // Page title
-            'Collections', // Menu title
+            'Records', // Page title
+            'Records', // Menu title
             'manage_options', // Capability
             'gateway-collections', // Menu slug
             [__CLASS__, 'render_collection_page']
@@ -49,7 +49,7 @@ class CollectionMenus
      */
     public static function enqueue_studio_app($hook)
     {
-        // Only load on the collections page
+        // Only load on the records page
         if ($hook !== 'gateway_page_gateway-collections') {
             return;
         }
@@ -124,7 +124,7 @@ class CollectionMenus
     }
 
     /**
-     * Render the collections admin page
+     * Render the records admin page
      */
     public static function render_collection_page()
     {
