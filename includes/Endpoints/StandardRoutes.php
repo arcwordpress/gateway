@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway;
+namespace Gateway\Endpoints;
 
 use Gateway\Endpoints\Standard\CreateRoute;
 use Gateway\Endpoints\Standard\GetOneRoute;
@@ -66,7 +66,7 @@ class StandardRoutes
         $this->unregisterStandardRoutesForCollection($key);
     }
 
-    private function registerStandardRoutesForCollection(Collection $collection, $collectionName)
+    private function registerStandardRoutesForCollection($collection, $collectionName)
     {
         $endpoints = [
             new GetManyRoute($collection, $collectionName),    // GET /collection

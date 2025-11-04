@@ -63,7 +63,7 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
-        $this->standardRoutes = new StandardRoutes();
+        $this->standardRoutes = new Endpoints\StandardRoutes();
         $this->collectionRoutes = new CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
