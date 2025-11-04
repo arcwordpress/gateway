@@ -2,6 +2,13 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.3] - 2025-11-04
+
+### Added
+- Fixes param usage issues in Get Many standard routes.
+- Improves field type registration.
+- Adds support for headless fields.
+
 ## [1.1.2] - 2025-10-28
 
 ### Added
