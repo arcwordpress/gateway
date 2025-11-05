@@ -1,4 +1,4 @@
-import './filter-group-style.css';
+import './filter-group-styles.css';
 
 /**
  * FilterGroup Component
