@@ -1,6 +1,6 @@
 {
   "name": "grid",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Gateway Grid App",
   "main": "src/index.js",
   "scripts": {

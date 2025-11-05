@@ -9,6 +9,9 @@ export {
   getFieldTypeInput,
 } from './fieldTypeRegistry';
 
+// Export field initialization function
+export { initializeFieldTypes } from './registerInternalFieldTypes';
+
 // Export only hooks from each field-type
 export { useRelationField } from './components/field-types/relation';
 export { useTextField } from './components/field-types/text';
