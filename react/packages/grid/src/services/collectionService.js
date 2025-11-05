@@ -32,6 +32,50 @@ const getNonce = () => {
 };
 
 /**
+ * Get auth options from window.gatewayAuth if available
+ * For headless environments using Basic Auth
+ */
+const getAuthOptions = () => {
+  if (window.gatewayAuth && window.gatewayAuth.username && window.gatewayAuth.password) {
+    return window.gatewayAuth;
+  }
+  return null;
+};
+
+/**
+ * Build axios config with authentication (nonce or basic auth)
+ */
+const buildAxiosConfig = (options = {}) => {
+  const config = { headers: {} };
+
+  // Priority 1: Use auth from options parameter
+  if (options.auth) {
+    config.headers['Authorization'] = 'Basic ' + btoa(`${options.auth.username}:${options.auth.password}`);
+    config.withCredentials = false;
+    console.log('[Gateway Grid API] Using Basic Auth from options');
+  }
+  // Priority 2: Check for auth in window.gatewayAuth
+  else if (getAuthOptions()) {
+    const auth = getAuthOptions();
+    config.headers['Authorization'] = 'Basic ' + btoa(`${auth.username}:${auth.password}`);
+    config.withCredentials = false;
+    console.log('[Gateway Grid API] Using Basic Auth from window.gatewayAuth');
+  }
+  // Priority 3: Use nonce if available
+  else {
+    const nonce = getNonce();
+    if (nonce) {
+      config.headers['X-WP-Nonce'] = nonce;
+      console.log('[Gateway Grid API] Using Nonce');
+    } else {
+      console.log('[Gateway Grid API] No auth available');
+    }
+  }
+
+  return config;
+};
+
+/**
  * Create axios instance with default config
  */
 const apiClient = axios.create({
@@ -41,25 +85,23 @@ const apiClient = axios.create({
   },
 });
 
-// Add nonce to requests if available
+// Add authentication to requests
 apiClient.interceptors.request.use((config) => {
-  const nonce = getNonce();
-  if (nonce) {
-    config.headers['X-WP-Nonce'] = nonce;
+  const authConfig = buildAxiosConfig();
+  config.headers = { ...config.headers, ...authConfig.headers };
+  if (authConfig.withCredentials === false) {
+    config.withCredentials = false;
   }
-  console.log('API Request:', config.url, 'Nonce:', nonce ? 'present' : 'missing');
+  console.log('API Request:', config.url);
   return config;
 });
 
-// Handle 401 errors - could be nonce issue
+// Handle 401 errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.error('401 Unauthorized - Nonce may be invalid or missing', {
-        nonce: getNonce(),
-        wpApiSettings: window.wpApiSettings
-      });
+      console.error('401 Unauthorized - Auth may be invalid or missing');
     }
     return Promise.reject(error);
   }

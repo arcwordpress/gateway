@@ -1,4 +1,4 @@
-import { RelationFieldDisplay } from '@arcwp/gateway-fields';
+import { getFieldTypeDisplay } from '@arcwp/gateway-fields';
 
 /**
  * Column Generator Utility
@@ -42,9 +42,10 @@ export const generateColumns = (collection) => {
 
         // Check if this is a relation field type
         if (fieldConfig && fieldConfig.type === 'relation') {
-          // Use the RelationFieldDisplay component to render relation fields
+          // Use the Display component from field registry to render relation fields
+          const RelationDisplay = getFieldTypeDisplay('relation');
           const relationConfig = fieldConfig.relation || {};
-          return <RelationFieldDisplay value={value} config={relationConfig} />;
+          return RelationDisplay ? <RelationDisplay value={value} config={relationConfig} /> : String(value);
         }
 
         // Handle objects and arrays
@@ -81,9 +82,10 @@ export const generateColumns = (collection) => {
 
         // Check if this is a relation field type
         if (field.type === 'relation') {
-          // Use the RelationFieldDisplay component to render relation fields
+          // Use the Display component from field registry to render relation fields
+          const RelationDisplay = getFieldTypeDisplay('relation');
           const relationConfig = field.relation || {};
-          return <RelationFieldDisplay value={value} config={relationConfig} />;
+          return RelationDisplay ? <RelationDisplay value={value} config={relationConfig} /> : String(value);
         }
 
         // Smart detection: if value is an object with 'id' and common label fields,
@@ -91,7 +93,8 @@ export const generateColumns = (collection) => {
         if (typeof value === 'object' && value !== null && 'id' in value) {
           const label = value.name || value.title || value.label || value.text;
           if (label !== undefined) {
-            return <RelationFieldDisplay value={value} config={{}} />;
+            const RelationDisplay = getFieldTypeDisplay('relation');
+            return RelationDisplay ? <RelationDisplay value={value} config={{}} /> : String(value);
           }
         }
 
