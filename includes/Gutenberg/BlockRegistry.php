@@ -17,7 +17,7 @@ class BlockRegistry
     private static $available_blocks = [
         'grid' => [
             'enabled' => true,
-            'path' => 'react/apps/blocks/grid',
+            'path' => 'react/blocks/grid',
         ],
     ];
 
