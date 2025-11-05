@@ -47,15 +47,6 @@ export const generateColumns = (collection) => {
           return <RelationFieldDisplay value={value} config={relationConfig} />;
         }
 
-        // Smart detection: if value is an object with 'id' and common label fields,
-        // treat it as a relation object and extract the label
-        if (typeof value === 'object' && value !== null && 'id' in value) {
-          const label = value.name || value.title || value.label || value.text;
-          if (label !== undefined) {
-            return <RelationFieldDisplay value={value} config={{}} />;
-          }
-        }
-
         // Handle objects and arrays
         if (typeof value === 'object') return JSON.stringify(value);
 

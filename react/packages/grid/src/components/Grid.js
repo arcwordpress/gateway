@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import DataTable from './components/DataTable';
-import { fetchCollection, fetchCollectionData, deleteRecord } from './services/collectionService';
-import { generateColumns } from './services/columnGenerator';
+import DataTable from './DataTable';
+import { fetchCollection, fetchCollectionData, deleteRecord } from '../services/collectionService';
+import { generateColumns } from '../services/columnGenerator';
 
 /**
- * Main Grid App Component
+ * Main Grid Component
  * Displays a data grid for a Gateway collection
  */
-const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters = true, externalFilters = {} }) => {
+const Grid = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters = true, externalFilters = {} }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,11 +126,11 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters 
         cell: ({ row }) => {
           const recordId = row.original.id;
           return (
-            <div className="flex items-center gap-2">
+            <div className="grid__actions">
               {onEdit && (
                 <button
                   onClick={() => onEdit(recordId)}
-                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  className="grid__btn grid__btn--edit"
                 >
                   Edit
                 </button>
@@ -138,7 +138,7 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters 
               {onDelete && (
                 <button
                   onClick={() => handleDeleteClick(recordId)}
-                  className="text-red-600 hover:text-red-800 font-medium text-sm"
+                  className="grid__btn grid__btn--delete"
                 >
                   Delete
                 </button>
@@ -154,23 +154,23 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters 
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <h3 className="text-red-800 font-semibold mb-2">Error</h3>
-        <p className="text-red-700">{error}</p>
+      <div className="grid__error">
+        <h3 className="grid__error-title">Error</h3>
+        <p className="grid__error-message">{error}</p>
       </div>
     );
   }
 
   if (loading && !collection) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-gray-500">Loading collection...</div>
+      <div className="grid__loading">
+        <div className="grid__loading-message">Loading collection...</div>
       </div>
     );
   }
 
   return (
-    <div className="gateway-grid-app p-6 bg-white rounded-lg shadow-sm">
+    <div className="grid">
       <DataTable
         data={data}
         columns={columns}
@@ -181,26 +181,26 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters 
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <div className="grid__modal-overlay">
+          <div className="grid__modal">
+            <h3 className="grid__modal-title">
               Confirm Delete
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="grid__modal-message">
               Are you sure you want to delete this record? This action cannot be undone.
             </p>
-            <div className="flex justify-end gap-3">
+            <div className="grid__modal-actions">
               <button
                 onClick={handleDeleteCancel}
                 disabled={deleteConfirm.loading}
-                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="grid__btn grid__btn--cancel"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={deleteConfirm.loading}
-                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="grid__btn grid__btn--confirm"
               >
                 {deleteConfirm.loading ? 'Deleting...' : 'Delete'}
               </button>
@@ -212,4 +212,4 @@ const App = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters 
   );
 };
 
-export default App;
+export default Grid;

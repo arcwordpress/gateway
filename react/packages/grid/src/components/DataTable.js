@@ -8,6 +8,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import { Filters, Filter } from '@arcwp/gateway-filters';
+import '../style.css';
 
 /**
  * DataTable Component with TanStack Table
@@ -153,52 +154,54 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
   // Handle loading and empty states in render instead of early returns
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-gray-500">Loading...</div>
+      <div className="data-table__state data-table__state--loading">
+        <div className="data-table__message">Loading...</div>
       </div>
     );
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="text-gray-500">No data available</div>
+      <div className="data-table__state data-table__state--empty">
+        <div className="data-table__message">No data available</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="data-table">
       {/* Filters Section */}
-      <Filters direction="row">
-        {filterConfigs.map((filterConfig) => (
-          <Filter
-            key={filterConfig.field}
-            filter={filterConfig}
-            value={filterValues[filterConfig.field]}
-            onChange={(value) => handleFilterChange(filterConfig.field, value)}
-          />
-        ))}
-      </Filters>
+      <div className="data-table__filters">
+        <Filters direction="row">
+          {filterConfigs.map((filterConfig) => (
+            <Filter
+              key={filterConfig.field}
+              filter={filterConfig}
+              value={filterValues[filterConfig.field]}
+              onChange={(value) => handleFilterChange(filterConfig.field, value)}
+            />
+          ))}
+        </Filters>
+      </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
-        <table className="w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="data-table__wrapper">
+        <table className="data-table__table">
+          <thead className="data-table__thead">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} className="data-table__row">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="data-table__th"
                   >
                     {header.isPlaceholder ? null : (
                       <div>
                         <div
                           className={
                             header.column.getCanSort()
-                              ? 'cursor-pointer select-none flex items-center gap-2 hover:text-gray-700'
-                              : ''
+                              ? 'data-table__header data-table__header--sortable'
+                              : 'data-table__header'
                           }
                           onClick={header.column.getToggleSortingHandler()}
                         >
@@ -207,7 +210,7 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
                             header.getContext()
                           )}
                           {header.column.getCanSort() && (
-                            <span className="text-gray-400">
+                            <span className="data-table__sort-icon">
                               {{
                                 asc: '↑',
                                 desc: '↓',
@@ -222,15 +225,15 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
               </tr>
             ))}
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="data-table__tbody">
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
+              <tr key={row.id} className="data-table__row data-table__row--body">
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-6 py-4 text-sm text-gray-900 max-w-md"
+                    className="data-table__td"
                   >
-                    <div className="line-clamp-3">
+                    <div className="data-table__cell-content">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </div>
                   </td>
@@ -242,44 +245,44 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="data-table__pagination">
+        <div className="data-table__pagination-controls">
           <button
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="data-table__btn data-table__btn--pagination"
           >
             {'<<'}
           </button>
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="data-table__btn data-table__btn--pagination"
           >
             {'<'}
           </button>
           <button
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="data-table__btn data-table__btn--pagination"
           >
             {'>'}
           </button>
           <button
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
-            className="px-3 py-1 border border-gray-300 rounded bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="data-table__btn data-table__btn--pagination"
           >
             {'>>'}
           </button>
         </div>
 
-        <div className="text-sm text-gray-500">
+        <div className="data-table__row-count">
           {table.getFilteredRowModel().rows.length} of {data.length} row(s)
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">
+        <div className="data-table__page-size">
+          <span className="data-table__page-info">
             Page {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount()}
           </span>
@@ -288,7 +291,7 @@ const DataTable = ({ data = [], columns = [], loading = false, filters = [] }) =
             onChange={(e) => {
               table.setPageSize(Number(e.target.value));
             }}
-            className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+            className="data-table__select"
           >
             {[10, 20, 30, 40, 50].map((pageSize) => (
               <option key={pageSize} value={pageSize}>
