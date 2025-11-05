@@ -19,10 +19,6 @@ class BlockRegistry
             'enabled' => true,
             'path' => 'react/apps/blocks/grid',
         ],
-        'filters' => [
-            'enabled' => true,
-            'path' => 'react/apps/blocks/filters',
-        ],
     ];
 
     /**
