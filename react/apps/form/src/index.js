@@ -1,6 +1,5 @@
 import { createRoot } from '@wordpress/element';
 import App from './App';
-import './index.css';
 
 const formElements = document.querySelectorAll('[data-gateway-form]');
 formElements.forEach((element) => {
