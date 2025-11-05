@@ -10,18 +10,18 @@ function CollectionForm() {
   };
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="mb-6">
+    <div className="gty-collection-form">
+      <div className="gty-collection-form__back-container">
         <button
           onClick={handleBack}
-          className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
+          className="gty-collection-form__back-button"
         >
-          <span>&larr;</span> Back to {collectionKey}
+          <span className="gty-collection-form__back-arrow">&larr;</span> Back to {collectionKey}
         </button>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+      <div className="gty-collection-form__header">
+        <h2 className="gty-collection-form__title">
           {id ? 'Edit' : 'Create'} {collectionKey}
         </h2>
       </div>

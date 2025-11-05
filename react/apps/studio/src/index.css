@@ -1,1 +1,93 @@
-@import "tailwindcss";
+/* Dashboard Component Styles */
+.gty-dashboard {
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .gty-dashboard {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.gty-dashboard__no-collections {
+  color: #111827;
+}
+
+.gty-dashboard__header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gty-dashboard__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+.gty-dashboard__create-button {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.gty-dashboard__create-button:hover {
+  background-color: #1d4ed8;
+}
+
+/* CollectionForm Component Styles */
+.gty-collection-form {
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .gty-collection-form {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.gty-collection-form__back-container {
+  margin-bottom: 1.5rem;
+}
+
+.gty-collection-form__back-button {
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.gty-collection-form__back-button:hover {
+  color: #1e40af;
+}
+
+.gty-collection-form__back-arrow {
+  display: inline-block;
+}
+
+.gty-collection-form__back-header {
+  margin-bottom: 1.5rem;
+}
+
+.gty-collection-form__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+

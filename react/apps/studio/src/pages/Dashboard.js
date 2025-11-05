@@ -12,8 +12,8 @@ function Dashboard() {
 
   if (!activeKey) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <p>No collections available</p>
+      <div className="dashboard">
+        <p className="dashboard__no-collections">No collections available</p>
       </div>
     );
   }
@@ -32,14 +32,14 @@ function Dashboard() {
   };
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 capitalize">
+    <div className="gty-dashboard">
+      <div className="gty-dashboard__header">
+        <h1 className="gty-dashboard__title">
           {activeKey.replace(/_/g, ' ')}
         </h1>
         <button
           onClick={handleCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          className="gty-dashboard__create-button"
         >
           Create New
         </button>
