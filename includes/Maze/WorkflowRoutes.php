@@ -1,6 +1,6 @@
 <?php
 
-namespace ARC\Maze;
+namespace Gateway\Maze;
 
 class WorkflowRoutes
 {
@@ -11,25 +11,25 @@ class WorkflowRoutes
 
     public function registerRoutes()
     {
-        register_rest_route('arc-maze/v1', '/workflows', [
+        register_rest_route('gateway/v1', '/workflows', [
             'methods' => 'GET',
             'callback' => [$this, 'getWorkflows'],
             'permission_callback' => [$this, 'checkPermission']
         ]);
 
-        register_rest_route('arc-maze/v1', '/workflows/(?P<name>[a-zA-Z0-9_-]+)', [
+        register_rest_route('gateway/v1', '/workflows/(?P<name>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getWorkflow'],
             'permission_callback' => [$this, 'checkPermission']
         ]);
 
-        register_rest_route('arc-maze/v1', '/transition', [
+        register_rest_route('gateway/v1', '/transition', [
             'methods' => 'POST',
             'callback' => [$this, 'transition'],
             'permission_callback' => [$this, 'checkPermission']
         ]);
 
-        register_rest_route('arc-maze/v1', '/message', [
+        register_rest_route('gateway/v1', '/chat', [
             'methods' => 'POST',
             'callback' => [$this, 'handleMessage'],
             'permission_callback' => [$this, 'checkPermission'],
@@ -109,8 +109,8 @@ class WorkflowRoutes
             );
         }
 
-        // Load system prompt from file
-        $systemPromptFile = ARC_MAZE_PATH . 'agent/agent-system-prompt.md';
+        // Load system prompt from file (optional)
+        $systemPromptFile = GATEWAY_PATH . 'agent/agent-system-prompt.md';
         $systemPrompt = '';
 
         if (file_exists($systemPromptFile)) {
@@ -146,7 +146,7 @@ class WorkflowRoutes
         }
 
         // Manually parse .env file
-        $envPath = ARC_MAZE_PATH . '.env';
+        $envPath = GATEWAY_PATH . '.env';
 
         if (file_exists($envPath)) {
             $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

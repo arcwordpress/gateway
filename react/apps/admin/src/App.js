@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Collections from './pages/Collections';
 import Settings from './pages/Settings';
+import Chat from './pages/Chat';
 
 function App() {
   return (
@@ -33,6 +34,12 @@ function App() {
                   >
                     Settings
                   </Link>
+                  <Link
+                    to="/chat"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Chat
+                  </Link>
                 </div>
               </div>
             </div>
@@ -44,6 +51,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/collections" element={<Collections />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/chat" element={<Chat />} />
           </Routes>
         </main>
       </div>

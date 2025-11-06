@@ -51,6 +51,7 @@ class Plugin
     private $settingsRoute;
     private $testConnectionRoute;
     private $migrationGeneratorRoute;
+    private $mazeRoutes;
 
     public static function getInstance()
     {
@@ -69,6 +70,7 @@ class Plugin
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
+        $this->mazeRoutes = new Maze\WorkflowRoutes();
         $this->init();
     }
 

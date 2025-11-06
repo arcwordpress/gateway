@@ -1,6 +1,6 @@
 <?php
 
-namespace ARC\Maze;
+namespace Gateway\Maze;
 
 class StateManager
 {
