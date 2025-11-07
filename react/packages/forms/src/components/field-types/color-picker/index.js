@@ -1,30 +1,36 @@
 import { useState, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const ColorPickerFieldTypeInput = ({ config = {}, error }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('ColorPickerFieldTypeInput: No "name" provided in props or config');
+    console.warn('ColorPickerFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Use error from props if provided, otherwise from formState
+  const fieldError = error || formState.errors[name];
+
   const {
     label,
-    required,
+    required = false,
     swatches: customSwatches,
     showSwatches = true,
     default: defaultValue = '#000000',
+    help = '',
   } = config;
 
-  const currentValue = watch ? watch(name) : defaultValue;
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const currentValue = watch(name) || defaultValue;
   const [showPicker, setShowPicker] = useState(false);
 
   const handleColorChange = (e) => {
     const color = e.target.value;
-    if (setValue) {
-      setValue(name, color, { shouldValidate: true });
-    }
+    setValue(name, color, { shouldValidate: true });
   };
 
   const defaultSwatches = [
@@ -37,7 +43,7 @@ const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, wat
   return (
     <div className="color-picker-field">
       <label className="color-picker-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="color-picker-field__required">*</span>}
       </label>
 
@@ -50,7 +56,7 @@ const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, wat
           <button
             type="button"
             onClick={() => setShowPicker(!showPicker)}
-            className={`color-picker-field__preview ${error ? 'color-picker-field__preview--error' : ''}`}
+            className={`color-picker-field__preview ${fieldError ? 'color-picker-field__preview--error' : ''}`}
             style={{ backgroundColor: currentValue }}
             aria-label="Pick color"
           />
@@ -80,13 +86,11 @@ const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, wat
             value={currentValue}
             onChange={(e) => {
               const color = e.target.value;
-              if (setValue) {
-                setValue(name, color, { shouldValidate: true });
-              }
+              setValue(name, color, { shouldValidate: true });
             }}
             placeholder="#000000"
             pattern="^#[0-9A-Fa-f]{6}$"
-            className={`color-picker-field__input ${error ? 'color-picker-field__input--error' : ''}`}
+            className={`color-picker-field__input ${fieldError ? 'color-picker-field__input--error' : ''}`}
           />
         </div>
 
@@ -98,9 +102,7 @@ const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, wat
                 key={color}
                 type="button"
                 onClick={() => {
-                  if (setValue) {
-                    setValue(name, color, { shouldValidate: true });
-                  }
+                  setValue(name, color, { shouldValidate: true });
                 }}
                 className={`color-picker-field__swatch ${
                   currentValue?.toUpperCase() === color.toUpperCase()
@@ -115,17 +117,17 @@ const ColorPickerFieldTypeInput = ({ config = {}, error, register, setValue, wat
         )}
       </div>
 
-      {config.helpText && (
-        <p className="color-picker-field__help">{config.helpText}</p>
+      {help && (
+        <p className="color-picker-field__help">{help}</p>
       )}
-      {error && (
-        <p className="color-picker-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="color-picker-field__error">{fieldError.message}</p>
       )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views) — not exported directly
+// Display Component (for grids and read-only views)
 const ColorPickerFieldTypeDisplay = ({ value, config }) => {
   // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
@@ -155,7 +157,7 @@ export const colorPickerFieldType = {
   },
 };
 
-// Hook for easy usage (preferred)
+// Hook for easy usage
 export const useColorPickerField = (config) => {
   return useMemo(() => ({
     Input: (props) => <ColorPickerFieldTypeInput {...props} config={config} />,

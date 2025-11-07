@@ -1,21 +1,25 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
 
 // Input Component (for forms)
-const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const DatePickerFieldTypeInput = ({ config = {}, error }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
+  const name = config.name;
+  
   if (!name) {
-    console.warn('DatePickerFieldTypeInput: No "name" provided in props or config');
+    console.warn('DatePickerFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  const fieldError = error || formState.errors[name];
+
   const {
     label,
-    required,
+    required = false,
     help,
-    helpText,
     default: defaultValue = '',
     dateFormat = 'MM/dd/yyyy',
     placeholder = 'Select date...',
@@ -23,7 +27,8 @@ const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watc
     maxDate,
   } = config;
 
-  const currentValue = watch ? watch(name) : undefined;
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const currentValue = watch(name);
   const [selectedDate, setSelectedDate] = useState(null);
 
   // Parse initial value
@@ -36,6 +41,13 @@ const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watc
     }
   }, [currentValue]);
 
+  // Set initial/default value only once on mount
+  useEffect(() => {
+    if (currentValue === undefined && defaultValue) {
+      setValue(name, defaultValue);
+    }
+  }, []);
+
   const handleChange = (date) => {
     setSelectedDate(date);
 
@@ -44,43 +56,21 @@ const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watc
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      if (setValue) {
-        setValue(name, `${year}-${month}-${day}`);
-      }
-    } else if (setValue) {
+      setValue(name, `${year}-${month}-${day}`, { shouldValidate: true });
+    } else {
       setValue(name, '');
     }
   };
 
-  // Register the field with react-hook-form if register provided
-  useEffect(() => {
-    if (register && typeof register === 'function') {
-      register(name);
-    }
-  }, [name, register]);
-
-  // Set initial/default value only once on mount
-  useEffect(() => {
-    if (setValue && currentValue === undefined) {
-      setValue(name, defaultValue);
-    }
-    // intentionally no deps to run only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="date-picker-field">
-      <label
-        htmlFor={name}
-        className="date-picker-field__label"
-      >
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+      {/* Hidden input for form registration */}
+      <input type="hidden" {...register(name)} />
+
+      <label htmlFor={name} className="date-picker-field__label">
+        {labelText}
         {required && <span className="date-picker-field__required">*</span>}
       </label>
-
-      {(help || helpText) && (
-        <p className="date-picker-field__help">{help || helpText}</p>
-      )}
 
       <DatePicker
         selected={selectedDate}
@@ -93,11 +83,14 @@ const DatePickerFieldTypeInput = ({ config = {}, error, register, setValue, watc
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        className={`date-picker-field__input ${error ? 'date-picker-field__input--error' : ''}`}
+        className={`date-picker-field__input ${fieldError ? 'date-picker-field__input--error' : ''}`}
       />
 
-      {error && (
-        <p className="date-picker-field__error">{error.message}</p>
+      {help && (
+        <p className="date-picker-field__help">{help}</p>
+      )}
+      {fieldError && (
+        <p className="date-picker-field__error">{fieldError.message}</p>
       )}
     </div>
   );
