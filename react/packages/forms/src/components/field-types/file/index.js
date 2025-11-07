@@ -1,18 +1,24 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const FileFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('FileFieldTypeInput: No "name" provided in props or config');
+    console.warn('FileFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     allowedTypes = null,
     mediaTitle = 'Select File',
@@ -31,7 +37,7 @@ const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
 
   // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
   }, []);
@@ -95,7 +101,7 @@ const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
       const attachment = frame.state().get('selection').first().toJSON();
 
       setFileId(attachment.id);
-      setValue(name, attachment.id);
+      setValue(name, attachment.id, { shouldValidate: true });
 
       setFile({
         id: attachment.id,
@@ -112,7 +118,7 @@ const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
   const removeFile = () => {
     setFileId(null);
     setFile(null);
-    setValue(name, '');
+    setValue(name, '', { shouldValidate: true });
   };
 
   const formatFileSize = (bytes) => {
@@ -138,23 +144,25 @@ const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
     return '📄';
   };
 
-  const inputClasses = ['file-field__container'];
-  if (error) {
-    inputClasses.push('file-field__container--error');
+  const containerClasses = ['file-field__container'];
+  if (fieldError) {
+    containerClasses.push('file-field__container--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="file-field">
       <label htmlFor={name} className="file-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="file-field__required">*</span>}
       </label>
 
-      {helpText && (
-        <p className="file-field__help">{helpText}</p>
+      {help && (
+        <p className="file-field__help">{help}</p>
       )}
 
-      <div className={inputClasses.join(' ')}>
+      <div className={containerClasses.join(' ')}>
         {file ? (
           <div className="file-field__preview">
             <div className="file-field__file-info">
@@ -250,8 +258,8 @@ const FileFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
         )}
       </div>
 
-      {error && (
-        <p className="file-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="file-field__error">{fieldError.message}</p>
       )}
     </div>
   );

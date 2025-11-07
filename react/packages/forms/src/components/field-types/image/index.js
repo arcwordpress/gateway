@@ -1,18 +1,24 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const ImageFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('ImageFieldTypeInput: No "name" provided in props or config');
+    console.warn('ImageFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     imageSize = 'medium',
     previewHeight = '200px',
@@ -32,7 +38,7 @@ const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ..
 
   // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
   }, []);
@@ -90,7 +96,7 @@ const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ..
       const attachment = frame.state().get('selection').first().toJSON();
 
       setImageId(attachment.id);
-      setValue(name, attachment.id);
+      setValue(name, attachment.id, { shouldValidate: true });
 
       if (attachment.sizes && attachment.sizes[imageSize]) {
         setImageUrl(attachment.sizes[imageSize].url);
@@ -105,23 +111,25 @@ const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ..
   const removeImage = () => {
     setImageId(null);
     setImageUrl('');
-    setValue(name, '');
+    setValue(name, '', { shouldValidate: true });
   };
 
   const containerClasses = ['image-field__container'];
-  if (error) {
+  if (fieldError) {
     containerClasses.push('image-field__container--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="image-field">
       <label htmlFor={name} className="image-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="image-field__required">*</span>}
       </label>
 
-      {helpText && (
-        <p className="image-field__help">{helpText}</p>
+      {help && (
+        <p className="image-field__help">{help}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -190,8 +198,8 @@ const ImageFieldTypeInput = ({ config = {}, error, register, setValue, watch, ..
         )}
       </div>
 
-      {error && (
-        <p className="image-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="image-field__error">{fieldError.message}</p>
       )}
     </div>
   );

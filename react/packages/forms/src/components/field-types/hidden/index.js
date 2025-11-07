@@ -1,10 +1,13 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const HiddenFieldTypeInput = ({ config = {}, register, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const HiddenFieldTypeInput = ({ config = {} }) => {
+  const { register } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('HiddenFieldTypeInput: No "name" provided in props or config');
+    console.warn('HiddenFieldTypeInput: No "name" provided in config');
     return null;
   }
 
