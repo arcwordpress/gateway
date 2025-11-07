@@ -1,23 +1,29 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const TextFieldTypeInput = ({ config = {}, error, register, setValue, watch, inputType = 'text' }) => {
+const TextFieldTypeInput = ({ config = {}, error }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   if (!name) {
     console.warn('TextFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Use error from props if provided, otherwise from formState
+  const fieldError = error || formState.errors[name];
+
   const {
     label,
     placeholder = '',
     required = false,
-    help = ''
+    help = '',
+    inputType = 'text'
   } = config;
 
   const inputClasses = ['text-field__input'];
-  if (error) {
+  if (fieldError) {
     inputClasses.push('text-field__input--error');
   }
 
@@ -42,8 +48,8 @@ const TextFieldTypeInput = ({ config = {}, error, register, setValue, watch, inp
       {help && (
         <p className="text-field__help">{help}</p>
       )}
-      {error && (
-        <p className="text-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="text-field__error">{fieldError.message}</p>
       )}
     </div>
   );

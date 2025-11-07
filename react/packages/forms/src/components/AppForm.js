@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, getRecord, updateRecord } from '../services/api';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
+import { createGatewayFormContext } from '../utils/gatewayFormContext';
 
 // Single context to provide both form state and methods to children
-const GatewayFormContext = createContext();
+export const GatewayFormContext = createContext();
 
 export const useGatewayForm = () => {
   const context = useContext(GatewayFormContext);
@@ -217,23 +218,15 @@ const AppForm = ({
   };
 
   // Combined context value to provide to children
-  const contextValue = useMemo(() => ({
-    // RHF methods
-    ...methods,
-    // AppForm data
+  const contextValue = useMemo(() => createGatewayFormContext(
+    methods,
     collection,
     recordId,
     loading,
     error,
     fieldErrors,
-    updatingFields,
-    isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
-    getFieldError: (fieldName) => fieldErrors[fieldName] || null,
-    getFieldConfig: (fieldName) => {
-      if (!collection?.fields?.[fieldName]) return null;
-      return { name: fieldName, ...collection.fields[fieldName] };
-    },
-  }), [methods, collection, recordId, loading, error, fieldErrors, updatingFields]);
+    updatingFields
+  ), [methods, collection, recordId, loading, error, fieldErrors, updatingFields]);
 
   if (!collectionKey) {
     return (

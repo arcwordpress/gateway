@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../services/api';
 import { useFieldType } from '@arcwp/gateway-fields';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
+import { createGatewayFormContext } from '../utils/gatewayFormContext';
 
 // Import the shared context
 import { GatewayFormContext, useGatewayForm } from './AppForm';
@@ -125,23 +126,15 @@ const FormBuilder = ({ collectionKey, recordId, apiAuth }) => {
   };
 
   // Combined context value to provide to children (fields)
-  const contextValue = useMemo(() => ({
-    // RHF methods
-    ...methods,
-    // FormBuilder data
+  const contextValue = useMemo(() => createGatewayFormContext(
+    methods,
     collection,
     recordId,
     loading,
     error,
-    fieldErrors: {}, // FormBuilder doesn't have auto-save errors
-    updatingFields: {}, // No auto-save
-    isFieldUpdating: () => false,
-    getFieldError: () => null,
-    getFieldConfig: (fieldName) => {
-      if (!collection?.fields?.[fieldName]) return null;
-      return { name: fieldName, ...collection.fields[fieldName] };
-    },
-  }), [methods, collection, recordId, loading, error]);
+    {}, // No fieldErrors for FormBuilder
+    {}  // No updatingFields for FormBuilder
+  ), [methods, collection, recordId, loading, error]);
 
   if (!collectionKey) {
     return (
