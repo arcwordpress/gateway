@@ -1,13 +1,18 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const ButtonGroupFieldTypeInput = ({ config = {}, error }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
   if (!name) {
-    console.warn('ButtonGroupFieldInput: No "name" provided in props or config');
+    console.warn('ButtonGroupFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Use error from props if provided, otherwise from formState
+  const fieldError = error || formState.errors[name];
 
   const {
     label,
@@ -19,7 +24,7 @@ const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inp
   } = config;
 
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const currentValue = watch ? watch(name) : '';
+  const currentValue = watch(name);
 
   // Normalize options to {label, value} format
   const normalizedOptions = options.map(option => {
@@ -31,15 +36,13 @@ const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inp
 
   // Set default value only once on mount if undefined
   useEffect(() => {
-    if (defaultValue && setValue && currentValue === undefined) {
+    if (defaultValue && currentValue === undefined) {
       setValue(name, defaultValue);
     }
   }, []);
 
   const handleClick = (value) => {
-    if (setValue) {
-      setValue(name, value, { shouldValidate: true });
-    }
+    setValue(name, value, { shouldValidate: true });
   };
 
   return (
@@ -50,7 +53,7 @@ const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inp
       </label>
 
       {/* Hidden input for form registration */}
-      <input type="hidden" {...inputProps} />
+      <input type="hidden" {...register(name)} />
 
       <div className="button-group-field__buttons" role="group">
         {normalizedOptions.map((option, index) => {
@@ -82,8 +85,8 @@ const ButtonGroupFieldTypeInput = ({ config = {}, error, setValue, watch, ...inp
       {(help || helpText) && (
         <p className="button-group-field__help">{help || helpText}</p>
       )}
-      {error && (
-        <p className="button-group-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="button-group-field__error">{fieldError.message}</p>
       )}
     </div>
   );
