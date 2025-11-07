@@ -1,19 +1,25 @@
 import { useEffect, useState, useRef, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import SimpleMDE from 'react-simplemde-editor';
 import 'easymde/dist/easymde.min.css';
 import './style.css';
 
-const MarkdownFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const MarkdownFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('MarkdownFieldTypeInput: No "name" provided in props or config');
+    console.warn('MarkdownFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     placeholder = 'Enter markdown text...',
     minHeight = '200px',
@@ -21,28 +27,23 @@ const MarkdownFieldTypeInput = ({ config = {}, error, register, setValue, watch,
   } = config;
 
   const [isReady, setIsReady] = useState(false);
-  const currentValue = watch ? watch(name) : '';
+  const currentValue = watch(name);
   const initialValue = useRef(currentValue || defaultValue);
 
   useEffect(() => {
-    if (register) {
-      register(name);
-    }
+    register(name);
     setIsReady(true);
   }, [name, register]);
 
+  // Initialize value on mount
   useEffect(() => {
-    if (defaultValue && setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
-    // run only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (value) => {
-    if (setValue) {
-      setValue(name, value, { shouldValidate: true });
-    }
+    setValue(name, value, { shouldValidate: true });
   };
 
   const editorOptions = useMemo(() => ({
@@ -76,18 +77,20 @@ const MarkdownFieldTypeInput = ({ config = {}, error, register, setValue, watch,
   }
 
   const wrapperClasses = ['markdown-field__wrapper'];
-  if (error) {
+  if (fieldError) {
     wrapperClasses.push('markdown-field__wrapper--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="markdown-field">
       <label htmlFor={name} className="markdown-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="markdown-field__required">*</span>}
       </label>
-      {helpText && (
-        <p className="markdown-field__help">{helpText}</p>
+      {help && (
+        <p className="markdown-field__help">{help}</p>
       )}
       <div className={wrapperClasses.join(' ')}>
         <SimpleMDE
@@ -97,8 +100,8 @@ const MarkdownFieldTypeInput = ({ config = {}, error, register, setValue, watch,
           options={editorOptions}
         />
       </div>
-      {error && (
-        <p className="markdown-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="markdown-field__error">{fieldError.message}</p>
       )}
     </div>
   );

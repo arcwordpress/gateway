@@ -1,12 +1,18 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const RangeFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('RangeFieldTypeInput: No "name" provided in props or config');
+    console.warn('RangeFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   const {
     label,
@@ -18,15 +24,26 @@ const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProp
     showMinMax = true,
     append,
     prepend,
-    helpText
+    help = ''
   } = config;
 
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const initialValue = defaultValue ?? min;
 
   const [currentValue, setCurrentValue] = useState(initialValue);
+  const watchedValue = watch(name);
 
-  const watchedValue = watch ? watch(name) : undefined;
+  useEffect(() => {
+    register(name);
+  }, [name, register]);
+
+  // Initialize value on mount
+  useEffect(() => {
+    if (watchedValue === undefined && defaultValue !== undefined) {
+      setValue(name, defaultValue);
+      setCurrentValue(defaultValue);
+    }
+  }, []);
 
   useEffect(() => {
     if (watchedValue !== undefined && watchedValue !== currentValue) {
@@ -37,9 +54,7 @@ const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProp
   const handleChange = (e) => {
     const newValue = parseFloat(e.target.value);
     setCurrentValue(newValue);
-    if (setValue) {
-      setValue(name, newValue);
-    }
+    setValue(name, newValue, { shouldValidate: true });
   };
 
   const percentage = ((currentValue - min) / (max - min)) * 100;
@@ -57,7 +72,6 @@ const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProp
             <input
               type="range"
               id={name}
-              {...inputProps}
               min={min}
               max={max}
               step={step}
@@ -80,6 +94,9 @@ const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProp
 
         <div className="range-field__value-container">
           <div className="range-field__value-wrapper">
+            {prepend && (
+              <span className="range-field__prepend">{prepend}</span>
+            )}
             <input
               type="number"
               value={currentValue}
@@ -92,18 +109,15 @@ const RangeFieldTypeInput = ({ config = {}, error, setValue, watch, ...inputProp
             {append && (
               <span className="range-field__append">{append}</span>
             )}
-            {prepend && (
-              <span className="range-field__prepend">{prepend}</span>
-            )}
           </div>
         </div>
       </div>
 
-      {helpText && (
-        <p className="range-field__help">{helpText}</p>
+      {help && (
+        <p className="range-field__help">{help}</p>
       )}
-      {error && (
-        <p className="range-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="range-field__error">{fieldError.message}</p>
       )}
     </div>
   );

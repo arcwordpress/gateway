@@ -1,18 +1,24 @@
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import axios from 'axios';
 import './style.css';
 
-const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const PostObjectFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('PostObjectFieldTypeInput: No "name" provided in props or config');
+    console.warn('PostObjectFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     postType = 'post',
     multiple = false,
@@ -21,7 +27,7 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
     placeholder,
   } = config;
 
-  const currentValue = watch ? watch(name) : undefined;
+  const currentValue = watch(name);
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,17 +36,14 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    if (register && typeof register === 'function') {
-      register(name);
-    }
+    register(name);
   }, [name, register]);
 
+  // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
-    // run only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -49,7 +52,7 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
     } else {
       setSelectedPost(null);
     }
-  }, [currentValue]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -139,9 +142,7 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
 
   const handleSelectPost = (post) => {
     setSelectedPost(post);
-    if (setValue) {
-      setValue(name, post.id);
-    }
+    setValue(name, post.id, { shouldValidate: true });
     setSearchTerm('');
     setSearchResults([]);
     setIsOpen(false);
@@ -149,9 +150,7 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
 
   const handleClear = () => {
     setSelectedPost(null);
-    if (setValue) {
-      setValue(name, '');
-    }
+    setValue(name, '', { shouldValidate: true });
     setSearchTerm('');
     setSearchResults([]);
   };
@@ -164,24 +163,26 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
   };
 
   const selectedClasses = ['post-object-field__selected'];
-  if (error) {
+  if (fieldError) {
     selectedClasses.push('post-object-field__selected--error');
   }
 
   const inputClasses = ['post-object-field__input'];
-  if (error) {
+  if (fieldError) {
     inputClasses.push('post-object-field__input--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="post-object-field">
       <label htmlFor={name} className="post-object-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="post-object-field__required">*</span>}
       </label>
 
-      {helpText && (
-        <p className="post-object-field__help">{helpText}</p>
+      {help && (
+        <p className="post-object-field__help">{help}</p>
       )}
 
       <div className="post-object-field__wrapper" ref={dropdownRef}>
@@ -295,8 +296,8 @@ const PostObjectFieldTypeInput = ({ config = {}, error, register, setValue, watc
         )}
       </div>
 
-      {error && (
-        <p className="post-object-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="post-object-field__error">{fieldError.message}</p>
       )}
     </div>
   );
@@ -312,7 +313,7 @@ const PostObjectFieldTypeDisplay = ({ value, config }) => {
     } else {
       setPost(null);
     }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const fetchPost = async (postId) => {
     try {

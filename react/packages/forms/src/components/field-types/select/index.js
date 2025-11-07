@@ -1,12 +1,18 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const SelectFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const SelectFieldTypeInput = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
+  
   if (!name) {
     console.warn('SelectFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   let options = config.options || [];
 
@@ -28,7 +34,7 @@ const SelectFieldTypeInput = ({ config = {}, error, register, setValue, watch })
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const selectClasses = ['select-field__select'];
-  if (error) {
+  if (fieldError) {
     selectClasses.push('select-field__select--error');
   }
 
@@ -59,8 +65,8 @@ const SelectFieldTypeInput = ({ config = {}, error, register, setValue, watch })
       {help && (
         <p className="select-field__help">{help}</p>
       )}
-      {error && (
-        <p className="select-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="select-field__error">{fieldError.message}</p>
       )}
     </div>
   );

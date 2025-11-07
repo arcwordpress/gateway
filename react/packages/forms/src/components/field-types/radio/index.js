@@ -1,20 +1,25 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const RadioFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const RadioFieldTypeInput = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
+  
   if (!name) {
     console.warn('RadioFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   const {
     label,
     required = false,
     options = [],
     layout = 'vertical',
-    help,
-    helpText,
+    help = '',
     default: defaultValue
   } = config;
 
@@ -46,7 +51,7 @@ const RadioFieldTypeInput = ({ config = {}, error, register, setValue, watch }) 
               type="radio"
               id={`${name}-${index}`}
               value={option.value}
-              {...(register ? register(name) : {})}
+              {...register(name)}
               defaultChecked={defaultValue === option.value}
               className="radio-field__input"
             />
@@ -60,11 +65,11 @@ const RadioFieldTypeInput = ({ config = {}, error, register, setValue, watch }) 
         ))}
       </div>
 
-      {(help || helpText) && (
-        <p className="radio-field__help">{help || helpText}</p>
+      {help && (
+        <p className="radio-field__help">{help}</p>
       )}
-      {error && (
-        <p className="radio-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="radio-field__error">{fieldError.message}</p>
       )}
     </div>
   );

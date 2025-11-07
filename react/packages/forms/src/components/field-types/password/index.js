@@ -1,19 +1,26 @@
 import { useState, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const PasswordFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const PasswordFieldTypeInput = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
+  
   if (!name) {
     console.warn('PasswordFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
     placeholder = '',
     required = false,
-    helpText,
-    autoComplete = 'current-password'
+    help = '',
+    autoComplete = 'current-password',
+    default: defaultValue
   } = config;
 
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -25,7 +32,7 @@ const PasswordFieldTypeInput = ({ config = {}, error, register, setValue, watch 
   };
 
   const inputClasses = ['password-field__input'];
-  if (error) {
+  if (fieldError) {
     inputClasses.push('password-field__input--error');
   }
 
@@ -39,7 +46,8 @@ const PasswordFieldTypeInput = ({ config = {}, error, register, setValue, watch 
         <input
           type={showPassword ? 'text' : 'password'}
           id={name}
-          {...(register ? register(name) : {})}
+          {...register(name)}
+          defaultValue={defaultValue !== undefined ? defaultValue : ''}
           placeholder={placeholder}
           autoComplete={autoComplete}
           className={inputClasses.join(' ')}
@@ -62,11 +70,11 @@ const PasswordFieldTypeInput = ({ config = {}, error, register, setValue, watch 
           )}
         </button>
       </div>
-      {helpText && (
-        <p className="password-field__help">{helpText}</p>
+      {help && (
+        <p className="password-field__help">{help}</p>
       )}
-      {error && (
-        <p className="password-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="password-field__error">{fieldError.message}</p>
       )}
     </div>
   );

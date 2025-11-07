@@ -1,22 +1,28 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const OEmbedFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('OEmbedFieldTypeInput: No "name" provided in props or config');
+    console.warn('OEmbedFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     placeholder = 'https://www.youtube.com/watch?v=...',
   } = config;
 
-  const currentValue = watch ? watch(name) : undefined;
+  const currentValue = watch(name);
   const [url, setUrl] = useState('');
   const [embedData, setEmbedData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,17 +30,14 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (register && typeof register === 'function') {
-      register(name);
-    }
+    register(name);
   }, [name, register]);
 
+  // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
-    // run only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -42,7 +45,7 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
       setUrl(currentValue);
       fetchEmbed(currentValue);
     }
-  }, [currentValue]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentValue]);
 
   const fetchEmbed = async (embedUrl) => {
     if (!embedUrl) {
@@ -83,9 +86,7 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
   const handleSubmit = (e) => {
     e.preventDefault();
     if (url) {
-      if (setValue) {
-        setValue(name, url);
-      }
+      setValue(name, url, { shouldValidate: true });
       fetchEmbed(url);
     }
   };
@@ -94,9 +95,7 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
     setUrl('');
     setEmbedData(null);
     setEmbedError(null);
-    if (setValue) {
-      setValue(name, '');
-    }
+    setValue(name, '', { shouldValidate: true });
     setIsEditing(false);
   };
 
@@ -108,19 +107,21 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
   const hasEmbed = embedData && !isEditing;
 
   const containerClasses = ['oembed-field__container'];
-  if (error) {
+  if (fieldError) {
     containerClasses.push('oembed-field__container--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="oembed-field">
       <label htmlFor={name} className="oembed-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="oembed-field__required">*</span>}
       </label>
 
-      {helpText && (
-        <p className="oembed-field__help">{helpText}</p>
+      {help && (
+        <p className="oembed-field__help">{help}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -241,8 +242,8 @@ const OEmbedFieldTypeInput = ({ config = {}, error, register, setValue, watch, .
         )}
       </div>
 
-      {error && (
-        <p className="oembed-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="oembed-field__error">{fieldError.message}</p>
       )}
     </div>
   );
@@ -271,7 +272,9 @@ export const oembedFieldType = {
   type: 'oembed',
   Input: OEmbedFieldTypeInput,
   Display: OEmbedFieldTypeDisplay,
-  defaultConfig: {},
+  defaultConfig: {
+    placeholder: 'https://www.youtube.com/watch?v=...',
+  },
 };
 
 // Hook for easy usage

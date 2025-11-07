@@ -1,32 +1,38 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const ReadOnlyFieldTypeInput = ({ config = {}, register, value, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const ReadOnlyFieldTypeInput = ({ config = {} }) => {
+  const { register, watch } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('ReadOnlyFieldTypeInput: No "name" provided in props or config');
+    console.warn('ReadOnlyFieldTypeInput: No "name" provided in config');
     return null;
   }
 
   const {
     label,
-    help,
+    help = '',
     value: configValue,
     default: defaultValue = '',
   } = config;
 
-  const fieldValue = value || configValue || defaultValue;
+  const currentValue = watch(name);
+  const fieldValue = currentValue || configValue || defaultValue;
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="readonly-field">
       <label htmlFor={name} className="readonly-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
       </label>
       <input
         type="text"
         id={name}
         {...register(name)}
-        defaultValue={fieldValue}
+        value={fieldValue}
         readOnly
         className="readonly-field__input"
       />

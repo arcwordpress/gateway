@@ -1,13 +1,31 @@
 import { useMemo, useState, useEffect } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const LinkFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('LinkFieldTypeInput: No "name" provided in props or config');
+    console.warn('LinkFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
+  const {
+    label,
+    required = false,
+    help = '',
+    default: defaultValue = '',
+    urlPlaceholder = 'https://example.com',
+    titlePlaceholder = 'Click here',
+    requireTitle = false,
+    enableTarget = true,
+    addButtonText = 'Add Link',
+  } = config;
 
   const currentValue = watch(name);
   const [isEditing, setIsEditing] = useState(false);
@@ -23,8 +41,8 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
 
   // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
-      setValue(name, config.default || '');
+    if (currentValue === undefined && defaultValue) {
+      setValue(name, defaultValue);
     }
   }, []);
 
@@ -47,9 +65,9 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
 
   const updateFormValue = (data) => {
     if (data.url) {
-      setValue(name, JSON.stringify(data));
+      setValue(name, JSON.stringify(data), { shouldValidate: true });
     } else {
-      setValue(name, '');
+      setValue(name, '', { shouldValidate: true });
     }
   };
 
@@ -72,26 +90,28 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
       title: '',
       target: '_self',
     });
-    setValue(name, '');
+    setValue(name, '', { shouldValidate: true });
     setIsEditing(false);
   };
 
   const hasLink = linkData.url && !isEditing;
 
   const containerClasses = ['link-field__container'];
-  if (error) {
+  if (fieldError) {
     containerClasses.push('link-field__container--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="link-field">
       <label htmlFor={name} className="link-field__label">
-        {config.label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        {config.required && <span className="link-field__required">*</span>}
+        {labelText}
+        {required && <span className="link-field__required">*</span>}
       </label>
 
-      {config.helpText && (
-        <p className="link-field__help">{config.helpText}</p>
+      {help && (
+        <p className="link-field__help">{help}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -159,25 +179,25 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
                 type="url"
                 value={linkData.url}
                 onChange={(e) => handleChange('url', e.target.value)}
-                placeholder={config.urlPlaceholder || 'https://example.com'}
+                placeholder={urlPlaceholder}
                 className="link-field__input"
               />
             </div>
 
             <div className="link-field__form-group">
               <label className="link-field__form-label">
-                Link Text {config.requireTitle && <span className="link-field__required">*</span>}
+                Link Text {requireTitle && <span className="link-field__required">*</span>}
               </label>
               <input
                 type="text"
                 value={linkData.title}
                 onChange={(e) => handleChange('title', e.target.value)}
-                placeholder={config.titlePlaceholder || 'Click here'}
+                placeholder={titlePlaceholder}
                 className="link-field__input"
               />
             </div>
 
-            {config.enableTarget !== false && (
+            {enableTarget && (
               <div className="link-field__form-group">
                 <label className="link-field__form-label">
                   Link Target
@@ -203,7 +223,7 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
                   >
                     Save Link
                   </button>
-                  {!config.required && (
+                  {!required && (
                     <button
                       type="button"
                       onClick={handleRemove}
@@ -220,7 +240,7 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
                   className="link-field__button link-field__button--add"
                   disabled={!linkData.url}
                 >
-                  {config.addButtonText || 'Add Link'}
+                  {addButtonText}
                 </button>
               )}
             </div>
@@ -238,14 +258,14 @@ const LinkFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
               onClick={() => setIsEditing(true)}
               className="link-field__button link-field__button--add"
             >
-              {config.addButtonText || 'Add Link'}
+              {addButtonText}
             </button>
           </div>
         )}
       </div>
 
-      {error && (
-        <p className="link-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="link-field__error">{fieldError.message}</p>
       )}
     </div>
   );
@@ -284,8 +304,11 @@ export const linkFieldType = {
   Input: LinkFieldTypeInput,
   Display: LinkFieldTypeDisplay,
   defaultConfig: {
-    placeholder: '',
-    openInNewTab: false,
+    urlPlaceholder: 'https://example.com',
+    titlePlaceholder: 'Click here',
+    requireTitle: false,
+    enableTarget: true,
+    addButtonText: 'Add Link',
   },
 };
 

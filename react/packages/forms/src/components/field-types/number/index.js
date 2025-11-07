@@ -1,19 +1,24 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const NumberFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const NumberFieldTypeInput = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
+  
   if (!name) {
     console.warn('NumberFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
     placeholder = '',
     required = false,
-    help,
-    helpText,
+    help = '',
     min,
     max,
     step = 'any',
@@ -23,7 +28,7 @@ const NumberFieldTypeInput = ({ config = {}, error, register, setValue, watch })
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const inputClasses = ['number-field__input'];
-  if (error) {
+  if (fieldError) {
     inputClasses.push('number-field__input--error');
   }
 
@@ -44,11 +49,11 @@ const NumberFieldTypeInput = ({ config = {}, error, register, setValue, watch })
         step={step}
         className={inputClasses.join(' ')}
       />
-      {(help || helpText) && (
-        <p className="number-field__help">{help || helpText}</p>
+      {help && (
+        <p className="number-field__help">{help}</p>
       )}
-      {error && (
-        <p className="number-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="number-field__error">{fieldError.message}</p>
       )}
     </div>
   );

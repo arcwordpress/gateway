@@ -16,7 +16,7 @@ const slugify = (text) => {
 };
 
 // Input Component (for forms)
-const SlugFieldTypeInput = ({ config = {}, error }) => {
+const SlugFieldTypeInput = ({ config = {} }) => {
   const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   const [isManuallyEdited, setIsManuallyEdited] = useState(false);
@@ -27,12 +27,13 @@ const SlugFieldTypeInput = ({ config = {}, error }) => {
     return null;
   }
 
-  const fieldError = error || formState.errors[name];
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   const {
     label,
     required = false,
-    help,
+    help = '',
     watchField = 'title', // Default to watching 'title' field
     placeholder = '',
     prefix = '', // Optional prefix like '/blog/'
@@ -51,10 +52,10 @@ const SlugFieldTypeInput = ({ config = {}, error }) => {
     if (!isManuallyEdited && !isFocused && watchedValue) {
       const newSlug = slugify(watchedValue);
       if (newSlug !== currentValue) {
-        setValue(name, newSlug);
+        setValue(name, newSlug, { shouldValidate: true });
       }
     }
-  }, [watchedValue, isManuallyEdited, isFocused]);
+  }, [watchedValue, isManuallyEdited, isFocused, currentValue, name, setValue]);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -64,7 +65,7 @@ const SlugFieldTypeInput = ({ config = {}, error }) => {
     setIsFocused(false);
     // Slugify the manually entered value
     const slugified = slugify(e.target.value);
-    setValue(name, slugified);
+    setValue(name, slugified, { shouldValidate: true });
   };
 
   const handleChange = (e) => {
@@ -72,14 +73,14 @@ const SlugFieldTypeInput = ({ config = {}, error }) => {
     if (!isManuallyEdited) {
       setIsManuallyEdited(true);
     }
-    setValue(name, e.target.value);
+    setValue(name, e.target.value, { shouldValidate: true });
   };
 
   const handleUnlock = () => {
     setIsManuallyEdited(false);
     // Immediately regenerate from watched field
     if (watchedValue) {
-      setValue(name, slugify(watchedValue));
+      setValue(name, slugify(watchedValue), { shouldValidate: true });
     }
   };
 
