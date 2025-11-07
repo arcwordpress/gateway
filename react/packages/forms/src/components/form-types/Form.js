@@ -7,7 +7,7 @@ import { generateZodSchema } from '../utils/zodSchemaGenerator';
 import { createGatewayFormContext } from '../utils/gatewayFormContext';
 
 // Import the shared context
-import { GatewayFormContext, useGatewayForm } from './AppForm';
+import { GatewayFormContext, useGatewayForm } from '../utils/gatewayFormContext';
 
 // Memoized field renderer - now uses context instead of props
 const FieldRenderer = React.memo(({ fieldConfig }) => {
@@ -17,8 +17,8 @@ const FieldRenderer = React.memo(({ fieldConfig }) => {
     return <Input config={fieldConfig} error={error} />;
 });
 
-// Add apiAuth to props
-const FormBuilder = ({ collectionKey, recordId, apiAuth }) => {
+// Change from FormBuilder to Form
+const Form = ({ collectionKey, recordId, apiAuth }) => {
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -214,4 +214,4 @@ const FormBuilder = ({ collectionKey, recordId, apiAuth }) => {
   );
 };
 
-export default FormBuilder;
+export { Form };
