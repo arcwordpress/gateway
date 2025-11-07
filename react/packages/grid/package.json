@@ -37,8 +37,8 @@
     "@babel/preset-react": "^7.24.0"
   },
   "dependencies": {
-    "@arcwp/gateway-fields": "^1.1.0",
     "@arcwp/gateway-filters": "^1.0.2",
+    "@arcwp/gateway-forms": "^1.2.5",
     "@tanstack/react-table": "^8.20.5",
     "axios": "^1.6.2"
   },

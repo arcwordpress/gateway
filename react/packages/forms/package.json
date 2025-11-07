@@ -1,6 +1,6 @@
 {
   "name": "@arcwp/gateway-forms",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Gateway Forms React component library with form field types and validation",
   "main": "dist/index.js",
   "module": "dist/index.js",

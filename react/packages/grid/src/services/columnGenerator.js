@@ -1,4 +1,4 @@
-import { getFieldTypeDisplay } from '@arcwp/gateway-fields';
+import { getFieldTypeDisplay } from '@arcwp/gateway-forms';
 
 /**
  * Column Generator Utility
