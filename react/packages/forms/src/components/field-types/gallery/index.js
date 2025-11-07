@@ -1,18 +1,24 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const GalleryFieldTypeInput = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
   if (!name) {
-    console.warn('GalleryFieldTypeInput: No "name" provided in props or config');
+    console.warn('GalleryFieldTypeInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
-    required,
-    helpText,
+    required = false,
+    help = '',
     default: defaultValue = '',
     maxImages = null,
     thumbnailSize = 'thumbnail',
@@ -32,7 +38,7 @@ const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
 
   // Initialize value on mount
   useEffect(() => {
-    if (setValue && currentValue === undefined) {
+    if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
     }
   }, []);
@@ -134,7 +140,7 @@ const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
 
   const updateFormValue = (imageList) => {
     const ids = imageList.map(img => img.id);
-    setValue(name, JSON.stringify(ids));
+    setValue(name, JSON.stringify(ids), { shouldValidate: true });
   };
 
   const removeImage = (indexToRemove) => {
@@ -172,19 +178,21 @@ const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
   const canAddMore = !maxImages || images.length < maxImages;
 
   const containerClasses = ['gallery-field__container'];
-  if (error) {
+  if (fieldError) {
     containerClasses.push('gallery-field__container--error');
   }
+
+  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="gallery-field">
       <label htmlFor={name} className="gallery-field__label">
-        {label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+        {labelText}
         {required && <span className="gallery-field__required">*</span>}
       </label>
 
-      {helpText && (
-        <p className="gallery-field__help">{helpText}</p>
+      {help && (
+        <p className="gallery-field__help">{help}</p>
       )}
 
       <div className={containerClasses.join(' ')}>
@@ -323,8 +331,8 @@ const GalleryFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
         )}
       </div>
 
-      {error && (
-        <p className="gallery-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="gallery-field__error">{fieldError.message}</p>
       )}
     </div>
   );

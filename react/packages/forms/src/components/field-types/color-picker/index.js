@@ -3,7 +3,7 @@ import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared cont
 import './style.css';
 
 // Input Component (for forms)
-const ColorPickerFieldTypeInput = ({ config = {}, error }) => {
+const ColorPickerFieldTypeInput = ({ config = {} }) => {
   const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   
@@ -12,8 +12,8 @@ const ColorPickerFieldTypeInput = ({ config = {}, error }) => {
     return null;
   }
 
-  // Use error from props if provided, otherwise from formState
-  const fieldError = error || formState.errors[name];
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   const {
     label,

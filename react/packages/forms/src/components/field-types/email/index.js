@@ -1,19 +1,24 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const EmailFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const EmailFieldTypeInput = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   if (!name) {
     console.warn('EmailFieldInput: No "name" provided in config');
     return null;
   }
 
+  // Get error directly from context
+  const fieldError = formState.errors[name];
+
   const {
     label,
     placeholder = 'Enter email address',
     required = false,
-    help,
+    help = '',
     default: defaultValue = ''
   } = config;
 
@@ -34,13 +39,13 @@ const EmailFieldTypeInput = ({ config = {}, error, register, setValue, watch }) 
         {...register(name)}
         defaultValue={defaultValue}
         placeholder={placeholder}
-        className={`email-field__input ${error ? 'email-field__input--error' : ''}`}
+        className={`email-field__input ${fieldError ? 'email-field__input--error' : ''}`}
       />
       {help && (
         <p className="email-field__help">{help}</p>
       )}
-      {error && (
-        <p className="email-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="email-field__error">{fieldError.message}</p>
       )}
     </div>
   );

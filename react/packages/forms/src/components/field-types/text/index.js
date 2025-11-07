@@ -3,7 +3,7 @@ import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared cont
 import './style.css';
 
 // Input Component (for forms)
-const TextFieldTypeInput = ({ config = {}, error }) => {
+const TextFieldTypeInput = ({ config = {} }) => {
   const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   if (!name) {
@@ -11,8 +11,8 @@ const TextFieldTypeInput = ({ config = {}, error }) => {
     return null;
   }
 
-  // Use error from props if provided, otherwise from formState
-  const fieldError = error || formState.errors[name];
+  // Get error directly from context
+  const fieldError = formState.errors[name];
 
   const {
     label,
