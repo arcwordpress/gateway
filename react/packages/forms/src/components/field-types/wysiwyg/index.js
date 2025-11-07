@@ -1,5 +1,5 @@
-import { createElement } from '@wordpress/element';
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -11,12 +11,17 @@ import './style.css';
  * WysiwygInput Component
  * Renders a WYSIWYG editor using TipTap
  */
-const WysiwygFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-    const name = inputProps.name || config.name;
+const WysiwygFieldTypeInput = ({ config = {} }) => {
+    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+    const name = config.name;
+    
     if (!name) {
-        console.warn('WysiwygFieldTypeInput: No "name" provided in props or config');
+        console.warn('WysiwygFieldTypeInput: No "name" provided in config');
         return null;
     }
+
+    // Get error directly from context
+    const fieldError = formState.errors[name];
 
     const {
         label = '',
@@ -50,9 +55,7 @@ const WysiwygFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
         content: currentValue || defaultValue || '',
         onUpdate: ({ editor }) => {
             const html = editor.getHTML();
-            if (setValue) {
-                setValue(name, html);
-            }
+            setValue(name, html, { shouldValidate: true });
         },
     });
 
@@ -214,7 +217,7 @@ const WysiwygFieldTypeInput = ({ config = {}, error, register, setValue, watch, 
             </div>
 
             {help && <p className="wysiwyg-field__help">{help}</p>}
-            {error && <p className="wysiwyg-field__error">{error.message}</p>}
+            {fieldError && <p className="wysiwyg-field__error">{fieldError.message}</p>}
         </div>
     );
 };

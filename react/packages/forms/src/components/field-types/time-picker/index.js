@@ -1,5 +1,5 @@
-import { createElement } from '@wordpress/element';
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './style.css';
@@ -8,12 +8,17 @@ import './style.css';
  * TimePickerInput Component
  * Renders a time picker field using react-datepicker
  */
-export const TimePickerInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-    const name = inputProps.name || config.name;
+export const TimePickerInput = ({ config = {} }) => {
+    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+    const name = config.name;
+    
     if (!name) {
-        console.warn('TimePickerInput: No "name" provided in props or config');
+        console.warn('TimePickerInput: No "name" provided in config');
         return null;
     }
+
+    // Get error directly from context
+    const fieldError = formState.errors[name];
 
     const {
         label = '',
@@ -61,9 +66,9 @@ export const TimePickerInput = ({ config = {}, error, register, setValue, watch,
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = '00';
-            setValue(name, `${hours}:${minutes}:${seconds}`);
+            setValue(name, `${hours}:${minutes}:${seconds}`, { shouldValidate: true });
         } else {
-            setValue(name, '');
+            setValue(name, '', { shouldValidate: true });
         }
     };
 
@@ -84,11 +89,11 @@ export const TimePickerInput = ({ config = {}, error, register, setValue, watch,
                 timeCaption="Time"
                 dateFormat={dateFormat}
                 placeholderText={placeholder}
-                className="time-picker-field__input"
+                className={`time-picker-field__input ${fieldError ? 'time-picker-field__input--error' : ''}`}
             />
 
             {help && <p className="time-picker-field__help">{help}</p>}
-            {error && <p className="time-picker-field__error">{error.message}</p>}
+            {fieldError && <p className="time-picker-field__error">{fieldError.message}</p>}
         </div>
     );
 };
@@ -148,17 +153,9 @@ export const timePickerFieldType = {
 /**
  * Custom Hook for Time Picker Field
  */
-export const useTimePickerField = (fieldName, fieldConfig, formMethods) => {
-    const { watch, setValue } = formMethods;
-    const value = watch(fieldName);
-
-    const clearTime = () => {
-        setValue(fieldName, '');
-    };
-
-    return {
-        value,
-        clearTime,
-        hasValue: !!value
-    };
+export const useTimePickerField = (config) => {
+    return useMemo(() => ({
+        Input: (props) => <TimePickerInput {...props} config={config} />,
+        Display: (props) => <TimePickerDisplay {...props} config={config} />
+    }), [config]);
 };

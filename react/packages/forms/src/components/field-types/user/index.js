@@ -1,5 +1,5 @@
-import { createElement } from '@wordpress/element';
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import axios from 'axios';
 import './style.css';
 
@@ -7,12 +7,17 @@ import './style.css';
  * UserInput Component
  * Renders a user selection field with search and dropdown
  */
-const UserFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...inputProps }) => {
-    const name = inputProps.name || config.name;
+const UserFieldTypeInput = ({ config = {} }) => {
+    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+    const name = config.name;
+    
     if (!name) {
-        console.warn('UserFieldTypeInput: No "name" provided in props or config');
+        console.warn('UserFieldTypeInput: No "name" provided in config');
         return null;
     }
+
+    // Get error directly from context
+    const fieldError = formState.errors[name];
 
     const {
         label = '',
@@ -124,7 +129,7 @@ const UserFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
 
     const handleSelectUser = (user) => {
         setSelectedUser(user);
-        setValue(name, user.id);
+        setValue(name, user.id, { shouldValidate: true });
         setSearchQuery('');
         setShowDropdown(false);
         setSearchResults([]);
@@ -132,7 +137,7 @@ const UserFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
 
     const handleClearSelection = () => {
         setSelectedUser(null);
-        setValue(name, null);
+        setValue(name, null, { shouldValidate: true });
         setSearchQuery('');
     };
 
@@ -227,7 +232,7 @@ const UserFieldTypeInput = ({ config = {}, error, register, setValue, watch, ...
             )}
 
             {help && <p className="user-field__help">{help}</p>}
-            {error && <p className="user-field__error">{error.message}</p>}
+            {fieldError && <p className="user-field__error">{fieldError.message}</p>}
         </div>
     );
 };

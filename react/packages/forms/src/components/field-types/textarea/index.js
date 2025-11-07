@@ -2,16 +2,17 @@ import { createElement, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
-const TextareaFieldTypeInput = ({ config = {}, error }) => {
+const TextareaFieldTypeInput = ({ config = {} }) => {
     const { register, formState } = useGatewayForm(); // Get RHF methods from context
     const name = config.name;
+    
     if (!name) {
         console.warn('TextareaFieldTypeInput: No "name" provided in config');
         return null;
     }
 
-    // Use error from props if provided, otherwise from formState
-    const fieldError = error || formState.errors[name];
+    // Get error directly from context
+    const fieldError = formState.errors[name];
 
     const {
         label = '',
@@ -20,6 +21,11 @@ const TextareaFieldTypeInput = ({ config = {}, error }) => {
         rows = 5,
         default: defaultValue = ''
     } = config;
+
+    const textareaClasses = ['textarea-field__input'];
+    if (fieldError) {
+        textareaClasses.push('textarea-field__input--error');
+    }
 
     return (
         <div className="textarea-field">
@@ -31,7 +37,7 @@ const TextareaFieldTypeInput = ({ config = {}, error }) => {
 
             <textarea
                 id={name}
-                className="textarea-field__input"
+                className={textareaClasses.join(' ')}
                 {...register(name)}
                 defaultValue={defaultValue}
                 rows={rows}

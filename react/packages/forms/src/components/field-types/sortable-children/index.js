@@ -1,17 +1,29 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import axios from 'axios';
 import './style.css';
 
-const SortableChildrenFieldTypeInput = ({ config = {}, recordId, ...inputProps }) => {
-  const name = inputProps.name || config.name;
+const SortableChildrenFieldTypeInput = ({ config = {}, recordId }) => {
+  const { formState } = useGatewayForm(); // Get RHF methods from context
+  const name = config.name;
+  
+  if (!name) {
+    console.warn('SortableChildrenFieldTypeInput: No "name" provided in config');
+    return null;
+  }
+
+  // Get error directly from context (though this field may not use validation errors)
+  const fieldError = formState.errors[name];
+
   // Note: This field doesn't use setValue/watch/register as it manages its own state
   // It's a special field that manages children records externally
 
   const {
     label,
-    helpText,
+    help = '',
     sortable_children: sortableConfig = {},
   } = config;
+  
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -130,7 +142,7 @@ const SortableChildrenFieldTypeInput = ({ config = {}, recordId, ...inputProps }
     setHasChanges(false);
   };
 
-  const fieldLabel = label || (name ? name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Sortable Children');
+  const fieldLabel = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   if (!recordId) {
     return (
@@ -182,8 +194,8 @@ const SortableChildrenFieldTypeInput = ({ config = {}, recordId, ...inputProps }
         {fieldLabel}
       </label>
 
-      {helpText && (
-        <p className="sortable-children-field__help">{helpText}</p>
+      {help && (
+        <p className="sortable-children-field__help">{help}</p>
       )}
 
       {items.length === 0 ? (
@@ -274,6 +286,10 @@ const SortableChildrenFieldTypeInput = ({ config = {}, recordId, ...inputProps }
             </div>
           )}
         </>
+      )}
+
+      {fieldError && (
+        <p className="sortable-children-field__error">{fieldError.message}</p>
       )}
     </div>
   );
