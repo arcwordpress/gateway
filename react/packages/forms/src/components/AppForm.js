@@ -1,35 +1,27 @@
 import React, { useState, useEffect, useMemo, useRef, createContext, useContext } from 'react';
-import { useForm, FormProvider, useFormContext } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, getRecord, updateRecord } from '../services/api';
 import { generateZodSchema } from '../utils/zodSchemaGenerator';
 
-// Context to provide form state and methods to children
-const AppFormContext = createContext({
-  collection: null,
-  getFieldConfig: () => null,
-  getFieldError: () => null,
-  isFieldUpdating: () => false,
-  fieldErrors: {},
-  updatingFields: new Set()
-});
+// Single context to provide both form state and methods to children
+const GatewayFormContext = createContext();
 
-export const useAppForm = () => {
-  const context = useContext(AppFormContext);
+export const useGatewayForm = () => {
+  const context = useContext(GatewayFormContext);
   if (!context) {
-    throw new Error('useAppForm must be used within an AppForm component');
+    throw new Error('useGatewayForm must be used within an AppForm component');
   }
   return context;
 };
 
 // Export a hook that field components can optionally use for auto-save indicators
-export const useAppFormField = (name) => {
-  const context = useAppForm();
-  const { formState: { errors } } = useFormContext();
+export const useGatewayFormField = (name) => {
+  const context = useGatewayForm();
   
   if (!context.collection) return { isUpdating: false, error: null };
   
-  const validationError = errors[name];
+  const validationError = context.formState.errors[name];
   const updateError = context.getFieldError(name);
   const error = validationError || (updateError ? { message: updateError } : null);
   const isUpdating = context.isFieldUpdating(name);
@@ -224,8 +216,11 @@ const AppForm = ({
     }
   };
 
-  // Context value to provide to children
+  // Combined context value to provide to children
   const contextValue = useMemo(() => ({
+    // RHF methods
+    ...methods,
+    // AppForm data
     collection,
     recordId,
     loading,
@@ -238,7 +233,7 @@ const AppForm = ({
       if (!collection?.fields?.[fieldName]) return null;
       return { name: fieldName, ...collection.fields[fieldName] };
     },
-  }), [collection, recordId, loading, error, fieldErrors, updatingFields]);
+  }), [methods, collection, recordId, loading, error, fieldErrors, updatingFields]);
 
   if (!collectionKey) {
     return (
@@ -285,11 +280,9 @@ const AppForm = ({
   }
 
   return (
-    <AppFormContext.Provider value={contextValue}>
-      <FormProvider {...methods}>
-        {children}
-      </FormProvider>
-    </AppFormContext.Provider>
+    <GatewayFormContext.Provider value={contextValue}>
+      {children}
+    </GatewayFormContext.Provider>
   );
 };
 
