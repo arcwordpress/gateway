@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'; // Remove createContext, useContext
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getCollection, getRecord, updateRecord } from '../services/api';
-import { generateZodSchema } from '../utils/zodSchemaGenerator';
-import { createGatewayFormContext, GatewayFormContext } from '../utils/gatewayFormContext'; // Add imports
+import { getCollection, getRecord, updateRecord } from '../../services/api';
+import { generateZodSchema } from '../../utils/zodSchemaGenerator';
+import { createGatewayFormContext, GatewayFormContext } from '../../utils/gatewayFormContext'; // Add imports
 
 /**
  * AppForm - Form state manager with auto-save functionality

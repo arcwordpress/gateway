@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getCollection, createRecord, getRecord, updateRecord } from '../services/api';
-import { useFieldType } from '@arcwp/gateway-fields';
-import { generateZodSchema } from '../utils/zodSchemaGenerator';
-import { createGatewayFormContext } from '../utils/gatewayFormContext';
+import { getCollection, createRecord, getRecord, updateRecord } from '../../services/api';
+import { useFieldType } from '../../index';
+import { generateZodSchema } from '../../utils/zodSchemaGenerator';
+import { createGatewayFormContext } from '../../utils/gatewayFormContext';
 
 // Import the shared context
-import { GatewayFormContext, useGatewayForm } from '../utils/gatewayFormContext';
+import { GatewayFormContext, useGatewayForm } from '../../utils/gatewayFormContext';
 
 // Memoized field renderer - now uses context instead of props
 const FieldRenderer = React.memo(({ fieldConfig }) => {
