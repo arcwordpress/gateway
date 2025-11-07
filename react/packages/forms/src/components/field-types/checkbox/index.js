@@ -1,13 +1,18 @@
 import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
 import './style.css';
 
 // Input Component (for forms)
-const CheckboxFieldTypeInput = ({ config = {}, error, register, setValue, watch }) => {
+const CheckboxFieldTypeInput = ({ config = {}, error }) => {
+  const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   if (!name) {
     console.warn('CheckboxFieldTypeInput: No "name" provided in config');
     return null;
   }
+
+  // Use error from props if provided, otherwise from formState
+  const fieldError = error || formState.errors[name];
 
   const {
     label,
@@ -26,7 +31,7 @@ const CheckboxFieldTypeInput = ({ config = {}, error, register, setValue, watch 
           id={name}
           {...register(name)}
           defaultChecked={defaultChecked}
-          className={`checkbox-field__input ${error ? 'checkbox-field__input--error' : ''}`}
+          className={`checkbox-field__input ${fieldError ? 'checkbox-field__input--error' : ''}`}
         />
         <label
           htmlFor={name}
@@ -39,8 +44,8 @@ const CheckboxFieldTypeInput = ({ config = {}, error, register, setValue, watch 
       {help && (
         <p className="checkbox-field__help">{help}</p>
       )}
-      {error && (
-        <p className="checkbox-field__error">{error.message}</p>
+      {fieldError && (
+        <p className="checkbox-field__error">{fieldError.message}</p>
       )}
     </div>
   );

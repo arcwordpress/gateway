@@ -1,6 +1,7 @@
 import { registerFieldType } from './fieldTypeRegistry';
 import { relationFieldType } from './components/field-types/relation';
 import { textFieldType } from './components/field-types/text';
+import { slugFieldType } from './components/field-types/slug';
 import { buttonGroupFieldType } from './components/field-types/button-group';
 import { checkboxFieldType } from './components/field-types/checkbox';
 import { colorPickerFieldType } from './components/field-types/color-picker';
@@ -49,6 +50,9 @@ export const initializeFieldTypes = () => {
 
   // Register Text field type
   registerFieldType(textFieldType);
+
+  // Register Slug field type
+  registerFieldType(slugFieldType);
 
   // Register Button Group field type
   registerFieldType(buttonGroupFieldType);
