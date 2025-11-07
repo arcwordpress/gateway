@@ -124,61 +124,6 @@ const FormBuilder = ({ collectionKey, recordId, apiAuth }) => {
     }
   };
 
-  // Map collection config types to field registry types
-  const mapConfigTypeToFieldType = (configType, fieldName, casts = {}) => {
-    // Direct mapping from config type to field type
-    const typeMapping = {
-      'sortable_children': 'sortable-children',
-      'relation': 'relation',
-      'select': 'select',
-      'radio': 'radio',
-      'button_group': 'button-group',
-      'email': 'email',
-      'url': 'url',
-      'markdown': 'markdown',
-      'wysiwyg': 'wysiwyg',
-      'textarea': 'textarea',
-      'number': 'number',
-      'password': 'password',
-      'range': 'range',
-      'color': 'color-picker',
-      'readonly': 'readonly',
-      'hidden': 'hidden',
-      'date_picker': 'date-picker',
-      'time_picker': 'time-picker',
-      'datetime_picker': 'datetime-picker',
-      'image': 'image',
-      'file': 'file',
-      'gallery': 'gallery',
-      'link': 'link',
-      'oembed': 'oembed',
-      'post_object': 'post-object',
-      'user': 'user'
-    };
-
-    // If explicit config type, use it
-    if (configType && typeMapping[configType]) {
-      return typeMapping[configType];
-    }
-
-    // Check casts
-    if (casts[fieldName]) {
-      const cast = casts[fieldName];
-      if (cast === 'datetime' || cast === 'date') return 'date-picker';
-      if (cast === 'integer' || cast === 'int') return 'number';
-      if (cast === 'boolean') return 'checkbox';
-    }
-
-    // Infer from field name
-    if (fieldName.includes('email')) return 'email';
-    if (fieldName.includes('password')) return 'password';
-    if (fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link')) return 'url';
-    if (fieldName === 'description') return 'textarea';
-
-    // Default to text
-    return 'text';
-  };
-
   // Combined context value to provide to children (fields)
   const contextValue = useMemo(() => ({
     // RHF methods
