@@ -1,0 +1,16 @@
+/**
+ * Editor styles for Gateway Field Blocks
+ */
+
+.gateway-field-block-preview {
+	padding: 1rem;
+	background-color: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+
+	// Ensure fields render nicely in the editor
+	.text-field,
+	.textarea-field {
+		max-width: 100%;
+	}
+}
