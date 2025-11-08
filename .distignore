@@ -52,3 +52,4 @@ bitbucket-pipelines.yml
 .prettierrc
 *.log
 *.map
+.env
