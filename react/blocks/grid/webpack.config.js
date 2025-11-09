@@ -18,7 +18,7 @@ module.exports = {
     ...defaultConfig.resolve,
     alias: {
       ...defaultConfig.resolve.alias,
-      '@gateway/grid': path.resolve(__dirname, '../../../packages/grid/src'),
+      '@gateway/grids': path.resolve(__dirname, '../../../packages/grids/src'),
     },
   },
 };

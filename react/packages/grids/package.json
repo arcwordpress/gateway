@@ -1,13 +1,22 @@
 {
-  "name": "@arcwp/gateway-grid",
+  "name": "@arcwp/gateway-grids",
   "version": "1.2.2",
   "description": "Gateway Grid React component library with TanStack Table",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "style": "dist/style.css",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./board-styles.css": "./dist/board-styles.css"
+  },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js' && cp node_modules/@asseinfo/react-kanban/dist/styles.css dist/board-styles.css",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -37,9 +46,9 @@
     "@babel/preset-react": "^7.24.0"
   },
   "dependencies": {
-    "@arcwp/gateway-filters": "^1.0.2",
     "@arcwp/gateway-forms": "^1.2.5",
     "@tanstack/react-table": "^8.20.5",
+    "@asseinfo/react-kanban": "^2.2.0",
     "axios": "^1.6.2"
   },
   "peerDependencies": {

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@arcwp/gateway-forms": "^1.2.3",
-    "@arcwp/gateway-grid": "^1.2.2",
+    "@arcwp/gateway-grids": "^1.2.2",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.12.2",
     "react": "^18.2.0",

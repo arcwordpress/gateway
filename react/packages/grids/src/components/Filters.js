@@ -1,5 +1,3 @@
-import './filter-group-styles.css';
-
 /**
  * FilterGroup Component
  * Layout container for filter components with configurable direction (row/stack)

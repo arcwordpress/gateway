@@ -1,5 +1,5 @@
 import { useState, useEffect } from '@wordpress/element';
-import { Grid } from '@arcwp/gateway-grid';
+import { Grid } from '@arcwp/gateway-grids';
 import stateManager from './StateManager';
 
 const App = ({ collectionKey, showFilters = true, externalFilters: initialExternalFilters = {} }) => {

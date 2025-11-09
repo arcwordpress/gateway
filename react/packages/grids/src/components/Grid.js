@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import DataTable from './DataTable';
+import TableView from './view-types/TableView';
+import BoardView from './view-types/BoardView';
 import { fetchCollection, fetchCollectionData, deleteRecord } from '../services/collectionService';
 import { generateColumns } from '../services/columnGenerator';
 
@@ -7,12 +8,22 @@ import { generateColumns } from '../services/columnGenerator';
  * Main Grid Component
  * Displays a data grid for a Gateway collection
  */
-const Grid = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters = true, externalFilters = {} }) => {
+const Grid = ({
+  collectionKey,
+  onEdit,
+  onDelete,
+  showActions = true,
+  showFilters = true,
+  externalFilters = {},
+  viewType = 'table', // 'table' | 'board'
+  boardConfig = {},
+}) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, loading }
+  const [filterValues, setFilterValues] = useState({});
 
   // Fetch collection metadata
   useEffect(() => {
@@ -72,6 +83,11 @@ const Grid = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters
   const filters = useMemo(() => {
     return collection?.filters || [];
   }, [collection]);
+
+  // Unified filtering logic (moved from DataTable)
+  const filteredData = useMemo(() => {
+    return applyFilters(data, filters, filterValues);
+  }, [data, filters, filterValues]);
 
   // Handle delete with confirmation
   const handleDeleteClick = (recordId) => {
@@ -152,6 +168,12 @@ const Grid = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters
     return baseColumns;
   }, [data, collection, showActions, onEdit, onDelete]);
 
+  // View component selection
+  const ViewComponent = viewType === 'board' ? BoardView : TableView;
+  const viewProps = viewType === 'board' 
+    ? { config: boardConfig }
+    : { columns };
+
   if (error) {
     return (
       <div className="grid__error">
@@ -171,43 +193,25 @@ const Grid = ({ collectionKey, onEdit, onDelete, showActions = true, showFilters
 
   return (
     <div className="grid">
-      <DataTable
-        data={data}
-        columns={columns}
-        filters={showFilters ? filters : []}
+      {/* Filters - shared by all views */}
+      {showFilters && filters.length > 0 && (
+        <GridFilters
+          filters={filters}
+          values={filterValues}
+          onChange={setFilterValues}
+          data={data} // For dynamic select choices
+        />
+      )}
+
+      {/* View-specific rendering */}
+      <ViewComponent
+        data={filteredData}
         loading={loading}
-        externalFilters={externalFilters}
+        {...viewProps}
       />
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="grid__modal-overlay">
-          <div className="grid__modal">
-            <h3 className="grid__modal-title">
-              Confirm Delete
-            </h3>
-            <p className="grid__modal-message">
-              Are you sure you want to delete this record? This action cannot be undone.
-            </p>
-            <div className="grid__modal-actions">
-              <button
-                onClick={handleDeleteCancel}
-                disabled={deleteConfirm.loading}
-                className="grid__btn grid__btn--cancel"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                disabled={deleteConfirm.loading}
-                className="grid__btn grid__btn--confirm"
-              >
-                {deleteConfirm.loading ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete modal - shared */}
+      {deleteConfirm && <DeleteConfirmModal />}
     </div>
   );
 };
