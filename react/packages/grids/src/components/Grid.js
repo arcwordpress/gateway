@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import TableView from './view-types/TableView';
 import BoardView from './view-types/BoardView';
+import GridFilters from './GridFilters';
+import { GridProvider } from '../context/GridContext';
 import { fetchCollection, fetchCollectionData, deleteRecord } from '../services/collectionService';
 import { generateColumns } from '../services/columnGenerator';
+import { applyFilters } from '../utils/filterUtils';
 
 /**
  * Main Grid Component
@@ -22,7 +25,7 @@ const Grid = ({
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, loading }
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterValues, setFilterValues] = useState({});
 
   // Fetch collection metadata
@@ -51,40 +54,37 @@ const Grid = ({
   }, [collectionKey]);
 
   // Fetch collection data (records)
-  useEffect(() => {
+  const fetchData = async () => {
     if (!collection) return;
 
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const namespace = collection.routes.namespace;
-        const route = collection.routes.route;
+    try {
+      setLoading(true);
+      const namespace = collection.routes.namespace;
+      const route = collection.routes.route;
 
-        const result = await fetchCollectionData(namespace, route);
+      const result = await fetchCollectionData(namespace, route);
+      const records = result.data || result;
+      setData(Array.isArray(records) ? records : []);
+      setError(null);
+    } catch (err) {
+      setError(`Failed to load data: ${err.message}`);
+      console.error('Error loading data:', err);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Handle different response formats
-        // If response has a 'data' property, use that; otherwise use the response itself
-        const records = result.data || result;
-        setData(Array.isArray(records) ? records : []);
-        setError(null);
-      } catch (err) {
-        setError(`Failed to load data: ${err.message}`);
-        console.error('Error loading data:', err);
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
+  useEffect(() => {
+    fetchData();
   }, [collection]);
 
-  // Get filters from collection metadata - MUST be before any early returns
+  // Get filters from collection metadata
   const filters = useMemo(() => {
     return collection?.filters || [];
   }, [collection]);
 
-  // Unified filtering logic (moved from DataTable)
+  // Unified filtering logic
   const filteredData = useMemo(() => {
     return applyFilters(data, filters, filterValues);
   }, [data, filters, filterValues]);
@@ -105,10 +105,8 @@ const Grid = ({
 
       await deleteRecord(namespace, route, deleteConfirm.id);
 
-      // Remove the deleted record from the data
       setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
 
-      // Call the onDelete callback if provided
       if (onDelete) {
         onDelete(deleteConfirm.id);
       }
@@ -129,10 +127,8 @@ const Grid = ({
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
-    // Get base columns from collection metadata
     const baseColumns = generateColumns(collection);
 
-    // Add actions column if enabled
     if (showActions && (onEdit || onDelete)) {
       baseColumns.push({
         id: 'actions',
@@ -168,6 +164,14 @@ const Grid = ({
     return baseColumns;
   }, [data, collection, showActions, onEdit, onDelete]);
 
+  // Context value for child components
+  const gridContextValue = useMemo(() => ({
+    namespace: collection?.routes?.namespace || null,
+    route: collection?.routes?.route || null,
+    collection,
+    onRefresh: fetchData,
+  }), [collection]);
+
   // View component selection
   const ViewComponent = viewType === 'board' ? BoardView : TableView;
   const viewProps = viewType === 'board' 
@@ -191,28 +195,31 @@ const Grid = ({
     );
   }
 
+  if (!collection) {
+    return null;
+  }
+
   return (
-    <div className="grid">
-      {/* Filters - shared by all views */}
-      {showFilters && filters.length > 0 && (
-        <GridFilters
-          filters={filters}
-          values={filterValues}
-          onChange={setFilterValues}
-          data={data} // For dynamic select choices
+    <GridProvider value={gridContextValue}>
+      <div className="grid">
+        {showFilters && filters.length > 0 && (
+          <GridFilters
+            filters={filters}
+            values={filterValues}
+            onChange={setFilterValues}
+            data={data}
+          />
+        )}
+
+        <ViewComponent
+          data={filteredData}
+          loading={loading}
+          {...viewProps}
         />
-      )}
 
-      {/* View-specific rendering */}
-      <ViewComponent
-        data={filteredData}
-        loading={loading}
-        {...viewProps}
-      />
-
-      {/* Delete modal - shared */}
-      {deleteConfirm && <DeleteConfirmModal />}
-    </div>
+        {deleteConfirm && <DeleteConfirmModal />}
+      </div>
+    </GridProvider>
   );
 };
 

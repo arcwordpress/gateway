@@ -63,3 +63,27 @@ const applyRangeFilter = (row, field, { min, max }) => {
   
   return true;
 };
+
+/**
+ * Extract unique values from data for a given field
+ * Used to generate dynamic select filter choices
+ */
+export const extractUniqueValues = (data, field) => {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+
+  const uniqueValues = new Set();
+  
+  data.forEach(row => {
+    const value = row[field];
+    if (value !== null && value !== undefined && value !== '') {
+      uniqueValues.add(value);
+    }
+  });
+
+  return Array.from(uniqueValues).map(value => ({
+    value: value,
+    label: String(value)
+  }));
+};

@@ -192,4 +192,23 @@ export const deleteRecord = async (namespace, route, id) => {
   }
 };
 
+/**
+ * Update a record in a collection
+ * @param {string} namespace - REST API namespace (e.g., 'gateway/v1')
+ * @param {string} route - Collection route (e.g., 'tickets')
+ * @param {number} id - Record ID
+ * @param {Object} data - Record data to update
+ * @returns {Promise} Promise resolving to updated record data
+ */
+export const updateRecord = async (namespace, route, id, data) => {
+  try {
+    const url = `${namespace}/${route}/${id}`;
+    const response = await apiClient.patch(url, data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating record ${id} from ${namespace}/${route}:`, error);
+    throw error;
+  }
+};
+
 export default apiClient;

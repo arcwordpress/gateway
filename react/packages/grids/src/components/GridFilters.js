@@ -1,4 +1,12 @@
-// src/components/GridFilters.js
+import { useMemo } from '@wordpress/element';
+import Filters from './Filters';
+import Filter from './Filter';
+import { extractUniqueValues } from '../utils/filterUtils';
+
+/**
+ * GridFilters Component
+ * Renders a collection of filters based on collection metadata
+ */
 const GridFilters = ({ filters, values, onChange, data }) => {
   const processedFilters = useMemo(() => {
     return filters.map(filter => {
@@ -30,3 +38,5 @@ const GridFilters = ({ filters, values, onChange, data }) => {
     </div>
   );
 };
+
+export default GridFilters;
