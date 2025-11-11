@@ -1,6 +1,6 @@
 {
   "name": "@arcwp/gateway-grids",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Gateway Grid React component library with TanStack Table",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -16,7 +16,7 @@
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js' && cp node_modules/@asseinfo/react-kanban/dist/styles.css dist/board-styles.css",
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

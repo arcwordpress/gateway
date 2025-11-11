@@ -3,6 +3,8 @@ import { HashRouter as Router, Routes, Route, Navigate, useParams, useNavigate }
 import { Grid } from '@arcwp/gateway-grids';
 import stateManager from './StateManager';
 import ViewSwitcher from './components/ViewSwitcher';
+import '@arcwp/gateway-grids/style.css';
+import '@arcwp/gateway-grids/board-styles.css';
 
 const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews }) => {
   const { viewType = 'table' } = useParams();

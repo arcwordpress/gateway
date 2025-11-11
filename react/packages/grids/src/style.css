@@ -1,5 +1,5 @@
-/* Base DataTable Styles */
-.data-table {
+/* Base TableView Styles */
+.table-view {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -7,34 +7,29 @@
 }
 
 /* State Messages */
-.data-table__state {
+.table-view__state {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
 }
 
-.data-table__state--loading {
+.table-view__state--loading {
   /* Loading specific styles if needed */
 }
 
-.data-table__state--empty {
+.table-view__state--empty {
   background-color: #f9fafb;
   border-radius: 0.5rem;
   border: 1px solid #e5e7eb;
 }
 
-.data-table__message {
+.table-view__message {
   color: #6b7280;
 }
 
-/* Filters Section */
-.data-table__filters {
-  /* Styles for filters container if needed */
-}
-
 /* Table Wrapper */
-.data-table__wrapper {
+.table-view__wrapper {
   overflow-x: auto;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
@@ -42,18 +37,18 @@
 }
 
 /* Table */
-.data-table__table {
+.table-view__table {
   width: 100%;
   border-collapse: collapse;
 }
 
 /* Table Head */
-.data-table__thead {
+.table-view__thead {
   background-color: #f9fafb;
 }
 
 /* Table Header Cell */
-.data-table__th {
+.table-view__th {
   padding: 0.75rem 1.5rem;
   text-align: left;
   font-size: 0.75rem;
@@ -64,42 +59,42 @@
 }
 
 /* Header Content */
-.data-table__header {
+.table-view__header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.data-table__header--sortable {
+.table-view__header--sortable {
   cursor: pointer;
   user-select: none;
 }
 
-.data-table__header--sortable:hover {
+.table-view__header--sortable:hover {
   color: #374151;
 }
 
 /* Sort Icon */
-.data-table__sort-icon {
+.table-view__sort-icon {
   color: #9ca3af;
 }
 
 /* Table Body */
-.data-table__tbody {
+.table-view__tbody {
   background-color: #ffffff;
 }
 
 /* Table Row */
-.data-table__row {
+.table-view__row {
   border-top: 1px solid #e5e7eb;
 }
 
-.data-table__row--body:hover {
+.table-view__row--body:hover {
   background-color: #f9fafb;
 }
 
 /* Table Data Cell */
-.data-table__td {
+.table-view__td {
   padding: 1rem 1.5rem;
   font-size: 0.875rem;
   color: #111827;
@@ -107,7 +102,7 @@
 }
 
 /* Cell Content */
-.data-table__cell-content {
+.table-view__cell-content {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -115,21 +110,21 @@
 }
 
 /* Pagination Container */
-.data-table__pagination {
+.table-view__pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 /* Pagination Controls */
-.data-table__pagination-controls {
+.table-view__pagination-controls {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 /* Pagination Button */
-.data-table__btn {
+.table-view__btn {
   padding: 0.25rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
@@ -139,40 +134,40 @@
   transition: background-color 0.15s ease-in-out;
 }
 
-.data-table__btn:hover:not(:disabled) {
+.table-view__btn:hover:not(:disabled) {
   background-color: #f9fafb;
 }
 
-.data-table__btn:disabled {
+.table-view__btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.data-table__btn--pagination {
+.table-view__btn--pagination {
   /* Specific styles for pagination buttons if needed */
 }
 
 /* Row Count */
-.data-table__row-count {
+.table-view__row-count {
   font-size: 0.875rem;
   color: #6b7280;
 }
 
 /* Page Size Container */
-.data-table__page-size {
+.table-view__page-size {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 /* Page Info */
-.data-table__page-info {
+.table-view__page-info {
   font-size: 0.875rem;
   color: #374151;
 }
 
 /* Select Dropdown */
-.data-table__select {
+.table-view__select {
   padding: 0.25rem 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
@@ -181,7 +176,7 @@
   cursor: pointer;
 }
 
-.data-table__select:focus {
+.table-view__select:focus {
   outline: none;
   ring: 1px;
   ring-color: #3b82f6;

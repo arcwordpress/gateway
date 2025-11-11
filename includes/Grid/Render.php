@@ -114,6 +114,13 @@ class Render
             $asset['version']
         );
 
+        wp_enqueue_style(
+            'gateway-grid-index',
+            $build_url . 'style-index.css',
+            [],
+            $asset['version']
+        );
+
         self::$scripts_enqueued = true;
     }
 }

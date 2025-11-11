@@ -1,0 +1,114 @@
+/* Board View Styles - Optional styles for Kanban board layout */
+.board-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-x: auto;
+}
+
+/* State Messages */
+.board-view__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.board-view__state--loading {
+  /* Loading specific styles if needed */
+}
+
+.board-view__state--empty {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.board-view__message {
+  color: #6b7280;
+}
+
+/* Board Card */
+.board-view__card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+.board-view__card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.board-view__card:active {
+  cursor: grabbing;
+}
+
+.board-view__card-title {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.board-view__card-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.25rem;
+}
+
+/* Override react-kanban default styles to match our design */
+.react-kanban-board {
+  padding: 0 !important;
+  background-color: transparent !important;
+  gap: 0.125rem;
+}
+
+.react-kanban-column {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 200px;
+  flex-basis: 300px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 300px;
+}
+
+.react-kanban-column-header {
+  padding: 0 0 0.75rem 0;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.react-kanban-column-header span {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.react-kanban-card-skeleton {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+}
+
+/* Override react-kanban's inline-block wrapper */
+.react-kanban-column > div[data-rbd-droppable-id] > div[data-rbd-draggable-context-id] > div {
+  display: block !important;
+  width: 100%;
+}
+
+/* Ensure droppable area takes full column width */
+.react-kanban-column > div[data-rbd-droppable-id] {
+  width: 100%;
+  min-height: 100px;
+}
