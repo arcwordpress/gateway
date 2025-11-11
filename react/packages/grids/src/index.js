@@ -2,6 +2,8 @@
 export { default as Grid } from './components/Grid';
 export { default as TableView } from './components/view-types/TableView';
 export { default as BoardView } from './components/view-types/BoardView';
+export { default as SingleView } from './components/SingleView';
+export { default as Modal } from './components/Dialog';
 export { default as SearchFilter } from './components/filter-types/text/TextFilter';
 export { default as SelectFilter } from './components/filter-types/select/SelectFilter';
 export { default as DateFilter } from './components/filter-types/date_range/DateRangeFilter';

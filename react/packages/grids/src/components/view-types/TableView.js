@@ -6,6 +6,9 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import Modal from '../Dialog';
+import SingleView from '../SingleView';
+import '../dialog.css';
 
 /**
  * TableView Component with TanStack Table
@@ -15,12 +18,41 @@ const TableView = ({
   data = [],
   columns = [],
   loading = false,
+  onView,
+  selectedRecord: externalSelectedRecord,
+  onCloseView,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [internalSelectedRecord, setInternalSelectedRecord] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Use external or internal state
+  const selectedRecord = externalSelectedRecord !== undefined ? externalSelectedRecord : internalSelectedRecord;
+  const isViewOpen = externalSelectedRecord !== undefined ? !!externalSelectedRecord : isModalOpen;
+
+  const handleViewRecord = (record) => {
+    if (onView) {
+      // Let parent handle navigation (e.g., router)
+      onView(record);
+    } else {
+      // Use internal modal
+      setInternalSelectedRecord(record);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseView = () => {
+    if (onCloseView) {
+      onCloseView();
+    } else {
+      setInternalSelectedRecord(null);
+      setIsModalOpen(false);
+    }
+  };
 
   const table = useReactTable({
     data,
@@ -105,6 +137,14 @@ const TableView = ({
                     </div>
                   </td>
                 ))}
+                <td className="table-view__td">
+                  <button
+                    onClick={() => handleViewRecord(row.original)}
+                    className="grid__btn grid__btn--view"
+                  >
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -168,6 +208,15 @@ const TableView = ({
           </select>
         </div>
       </div>
+
+      {/* View Record Modal */}
+      <Modal
+        isOpen={isViewOpen}
+        onClose={handleCloseView}
+        title="Record Details"
+      >
+        <SingleView record={selectedRecord} />
+      </Modal>
     </div>
   );
 };

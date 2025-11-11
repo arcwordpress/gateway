@@ -7,7 +7,9 @@
       }
     }],
     ["@babel/preset-react", {
-      "runtime": "automatic"
+      "runtime": "classic",
+      "pragma": "wp.element.createElement",
+      "pragmaFrag": "wp.element.Fragment"
     }]
   ]
 }

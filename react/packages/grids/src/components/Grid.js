@@ -15,6 +15,9 @@ const Grid = ({
   collectionKey,
   onEdit,
   onDelete,
+  onView,
+  selectedRecord,
+  onCloseView,
   showActions = true,
   showFilters = true,
   externalFilters = {},
@@ -176,7 +179,12 @@ const Grid = ({
   const ViewComponent = viewType === 'board' ? BoardView : TableView;
   const viewProps = viewType === 'board' 
     ? { config: boardConfig }
-    : { columns };
+    : { 
+        columns,
+        onView,
+        selectedRecord,
+        onCloseView,
+      };
 
   if (error) {
     return (
