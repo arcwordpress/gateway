@@ -4,6 +4,7 @@ import './style.css';
 
 // Input Component (for forms)
 const TextFieldTypeInput = ({ config = {} }) => {
+
   const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
   if (!name) {
@@ -19,7 +20,7 @@ const TextFieldTypeInput = ({ config = {} }) => {
     placeholder = '',
     required = false,
     help = '',
-    inputType = 'text'
+    default: defaultValue = ''
   } = config;
 
   const inputClasses = ['text-field__input'];
@@ -39,9 +40,10 @@ const TextFieldTypeInput = ({ config = {} }) => {
         {required && <span className="text-field__required">*</span>}
       </label>
       <input
-        type={inputType}
+        type="text"
         id={name}
         {...register(name)}
+        defaultValue={defaultValue}
         placeholder={placeholder}
         className={inputClasses.join(' ')}
       />
@@ -70,10 +72,12 @@ export const textFieldType = {
   Input: TextFieldTypeInput,
   Display: TextFieldTypeDisplay,
   defaultConfig: {
-    name: '',
+    label: '',
     placeholder: '',
-    inputType: 'text',
-  },
+    help: '',
+    required: false,
+    default: ''
+  }
 };
 
 // Hook for easy usage
