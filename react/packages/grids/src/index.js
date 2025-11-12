@@ -10,5 +10,5 @@ export { default as DateFilter } from './components/filter-types/date_range/Date
 export { default as RangeFilter } from './components/filter-types/range/RangeFilter';
 export { default as Filter } from './components/Filter';
 export { default as FilterGroup } from './components/Filters';
-export { GridProvider, useGridContext } from './context/GridContext';
+export { GridProvider, useGridContext, useRecord } from './context/GridContext';
 export * from './services/collectionService';

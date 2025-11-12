@@ -4,6 +4,8 @@ const GridContext = createContext({
   namespace: null,
   route: null,
   collection: null,
+  records: [],
+  getRecordById: (id) => null,
   onRefresh: null,
 });
 
@@ -12,6 +14,22 @@ export const GridProvider = GridContext.Provider;
 export const useGridContext = () => {
   const context = useContext(GridContext);
   return context;
+};
+
+/**
+ * Hook to get a specific record by ID from the grid context
+ * @param {number|string} id - Record ID
+ * @returns {Object|null} Record object or null if not found
+ */
+export const useRecord = (id) => {
+  const { getRecordById, records } = useGridContext();
+  
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[useRecord] Looking for ID:', id, 'Available records:', records?.length || 0);
+  }
+  
+  return getRecordById ? getRecordById(id) : null;
 };
 
 export default GridContext;

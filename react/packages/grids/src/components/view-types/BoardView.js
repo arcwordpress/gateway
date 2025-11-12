@@ -13,6 +13,7 @@ const BoardView = ({
   data = [], 
   config = {},
   loading = false,
+  onView,
 }) => {
   const {
     groupByField = 'status',
@@ -210,9 +211,20 @@ const BoardView = ({
     return { columns: boardColumns };
   }, [data, groupByField, lanes, getCardFromRecord]);
 
-  // Default card renderer
+  // Handle card click to view details
+  const handleCardClick = (card) => {
+    if (onView && card.record) {
+      onView(card.record);
+    }
+  };
+
+  // Default card renderer with click handler
   const defaultRenderCard = (card) => (
-    <div className="board-view__card">
+    <div 
+      className="board-view__card"
+      onClick={() => handleCardClick(card)}
+      style={{ cursor: onView ? 'pointer' : 'default' }}
+    >
       <div className="board-view__card-title">{card.title}</div>
       {card.description && (
         <div className="board-view__card-description">{card.description}</div>
@@ -280,11 +292,23 @@ const BoardView = ({
     );
   }
 
+  // Wrap custom renderCard to add click handler
+  const cardRenderer = renderCard 
+    ? (card) => (
+        <div 
+          onClick={() => handleCardClick(card)}
+          style={{ cursor: onView ? 'pointer' : 'default' }}
+        >
+          {renderCard(card)}
+        </div>
+      )
+    : defaultRenderCard;
+
   return (
     <div className="board-view">
       <Board
         initialBoard={boardModel}
-        renderCard={renderCard || defaultRenderCard}
+        renderCard={cardRenderer}
         onCardDragEnd={handleCardMove}
         disableLaneDrag={true}
         disableLaneRename={true}

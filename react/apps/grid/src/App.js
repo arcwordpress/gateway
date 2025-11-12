@@ -1,60 +1,16 @@
 import { useState, useEffect } from '@wordpress/element';
-import { HashRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { Grid, SingleView } from '@arcwp/gateway-grids';
+import { HashRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Grid, SingleView, Modal } from '@arcwp/gateway-grids';
 import stateManager from './StateManager';
 import ViewSwitcher from './components/ViewSwitcher';
+import { generateRoutes, normalizeViews, navigationHelpers } from './router';
 import '@arcwp/gateway-grids/style.css';
 import '@arcwp/gateway-grids/board-styles.css';
 
-const SingleRecordView = ({ collectionKey, viewType, enabledViews }) => {
-  const { recordId } = useParams();
-  const navigate = useNavigate();
-  const [record, setRecord] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch single record data
-  useEffect(() => {
-    const fetchRecord = async () => {
-      try {
-        setLoading(true);
-        // This would use collectionService to fetch a single record
-        // For now, we'll rely on passing the record through navigation state
-        const navState = window.history.state?.usr;
-        if (navState?.record) {
-          setRecord(navState.record);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching record:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchRecord();
-  }, [recordId, collectionKey]);
-
-  const handleBack = () => {
-    navigate(`/${viewType}`);
-  };
-
-  if (loading) {
-    return <div className="grid__loading">Loading record...</div>;
-  }
-
-  return (
-    <div className="single-record-view">
-      <div className="single-record-view__header">
-        <button onClick={handleBack} className="grid__btn grid__btn--back">
-          ← Back to {viewType}
-        </button>
-      </div>
-      <SingleView record={record} />
-    </div>
-  );
-};
+console.log('Welcome to React hellscape!')
 
 const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews }) => {
-  const { viewType = 'table' } = useParams();
+  const { viewType = 'table', recordId } = useParams();
   const navigate = useNavigate();
 
   // Ensure viewType is valid
@@ -63,11 +19,15 @@ const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews })
     : (enabledViews && enabledViews[0]) || 'table';
 
   const handleViewChange = (newViewType) => {
-    navigate(`/${newViewType}`);
+    navigationHelpers.changeView(navigate, newViewType);
   };
 
   const handleViewRecord = (record) => {
-    navigate(`/${validViewType}/${record.id}`, { state: { record } });
+    navigationHelpers.viewRecord(navigate, validViewType, record);
+  };
+
+  const handleCloseModal = () => {
+    navigationHelpers.closeModal(navigate, validViewType);
   };
 
   return (
@@ -84,7 +44,13 @@ const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews })
         externalFilters={externalFilters}
         viewType={validViewType}
         onView={handleViewRecord}
-      />
+      >
+        {recordId && (
+          <Modal isOpen={true} onClose={handleCloseModal}>
+            <SingleView recordId={recordId} />
+          </Modal>
+        )}
+      </Grid>
     </>
   );
 };
@@ -97,16 +63,9 @@ const App = ({
 }) => {
   const [externalFilters, setExternalFilters] = useState(initialExternalFilters);
 
-  // Normalize enabledViews
-  const normalizedViews = enabledViews === true
-    ? ['table', 'board', 'calendar', 'gallery']
-    : enabledViews === false
-    ? ['table']
-    : Array.isArray(enabledViews)
-    ? enabledViews
-    : ['table', 'board'];
+  const normalizedViews = normalizeViews(enabledViews);
 
-  // Subscribe to external filter changes from filters app (if using separate filters block)
+  // Subscribe to external filter changes from filters app
   useEffect(() => {
     if (!collectionKey) return;
 
@@ -119,31 +78,20 @@ const App = ({
     return unsubscribe;
   }, [collectionKey]);
 
+  const routes = generateRoutes({
+    collectionKey,
+    showFilters,
+    externalFilters,
+    enabledViews: normalizedViews,
+    GridView,
+  });
+
   return (
     <Router>
       <Routes>
-        <Route
-          path="/:viewType/:recordId"
-          element={
-            <SingleRecordView
-              collectionKey={collectionKey}
-              viewType={normalizedViews[0]}
-              enabledViews={normalizedViews}
-            />
-          }
-        />
-        <Route
-          path="/:viewType"
-          element={
-            <GridView
-              collectionKey={collectionKey}
-              showFilters={showFilters}
-              externalFilters={externalFilters}
-              enabledViews={normalizedViews}
-            />
-          }
-        />
-        <Route path="/" element={<Navigate to={`/${normalizedViews[0]}`} replace />} />
+        {routes.map((route, index) => (
+          <Route key={index} path={route.path} element={route.element} />
+        ))}
       </Routes>
     </Router>
   );

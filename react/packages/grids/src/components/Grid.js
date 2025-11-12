@@ -23,6 +23,7 @@ const Grid = ({
   externalFilters = {},
   viewType = 'table', // 'table' | 'board'
   boardConfig = {},
+  children,
 }) => {
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
@@ -172,13 +173,19 @@ const Grid = ({
     namespace: collection?.routes?.namespace || null,
     route: collection?.routes?.route || null,
     collection,
+    records: data,
+    getRecordById: (id) => {
+      if (!data || data.length === 0) return null;
+      // Support both numeric and string IDs
+      return data.find(record => record.id == id) || null;
+    },
     onRefresh: fetchData,
-  }), [collection]);
+  }), [collection, data]);
 
   // View component selection
   const ViewComponent = viewType === 'board' ? BoardView : TableView;
   const viewProps = viewType === 'board' 
-    ? { config: boardConfig }
+    ? { config: boardConfig, onView }
     : { 
         columns,
         onView,
@@ -227,6 +234,7 @@ const Grid = ({
 
         {deleteConfirm && <DeleteConfirmModal />}
       </div>
+      {children}
     </GridProvider>
   );
 };

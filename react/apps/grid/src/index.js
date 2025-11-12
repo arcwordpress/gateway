@@ -26,6 +26,7 @@ gridElements.forEach((element) => {
         collectionKey={collectionKey}
         showFilters={config.showFilters !== false} // Default to true unless explicitly false
         externalFilters={config.externalFilters || {}}
+        enabledViews={config.enabledViews}
       />
     );
   }
