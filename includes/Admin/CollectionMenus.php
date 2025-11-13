@@ -136,7 +136,7 @@ class CollectionMenus
     public static function render_collection_page()
     {
         ?>
-        <div id="gateway-admin-root"></div>
+        <div gateway-studio-app data-package="default"></div>
         <?php
     }
 }

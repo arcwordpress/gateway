@@ -1,5 +1,4 @@
 <?php
-<?php
 
 namespace Gateway\Package;
 
@@ -165,7 +164,7 @@ class PackageMenus
 
         // Render Studio app with package identifier
         ?>
-        <div id="gateway-admin-root" data-package="<?php echo esc_attr($package->getKey()); ?>"></div>
+        <div gateway-studio-app data-package="<?php echo esc_attr($package->getKey()); ?>"></div>
         <?php
     }
 }
