@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { FormBuilder } from '@arcwp/gateway-forms';
+import { Form } from '@arcwp/gateway-forms';
 
 function CollectionForm() {
   const { collectionKey, id } = useParams();
@@ -26,7 +26,7 @@ function CollectionForm() {
         </h2>
       </div>
 
-      <FormBuilder collectionKey={collectionKey} recordId={id} />
+      <Form collectionKey={collectionKey} recordId={id} />
     </div>
   );
 }

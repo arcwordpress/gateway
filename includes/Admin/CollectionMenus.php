@@ -75,8 +75,15 @@ class CollectionMenus
         );
 
         wp_enqueue_style(
-            'gateway-studio',
+            'gateway-studio-index',
             $build_url . 'index.css',
+            [],
+            $asset['version']
+        );
+
+        wp_enqueue_style(
+            'gateway-studio-style-index',
+            $build_url . 'style-index.css',
             [],
             $asset['version']
         );
