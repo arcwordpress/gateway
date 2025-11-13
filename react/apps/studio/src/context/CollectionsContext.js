@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const CollectionsContext = createContext();
 
-export function CollectionsProvider({ children }) {
+export function CollectionsProvider({ children, packageKey }) {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,14 +10,17 @@ export function CollectionsProvider({ children }) {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await fetch(
-          `${window.gatewayAdminScript.apiUrl}gateway/v1/collections`,
-          {
-            headers: {
-              'X-WP-Nonce': window.gatewayAdminScript.nonce,
-            },
-          }
-        );
+        // Build URL with package filter
+        const url = new URL(`${window.gatewayAdminScript.apiUrl}gateway/v1/collections`);
+        if (packageKey) {
+          url.searchParams.append('package', packageKey);
+        }
+
+        const response = await fetch(url.toString(), {
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch collections');
@@ -33,7 +36,7 @@ export function CollectionsProvider({ children }) {
     };
 
     fetchCollections();
-  }, []);
+  }, [packageKey]);
 
   return (
     <CollectionsContext.Provider value={{ collections, loading, error }}>

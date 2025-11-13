@@ -5,18 +5,7 @@ namespace Gateway\Package;
 /**
  * Package class represents a registered package that groups collections
  * 
- * Packages allow developers to organize collections into logical groups
- * and control where they appear in the WordPress admin menu.
- * 
- * Usage:
- * $package = new Package('my-package', [
- *     'label' => 'My Package',
- *     'description' => 'Package description',
- *     'icon' => 'dashicons-admin-generic',
- *     'position' => 20,
- *     'capability' => 'manage_options',
- *     'parent' => 'edit.php', // Optional: make it a submenu
- * ]);
+ * Extend class: Package extends \Gateway\Package
  * 
  * Then register: $package->register();
  * 
@@ -74,21 +63,22 @@ class Package
     protected $menuSlug;
 
     /**
-     * Constructor
-     *
-     * @param string $key Package unique key/slug
-     * @param array $config Configuration options
+     * Constructor - auto-configures from class properties
      */
-    public function __construct(string $key, array $config = [])
+    public function __construct()
     {
-        $this->key = $key;
-        $this->label = $config['label'] ?? ucwords(str_replace(['-', '_'], ' ', $key));
-        $this->description = $config['description'] ?? '';
-        $this->icon = $config['icon'] ?? 'dashicons-admin-generic';
-        $this->position = $config['position'] ?? 20;
-        $this->capability = $config['capability'] ?? 'manage_options';
-        $this->parent = $config['parent'] ?? null;
-        $this->menuSlug = 'gateway-package-' . $key;
+        // If key not set, throw error
+        if (empty($this->key)) {
+            throw new \InvalidArgumentException('Package key must be set in extended class');
+        }
+
+        // Auto-generate label from key if not set
+        if (empty($this->label)) {
+            $this->label = ucwords(str_replace(['-', '_'], ' ', $this->key));
+        }
+
+        // Generate menu slug
+        $this->menuSlug = 'gateway-package-' . $this->key;
     }
 
     /**

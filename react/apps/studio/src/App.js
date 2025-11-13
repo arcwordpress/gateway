@@ -47,10 +47,10 @@ function AppContent() {
   );
 }
 
-function App() {
+function App({ packageKey }) {
   return (
     <Router>
-      <CollectionsProvider>
+      <CollectionsProvider packageKey={packageKey}>
         <AppContent />
       </CollectionsProvider>
     </Router>
