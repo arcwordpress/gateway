@@ -91,3 +91,120 @@
   color: #111827;
 }
 
+/* App Component Styles */
+.gty-app {
+  margin-left: -22px;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.gty-app__loading {
+  /* Add loading styles if needed */
+}
+
+/* Navigation Styles */
+.gty-nav {
+  background-color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gty-nav__container {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .gty-nav__container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gty-nav__container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.gty-nav__inner {
+  display: flex;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.gty-nav__content {
+  display: flex;
+}
+
+.gty-nav__brand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.gty-nav__brand-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gty-nav__links {
+  display: none;
+  margin-left: 1.5rem;
+  align-items: center;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .gty-nav__links {
+    display: flex;
+  }
+}
+
+.gty-nav__link {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-top: 0.25rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.gty-nav__link:hover {
+  color: #374151;
+  border-bottom-color: #d1d5db;
+}
+
+/* Main Content Styles */
+.gty-main {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .gty-main {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gty-main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
