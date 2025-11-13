@@ -45,6 +45,7 @@ class Plugin
 {
     private static $instance = null;
     private $registry;
+    private $packageRegistry;
     private $standardRoutes;
     private $collectionRoutes;
     private $adminDataRoute;
@@ -64,6 +65,7 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
+        $this->packageRegistry = new Package\PackageRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         $this->collectionRoutes = new CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
@@ -92,6 +94,7 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\CollectionMenus::init();
+        Package\PackageMenus::init(); // Add this line
 
         // Initialize front-end forms
         Forms\Render::init();
@@ -116,6 +119,11 @@ class Plugin
     public function getRegistry()
     {
         return $this->registry;
+    }
+
+    public function getPackageRegistry()
+    {
+        return $this->packageRegistry;
     }
 
     public function getStandardRoutes()
