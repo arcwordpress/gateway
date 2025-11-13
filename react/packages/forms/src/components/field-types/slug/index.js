@@ -17,70 +17,107 @@ const slugify = (text) => {
 
 // Input Component (for forms)
 const SlugFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm();
-  const name = config.name;
-  const [isManuallyEdited, setIsManuallyEdited] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  console.log('[SlugField] COMPONENT RENDER');
 
-  if (!name) {
-    console.warn('SlugFieldTypeInput: No "name" provided in config');
-    return null;
-  }
-
-  // Get error directly from context
-  const fieldError = formState.errors[name];
-
+  // Move this destructuring to the top!
   const {
     label,
     required = false,
     help = '',
-    watchField = 'title', // Default to watching 'title' field
+    watchField = 'title',
     placeholder = '',
-    prefix = '', // Optional prefix like '/blog/'
+    prefix = '',
   } = config;
 
+  const { register, setValue, watch, formState } = useGatewayForm();
+  const name = config.name;
+  const [isManuallyEdited, setIsManuallyEdited] = useState(false);
+  const [rerender, setRerender] = useState(0);
+
+  // DEBUG: Subscribe to all form changes
+  useEffect(() => {
+    console.log('[SlugField] Setting up global watch subscription');
+    const subscription = watch((allValues, { name: changedName }) => {
+      console.log('[SlugField] RHF watch subscription:', { changedName, allValues });
+      if (changedName === config.watchField) {
+        setRerender(r => r + 1); // Force re-render when watched field changes
+      }
+    });
+    return () => {
+      console.log('[SlugField] Cleaning up global watch subscription');
+      subscription.unsubscribe();
+    };
+  }, [watch, config.watchField]);
+
+  // Subscribe only to the watched field
+  useEffect(() => {
+    console.log('[SlugField] Setting up watch subscription for:', watchField);
+    const subscription = watch((value, { name: changedName }) => {
+      console.log('[SlugField] RHF watch subscription:', { changedName, value });
+      setRerender(r => r + 1); // Force re-render when watched field changes
+    }, watchField); // <-- Only subscribe to the specific field
+    return () => {
+      console.log('[SlugField] Cleaning up watch subscription');
+      subscription.unsubscribe();
+    };
+  }, [watch, watchField]);
+
+  if (!name) {
+    console.warn('[SlugField] No "name" provided in config');
+    return null;
+  }
+
+  const fieldError = formState.errors[name];
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const currentValue = watch(name);
   const watchedValue = watch(watchField);
 
+  console.log('[SlugField] watch(name):', name, '=>', currentValue);
+  console.log('[SlugField] watch(watchField):', watchField, '=>', watchedValue);
+
+  // DEBUG: Log values on every render
+  console.log('[SlugField] name:', name, 'currentValue:', currentValue, 'watchField:', watchField, 'watchedValue:', watchedValue, 'isManuallyEdited:', isManuallyEdited);
+
   // Auto-generate slug from watched field
   useEffect(() => {
-    // Only auto-generate if:
-    // 1. User hasn't manually edited
-    // 2. Field is not currently focused
-    // 3. There's a value to watch
-    if (!isManuallyEdited && !isFocused && watchedValue) {
+    console.log('[SlugField] useEffect RUN', { isManuallyEdited, watchedValue, currentValue });
+    if (!isManuallyEdited && watchedValue !== undefined) {
       const newSlug = slugify(watchedValue);
       if (newSlug !== currentValue) {
+        console.log('[SlugField] setValue', newSlug);
         setValue(name, newSlug, { shouldValidate: true });
       }
     }
-  }, [watchedValue, isManuallyEdited, isFocused, currentValue, name, setValue]);
+  }, [watchedValue, isManuallyEdited, currentValue, name, setValue]);
 
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = (e) => {
-    setIsFocused(false);
-    // Slugify the manually entered value
-    const slugified = slugify(e.target.value);
-    setValue(name, slugified, { shouldValidate: true });
-  };
-
-  const handleChange = (e) => {
-    // Mark as manually edited once user types
-    if (!isManuallyEdited) {
-      setIsManuallyEdited(true);
-    }
-    setValue(name, e.target.value, { shouldValidate: true });
+  const handleEditClick = () => {
+    console.log('[SlugField] handleEditClick');
+    setIsManuallyEdited(true);
   };
 
   const handleUnlock = () => {
+    console.log('[SlugField] handleUnlock');
     setIsManuallyEdited(false);
-    // Immediately regenerate from watched field
-    if (watchedValue) {
+    if (watchedValue !== undefined) {
       setValue(name, slugify(watchedValue), { shouldValidate: true });
+    }
+  };
+
+  // Always provide handlers, but only process in manual mode
+  const handleChange = (e) => {
+    console.log('[SlugField] handleChange', e.target.value);
+    if (isManuallyEdited) {
+      const masked = slugify(e.target.value);
+      setValue(name, masked, { shouldValidate: true });
+    }
+  };
+
+  const handleBlur = (e) => {
+    console.log('[SlugField] handleBlur', e.target.value);
+    if (isManuallyEdited) {
+      // Slugify the manually entered value
+      const slugified = slugify(e.target.value);
+      setValue(name, slugified, { shouldValidate: true });
     }
   };
 
@@ -101,37 +138,48 @@ const SlugFieldTypeInput = ({ config = {} }) => {
           {...register(name)}
           value={currentValue || ''}
           onChange={handleChange}
-          onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder || `Auto-generated from ${watchField}`}
           className={`slug-field__input ${fieldError ? 'slug-field__input--error' : ''} ${isManuallyEdited ? 'slug-field__input--manual' : ''}`}
+          readOnly={!isManuallyEdited}
+          style={!isManuallyEdited ? { background: "#f9f9f9", cursor: "not-allowed" } : {}}
         />
-        {isManuallyEdited && (
+        {!isManuallyEdited ? (
+          <button
+            type="button"
+            onClick={handleEditClick}
+            className="slug-field__edit"
+            title="Edit slug manually"
+            aria-label="Edit slug manually"
+            style={{ marginLeft: 6 }}
+          >
+            ✏️
+          </button>
+        ) : (
           <button
             type="button"
             onClick={handleUnlock}
             className="slug-field__unlock"
             title="Re-enable auto-generation"
             aria-label="Re-enable auto-generation from watched field"
+            style={{ marginLeft: 6 }}
           >
-            🔓
+            🔄
           </button>
-        )}
-        {!isManuallyEdited && (
-          <span className="slug-field__auto-indicator" title="Auto-generating from watched field">
-            🔗
-          </span>
         )}
       </div>
 
       {help && <p className="slug-field__help">{help}</p>}
-      
       {!isManuallyEdited && watchField && (
         <p className="slug-field__info">
-          Auto-generating from <strong>{watchField}</strong> field. Click to edit manually.
+          Auto-generating from <strong>{watchField}</strong> field. Click ✏️ to edit manually.
         </p>
       )}
-
+      {isManuallyEdited && (
+        <p className="slug-field__info">
+          Manual mode. Click 🔄 to resume auto-generation.
+        </p>
+      )}
       {fieldError && (
         <p className="slug-field__error">{fieldError.message}</p>
       )}
