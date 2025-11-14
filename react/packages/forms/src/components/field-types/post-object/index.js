@@ -66,9 +66,10 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
   }, []);
 
   const fetchSelectedPost = async (postId) => {
+    const restBase = postType === 'post' ? 'posts' : postType;
     try {
       const response = await axios.get(
-        `/wp-json/wp/v2/${postType}/${postId}`,
+        `/wp-json/wp/v2/${restBase}/${postId}`,
         {
           headers: {
             'X-WP-Nonce': window.wpApiSettings?.nonce || '',
@@ -108,8 +109,9 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
         params.status = postStatus;
       }
 
+      const restBase = postType === 'post' ? 'posts' : postType;
       const response = await axios.get(
-        `/wp-json/wp/v2/${postType}`,
+        `/wp-json/wp/v2/${restBase}`,
         {
           params,
           headers: {
@@ -316,8 +318,9 @@ const PostObjectFieldTypeDisplay = ({ value, config }) => {
   }, [value]);
 
   const fetchPost = async (postId) => {
+    const restBase = postType === 'post' ? 'posts' : postType;
     try {
-      const response = await axios.get(`/wp-json/wp/v2/${postType}/${postId}`);
+      const response = await axios.get(`/wp-json/wp/v2/${restBase}/${postId}`);
       if (response.data) {
         setPost({
           title: response.data.title?.rendered || 'Untitled',

@@ -44,7 +44,10 @@ const RelationFieldTypeInput = ({ config = {} }) => {
       try {
         setLoading(true);
         setFetchError(null);
-        const nonce = window.gatewayAdminScript?.nonce || window.wpApiSettings?.nonce || '';
+        const nonce = window.gatewayAdminScript?.nonce;
+        if (!nonce) {
+          throw new Error('Missing REST API nonce (gatewayAdminScript.nonce) for relation field.');
+        }
         const response = await axios.get(endpoint, {
           headers: {
             'X-WP-Nonce': nonce,
