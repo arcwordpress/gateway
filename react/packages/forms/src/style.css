@@ -1,0 +1,36 @@
+/* Gateway Forms - Main Styles */
+
+/* Import all field type styles */
+@import './components/field-types/button-group/style.css';
+@import './components/field-types/checkbox/style.css';
+@import './components/field-types/color-picker/style.css';
+@import './components/field-types/date-picker/style.css';
+@import './components/field-types/datetime-picker/style.css';
+@import './components/field-types/email/style.css';
+@import './components/field-types/file/style.css';
+@import './components/field-types/gallery/style.css';
+@import './components/field-types/hidden/style.css';
+@import './components/field-types/image/style.css';
+@import './components/field-types/link/style.css';
+@import './components/field-types/markdown/style.css';
+@import './components/field-types/number/style.css';
+@import './components/field-types/oembed/style.css';
+@import './components/field-types/password/style.css';
+@import './components/field-types/post-object/style.css';
+@import './components/field-types/radio/style.css';
+@import './components/field-types/range/style.css';
+@import './components/field-types/readonly/style.css';
+@import './components/field-types/relation/style.css';
+@import './components/field-types/select/style.css';
+@import './components/field-types/slug/style.css';
+@import './components/field-types/sortable-children/style.css';
+@import './components/field-types/text/style.css';
+@import './components/field-types/textarea/style.css';
+@import './components/field-types/time-picker/style.css';
+@import './components/field-types/url/style.css';
+@import './components/field-types/user/style.css';
+@import './components/field-types/wysiwyg/style.css';
+
+/* Import third-party dependencies styles */
+@import 'easymde/dist/easymde.min.css';
+@import 'react-datepicker/dist/react-datepicker.css';

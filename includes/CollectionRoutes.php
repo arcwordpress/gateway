@@ -27,6 +27,13 @@ class CollectionRoutes
             'methods' => 'GET',
             'callback' => [$this, 'getMany'],
             'permission_callback' => [$this, 'checkPermission'],
+            'args' => [
+                'package' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Filter collections by package name',
+                ],
+            ],
         ]);
 
         // Get one collection by key
@@ -139,6 +146,7 @@ class CollectionRoutes
     public function getMany(\WP_REST_Request $request)
     {
         try {
+            $packageFilter = $request->get_param('package');
             $collections = $this->getRegistry()->getAll();
             $result = [];
 
@@ -153,6 +161,17 @@ class CollectionRoutes
                 } else {
                     // Skip invalid entries
                     continue;
+                }
+
+                // Filter by package if specified
+                if ($packageFilter !== null && $packageFilter !== '') {
+                    $collectionPackage = method_exists($collection, 'getPackage') 
+                        ? $collection->getPackage() 
+                        : 'default';
+                    
+                    if ($collectionPackage !== $packageFilter) {
+                        continue;
+                    }
                 }
 
                 $result[] = $this->collectionToArray($collectionClass, $collection);
@@ -255,10 +274,14 @@ class CollectionRoutes
         $title = method_exists($collection, 'getTitle') ? $collection->getTitle() : null;
         $titlePlural = method_exists($collection, 'getTitlePlural') ? $collection->getTitlePlural() : null;
 
+        // Get package
+        $package = method_exists($collection, 'getPackage') ? $collection->getPackage() : 'default';
+
         return [
             'key' => $key,
             'title' => $title,
             'titlePlural' => $titlePlural,
+            'package' => $package,
             'class' => $collectionClass,
             'name' => basename(str_replace('\\', '/', $collectionClass)),
             'table' => $table,

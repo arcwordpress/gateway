@@ -1,11 +1,71 @@
 import { useState, useEffect } from '@wordpress/element';
-import { Grid } from '@arcwp/gateway-grid';
+import { HashRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Grid, SingleView, Modal } from '@arcwp/gateway-grids';
 import stateManager from './StateManager';
+import ViewSwitcher from './components/ViewSwitcher';
+import { generateRoutes, normalizeViews, navigationHelpers } from './router';
+import '@arcwp/gateway-grids/style.css';
+import '@arcwp/gateway-grids/board-styles.css';
 
-const App = ({ collectionKey, showFilters = true, externalFilters: initialExternalFilters = {} }) => {
+console.log('Welcome to React hellscape!')
+
+const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews }) => {
+  const { viewType = 'table', recordId } = useParams();
+  const navigate = useNavigate();
+
+  // Ensure viewType is valid
+  const validViewType = enabledViews && enabledViews.includes(viewType)
+    ? viewType
+    : (enabledViews && enabledViews[0]) || 'table';
+
+  const handleViewChange = (newViewType) => {
+    navigationHelpers.changeView(navigate, newViewType);
+  };
+
+  const handleViewRecord = (record) => {
+    navigationHelpers.viewRecord(navigate, validViewType, record);
+  };
+
+  const handleCloseModal = () => {
+    navigationHelpers.closeModal(navigate, validViewType);
+  };
+
+  return (
+    <>
+      <ViewSwitcher
+        currentView={validViewType}
+        onViewChange={handleViewChange}
+        enabledViews={enabledViews}
+      />
+      <Grid
+        collectionKey={collectionKey}
+        showActions={false}
+        showFilters={showFilters}
+        externalFilters={externalFilters}
+        viewType={validViewType}
+        onView={handleViewRecord}
+      >
+        {recordId && (
+          <Modal isOpen={true} onClose={handleCloseModal}>
+            <SingleView recordId={recordId} />
+          </Modal>
+        )}
+      </Grid>
+    </>
+  );
+};
+
+const App = ({ 
+  collectionKey, 
+  showFilters = true, 
+  externalFilters: initialExternalFilters = {},
+  enabledViews = ['table', 'board'] // Can be false, true (all), or array of view types
+}) => {
   const [externalFilters, setExternalFilters] = useState(initialExternalFilters);
 
-  // Subscribe to external filter changes from filters app (if using separate filters block)
+  const normalizedViews = normalizeViews(enabledViews);
+
+  // Subscribe to external filter changes from filters app
   useEffect(() => {
     if (!collectionKey) return;
 
@@ -18,13 +78,22 @@ const App = ({ collectionKey, showFilters = true, externalFilters: initialExtern
     return unsubscribe;
   }, [collectionKey]);
 
+  const routes = generateRoutes({
+    collectionKey,
+    showFilters,
+    externalFilters,
+    enabledViews: normalizedViews,
+    GridView,
+  });
+
   return (
-    <Grid
-      collectionKey={collectionKey}
-      showActions={false}
-      showFilters={showFilters}
-      externalFilters={externalFilters}
-    />
+    <Router>
+      <Routes>
+        {routes.map((route, index) => (
+          <Route key={index} path={route.path} element={route.element} />
+        ))}
+      </Routes>
+    </Router>
   );
 };
 

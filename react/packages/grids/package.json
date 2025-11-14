@@ -1,0 +1,50 @@
+{
+  "name": "@arcwp/gateway-grids",
+  "version": "1.2.4",
+  "description": "Gateway Grid React component library with TanStack Table",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "style": "dist/style.css",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./board-styles.css": "./dist/board-styles.css"
+  },
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "gateway",
+    "grid",
+    "react",
+    "wordpress",
+    "components",
+    "tanstack-table"
+  ],
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0"
+  },
+  "dependencies": {
+    "@arcwp/gateway-forms": "file:../forms",
+    "@tanstack/react-table": "^8.20.5",
+    "@asseinfo/react-kanban": "^2.2.0",
+    "axios": "^1.6.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

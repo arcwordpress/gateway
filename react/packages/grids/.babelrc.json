@@ -1,0 +1,15 @@
+{
+  "presets": [
+    ["@babel/preset-env", {
+      "modules": false,
+      "targets": {
+        "esmodules": true
+      }
+    }],
+    ["@babel/preset-react", {
+      "runtime": "classic",
+      "pragma": "wp.element.createElement",
+      "pragmaFrag": "wp.element.Fragment"
+    }]
+  ]
+}

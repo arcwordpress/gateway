@@ -4,15 +4,31 @@ import axios from 'axios';
  * Get the WordPress REST API base URL
  */
 const getApiBaseUrl = () => {
-  /*
+  // Check gatewayAdminScript first (set by Gateway plugin)
   if (window.gatewayAdminScript && window.gatewayAdminScript.apiUrl) {
     return window.gatewayAdminScript.apiUrl;
   }
+  // Fallback to wpApiSettings global object
   if (window.wpApiSettings && window.wpApiSettings.root) {
     return window.wpApiSettings.root;
   }
-  */
-  return 'https://arcwp.local/wp-json/';
+  // Fallback to standard WordPress REST API path
+  return '/wp-json/';
+};
+
+/**
+ * Get the WordPress REST API nonce for authentication
+ */
+const getNonce = () => {
+  // Check gatewayAdminScript first (set by Gateway plugin)
+  if (window.gatewayAdminScript && window.gatewayAdminScript.nonce) {
+    return window.gatewayAdminScript.nonce;
+  }
+  // Fallback to wpApiSettings
+  if (window.wpApiSettings && window.wpApiSettings.nonce) {
+    return window.wpApiSettings.nonce;
+  }
+  return null;
 };
 
 /**
@@ -28,7 +44,14 @@ const buildAxiosConfig = (options = {}) => {
     config.headers['X-WP-Nonce'] = options.nonce;
     console.log('[Gateway API] Using Nonce:', options.nonce);
   } else {
-    console.log('[Gateway API] No Auth provided');
+    // Auto-detect nonce from window globals
+    const nonce = getNonce();
+    if (nonce) {
+      config.headers['X-WP-Nonce'] = nonce;
+      console.log('[Gateway API] Using auto-detected Nonce');
+    } else {
+      console.log('[Gateway API] No Auth provided');
+    }
   }
   return config;
 };

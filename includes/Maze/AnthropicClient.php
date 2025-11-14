@@ -1,6 +1,6 @@
 <?php
 
-namespace ARC\Maze;
+namespace Gateway\Maze;
 
 use Anthropic\Client;
 
@@ -19,19 +19,19 @@ class AnthropicClient
         $this->apiKey = $apiKey;
 
         if (!$apiKey) {
-            error_log('ARC Maze: ANTHROPIC_API_KEY not provided or found');
+            error_log('Gateway: ANTHROPIC_API_KEY not provided or found');
             return;
         }
 
         if (!class_exists('Anthropic\Client')) {
-            error_log('ARC Maze: Anthropic SDK not found. Run composer install.');
+            error_log('Gateway: Anthropic SDK not found. Run composer install.');
             return;
         }
 
         try {
             $this->client = new Client(apiKey: $apiKey);
         } catch (\Exception $e) {
-            error_log('ARC Maze: Failed to initialize Anthropic client: ' . $e->getMessage());
+            error_log('Gateway: Failed to initialize Anthropic client: ' . $e->getMessage());
         }
     }
 
@@ -66,7 +66,7 @@ class AnthropicClient
 
     private function loadEnvIfNeeded()
     {
-        $envPath = ARC_MAZE_PATH . '.env';
+        $envPath = GATEWAY_PATH . '.env';
 
         if (!file_exists($envPath)) {
             return;
@@ -77,10 +77,10 @@ class AnthropicClient
         }
 
         try {
-            $dotenv = \Dotenv\Dotenv::createImmutable(ARC_MAZE_PATH);
+            $dotenv = \Dotenv\Dotenv::createImmutable(GATEWAY_PATH);
             $dotenv->load();
         } catch (\Exception $e) {
-            error_log('ARC Maze: Failed to reload .env: ' . $e->getMessage());
+            error_log('Gateway: Failed to reload .env: ' . $e->getMessage());
         }
     }
 

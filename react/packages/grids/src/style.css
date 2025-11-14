@@ -1,0 +1,336 @@
+/* Base TableView Styles */
+.table-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* State Messages */
+.table-view__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.table-view__state--loading {
+  /* Loading specific styles if needed */
+}
+
+.table-view__state--empty {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.table-view__message {
+  color: #6b7280;
+}
+
+/* Table Wrapper */
+.table-view__wrapper {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Table */
+.table-view__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Head */
+.table-view__thead {
+  background-color: #f9fafb;
+}
+
+/* Table Header Cell */
+.table-view__th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Header Content */
+.table-view__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-view__header--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-view__header--sortable:hover {
+  color: #374151;
+}
+
+/* Sort Icon */
+.table-view__sort-icon {
+  color: #9ca3af;
+}
+
+/* Table Body */
+.table-view__tbody {
+  background-color: #ffffff;
+}
+
+/* Table Row */
+.table-view__row {
+  border-top: 1px solid #e5e7eb;
+}
+
+.table-view__row--body:hover {
+  background-color: #f9fafb;
+}
+
+/* Table Data Cell */
+.table-view__td {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  max-width: 28rem;
+}
+
+/* Cell Content */
+.table-view__cell-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Pagination Container */
+.table-view__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Pagination Controls */
+.table-view__pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Pagination Button */
+.table-view__btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.table-view__btn:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.table-view__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.table-view__btn--pagination {
+  /* Specific styles for pagination buttons if needed */
+}
+
+/* Row Count */
+.table-view__row-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Page Size Container */
+.table-view__page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Page Info */
+.table-view__page-info {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Select Dropdown */
+.table-view__select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.table-view__select:focus {
+  outline: none;
+  ring: 1px;
+  ring-color: #3b82f6;
+}
+
+/* Grid Component Styles */
+.grid {
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Grid Actions */
+.grid__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Grid Buttons */
+.grid__btn {
+  padding: 0.25rem 0.75rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.grid__btn--edit {
+  color: #2563eb;
+  background-color: transparent;
+}
+
+.grid__btn--edit:hover {
+  color: #1e40af;
+}
+
+.grid__btn--delete {
+  color: #dc2626;
+  background-color: transparent;
+}
+
+.grid__btn--delete:hover {
+  color: #991b1b;
+}
+
+.grid__btn--cancel {
+  color: #374151;
+  background-color: #f3f4f6;
+}
+
+.grid__btn--cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.grid__btn--confirm {
+  color: #ffffff;
+  background-color: #dc2626;
+}
+
+.grid__btn--confirm:hover {
+  background-color: #b91c1c;
+}
+
+.grid__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error State */
+.grid__error {
+  padding: 1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+}
+
+.grid__error-title {
+  color: #991b1b;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.grid__error-message {
+  color: #b91c1c;
+}
+
+/* Loading State */
+.grid__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.grid__loading-message {
+  color: #6b7280;
+}
+
+/* Modal */
+.grid__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.grid__modal {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 28rem;
+  width: 100%;
+  margin: 1rem;
+  padding: 1.5rem;
+}
+
+.grid__modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.grid__modal-message {
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+}
+
+.grid__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Filter styles. */
+
+.filters {
+  display: flex;
+  gap: 1rem;
+}
+
+.filters--row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.filters--stack {
+  flex-direction: column;
+  align-items: flex-start;
+}

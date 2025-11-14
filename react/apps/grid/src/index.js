@@ -1,10 +1,5 @@
 import { createRoot } from '@wordpress/element';
-import { initializeFields } from '@arcwp/gateway-fields';
 import App from './App';
-
-// Initialize field registry before rendering any components
-// This must happen before any field components are used
-initializeFields();
 
 // Find all elements with data-gateway-grid attribute
 const gridElements = document.querySelectorAll('[data-gateway-grid]');
@@ -31,6 +26,7 @@ gridElements.forEach((element) => {
         collectionKey={collectionKey}
         showFilters={config.showFilters !== false} // Default to true unless explicitly false
         externalFilters={config.externalFilters || {}}
+        enabledViews={config.enabledViews}
       />
     );
   }

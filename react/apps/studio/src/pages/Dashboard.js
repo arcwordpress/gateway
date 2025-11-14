@@ -1,21 +1,21 @@
-import { useState } from '@wordpress/element';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid, ViewSwitcher } from '@arcwp/gateway-grid';
+import { Grid } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {
   const { collections } = useCollections();
   const navigate = useNavigate();
   const { collectionKey } = useParams();
-  const [viewType, setViewType] = useState('table');
+  const [viewType, setViewType] = useState('table'); // Add view state
 
   // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
 
   if (!activeKey) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <p>No collections available</p>
+      <div className="dashboard">
+        <p className="dashboard__no-collections">No collections available</p>
       </div>
     );
   }
@@ -26,7 +26,6 @@ function Dashboard() {
 
   const handleDelete = (recordId) => {
     console.log('Record deleted:', recordId);
-    // Optional: Add any additional logic after delete (e.g., show notification)
   };
 
   const handleCreate = () => {
@@ -34,28 +33,40 @@ function Dashboard() {
   };
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 capitalize">
+    <div className="gty-dashboard">
+      <div className="gty-dashboard__header">
+        <h1 className="gty-dashboard__title">
           {activeKey.replace(/_/g, ' ')}
         </h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-        >
-          Create New
-        </button>
+        <div className="gty-dashboard__actions">
+          {/* Add View Switcher */}
+          <div className="gty-dashboard__view-switcher">
+            <button
+              onClick={() => setViewType('table')}
+              className={viewType === 'table' ? 'active' : ''}
+            >
+              Table
+            </button>
+            <button
+              onClick={() => setViewType('board')}
+              className={viewType === 'board' ? 'active' : ''}
+            >
+              Board
+            </button>
+          </div>
+          <button
+            onClick={handleCreate}
+            className="gty-dashboard__create-button"
+          >
+            Create New
+          </button>
+        </div>
       </div>
-      <ViewSwitcher
-        currentView={viewType}
-        onViewChange={setViewType}
-        enabledViews={['table', 'board']}
-      />
-      <Grid
-        collectionKey={activeKey}
-        viewType={viewType}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+      <Grid 
+        collectionKey={activeKey} 
+        viewType={viewType}  // Pass viewType prop
+        onEdit={handleEdit} 
+        onDelete={handleDelete} 
       />
     </div>
   );

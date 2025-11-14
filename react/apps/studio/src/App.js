@@ -7,24 +7,24 @@ function AppContent() {
   const { collections, loading } = useCollections();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="gty-app__loading">Loading...</div>;
   }
 
   return (
-    <div className="-ml-[22px] min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold text-gray-900">Gateway</h1>
+    <div className="gty-app">
+      <nav className="gty-nav">
+        <div className="gty-nav__container">
+          <div className="gty-nav__inner">
+            <div className="gty-nav__content">
+              <div className="gty-nav__brand">
+                <h1 className="gty-nav__brand-title">Gateway</h1>
               </div>
-              <div className="sm:ml-6 sm:flex sm:space-x-8">
+              <div className="gty-nav__links">
                 {collections.map((collection) => (
                   <Link
                     key={collection.key}
                     to={`/collection/${collection.key}`}
-                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    className="gty-nav__link"
                   >
                     {collection.titlePlural || collection.title || collection.key}
                   </Link>
@@ -35,7 +35,7 @@ function AppContent() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="gty-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/collection/:collectionKey" element={<Dashboard />} />
@@ -47,10 +47,10 @@ function AppContent() {
   );
 }
 
-function App() {
+function App({ packageKey }) {
   return (
     <Router>
-      <CollectionsProvider>
+      <CollectionsProvider packageKey={packageKey}>
         <AppContent />
       </CollectionsProvider>
     </Router>

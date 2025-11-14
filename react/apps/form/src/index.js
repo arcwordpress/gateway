@@ -1,11 +1,5 @@
 import { createRoot } from '@wordpress/element';
-import { initializeFields } from '@arcwp/gateway-fields';
 import App from './App';
-import './index.css';
-
-// Initialize field registry before rendering any components
-// This must happen before any field components are used
-initializeFields();
 
 const formElements = document.querySelectorAll('[data-gateway-form]');
 formElements.forEach((element) => {

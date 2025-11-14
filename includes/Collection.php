@@ -51,6 +51,14 @@ class Collection extends EloquentModel
     protected $title;
     protected $titlePlural;
     
+    /**
+     * The package this collection belongs to.
+     * Determines where the collection is shown in WordPress admin.
+     *
+     * @var string
+     */
+    protected $package = 'default';
+    
     protected $fields = [];
     protected $filters = [];
     protected $grid = [];
@@ -191,6 +199,16 @@ class Collection extends EloquentModel
     public function getGrid()
     {
         return $this->grid;
+    }
+
+    /**
+     * Get the package this collection belongs to
+     *
+     * @return string
+     */
+    public function getPackage()
+    {
+        return $this->package;
     }
 
     public function search(string $term)
