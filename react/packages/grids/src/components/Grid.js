@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useGridContext } from '../context/GridContext';
 import TableView from './view-types/TableView';
 import BoardView from './view-types/BoardView';
 import GridFilters from './GridFilters';
@@ -11,6 +12,24 @@ import { applyFilters } from '../utils/filterUtils';
  * Main Grid Component
  * Displays a data grid for a Gateway collection
  */
+/**
+ * @param {object} props
+ * @param {string} props.collectionKey
+ * @param {function} [props.onEdit]
+ * @param {function} [props.onDelete]
+ * @param {function} [props.onView]
+ * @param {object} [props.selectedRecord]
+ * @param {function} [props.onCloseView]
+ * @param {boolean} [props.showActions]
+ * @param {boolean} [props.showFilters]
+ * @param {object} [props.externalFilters]
+ * @param {string} [props.viewType]
+ * @param {object} [props.boardConfig]
+ * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
+ * @param {React.ReactNode} [props.children]
+ */
+import SingleView from './SingleView';
+
 const Grid = ({
   collectionKey,
   onEdit,
@@ -23,8 +42,10 @@ const Grid = ({
   externalFilters = {},
   viewType = 'table', // 'table' | 'board'
   boardConfig = {},
+  singleViewComponent = SingleView,
   children,
 }) => {
+  const { auth } = useGridContext();
   const [collection, setCollection] = useState(null);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +64,7 @@ const Grid = ({
     const loadCollection = async () => {
       try {
         setLoading(true);
-        const collectionData = await fetchCollection(collectionKey);
+        const collectionData = await fetchCollection(collectionKey, { auth });
         setCollection(collectionData);
         setError(null);
       } catch (err) {
@@ -66,7 +87,7 @@ const Grid = ({
       const namespace = collection.routes.namespace;
       const route = collection.routes.route;
 
-      const result = await fetchCollectionData(namespace, route);
+      const result = await fetchCollectionData(namespace, route, {}, { auth });
       const records = result.data || result;
       setData(Array.isArray(records) ? records : []);
       setError(null);
@@ -107,7 +128,7 @@ const Grid = ({
       const namespace = collection.routes.namespace;
       const route = collection.routes.route;
 
-      await deleteRecord(namespace, route, deleteConfirm.id);
+      await deleteRecord(namespace, route, deleteConfirm.id, { auth });
 
       setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
 
@@ -180,17 +201,19 @@ const Grid = ({
       return data.find(record => record.id == id) || null;
     },
     onRefresh: fetchData,
-  }), [collection, data]);
+    auth,
+  }), [collection, data, auth]);
 
   // View component selection
   const ViewComponent = viewType === 'board' ? BoardView : TableView;
   const viewProps = viewType === 'board' 
-    ? { config: boardConfig, onView }
+    ? { config: boardConfig, onView, singleViewComponent }
     : { 
         columns,
         onView,
         selectedRecord,
         onCloseView,
+        singleViewComponent,
       };
 
   if (error) {

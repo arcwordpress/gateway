@@ -4,43 +4,32 @@ import axios from 'axios';
  * Get the WordPress REST API base URL
  */
 const getApiBaseUrl = () => {
+
   // Check gatewayAdminScript first (set by Gateway plugin)
   if (window.gatewayAdminScript && window.gatewayAdminScript.apiUrl) {
     return window.gatewayAdminScript.apiUrl;
   }
-  // Fallback to wpApiSettings global object
-  if (window.wpApiSettings && window.wpApiSettings.root) {
-    return window.wpApiSettings.root;
-  }
+
   // Fallback to standard WordPress REST API path
   return '/wp-json/';
+
 };
 
 /**
  * Get the WordPress REST API nonce for authentication
  */
 const getNonce = () => {
+
   // Check gatewayAdminScript first (set by Gateway plugin)
   if (window.gatewayAdminScript && window.gatewayAdminScript.nonce) {
     return window.gatewayAdminScript.nonce;
   }
-  // Fallback to wpApiSettings
-  if (window.wpApiSettings && window.wpApiSettings.nonce) {
-    return window.wpApiSettings.nonce;
-  }
+
   return null;
+  
 };
 
-/**
- * Get auth options from window.gatewayAuth if available
- * For headless environments using Basic Auth
- */
-const getAuthOptions = () => {
-  if (window.gatewayAuth && window.gatewayAuth.username && window.gatewayAuth.password) {
-    return window.gatewayAuth;
-  }
-  return null;
-};
+// Removed getAuthOptions. Auth is now passed via options/auth param only.
 
 /**
  * Build axios config with authentication (nonce or basic auth)
@@ -48,21 +37,13 @@ const getAuthOptions = () => {
 const buildAxiosConfig = (options = {}) => {
   const config = { headers: {} };
 
-  // Priority 1: Use auth from options parameter
+  // Use auth from options parameter if provided
   if (options.auth) {
     config.headers['Authorization'] = 'Basic ' + btoa(`${options.auth.username}:${options.auth.password}`);
     config.withCredentials = false;
     console.log('[Gateway Grid API] Using Basic Auth from options');
-  }
-  // Priority 2: Check for auth in window.gatewayAuth
-  else if (getAuthOptions()) {
-    const auth = getAuthOptions();
-    config.headers['Authorization'] = 'Basic ' + btoa(`${auth.username}:${auth.password}`);
-    config.withCredentials = false;
-    console.log('[Gateway Grid API] Using Basic Auth from window.gatewayAuth');
-  }
-  // Priority 3: Use nonce if available
-  else {
+  } else {
+    // Fallback to nonce if available
     const nonce = getNonce();
     if (nonce) {
       config.headers['X-WP-Nonce'] = nonce;
@@ -85,16 +66,7 @@ const apiClient = axios.create({
   },
 });
 
-// Add authentication to requests
-apiClient.interceptors.request.use((config) => {
-  const authConfig = buildAxiosConfig();
-  config.headers = { ...config.headers, ...authConfig.headers };
-  if (authConfig.withCredentials === false) {
-    config.withCredentials = false;
-  }
-  console.log('API Request:', config.url);
-  return config;
-});
+// Remove global interceptor. Auth is now passed per-request.
 
 // Handle 401 errors
 apiClient.interceptors.response.use(
@@ -111,9 +83,10 @@ apiClient.interceptors.response.use(
  * Fetch all registered collections
  * @returns {Promise} Promise resolving to array of collections
  */
-export const fetchCollections = async () => {
+export const fetchCollections = async (options = {}) => {
   try {
-    const response = await apiClient.get('gateway/v1/collections');
+    const axiosConfig = buildAxiosConfig(options);
+    const response = await apiClient.get('gateway/v1/collections', axiosConfig);
     return response.data.data || [];
   } catch (error) {
     console.error('Error fetching collections:', error);
@@ -126,9 +99,10 @@ export const fetchCollections = async () => {
  * @param {string} key - Collection key
  * @returns {Promise} Promise resolving to collection object
  */
-export const fetchCollection = async (key) => {
+export const fetchCollection = async (key, options = {}) => {
   try {
-    const response = await apiClient.get(`gateway/v1/collections/${key}`);
+    const axiosConfig = buildAxiosConfig(options);
+    const response = await apiClient.get(`gateway/v1/collections/${key}`, axiosConfig);
     return response.data.data;
   } catch (error) {
     console.error(`Error fetching collection ${key}:`, error);
@@ -143,10 +117,12 @@ export const fetchCollection = async (key) => {
  * @param {Object} params - Query parameters (page, per_page, search, filters, etc.)
  * @returns {Promise} Promise resolving to collection data
  */
-export const fetchCollectionData = async (namespace, route, params = {}) => {
+export const fetchCollectionData = async (namespace, route, params = {}, options = {}) => {
   try {
     const url = `${namespace}/${route}`;
-    const response = await apiClient.get(url, { params });
+    const axiosConfig = buildAxiosConfig(options);
+    axiosConfig.params = params;
+    const response = await apiClient.get(url, axiosConfig);
     // API returns { data: { items: [...] } }, axios wraps it in response.data
     // So response.data.data.items contains the actual array of records
     return response.data.data?.items || response.data.items || [];
@@ -163,10 +139,11 @@ export const fetchCollectionData = async (namespace, route, params = {}) => {
  * @param {number} id - Record ID
  * @returns {Promise} Promise resolving to record data
  */
-export const fetchRecord = async (namespace, route, id) => {
+export const fetchRecord = async (namespace, route, id, options = {}) => {
   try {
     const url = `${namespace}/${route}/${id}`;
-    const response = await apiClient.get(url);
+    const axiosConfig = buildAxiosConfig(options);
+    const response = await apiClient.get(url, axiosConfig);
     return response.data;
   } catch (error) {
     console.error(`Error fetching record ${id} from ${namespace}/${route}:`, error);
@@ -181,10 +158,11 @@ export const fetchRecord = async (namespace, route, id) => {
  * @param {number} id - Record ID
  * @returns {Promise} Promise resolving when delete is successful
  */
-export const deleteRecord = async (namespace, route, id) => {
+export const deleteRecord = async (namespace, route, id, options = {}) => {
   try {
     const url = `${namespace}/${route}/${id}`;
-    const response = await apiClient.delete(url);
+    const axiosConfig = buildAxiosConfig(options);
+    const response = await apiClient.delete(url, axiosConfig);
     return response.data;
   } catch (error) {
     console.error(`Error deleting record ${id} from ${namespace}/${route}:`, error);
@@ -200,10 +178,11 @@ export const deleteRecord = async (namespace, route, id) => {
  * @param {Object} data - Record data to update
  * @returns {Promise} Promise resolving to updated record data
  */
-export const updateRecord = async (namespace, route, id, data) => {
+export const updateRecord = async (namespace, route, id, data, options = {}) => {
   try {
     const url = `${namespace}/${route}/${id}`;
-    const response = await apiClient.patch(url, data);
+    const axiosConfig = buildAxiosConfig(options);
+    const response = await apiClient.patch(url, data, axiosConfig);
     return response.data;
   } catch (error) {
     console.error(`Error updating record ${id} from ${namespace}/${route}:`, error);

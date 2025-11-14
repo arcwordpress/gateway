@@ -7,7 +7,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import Modal from '../Dialog';
-import SingleView from '../SingleView';
+// SingleView is now injected via props
 import '../dialog.css';
 
 /**
@@ -21,6 +21,7 @@ const TableView = ({
   onView,
   selectedRecord: externalSelectedRecord,
   onCloseView,
+  singleViewComponent: SingleViewComponent,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -215,7 +216,7 @@ const TableView = ({
         onClose={handleCloseView}
         title="Record Details"
       >
-        <SingleView record={selectedRecord} />
+        {SingleViewComponent ? <SingleViewComponent record={selectedRecord} /> : null}
       </Modal>
     </div>
   );
