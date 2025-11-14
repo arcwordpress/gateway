@@ -38,6 +38,7 @@
     "@babel/preset-react": "^7.24.0"
   },
   "dependencies": {
+    "@arcwp/gateway-data": "file:../data",
     "@arcwp/gateway-forms": "file:../forms",
     "@tanstack/react-table": "^8.20.5",
     "@asseinfo/react-kanban": "^2.2.0",

@@ -48,6 +48,7 @@
     "babel-plugin-module-resolver": "^5.0.2"
   },
   "dependencies": {
+    "@arcwp/gateway-data": "file:../data",
     "@hookform/resolvers": "^3.3.4",
     "@tiptap/extension-link": "^3.6.6",
     "@tiptap/extension-text-align": "^3.6.6",
