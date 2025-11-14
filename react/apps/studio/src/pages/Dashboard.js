@@ -1,11 +1,13 @@
+import { useState } from '@wordpress/element';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@arcwp/gateway-grid';
+import { Grid, ViewSwitcher } from '@arcwp/gateway-grid';
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {
   const { collections } = useCollections();
   const navigate = useNavigate();
   const { collectionKey } = useParams();
+  const [viewType, setViewType] = useState('table');
 
   // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
@@ -44,7 +46,17 @@ function Dashboard() {
           Create New
         </button>
       </div>
-      <Grid collectionKey={activeKey} onEdit={handleEdit} onDelete={handleDelete} />
+      <ViewSwitcher
+        currentView={viewType}
+        onViewChange={setViewType}
+        enabledViews={['table', 'board']}
+      />
+      <Grid
+        collectionKey={activeKey}
+        viewType={viewType}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
