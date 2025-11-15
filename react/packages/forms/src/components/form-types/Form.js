@@ -151,8 +151,8 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
 
   if (!collectionKey) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+      <div className="gty-form__container">
+        <div className="gty-form__alert gty-form__alert--warning">
           No collection key provided. Add data-collection attribute.
         </div>
       </div>
@@ -160,13 +160,13 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
   }
 
   if (loading) {
-    return <div className="p-6">Loading collection "{collectionKey}"...</div>;
+    return <div className="gty-form__container">Loading collection "{collectionKey}"...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="gty-form__container">
+        <div className="gty-form__alert gty-form__alert--error">
           <strong>Error:</strong> {error}
         </div>
       </div>
@@ -175,8 +175,8 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
 
   if (!collection || !collection.fillable) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+      <div className="gty-form__container">
+        <div className="gty-form__alert gty-form__alert--warning">
           Collection "{collectionKey}" loaded but has no fillable fields.
         </div>
       </div>
@@ -185,27 +185,26 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
 
   return (
     <GatewayFormContext.Provider value={contextValue}>
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+      <div className="gty-form__container">
+        <div className="gty-form">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="gty-form__alert gty-form__alert--error">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div className="gty-form__alert gty-form__alert--success">
               {success}
             </div>
           )}
 
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="gty-form__fields">
             {Object.entries(collection.fields || {}).map(([fieldName, fieldDef]) => {
               if (!collection.fillable.includes(fieldName)) {
                 console.error(`[Form] Field '${fieldName}' is defined in fields but not in fillable. Skipping.`);
                 return null;
               }
-              // Ensure fieldConfig includes the field name
               const fieldConfig = { name: fieldName, ...fieldDef };
               if (fieldConfig.hidden) return null;
 
@@ -220,7 +219,7 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="gty-form__submit"
             >
               {submitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Record' : 'Create Record')}
             </button>

@@ -205,8 +205,8 @@ const AppForm = ({
 
   if (!collectionKey) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+      <div className="gty-appform__container">
+        <div className="gty-appform__alert gty-appform__alert--warning">
           No collection key provided. Add collectionKey prop.
         </div>
       </div>
@@ -215,8 +215,8 @@ const AppForm = ({
 
   if (!recordId) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+      <div className="gty-appform__container">
+        <div className="gty-appform__alert gty-appform__alert--warning">
           No record ID provided. AppForm requires a record ID for auto-save functionality.
         </div>
       </div>
@@ -224,13 +224,13 @@ const AppForm = ({
   }
 
   if (loading) {
-    return <div className="p-6">Loading collection "{collectionKey}"...</div>;
+    return <div className="gty-appform__container">Loading collection "{collectionKey}"...</div>;
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <div className="gty-appform__container">
+        <div className="gty-appform__alert gty-appform__alert--error">
           <strong>Error:</strong> {error}
         </div>
       </div>
@@ -239,8 +239,8 @@ const AppForm = ({
 
   if (!collection) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+      <div className="gty-appform__container">
+        <div className="gty-appform__alert gty-appform__alert--warning">
           Collection "{collectionKey}" could not be loaded.
         </div>
       </div>
@@ -249,7 +249,9 @@ const AppForm = ({
 
   return (
     <GatewayFormContext.Provider value={contextValue}>
-      {children}
+      <div className="gty-appform">
+        {children}
+      </div>
     </GatewayFormContext.Provider>
   );
 };
