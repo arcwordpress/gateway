@@ -11,10 +11,23 @@ import { GatewayFormContext, useGatewayForm } from '../../utils/gatewayFormConte
 
 // Memoized field renderer - now uses context instead of props
 const FieldRenderer = React.memo(({ fieldConfig }) => {
-    const { Input } = useFieldType(fieldConfig);
-    const { formState } = useGatewayForm();
-    const error = formState.errors[fieldConfig.name];
-    return <Input config={fieldConfig} error={error} />;
+  // Debug: log the field config before using it
+  if (!fieldConfig.type) {
+    console.error('[Form] Field config missing type:', fieldConfig);
+  } else {
+    // Optionally, log all field configs for extra debugging
+    // console.log('[Form] Rendering field:', fieldConfig.name, 'type:', fieldConfig.type);
+  }
+  let Input;
+  try {
+    ({ Input } = useFieldType(fieldConfig));
+  } catch (e) {
+    console.error('[Form] useFieldType error for field:', fieldConfig, e);
+    throw e;
+  }
+  const { formState } = useGatewayForm();
+  const error = formState.errors[fieldConfig.name];
+  return <Input config={fieldConfig} error={error} />;
 });
 
 // Change from FormBuilder to Form
@@ -187,9 +200,13 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
           )}
 
           <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            {collection.fillable.map((fieldName) => {
+            {Object.entries(collection.fields || {}).map(([fieldName, fieldDef]) => {
+              if (!collection.fillable.includes(fieldName)) {
+                console.error(`[Form] Field '${fieldName}' is defined in fields but not in fillable. Skipping.`);
+                return null;
+              }
               // Ensure fieldConfig includes the field name
-              const fieldConfig = { name: fieldName, ...(collection.fields?.[fieldName] || {}) };
+              const fieldConfig = { name: fieldName, ...fieldDef };
               if (fieldConfig.hidden) return null;
 
               return (
