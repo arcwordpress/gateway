@@ -1,13 +1,10 @@
 import { useState, useEffect } from '@wordpress/element';
 import { HashRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Grid, SingleView, Modal } from '@arcwp/gateway-grids';
+import { Grid, ViewSwitcher, SingleView, Modal } from '@arcwp/gateway-grids';
 import stateManager from './StateManager';
-import ViewSwitcher from './components/ViewSwitcher';
 import { generateRoutes, normalizeViews, navigationHelpers } from './router';
 import '@arcwp/gateway-grids/style.css';
 import '@arcwp/gateway-grids/board-styles.css';
-
-console.log('Welcome to React hellscape!')
 
 const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews }) => {
   const { viewType = 'table', recordId } = useParams();

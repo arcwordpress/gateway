@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@arcwp/gateway-grids';
+import { Grid, ViewSwitcher } from '@arcwp/gateway-grids'; // Import ViewSwitcher
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {
   const { collections } = useCollections();
   const navigate = useNavigate();
   const { collectionKey } = useParams();
-  const [viewType, setViewType] = useState('table'); // Add view state
+  const [viewType, setViewType] = useState('table');
 
   // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
@@ -39,21 +39,6 @@ function Dashboard() {
           {activeKey.replace(/_/g, ' ')}
         </h1>
         <div className="gty-dashboard__actions">
-          {/* Add View Switcher */}
-          <div className="gty-dashboard__view-switcher">
-            <button
-              onClick={() => setViewType('table')}
-              className={viewType === 'table' ? 'active' : ''}
-            >
-              Table
-            </button>
-            <button
-              onClick={() => setViewType('board')}
-              className={viewType === 'board' ? 'active' : ''}
-            >
-              Board
-            </button>
-          </div>
           <button
             onClick={handleCreate}
             className="gty-dashboard__create-button"
@@ -62,9 +47,15 @@ function Dashboard() {
           </button>
         </div>
       </div>
+      {/* Place ViewSwitcher right above the Grid */}
+      <ViewSwitcher
+        currentView={viewType}
+        onViewChange={setViewType}
+        enabledViews={['table', 'board']}
+      />
       <Grid 
         collectionKey={activeKey} 
-        viewType={viewType}  // Pass viewType prop
+        viewType={viewType}
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />

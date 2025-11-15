@@ -11,4 +11,5 @@ export { default as RangeFilter } from './components/filter-types/range/RangeFil
 export { default as Filter } from './components/Filter';
 export { default as FilterGroup } from './components/Filters';
 export { GridProvider, useGridContext, useRecord } from './context/GridContext';
+export { default as ViewSwitcher } from './components/ViewSwitcher';
 export * from './services/collectionService';
