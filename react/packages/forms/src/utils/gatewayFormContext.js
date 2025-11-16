@@ -42,7 +42,7 @@ export const GatewayFormContext = createContext();
 export const useGatewayForm = () => {
   const context = useContext(GatewayFormContext);
   if (!context) {
-    throw new Error('useGatewayForm must be used within an AppForm component');
+    throw new Error('useGatewayForm must be used within an Form or AppForm component');
   }
   return context;
 };
