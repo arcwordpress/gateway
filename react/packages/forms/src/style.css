@@ -36,5 +36,5 @@
 @import 'react-datepicker/dist/react-datepicker.css';
 
 /* Import custom styles */
-@import '.style-form.css';
-@import '.style-app-form.css';
+@import './style-form.css';
+@import './style-app-form.css';

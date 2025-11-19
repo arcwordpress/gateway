@@ -45,40 +45,87 @@ abstract class BaseEndpoint
 
     public function checkPermissions($request)
     {
-        // Get route-specific permissions from collection config
+        // Get route configuration
         $routeConfig = $this->collection->getRoutes();
         $permissions = $routeConfig['permissions'] ?? [];
         $routeType = $this->getType();
         $allowBasicAuth = $routeConfig['allow_basic_auth'] ?? true;
 
-        // Check for Basic Authentication first (if enabled)
+        // Step 1: Check Basic Auth (if enabled) - returns immediately if valid or invalid credentials provided
         if ($allowBasicAuth) {
-            $basicAuthResult = $this->checkBasicAuthentication($request);
-            if ($basicAuthResult === true) {
-                // Basic auth succeeded, now check capability requirements
-                return $this->checkCapabilityRequirements($permissions, $routeType);
+            $result = $this->doBasicAuthCheck($request, $permissions, $routeType);
+            if ($result !== null) {
+                return $result; // Basic auth handled (success or failure), return immediately
             }
-            // If basic auth returned WP_Error, it means credentials were provided but invalid
-            // Don't fall through in this case
-            if (is_wp_error($basicAuthResult) && $this->hasBasicAuthHeaders($request)) {
-                return $basicAuthResult;
-            }
+            // null means no Basic Auth attempted, continue to permission type check
         }
 
-        // Determine which permission config to use
-        $permissionConfig = null;
+        // Step 2: Get permission configuration for this route
+        $permissionConfig = $this->getPermissionConfig($permissions, $routeType);
 
+        // Step 3: Check if public access
+        $result = $this->doPublicAccessCheck($permissionConfig);
+        if ($result !== null) {
+            return $result; // Public access allowed or default login required
+        }
+
+        // Step 4: Normalize permission config and route to auth handler
+        return $this->doPermissionTypeCheck($permissionConfig);
+    }
+
+    /**
+     * Check Basic Authentication
+     *
+     * @return mixed Returns WP_Error on failure, true on success, null if no Basic Auth attempted
+     */
+    protected function doBasicAuthCheck($request, $permissions, $routeType)
+    {
+        $basicAuthResult = $this->checkBasicAuthentication($request);
+
+        // Basic Auth succeeded - check capabilities and return immediately
+        if ($basicAuthResult === true) {
+            return $this->checkCapabilityRequirements($permissions, $routeType);
+        }
+
+        // Basic Auth failed with credentials provided - return error immediately
+        if (is_wp_error($basicAuthResult) && $this->hasBasicAuthHeaders($request)) {
+            return $basicAuthResult;
+        }
+
+        // No Basic Auth attempted - continue to permission type check
+        return null;
+    }
+
+    /**
+     * Get permission configuration for the current route
+     *
+     * @return mixed Permission config (array, string, false, or null)
+     */
+    protected function getPermissionConfig($permissions, $routeType)
+    {
         // Check for route-specific permission
         if (isset($permissions[$routeType])) {
-            $permissionConfig = $permissions[$routeType];
-        }
-        // Fall back to wildcard
-        elseif (isset($permissions['*'])) {
-            $permissionConfig = $permissions['*'];
+            return $permissions[$routeType];
         }
 
+        // Fall back to wildcard
+        if (isset($permissions['*'])) {
+            return $permissions['*'];
+        }
+
+        // No permission config found
+        return null;
+    }
+
+    /**
+     * Check if this is public access or no permission config
+     *
+     * @return mixed Returns true/WP_Error if handled, null to continue
+     */
+    protected function doPublicAccessCheck($permissionConfig)
+    {
         // No permission config = require login by default
-        if (!$permissionConfig) {
+        if ($permissionConfig === null) {
             if (!is_user_logged_in()) {
                 return new WP_Error(
                     'rest_forbidden',
@@ -94,9 +141,19 @@ abstract class BaseEndpoint
             return true;
         }
 
-        // Handle simple capability string format (e.g., 'read', 'edit_posts')
+        // Not public, continue to permission type check
+        return null;
+    }
+
+    /**
+     * Check permission type and route to appropriate auth handler
+     *
+     * @return mixed WP_Error or true
+     */
+    protected function doPermissionTypeCheck($permissionConfig)
+    {
+        // Normalize string format to array
         if (is_string($permissionConfig)) {
-            // Convert to standard format
             $permissionConfig = [
                 'type' => 'cookie_authentication',
                 'settings' => [

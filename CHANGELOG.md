@@ -2,6 +2,15 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.5] - 2025-11-17
+
+### Added
+- Maze agent chat.
+- Anthropic agent SDK for PHP.
+
+### Fixed
+- Studio app usage of form fields with 2 part names.
+
 ## [1.1.3] - 2025-11-04
 
 ### Added
