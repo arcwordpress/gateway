@@ -2,6 +2,14 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.6] - 2025-11-18
+
+### Added
+- Hybrid authentication to support remote API access. 
+
+### Fixed 
+- Authentication check for Basic Auth. 
+
 ## [1.1.5] - 2025-11-17
 
 ### Added
