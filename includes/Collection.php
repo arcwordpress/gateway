@@ -68,7 +68,6 @@ class Collection extends EloquentModel
         'namespace' => 'gateway',
         'version' => 'v1',
         'route' => null,
-        'allow_basic_auth' => true,
         'methods' => [
             'get_many' => true,
             'get_one' => true,

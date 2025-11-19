@@ -49,16 +49,13 @@ abstract class BaseEndpoint
         $routeConfig = $this->collection->getRoutes();
         $permissions = $routeConfig['permissions'] ?? [];
         $routeType = $this->getType();
-        $allowBasicAuth = $routeConfig['allow_basic_auth'] ?? true;
 
-        // Step 1: Check Basic Auth (if enabled) - returns immediately if valid or invalid credentials provided
-        if ($allowBasicAuth) {
-            $result = $this->doBasicAuthCheck($request, $permissions, $routeType);
-            if ($result !== null) {
-                return $result; // Basic auth handled (success or failure), return immediately
-            }
-            // null means no Basic Auth attempted, continue to permission type check
+        // Step 1: Check Basic Auth - always check, returns immediately if valid or invalid credentials provided
+        $result = $this->doBasicAuthCheck($request, $permissions, $routeType);
+        if ($result !== null) {
+            return $result; // Basic auth handled (success or failure), return immediately
         }
+        // null means no Basic Auth attempted, continue to permission type check
 
         // Step 2: Get permission configuration for this route
         $permissionConfig = $this->getPermissionConfig($permissions, $routeType);
@@ -70,7 +67,7 @@ abstract class BaseEndpoint
         }
 
         // Step 4: Normalize permission config and route to auth handler
-        return $this->doPermissionTypeCheck($permissionConfig);
+        return $this->doPermissionTypeCheck($permissionConfig, $request);
     }
 
     /**
@@ -150,7 +147,7 @@ abstract class BaseEndpoint
      *
      * @return mixed WP_Error or true
      */
-    protected function doPermissionTypeCheck($permissionConfig)
+    protected function doPermissionTypeCheck($permissionConfig, $request)
     {
         // Normalize string format to array
         if (is_string($permissionConfig)) {
@@ -168,20 +165,14 @@ abstract class BaseEndpoint
 
         // Route to appropriate auth handler
         switch ($authType) {
-            case 'cookie_authentication':
-                return $this->checkCookieAuthentication($settings);
+            case 'public':
+                return true; // No authentication required
 
-            case 'nonce_only':
-                return $this->checkNonceOnly($settings);
+            case 'public_secured':
+                return $this->checkPublicSecured($settings);
 
-            case 'basic_authentication':
-                return $this->checkBasicAuthenticationType($settings);
-
-            case 'hybrid_authentication':
-                return $this->checkHybridAuthentication($settings);
-
-            case 'jwt':
-                return $this->checkJWTAuthentication($settings);
+            case 'protected':
+                return $this->checkProtected($settings);
 
             default:
                 return new WP_Error(
@@ -292,74 +283,10 @@ abstract class BaseEndpoint
         return true;
     }
 
-    protected function checkCookieAuthentication($settings)
+    protected function checkPublicSecured($settings)
     {
-        // Check nonce for cookie authentication (CSRF protection)
-        $nonce = null;
-
-        // Check for nonce in header first (standard for REST API)
-        if (isset($_SERVER['HTTP_X_WP_NONCE'])) {
-            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
-        }
-
-        // Fall back to _wpnonce parameter
-        if (!$nonce && isset($_REQUEST['_wpnonce'])) {
-            $nonce = $_REQUEST['_wpnonce'];
-        }
-
-        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_Error(
-                'rest_cookie_invalid_nonce',
-                'Cookie nonce is invalid',
-                ['status' => 403]
-            );
-        }
-
-        $capability = $settings['capability'] ?? null;
-
-        // If no capability specified, just require login
-        if (!$capability) {
-            if (!is_user_logged_in()) {
-                return new WP_Error(
-                    'rest_forbidden',
-                    'You must be logged in to access this resource.',
-                    ['status' => rest_authorization_required_code()]
-                );
-            }
-            return true;
-        }
-
-        // Check if user has required capability
-        if (!current_user_can($capability)) {
-            $message = is_user_logged_in()
-                ? sprintf('You need the "%s" capability to perform this action.', $capability)
-                : 'You must be logged in to access this resource.';
-
-            return new WP_Error(
-                'rest_forbidden',
-                $message,
-                ['status' => rest_authorization_required_code()]
-            );
-        }
-
-        return true;
-    }
-
-    protected function checkNonceOnly($settings)
-    {
-        // Check for nonce only, no user login required
-        // This allows WordPress frontend access without requiring authentication
-        $nonce = null;
-
-        // Check for nonce in header first (standard for REST API)
-        if (isset($_SERVER['HTTP_X_WP_NONCE'])) {
-            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
-        }
-
-        // Fall back to _wpnonce parameter
-        if (!$nonce && isset($_REQUEST['_wpnonce'])) {
-            $nonce = $_REQUEST['_wpnonce'];
-        }
+        // public_secured: Validate nonce only, no user authentication required
+        $nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? $_REQUEST['_wpnonce'] ?? null;
 
         if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
             return new WP_Error(
@@ -369,36 +296,22 @@ abstract class BaseEndpoint
             );
         }
 
-        // Nonce is valid, no user login required
         return true;
     }
 
-    protected function checkBasicAuthenticationType($settings)
+    protected function checkProtected($settings)
     {
-        // This is different from doBasicAuthCheck() - this is called when
-        // the permission type is explicitly set to 'basic_authentication'
-        // It REQUIRES Basic Auth headers to be present
+        // protected: User must be authenticated (cookie or Basic Auth already handled)
+        // Basic Auth check already ran in doBasicAuthCheck(), so if we're here user might be
+        // authenticated via cookie. Just validate nonce and capability.
 
-        if (!$this->hasBasicAuthHeaders(new WP_REST_Request())) {
+        $nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? $_REQUEST['_wpnonce'] ?? null;
+
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
             return new WP_Error(
-                'rest_forbidden',
-                'Basic Authentication is required for this endpoint.',
-                ['status' => 401]
-            );
-        }
-
-        // Authenticate the user
-        $authResult = $this->checkBasicAuthentication(new WP_REST_Request());
-
-        if (is_wp_error($authResult)) {
-            return $authResult;
-        }
-
-        if ($authResult !== true) {
-            return new WP_Error(
-                'rest_forbidden',
-                'Authentication failed.',
-                ['status' => 401]
+                'rest_nonce_invalid',
+                'Nonce is invalid or missing',
+                ['status' => 403]
             );
         }
 
@@ -414,69 +327,6 @@ abstract class BaseEndpoint
         }
 
         return true;
-    }
-
-    protected function checkHybridAuthentication($settings)
-    {
-        // Accepts either Cookie Auth OR Basic Auth
-        // Check if either authentication method succeeds
-
-        $request = new WP_REST_Request();
-        $capability = $settings['capability'] ?? null;
-
-        // Try Basic Auth first if headers present
-        if ($this->hasBasicAuthHeaders($request)) {
-            $authResult = $this->checkBasicAuthentication($request);
-
-            if ($authResult === true) {
-                // Basic Auth valid - check capability if needed
-                if ($capability && !current_user_can($capability)) {
-                    return new WP_Error(
-                        'rest_forbidden',
-                        sprintf('You need the "%s" capability to perform this action.', $capability),
-                        ['status' => 403]
-                    );
-                }
-                return true;
-            }
-
-            // Basic Auth headers present but invalid
-            if (is_wp_error($authResult)) {
-                return $authResult;
-            }
-        }
-
-        // Try Cookie Auth - check for valid nonce
-        $nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? $_REQUEST['_wpnonce'] ?? null;
-
-        if ($nonce && wp_verify_nonce($nonce, 'wp_rest')) {
-            // Valid nonce - check capability if needed
-            if ($capability && !current_user_can($capability)) {
-                return new WP_Error(
-                    'rest_forbidden',
-                    sprintf('You need the "%s" capability to perform this action.', $capability),
-                    ['status' => 403]
-                );
-            }
-            return true;
-        }
-
-        // No valid authentication provided
-        return new WP_Error(
-            'rest_forbidden',
-            'Authentication required. Provide valid Basic Auth credentials or valid nonce.',
-            ['status' => 401]
-        );
-    }
-
-    protected function checkJWTAuthentication($settings)
-    {
-        // Placeholder for future JWT implementation
-        return new WP_Error(
-            'not_implemented',
-            'JWT authentication is not yet implemented.',
-            ['status' => 501]
-        );
     }
 
     protected function sendSuccessResponse($data, $status = 200)
