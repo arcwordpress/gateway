@@ -223,7 +223,7 @@ abstract class BaseEndpoint
         }
 
         // Authenticate using WordPress Application Passwords
-        $user = wp_authenticate_application_password(null, $username, $password);
+        $user = wp_authenticate($username, $password);
 
         if (is_wp_error($user)) {
             return new WP_Error(
