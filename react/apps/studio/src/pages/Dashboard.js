@@ -51,7 +51,7 @@ function Dashboard() {
       <ViewSwitcher
         currentView={viewType}
         onViewChange={setViewType}
-        enabledViews={['table', 'board']}
+        enabledViews={['table', 'list', 'cards', 'board']}
       />
       <Grid 
         collectionKey={activeKey} 
