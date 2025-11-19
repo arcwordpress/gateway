@@ -79,9 +79,9 @@ abstract class BaseEndpoint
     {
         $basicAuthResult = $this->checkBasicAuthentication($request);
 
-        // Basic Auth succeeded - check capabilities and return immediately
+        // Basic Auth succeeded - return immediately
         if ($basicAuthResult === true) {
-            return $this->checkCapabilityRequirements($permissions, $routeType);
+            return true;
         }
 
         // Basic Auth failed with credentials provided - return error immediately
@@ -243,42 +243,6 @@ abstract class BaseEndpoint
 
         // Set the current user
         wp_set_current_user($user->ID);
-
-        return true;
-    }
-
-    protected function checkCapabilityRequirements($permissions, $routeType)
-    {
-        // Determine which permission config to use
-        $permissionConfig = null;
-
-        if (isset($permissions[$routeType])) {
-            $permissionConfig = $permissions[$routeType];
-        } elseif (isset($permissions['*'])) {
-            $permissionConfig = $permissions['*'];
-        }
-
-        // No permission config or public access
-        if (!$permissionConfig || $permissionConfig === false) {
-            return true;
-        }
-
-        // Get capability requirement
-        $settings = $permissionConfig['settings'] ?? [];
-        $capability = $settings['capability'] ?? null;
-
-        if (!$capability) {
-            return true; // No specific capability required
-        }
-
-        // Check if user has required capability
-        if (!current_user_can($capability)) {
-            return new WP_Error(
-                'rest_forbidden',
-                sprintf('You need the "%s" capability to perform this action.', $capability),
-                ['status' => 403]
-            );
-        }
 
         return true;
     }
