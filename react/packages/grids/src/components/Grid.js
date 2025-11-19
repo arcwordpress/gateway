@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGridContext } from '../context/GridContext';
 import TableView from './view-types/TableView';
 import BoardView from './view-types/BoardView';
+import ListView from './view-types/ListView';
+import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
 import { GridProvider } from '../context/GridContext';
 import { fetchCollection, fetchCollectionData, deleteRecord } from '../services/collectionService';
@@ -205,16 +207,34 @@ const Grid = ({
   }), [collection, data, auth]);
 
   // View component selection
-  const ViewComponent = viewType === 'board' ? BoardView : TableView;
-  const viewProps = viewType === 'board' 
-    ? { config: boardConfig, onView, singleViewComponent }
-    : { 
+  let ViewComponent;
+  let viewProps;
+
+  switch (viewType) {
+    case 'board':
+      ViewComponent = BoardView;
+      viewProps = { config: boardConfig, onView, singleViewComponent };
+      break;
+    case 'list':
+      ViewComponent = ListView;
+      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+      break;
+    case 'cards':
+      ViewComponent = CardsView;
+      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+      break;
+    case 'table':
+    default:
+      ViewComponent = TableView;
+      viewProps = {
         columns,
         onView,
         selectedRecord,
         onCloseView,
         singleViewComponent,
       };
+      break;
+  }
 
   if (error) {
     return (

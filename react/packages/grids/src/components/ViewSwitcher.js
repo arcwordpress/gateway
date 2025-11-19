@@ -8,10 +8,18 @@ const VIEW_CONFIGS = {
   board: {
     label: __('Board', 'gateway'),
     icon: '▦'
+  },
+  list: {
+    label: __('List', 'gateway'),
+    icon: '☷'
+  },
+  cards: {
+    label: __('Cards', 'gateway'),
+    icon: '▢'
   }
 };
 
-const ViewSwitcher = ({ currentView, onViewChange, enabledViews = ['table', 'board'] }) => {
+const ViewSwitcher = ({ currentView, onViewChange, enabledViews = ['table', 'board', 'list', 'cards'] }) => {
   // If enabledViews is false or empty, don't render
   if (!enabledViews || enabledViews.length === 0) {
     return null;
