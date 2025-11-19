@@ -117,6 +117,9 @@ abstract class BaseEndpoint
             case 'nonce_only':
                 return $this->checkNonceOnly($settings);
 
+            case 'basic_authentication':
+                return $this->checkBasicAuthenticationType($settings);
+
             case 'jwt':
                 return $this->checkJWTAuthentication($settings);
 
@@ -307,6 +310,49 @@ abstract class BaseEndpoint
         }
 
         // Nonce is valid, no user login required
+        return true;
+    }
+
+    protected function checkBasicAuthenticationType($settings)
+    {
+        // This is different from doBasicAuthCheck() - this is called when
+        // the permission type is explicitly set to 'basic_authentication'
+        // It REQUIRES Basic Auth headers to be present
+
+        if (!$this->hasBasicAuthHeaders(new WP_REST_Request())) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Basic Authentication is required for this endpoint.',
+                ['status' => 401]
+            );
+        }
+
+        // Authenticate the user
+        $authResult = $this->checkBasicAuthentication(new WP_REST_Request());
+
+        if (is_wp_error($authResult)) {
+            return $authResult;
+        }
+
+        if ($authResult !== true) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Authentication failed.',
+                ['status' => 401]
+            );
+        }
+
+        // Check capability requirement
+        $capability = $settings['capability'] ?? null;
+
+        if ($capability && !current_user_can($capability)) {
+            return new WP_Error(
+                'rest_forbidden',
+                sprintf('You need the "%s" capability to perform this action.', $capability),
+                ['status' => 403]
+            );
+        }
+
         return true;
     }
 
