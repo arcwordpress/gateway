@@ -217,7 +217,7 @@ abstract class BaseEndpoint
         if (empty($username) || empty($password)) {
             return new WP_Error(
                 'rest_forbidden',
-                'Invalid Basic Authentication credentials format.',
+                '[Basic Auth] Failed to parse credentials from Authorization header',
                 ['status' => 401]
             );
         }
@@ -228,7 +228,7 @@ abstract class BaseEndpoint
         if (is_wp_error($user)) {
             return new WP_Error(
                 'rest_forbidden',
-                'Invalid username or application password.',
+                '[Basic Auth] ' . $user->get_error_message(),
                 ['status' => 401]
             );
         }
@@ -236,7 +236,7 @@ abstract class BaseEndpoint
         if (!$user) {
             return new WP_Error(
                 'rest_forbidden',
-                'Invalid username or application password.',
+                '[Basic Auth] wp_authenticate_application_password returned false - invalid credentials',
                 ['status' => 401]
             );
         }
@@ -266,15 +266,15 @@ abstract class BaseEndpoint
     protected function checkProtected($settings)
     {
         // protected: User must be authenticated (cookie or Basic Auth already handled)
-        // Basic Auth check already ran in doBasicAuthCheck(), so if we're here user might be
-        // authenticated via cookie. Just validate nonce and capability.
+        // If we reached here, Basic Auth was NOT attempted (no auth headers)
+        // So check cookie authentication via nonce
 
         $nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? $_REQUEST['_wpnonce'] ?? null;
 
         if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
             return new WP_Error(
                 'rest_nonce_invalid',
-                'Nonce is invalid or missing',
+                '[Cookie Auth] Nonce is invalid or missing. This endpoint requires either Basic Auth or valid WordPress session with nonce.',
                 ['status' => 403]
             );
         }
@@ -285,7 +285,7 @@ abstract class BaseEndpoint
         if ($capability && !current_user_can($capability)) {
             return new WP_Error(
                 'rest_forbidden',
-                sprintf('You need the "%s" capability to perform this action.', $capability),
+                sprintf('[Cookie Auth] You need the "%s" capability to perform this action.', $capability),
                 ['status' => 403]
             );
         }
