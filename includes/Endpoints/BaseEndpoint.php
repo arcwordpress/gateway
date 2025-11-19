@@ -177,6 +177,9 @@ abstract class BaseEndpoint
             case 'basic_authentication':
                 return $this->checkBasicAuthenticationType($settings);
 
+            case 'hybrid_authentication':
+                return $this->checkHybridAuthentication($settings);
+
             case 'jwt':
                 return $this->checkJWTAuthentication($settings);
 
@@ -411,6 +414,88 @@ abstract class BaseEndpoint
         }
 
         return true;
+    }
+
+    protected function checkHybridAuthentication($settings)
+    {
+        // Accepts either Cookie Auth OR Basic Auth
+        // Try Basic Auth first if headers are present
+        $request = new WP_REST_Request();
+
+        if ($this->hasBasicAuthHeaders($request)) {
+            // Basic Auth headers present - try to authenticate
+            $authResult = $this->checkBasicAuthentication($request);
+
+            if ($authResult === true) {
+                // Basic Auth succeeded - check capability
+                $capability = $settings['capability'] ?? null;
+
+                if ($capability && !current_user_can($capability)) {
+                    return new WP_Error(
+                        'rest_forbidden',
+                        sprintf('You need the "%s" capability to perform this action.', $capability),
+                        ['status' => 403]
+                    );
+                }
+
+                return true;
+            }
+
+            // Basic Auth failed with credentials provided - return error
+            if (is_wp_error($authResult)) {
+                return $authResult;
+            }
+        }
+
+        // No Basic Auth or Basic Auth failed - try Cookie Auth
+        // Check for nonce
+        $nonce = null;
+
+        if (isset($_SERVER['HTTP_X_WP_NONCE'])) {
+            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
+        } elseif (isset($_REQUEST['_wpnonce'])) {
+            $nonce = $_REQUEST['_wpnonce'];
+        }
+
+        // If nonce present, validate it
+        if ($nonce) {
+            if (!wp_verify_nonce($nonce, 'wp_rest')) {
+                return new WP_Error(
+                    'rest_cookie_invalid_nonce',
+                    'Cookie nonce is invalid',
+                    ['status' => 403]
+                );
+            }
+
+            // Nonce valid - check if user is logged in
+            if (!is_user_logged_in()) {
+                return new WP_Error(
+                    'rest_forbidden',
+                    'You must be logged in to access this resource.',
+                    ['status' => 401]
+                );
+            }
+
+            // Check capability
+            $capability = $settings['capability'] ?? null;
+
+            if ($capability && !current_user_can($capability)) {
+                return new WP_Error(
+                    'rest_forbidden',
+                    sprintf('You need the "%s" capability to perform this action.', $capability),
+                    ['status' => 403]
+                );
+            }
+
+            return true;
+        }
+
+        // No authentication method provided
+        return new WP_Error(
+            'rest_forbidden',
+            'Authentication required. Use cookie authentication with nonce or Basic Authentication.',
+            ['status' => 401]
+        );
     }
 
     protected function checkJWTAuthentication($settings)
