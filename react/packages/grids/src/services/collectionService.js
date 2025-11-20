@@ -10,8 +10,7 @@ const getApiBaseUrl = () => {
     return window.gatewayAdminScript.apiUrl;
   }
 
-  // Fallback to standard WordPress REST API path
-  return '/wp-json/';
+  return '/wp-json';
 
 };
 
@@ -41,7 +40,7 @@ const buildAxiosConfig = (options = {}) => {
   if (options.auth) {
     config.headers['Authorization'] = 'Basic ' + btoa(`${options.auth.username}:${options.auth.password}`);
     config.withCredentials = false;
-    console.log('[Gateway Grid API] Using Basic Auth from options');
+    console.log('[Gateway Grid API] Using Basic Auth from options ' + options.auth.username + ' / ' + options.auth.password);
   } else {
     // Fallback to nonce if available
     const nonce = getNonce();
@@ -65,19 +64,6 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Remove global interceptor. Auth is now passed per-request.
-
-// Handle 401 errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      console.error('401 Unauthorized - Auth may be invalid or missing');
-    }
-    return Promise.reject(error);
-  }
-);
 
 /**
  * Fetch all registered collections
