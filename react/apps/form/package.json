@@ -12,6 +12,7 @@
     "lint:pkg-json": "wp-scripts lint-pkg-json"
   },
   "dependencies": {
+    "@arcwp/gateway-data": "file:../../packages/data",
     "@arcwp/gateway-forms": "file:../../packages/forms"
   },
   "devDependencies": {
