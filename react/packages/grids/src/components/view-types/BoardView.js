@@ -1,7 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import Board from '@asseinfo/react-kanban';
 import { useGridContext } from '../../context/GridContext';
-import { updateRecord } from '@arcwp/gateway-data/src/services/collectionApi';
+import { collectionApi } from '@arcwp/gateway-data';
 
 const UNCATEGORIZED_LANE_ID = 'uncategorized';
 
@@ -264,7 +264,7 @@ const BoardView = ({
 
       console.log(`Updating record ${card.id} ${updateField} to:`, updateData[updateField]);
 
-      await updateRecord(namespace, route, card.id, updateData, { auth });
+      await collectionApi.updateRecord(namespace, route, card.id, updateData, { auth });
 
       console.log(`Successfully updated record ${card.id}`);
 
