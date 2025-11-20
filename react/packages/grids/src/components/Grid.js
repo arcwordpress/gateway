@@ -6,7 +6,7 @@ import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
 import { GridProvider } from '../context/GridContext';
-import { fetchCollection, fetchCollectionData, deleteRecord } from '../services/collectionService';
+import { fetchCollection, fetchRecords, deleteRecord } from '@arcwp/gateway-data/src/services/collectionApi';
 import { generateColumns } from '../services/columnGenerator';
 import { applyFilters } from '../utils/filterUtils';
 
@@ -89,8 +89,7 @@ const Grid = ({
       const namespace = collection.routes.namespace;
       const route = collection.routes.route;
 
-      const result = await fetchCollectionData(namespace, route, {}, { auth });
-      const records = result.data || result;
+      const records = await fetchRecords(namespace, route, {}, { auth });
       setData(Array.isArray(records) ? records : []);
       setError(null);
     } catch (err) {

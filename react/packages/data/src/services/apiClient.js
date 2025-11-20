@@ -66,7 +66,10 @@ export const createApiClient = (config = {}) => {
   // Request interceptor - add authentication headers
   client.interceptors.request.use(
     (requestConfig) => {
-      const { headers, suppressCredentials } = getAuthHeaders(config.auth);
+      // Check for per-request auth override in requestConfig.auth
+      // Priority: request-level auth > client-level auth > window globals
+      const authToUse = requestConfig.auth || config.auth;
+      const { headers, suppressCredentials } = getAuthHeaders(authToUse);
 
       // Merge auth headers
       requestConfig.headers = {
@@ -78,6 +81,9 @@ export const createApiClient = (config = {}) => {
       if (suppressCredentials) {
         requestConfig.withCredentials = false;
       }
+
+      // Remove auth from request config to avoid axios trying to use it
+      delete requestConfig.auth;
 
       return requestConfig;
     },
