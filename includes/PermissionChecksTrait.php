@@ -6,10 +6,12 @@ trait PermissionChecksTrait
 {
     public function checkProtectedPermission()
     {
-        error_log('AUTH HEADER: ' . ($_SERVER['HTTP_AUTHORIZATION'] ?? 'none'));
-        error_log('PHP_AUTH_USER: ' . ($_SERVER['PHP_AUTH_USER'] ?? 'none'));
+        // 1. Check for cookie/session authentication first
+        if (is_user_logged_in()) {
+            return true;
+        }
 
-        // Manually parse Basic Auth credentials
+        // 2. Manually parse Basic Auth credentials
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null;
         $user = null;
         $pass = null;
@@ -25,7 +27,7 @@ trait PermissionChecksTrait
             $pass = $_SERVER['PHP_AUTH_PW'];
         }
 
-        // Use the official WP function for application password authentication
+        // 3. Use the official WP function for application password authentication
         if ($user && $pass) {
             $result = wp_authenticate_application_password(null, $user, $pass);
             error_log('WP_AUTH_APP_PASS result: ' . print_r($result, true));
@@ -36,7 +38,7 @@ trait PermissionChecksTrait
 
         return new \WP_Error(
             'rest_auth_invalid',
-            '[Auth] Manual Basic Auth failed. Provide valid Application Password credentials.',
+            '[Auth] Manual Basic Auth failed and no valid WordPress session found. Provide valid Application Password credentials or login via WordPress.',
             ['status' => 403]
         );
     }

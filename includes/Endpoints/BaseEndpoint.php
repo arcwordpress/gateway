@@ -83,7 +83,7 @@ abstract class BaseEndpoint
 
         switch ($permissionType) {
             case 'public_secured':
-                return $this->checkPublicSecured([]);
+                return $this->checkPublicSecured();
             case 'protected':
                 return $this->checkProtected();
             default:
@@ -109,27 +109,27 @@ abstract class BaseEndpoint
         return $permissions[$routeType]['type'] ?? 'protected';
     }
 
-    protected function checkPublicSecured($nonce_action = 'wp_rest')
+    protected function checkPublicSecured()
     {
-        $nonce = $_SERVER['HTTP_X_WP_NONCE'] ?? $_REQUEST['_wpnonce'] ?? null;
+        $nonce = null;
 
-        if (!$nonce) {
-            return new WP_Error(
-                'rest_nonce_missing',
-                'Nonce is missing from the request.',
-                ['status' => 403]
-            );
+        // Try to get nonce from the X-WP-Nonce header
+        if ( isset( $_SERVER['HTTP_X_WP_NONCE'] ) ) {
+            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
+        } elseif ( isset( $_REQUEST['_wpnonce'] ) ) {
+            // Fallback to _wpnonce param if present
+            $nonce = $_REQUEST['_wpnonce'];
         }
 
-        if (!wp_verify_nonce($nonce, $nonce_action)) {
-            return new WP_Error(
-                'rest_nonce_invalid',
-                'Nonce is invalid.',
-                ['status' => 403]
-            );
+        if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return true;
         }
 
-        return true;
+        return new \WP_Error(
+            'rest_invalid_nonce',
+            __( 'Invalid or missing nonce.' ),
+            [ 'status' => 403 ]
+        );
     }
 
     protected function checkProtected()
