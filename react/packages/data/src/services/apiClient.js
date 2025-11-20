@@ -6,7 +6,6 @@ import axios from 'axios';
 const getApiConfig = (overrides = {}) => {
   const apiUrl = overrides.apiUrl ||
                  window.gatewayAdminScript?.apiUrl ||
-                 window.wpApiSettings?.root ||
                  '/wp-json/';
 
   return {
@@ -20,7 +19,6 @@ const getApiConfig = (overrides = {}) => {
  * 1. Provided auth options
  * 2. window.gatewayAuth (Basic Auth for headless)
  * 3. window.gatewayAdminScript.nonce (WordPress nonce)
- * 4. window.wpApiSettings.nonce (fallback WordPress nonce)
  */
 const getAuthHeaders = (authOptions = null) => {
   const headers = {};
@@ -38,13 +36,9 @@ const getAuthHeaders = (authOptions = null) => {
     headers['Authorization'] = `Basic ${credentials}`;
     suppressCredentials = true;
   }
-  // Priority 3: Check for WordPress nonce
+  // Priority 3: Check for WordPress nonce in gatewayAdminScript only
   else if (window.gatewayAdminScript?.nonce) {
     headers['X-WP-Nonce'] = window.gatewayAdminScript.nonce;
-  }
-  // Priority 4: Fallback to wpApiSettings nonce
-  else if (window.wpApiSettings?.nonce) {
-    headers['X-WP-Nonce'] = window.wpApiSettings.nonce;
   }
 
   return { headers, suppressCredentials };
