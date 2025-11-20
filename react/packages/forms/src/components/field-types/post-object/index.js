@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import axios from 'axios';
+import { getApiClient } from '@arcwp/gateway-data';
 import './style.css';
 
 const PostObjectFieldTypeInput = ({ config = {} }) => {
@@ -68,14 +68,8 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
   const fetchSelectedPost = async (postId) => {
     const restBase = postType === 'post' ? 'posts' : postType;
     try {
-      const response = await axios.get(
-        `/wp-json/wp/v2/${restBase}/${postId}`,
-        {
-          headers: {
-            'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-          },
-        }
-      );
+      const client = getApiClient();
+      const response = await client.get(`wp/v2/${restBase}/${postId}`);
 
       if (response.data) {
         setSelectedPost({
@@ -110,15 +104,8 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
       }
 
       const restBase = postType === 'post' ? 'posts' : postType;
-      const response = await axios.get(
-        `/wp-json/wp/v2/${restBase}`,
-        {
-          params,
-          headers: {
-            'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-          },
-        }
-      );
+      const client = getApiClient();
+      const response = await client.get(`wp/v2/${restBase}`, { params });
 
       const results = response.data.map(post => ({
         id: post.id,
@@ -320,7 +307,8 @@ const PostObjectFieldTypeDisplay = ({ value, config }) => {
   const fetchPost = async (postId) => {
     const restBase = postType === 'post' ? 'posts' : postType;
     try {
-      const response = await axios.get(`/wp-json/wp/v2/${restBase}/${postId}`);
+      const client = getApiClient();
+      const response = await client.get(`wp/v2/${restBase}/${postId}`);
       if (response.data) {
         setPost({
           title: response.data.title?.rendered || 'Untitled',
