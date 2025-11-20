@@ -15,19 +15,14 @@ import { createApiClient, resetApiClient } from '../services/apiClient';
  */
 export const GatewayDataProvider = ({ apiUrl, auth, children }) => {
   const value = useMemo(() => {
-    const config = {};
-
-    if (apiUrl) {
-      config.apiUrl = apiUrl;
-    }
-
-    if (auth) {
-      config.auth = auth;
-    }
+    const config = {
+      apiUrl: apiUrl || null,
+      auth: auth || null,
+    };
 
     // Create a new API client with this configuration
     // This ensures all API calls within this provider use the same config
-    if (Object.keys(config).length > 0) {
+    if (apiUrl || auth) {
       createApiClient(config);
     }
 
@@ -39,7 +34,7 @@ export const GatewayDataProvider = ({ apiUrl, auth, children }) => {
     return () => {
       // Reset the API client when provider unmounts
       // This is mainly useful for testing or when switching configurations
-      if (Object.keys(value).length > 0) {
+      if (value.apiUrl || value.auth) {
         resetApiClient();
       }
     };

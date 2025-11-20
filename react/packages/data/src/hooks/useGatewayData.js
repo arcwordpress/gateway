@@ -14,6 +14,13 @@ import GatewayDataContext from '../contexts/GatewayDataContext';
  */
 export const useGatewayData = () => {
   const context = useContext(GatewayDataContext);
+  // Provide default values if context is undefined (no provider)
+  if (!context) {
+    return {
+      apiUrl: null,
+      auth: null,
+    };
+  }
   return context;
 };
 
