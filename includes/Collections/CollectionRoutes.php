@@ -1,8 +1,9 @@
 <?php
 
-namespace Gateway;
+namespace Gateway\Collections;
 
 use Gateway\PermissionChecksTrait;
+use Gateway\Plugin;
 
 class CollectionRoutes
 {
@@ -129,9 +130,7 @@ class CollectionRoutes
                 $result[] = $this->collectionToArray($collectionClass, $collection);
             }
 
-            return new \WP_REST_Response([
-                'data' => $result,
-            ], 200);
+            return new \WP_REST_Response($result, 200);
         } catch (\Exception $e) {
             return new \WP_REST_Response([
                 'error' => $e->getMessage(),
@@ -167,9 +166,10 @@ class CollectionRoutes
                 $collectionKey = $collection->getKey();
 
                 if ($collectionKey === $key) {
-                    return new \WP_REST_Response([
-                        'data' => $this->collectionToArray($collectionClass, $collection),
-                    ], 200);
+                    return new \WP_REST_Response(
+                        $this->collectionToArray($collectionClass, $collection), 
+                        200
+                    );
                 }
             }
 

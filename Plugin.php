@@ -67,7 +67,7 @@ class Plugin
         $this->registry = new CollectionRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
-        $this->collectionRoutes = new CollectionRoutes();
+        new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
