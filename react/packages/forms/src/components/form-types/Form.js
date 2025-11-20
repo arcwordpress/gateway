@@ -70,7 +70,7 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
       setError(null);
       const response = await getCollection(collectionKey, { auth: apiAuth });
       console.log('Collection response:', response);
-      setCollection(response.data);
+      setCollection(response);
     } catch (err) {
       const errorMessage = err.response?.status === 404
         ? `Collection "${collectionKey}" not found`

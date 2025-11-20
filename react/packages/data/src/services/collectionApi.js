@@ -5,21 +5,6 @@ import { getApiClient } from './apiClient';
  */
 
 /**
- * Unwrap API response data
- * Gateway API wraps responses in { data: {...} } but we want to return the unwrapped data
- * @param {Object} response - Axios response object
- * @returns {*} Unwrapped data
- */
-const unwrapResponse = (response) => {
-  // If response.data has a 'data' property, unwrap it
-  if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-    return response.data.data;
-  }
-  // Otherwise return response.data as-is
-  return response.data;
-};
-
-/**
  * Fetch all collections
  * @param {Object} params - Query parameters
  * @param {string} params.package - Filter by package name
@@ -34,8 +19,7 @@ export const fetchCollections = async (params = {}, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.get('gateway/v1/collections', config);
-  const data = unwrapResponse(response);
-  return Array.isArray(data) ? data : [];
+  return response.data;
 };
 
 /**
@@ -52,7 +36,7 @@ export const fetchCollection = async (key, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.get(`gateway/v1/collections/${key}`, config);
-  return unwrapResponse(response);
+  return response.data;
 };
 
 /**
@@ -86,17 +70,7 @@ export const fetchRecords = async (namespace, route, params = {}, options = {}) 
     config.auth = options.auth;
   }
   const response = await client.get(endpoint, config);
-  const data = unwrapResponse(response);
-
-  // Handle different response formats
-  // Some endpoints return { items: [...] }
-  // Others return direct arrays
-  if (data?.items && Array.isArray(data.items)) {
-    return data.items;
-  } else if (Array.isArray(data)) {
-    return data;
-  }
-  return [];
+  return response.data;
 };
 
 /**
@@ -116,7 +90,7 @@ export const fetchRecord = async (namespace, route, id, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.get(`${endpoint}/${id}`, config);
-  return unwrapResponse(response);
+  return response.data;
 };
 
 /**
@@ -136,7 +110,7 @@ export const createRecord = async (namespace, route, data, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.post(endpoint, data, config);
-  return unwrapResponse(response);
+  return response.data;
 };
 
 /**
@@ -157,7 +131,7 @@ export const updateRecord = async (namespace, route, id, data, options = {}) => 
     config.auth = options.auth;
   }
   const response = await client.patch(`${endpoint}/${id}`, data, config);
-  return unwrapResponse(response);
+  return response.data;
 };
 
 /**
@@ -177,7 +151,7 @@ export const deleteRecord = async (namespace, route, id, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.delete(`${endpoint}/${id}`, config);
-  return unwrapResponse(response);
+  return response.data;
 };
 
 export default {
