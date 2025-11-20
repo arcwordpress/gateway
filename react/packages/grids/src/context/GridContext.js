@@ -14,6 +14,18 @@ export const GridProvider = GridContext.Provider;
 
 export const useGridContext = () => {
   const context = useContext(GridContext);
+  // Provide default values if context is undefined (no provider)
+  if (!context) {
+    return {
+      namespace: null,
+      route: null,
+      collection: null,
+      records: [],
+      getRecordById: () => null,
+      onRefresh: null,
+      auth: null,
+    };
+  }
   return context;
 };
 
