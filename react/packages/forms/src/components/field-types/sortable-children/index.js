@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import axios from 'axios';
+import { getApiClient } from '@arcwp/gateway-data';
 import './style.css';
 
 const SortableChildrenFieldTypeInput = ({ config = {}, recordId }) => {
@@ -55,11 +55,8 @@ const SortableChildrenFieldTypeInput = ({ config = {}, recordId }) => {
       setError(null);
 
       const url = `${endpoint}?${filterBy}=${recordId}`;
-      const response = await axios.get(url, {
-        headers: {
-          'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-        },
-      });
+      const client = getApiClient();
+      const response = await client.get(url);
 
       const childItems = response.data?.data?.items || [];
 
@@ -106,19 +103,15 @@ const SortableChildrenFieldTypeInput = ({ config = {}, recordId }) => {
     setError(null);
 
     try {
+      const client = getApiClient();
       const updatePromises = items.map((item, index) => {
         const newPosition = index + 1;
         const itemId = item[idField];
 
         if (item[positionField] !== newPosition) {
-          return axios.patch(
+          return client.patch(
             `${updateEndpoint}/${itemId}`,
-            { [positionField]: newPosition },
-            {
-              headers: {
-                'X-WP-Nonce': window.wpApiSettings?.nonce || '',
-              },
-            }
+            { [positionField]: newPosition }
           );
         }
 

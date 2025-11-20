@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import axios from 'axios';
+import { getApiClient } from '@arcwp/gateway-data';
 import './style.css';
 
 const RelationFieldTypeInput = ({ config = {} }) => {
@@ -44,15 +44,8 @@ const RelationFieldTypeInput = ({ config = {} }) => {
       try {
         setLoading(true);
         setFetchError(null);
-        const nonce = window.gatewayAdminScript?.nonce;
-        if (!nonce) {
-          throw new Error('Missing REST API nonce (gatewayAdminScript.nonce) for relation field.');
-        }
-        const response = await axios.get(endpoint, {
-          headers: {
-            'X-WP-Nonce': nonce,
-          },
-        });
+        const client = getApiClient();
+        const response = await client.get(endpoint);
         const data = response.data.data.items;
         if (!Array.isArray(data)) {
           throw new Error('API response items is not an array');

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import axios from 'axios';
+import { getApiClient } from '@arcwp/gateway-data';
 import './style.css';
 
 /**
@@ -63,9 +63,9 @@ const UserFieldTypeInput = ({ config = {} }) => {
         if (!userId) return;
 
         try {
-            const response = await axios.get(`/wp-json/wp/v2/users/${userId}`, {
-                params: { context: 'edit' },
-                headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' }
+            const client = getApiClient();
+            const response = await client.get(`wp/v2/users/${userId}`, {
+                params: { context: 'edit' }
             });
 
             setSelectedUser({
@@ -98,10 +98,8 @@ const UserFieldTypeInput = ({ config = {} }) => {
                 params.roles = role;
             }
 
-            const response = await axios.get('/wp-json/wp/v2/users', {
-                params,
-                headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' }
-            });
+            const client = getApiClient();
+            const response = await client.get('wp/v2/users', { params });
 
             const users = response.data.map(user => ({
                 id: user.id,
@@ -253,9 +251,9 @@ const UserFieldTypeDisplay = ({ value, config }) => {
 
         const fetchUser = async () => {
             try {
-                const response = await axios.get(`/wp-json/wp/v2/users/${value}`, {
-                    params: { context: 'edit' },
-                    headers: { 'X-WP-Nonce': window.wpApiSettings?.nonce || '' }
+                const client = getApiClient();
+                const response = await client.get(`wp/v2/users/${value}`, {
+                    params: { context: 'edit' }
                 });
 
                 setUser({
