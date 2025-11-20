@@ -6,7 +6,7 @@ import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
 import { GridProvider } from '../context/GridContext';
-import { fetchCollection, fetchRecords, deleteRecord } from '@arcwp/gateway-data/src/services/collectionApi';
+import { collectionApi } from '@arcwp/gateway-data';
 import { generateColumns } from '../services/columnGenerator';
 import { applyFilters } from '../utils/filterUtils';
 
@@ -66,7 +66,7 @@ const Grid = ({
     const loadCollection = async () => {
       try {
         setLoading(true);
-        const collectionData = await fetchCollection(collectionKey, { auth });
+        const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
         setCollection(collectionData);
         setError(null);
       } catch (err) {
@@ -89,7 +89,7 @@ const Grid = ({
       const namespace = collection.routes.namespace;
       const route = collection.routes.route;
 
-      const records = await fetchRecords(namespace, route, {}, { auth });
+      const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
       setData(Array.isArray(records) ? records : []);
       setError(null);
     } catch (err) {
@@ -129,7 +129,7 @@ const Grid = ({
       const namespace = collection.routes.namespace;
       const route = collection.routes.route;
 
-      await deleteRecord(namespace, route, deleteConfirm.id, { auth });
+      await collectionApi.deleteRecord(namespace, route, deleteConfirm.id, { auth });
 
       setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
 
