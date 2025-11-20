@@ -1,7 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import Board from '@asseinfo/react-kanban';
 import { useGridContext } from '../../context/GridContext';
-import { updateRecord } from '../../services/collectionService';
+import { updateRecord } from '@arcwp/gateway-data/src/services/collectionApi';
 
 const UNCATEGORIZED_LANE_ID = 'uncategorized';
 
@@ -238,6 +238,7 @@ const BoardView = ({
 
     const namespace = gridContext.namespace;
     const route = gridContext.route;
+    const auth = gridContext.auth;
 
     if (!namespace || !route) {
       console.warn('BoardView: namespace and route not available in context. Card move will not be persisted.');
@@ -256,14 +257,14 @@ const BoardView = ({
     try {
       // Update the status_id field
       const updateField = groupByField.includes('_id') ? groupByField : `${groupByField}_id`;
-      
+
       const updateData = {
         [updateField]: destColumnId === UNCATEGORIZED_LANE_ID ? null : destColumnId,
       };
 
       console.log(`Updating record ${card.id} ${updateField} to:`, updateData[updateField]);
 
-      await updateRecord(namespace, route, card.id, updateData);
+      await updateRecord(namespace, route, card.id, updateData, { auth });
 
       console.log(`Successfully updated record ${card.id}`);
 

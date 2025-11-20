@@ -8,22 +8,34 @@ import { getApiClient } from './apiClient';
  * Fetch all collections
  * @param {Object} params - Query parameters
  * @param {string} params.package - Filter by package name
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Array>} Array of collections
  */
-export const fetchCollections = async (params = {}) => {
+export const fetchCollections = async (params = {}, options = {}) => {
   const client = getApiClient();
-  const response = await client.get('gateway/v1/collections', { params });
+  const config = { params };
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.get('gateway/v1/collections', config);
   return response.data.data || [];
 };
 
 /**
  * Fetch a single collection by key
  * @param {string} key - Collection key
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Object>} Collection object
  */
-export const fetchCollection = async (key) => {
+export const fetchCollection = async (key, options = {}) => {
   const client = getApiClient();
-  const response = await client.get(`gateway/v1/collections/${key}`);
+  const config = {};
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.get(`gateway/v1/collections/${key}`, config);
   return response.data.data || null;
 };
 
@@ -46,12 +58,18 @@ const buildEndpoint = (namespace, route) => {
  * @param {string} namespace - REST namespace
  * @param {string} route - Collection route
  * @param {Object} params - Query parameters (pagination, filters, etc.)
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Array>} Array of records
  */
-export const fetchRecords = async (namespace, route, params = {}) => {
+export const fetchRecords = async (namespace, route, params = {}, options = {}) => {
   const client = getApiClient();
   const endpoint = buildEndpoint(namespace, route);
-  const response = await client.get(endpoint, { params });
+  const config = { params };
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.get(endpoint, config);
 
   // Handle different response formats
   // Some endpoints return { data: { items: [...] } }
@@ -71,12 +89,18 @@ export const fetchRecords = async (namespace, route, params = {}) => {
  * @param {string} namespace - REST namespace
  * @param {string} route - Collection route
  * @param {number|string} id - Record ID
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Object>} Record object
  */
-export const fetchRecord = async (namespace, route, id) => {
+export const fetchRecord = async (namespace, route, id, options = {}) => {
   const client = getApiClient();
   const endpoint = buildEndpoint(namespace, route);
-  const response = await client.get(`${endpoint}/${id}`);
+  const config = {};
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.get(`${endpoint}/${id}`, config);
 
   // Handle different response formats
   return response.data?.data || response.data || null;
@@ -87,12 +111,18 @@ export const fetchRecord = async (namespace, route, id) => {
  * @param {string} namespace - REST namespace
  * @param {string} route - Collection route
  * @param {Object} data - Record data
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Object>} Created record
  */
-export const createRecord = async (namespace, route, data) => {
+export const createRecord = async (namespace, route, data, options = {}) => {
   const client = getApiClient();
   const endpoint = buildEndpoint(namespace, route);
-  const response = await client.post(endpoint, data);
+  const config = {};
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.post(endpoint, data, config);
 
   return response.data?.data || response.data || null;
 };
@@ -103,12 +133,18 @@ export const createRecord = async (namespace, route, data) => {
  * @param {string} route - Collection route
  * @param {number|string} id - Record ID
  * @param {Object} data - Updated record data
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Object>} Updated record
  */
-export const updateRecord = async (namespace, route, id, data) => {
+export const updateRecord = async (namespace, route, id, data, options = {}) => {
   const client = getApiClient();
   const endpoint = buildEndpoint(namespace, route);
-  const response = await client.patch(`${endpoint}/${id}`, data);
+  const config = {};
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.patch(`${endpoint}/${id}`, data, config);
 
   return response.data?.data || response.data || null;
 };
@@ -118,12 +154,18 @@ export const updateRecord = async (namespace, route, id, data) => {
  * @param {string} namespace - REST namespace
  * @param {string} route - Collection route
  * @param {number|string} id - Record ID
+ * @param {Object} options - Request options
+ * @param {Object} options.auth - Optional auth override { username, password }
  * @returns {Promise<Object>} Delete response
  */
-export const deleteRecord = async (namespace, route, id) => {
+export const deleteRecord = async (namespace, route, id, options = {}) => {
   const client = getApiClient();
   const endpoint = buildEndpoint(namespace, route);
-  const response = await client.delete(`${endpoint}/${id}`);
+  const config = {};
+  if (options.auth) {
+    config.auth = options.auth;
+  }
+  const response = await client.delete(`${endpoint}/${id}`, config);
 
   return response.data?.data || response.data || null;
 };
