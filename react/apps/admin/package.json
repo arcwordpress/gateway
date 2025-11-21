@@ -10,6 +10,7 @@
     "packages-update": "wp-scripts packages-update"
   },
   "dependencies": {
+    "recharts": "^2.7.2",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.12.2",
     "react": "^18.2.0",

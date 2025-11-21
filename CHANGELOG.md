@@ -2,6 +2,14 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.7] - 2025-11-21
+
+### Added
+- Nicer styling for admin heading and stats.
+
+### Fixed 
+- The authorization of remote access to API access with Basic Authentication.
+
 ## [1.1.6] - 2025-11-18
 
 ### Added
