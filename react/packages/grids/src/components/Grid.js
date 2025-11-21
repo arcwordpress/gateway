@@ -55,46 +55,34 @@ const Grid = ({
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterValues, setFilterValues] = useState({});
 
-  // Fetch collection metadata
-  useEffect(() => {
+
+  // Combined effect to load collection and data
+  const loadAll = async () => {
     if (!collectionKey) {
       setError('No collection key provided');
       setLoading(false);
       return;
     }
-
-    const loadCollection = async () => {
-      try {
-        setLoading(true);
-        const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
-        setCollection(collectionData);
-        setError(null);
-      } catch (err) {
-        setError(`Failed to load collection: ${err.message}`);
-        console.error('Error loading collection:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCollection();
-  }, [collectionKey]);
-
-  // Fetch collection data (records)
-  const fetchData = async () => {
-    if (!collection) return;
-
+    setLoading(true);
     try {
-      setLoading(true);
-      const namespace = collection.routes.namespace;
-      const route = collection.routes.route;
+      // Fetch collection metadata
+      const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
+      console.log('Fetched collection:', collectionData);
+      setCollection(collectionData);
 
+      // Fetch collection records
+      const namespace = collectionData.routes.namespace;
+      const route = collectionData.routes.route;
       const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
-      setData(Array.isArray(records) ? records : []);
+      
+      console.log('Fetched records:', records.items);
+      setData(records.data.items);
       setError(null);
+
     } catch (err) {
-      setError(`Failed to load data: ${err.message}`);
-      console.error('Error loading data:', err);
+      setError(`Failed to load collection or data: ${err.message}`);
+      console.error('Error loading collection or data:', err);
+      setCollection(null);
       setData([]);
     } finally {
       setLoading(false);
@@ -102,8 +90,9 @@ const Grid = ({
   };
 
   useEffect(() => {
-    fetchData();
-  }, [collection]);
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionKey]);
 
   // Get filters from collection metadata
   const filters = useMemo(() => {
@@ -114,6 +103,9 @@ const Grid = ({
   const filteredData = useMemo(() => {
     return applyFilters(data, filters, filterValues);
   }, [data, filters, filterValues]);
+
+  console.log('Filtered Data: ')
+  console.log(filteredData)
 
   // Handle delete with confirmation
   const handleDeleteClick = (recordId) => {
@@ -201,9 +193,9 @@ const Grid = ({
       // Support both numeric and string IDs
       return data.find(record => record.id == id) || null;
     },
-    onRefresh: fetchData,
+    onRefresh: loadAll,
     auth,
-  }), [collection, data, auth]);
+  }), [collection, data, auth, collectionKey]);
 
   // View component selection
   let ViewComponent;
