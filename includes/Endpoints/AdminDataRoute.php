@@ -37,6 +37,7 @@ class AdminDataRoute
         // Get all collections
         $collections = $registry->getAll();
         $collectionsData = [];
+        $recordCount = 0; // Total records across all collections
 
         // Get actual registered routes
         $actualRoutes = $standardRoutes->getActualRegisteredRoutes();
@@ -50,7 +51,6 @@ class AdminDataRoute
             $titlePlural = $collection->getTitlePlural();
 
             // Get routes for this specific collection
-            // Use getRoute() to match how routes are stored in StandardRoutes
             $routeKey = $collection->getRoute();
             $collectionRoutes = [];
             if (isset($actualRoutes[$routeKey])) {
@@ -71,6 +71,10 @@ class AdminDataRoute
             $tableName = $collection->getTable();
             $fullTableName = $wpdb->prefix . $tableName;
 
+            // Use Eloquent's static count() to get the number of records for this collection
+            $count = $fqcn::count();
+            $recordCount += $count;
+
             $collectionsData[] = [
                 'key' => $key,
                 'title' => $title,
@@ -78,12 +82,14 @@ class AdminDataRoute
                 'className' => $className,
                 'fqcn' => $fqcn,
                 'table' => $fullTableName,
-                'routes' => $collectionRoutes
+                'routes' => $collectionRoutes,
+                'record_count' => $count,
             ];
         }
 
         return [
-            'collections' => $collectionsData
+            'collections' => $collectionsData,
+            'record_count' => $recordCount,
         ];
     }
 

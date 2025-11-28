@@ -6,6 +6,7 @@ function Dashboard() {
   const [stats, setStats] = useState({
     totalCollections: 0,
     totalRoutes: 0,
+    recordCount: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +39,7 @@ function Dashboard() {
       setStats({
         totalCollections: data.collections.length,
         totalRoutes: totalRoutes,
+        recordCount: data.record_count ?? 0,
       });
       setLoading(false);
     } catch (err) {
@@ -71,7 +73,7 @@ function Dashboard() {
         />
         <StatCard
           title="Records"
-          value={loading ? '...' : stats.totalRecords}
+          value={loading ? '...' : stats.recordCount}
         />
       </div>
 

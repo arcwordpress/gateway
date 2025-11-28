@@ -46040,7 +46040,8 @@ __webpack_require__.r(__webpack_exports__);
 function Dashboard() {
   const [stats, setStats] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
     totalCollections: 0,
-    totalRoutes: 0
+    totalRoutes: 0,
+    recordCount: 0
   });
   const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -46048,6 +46049,7 @@ function Dashboard() {
   }, []);
   const fetchStats = async () => {
     try {
+      var _data$record_count;
       const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/admin-data`, {
         headers: {
           'X-WP-Nonce': window.gatewayAdminScript.nonce
@@ -46064,7 +46066,8 @@ function Dashboard() {
       }, 0);
       setStats({
         totalCollections: data.collections.length,
-        totalRoutes: totalRoutes
+        totalRoutes: totalRoutes,
+        recordCount: (_data$record_count = data.record_count) !== null && _data$record_count !== void 0 ? _data$record_count : 0
       });
       setLoading(false);
     } catch (err) {
@@ -46111,7 +46114,7 @@ function Dashboard() {
     value: loading ? '...' : stats.totalRoutes
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
     title: "Records",
-    value: loading ? '...' : stats.totalRecords
+    value: loading ? '...' : stats.recordCount
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard__row"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
