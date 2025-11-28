@@ -20,6 +20,8 @@ define('GATEWAY_VERSION', '1.1.7');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
+define('GATEWAY_DATA_DIR', WP_CONTENT_DIR . '/gateway');
+define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 
@@ -151,6 +153,14 @@ class Plugin
     {
         // Run database migrations
         Database\DatabaseMigration::run();
+
+        // Create directories for request log tracking
+        if (!is_dir(GATEWAY_DATA_DIR)) {
+            mkdir(GATEWAY_DATA_DIR, 0755, true);
+        }
+        if (!is_dir(GATEWAY_REQUEST_LOG_DIR)) {
+            mkdir(GATEWAY_REQUEST_LOG_DIR, 0755, true);
+        }
 
         // Flush rewrite rules
         flush_rewrite_rules();

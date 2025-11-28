@@ -7,6 +7,7 @@ use WP_REST_Response;
 use WP_Error;
 use Gateway\Collection;
 use Gateway\PermissionChecksTrait;
+use Gateway\REST\RequestLog;
 
 abstract class BaseEndpoint
 {
@@ -155,4 +156,20 @@ abstract class BaseEndpoint
         return $this->collectionName;
     }
 
+    public function handleRequest($request)
+    {
+        $start = microtime(true);
+        $response = $this->handle($request);
+        $ms = (int)((microtime(true) - $start) * 1000);
+
+        RequestLog::log(
+            $this->getFullRoute(),
+            $request->get_method(),
+            get_current_user_id(),
+            is_wp_error($response) ? $response->get_error_code() : 200,
+            $ms
+        );
+
+        return $response;
+    }
 }
