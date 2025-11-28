@@ -46863,12 +46863,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-console.log('Admin app script loaded');
 const rootElement = document.getElementById('gateway-admin-root');
-console.log('Root element:', rootElement);
 if (rootElement) {
   console.log('Rendering app...');
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.render)((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null), rootElement);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.createRoot)(rootElement).render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null));
 } else {
   console.error('Root element #gateway-admin-root not found');
 }
