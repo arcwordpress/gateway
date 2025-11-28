@@ -35,7 +35,7 @@ export const getRecord = async (endpoint, id, options = {}) => {
     config.auth = options.auth;
   }
   const response = await client.get(`${endpoint}/${id}`, config);
-  return response.data?.data || response.data;
+  return response.data;
 };
 
 /**
