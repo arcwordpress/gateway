@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;700&display=swap');
-@import "tailwindcss";
 
 :root {
 	--font-lexend: 'Lexend Exa', sans-serif;
@@ -9,7 +8,6 @@
 	--gty-admin-accent-color: #2271B1;
 	--gty-admin-app-bg-color: #E6E6E6;
 	--gty-admin-header-bg-color: #F7F9FA;
-	/* Spacing scale (4px base) */
 	--gty-space-1: 0.25rem; /* 4px */
 	--gty-space-2: 0.5rem;  /* 8px */
 	--gty-space-3: 0.75rem; /* 12px */
@@ -209,4 +207,176 @@
 	background: none !important;
 	border: none !important;
 	text-decoration: none !important;
+}
+
+/* Accordion BEM styles */
+.gty-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gty-accordion__item {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.gty-accordion__trigger {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+.gty-accordion__trigger:hover,
+.gty-accordion__trigger:focus {
+  background: #f9fafb;
+}
+
+.gty-accordion__trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gty-accordion__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+  transition: transform 0.2s;
+}
+
+.gty-accordion__icon--open {
+  transform: rotate(180deg);
+}
+
+.gty-accordion__content {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* Dashboard BEM styles */
+.gty-dashboard {
+  padding-left: var(--gty-space-4);
+  padding-right: 0;
+}
+
+.gty-dashboard__stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .gty-dashboard__stats-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+.gty-dashboard__row {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .gty-dashboard__row {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+.gty-dashboard__links-col {
+  flex: 0 0 40%;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+}
+
+.gty-dashboard__links-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.gty-dashboard__link {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #2271B1;
+  text-decoration: none;
+  font-family: var(--font-geist);
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  justify-content: space-between;
+  min-width: 0;
+  transition: color 0.2s;
+}
+
+.gty-dashboard__link:hover,
+.gty-dashboard__link:focus {
+  color: #1D2327;
+  text-decoration: underline;
+}
+
+.gty-dashboard__link-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gty-dashboard__link-icon {
+  margin-left: 16px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gty-dashboard__chart-col {
+  flex: 0 0 60%;
+  min-width: 0;
+  background: #EEEEEE;
+  border-radius: 0;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.gty-dashboard__chart-title {
+  font-family: var(--font-geist);
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: #1D2327;
+}
+
+/* Dashboard stats grid */
+.gty-dashboard__stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .gty-dashboard__stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+  }
 }

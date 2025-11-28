@@ -44901,17 +44901,17 @@ function Accordion({
     setOpenIndex(openIndex === index ? null : index);
   };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "space-y-2"
+    className: "gty-accordion"
   }, items.map((item, index) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     key: index,
-    className: "border border-gray-200 rounded"
+    className: "gty-accordion__item"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     onClick: () => toggleAccordion(index),
-    className: "w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
+    className: "gty-accordion__trigger"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "flex items-center space-x-3"
+    className: "gty-accordion__trigger-content"
   }, item.trigger), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    className: `w-4 h-4 text-gray-500 transition-transform ${openIndex === index ? 'transform rotate-180' : ''}`,
+    className: `gty-accordion__icon${openIndex === index ? ' gty-accordion__icon--open' : ''}`,
     fill: "none",
     stroke: "currentColor",
     viewBox: "0 0 24 24"
@@ -44921,7 +44921,7 @@ function Accordion({
     strokeWidth: 2,
     d: "M19 9l-7 7-7-7"
   }))), openIndex === index && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "px-3 py-3 border-t border-gray-200 bg-gray-50"
+    className: "gty-accordion__content"
   }, item.content))));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Accordion);
@@ -46100,9 +46100,9 @@ function Dashboard() {
     total: 300
   }];
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "px-4 sm:px-0"
+    className: "gty-dashboard"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "grid grid-cols-1 md:grid-cols-3 gap-6 mt-8"
+    className: "gty-dashboard__stats-grid"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
     title: "Collections",
     value: loading ? '...' : stats.totalCollections
@@ -46111,54 +46111,20 @@ function Dashboard() {
     value: loading ? '...' : stats.totalRoutes
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
     title: "Records",
-    value: "1,285"
+    value: loading ? '...' : stats.totalRecords
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      display: 'flex',
-      gap: '2rem',
-      marginTop: '2.5rem'
-    }
+    className: "gty-dashboard__row"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      flex: '0 0 40%',
-      minWidth: 0,
-      display: 'flex',
-      flexDirection: 'row',
-      gap: '2rem'
-    }
+    className: "gty-dashboard__links-col"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1.1rem'
-    }
+    className: "gty-dashboard__links-group"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Documentation"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46172,30 +46138,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Usage Guide"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46209,30 +46156,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Reference"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46246,30 +46174,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Changelog"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46282,38 +46191,14 @@ function Dashboard() {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
     d: "M5 12h14M12 5l7 7-7 7"
   }))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1.1rem'
-    }
+    className: "gty-dashboard__links-group"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Limits"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46327,30 +46212,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Status"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46364,30 +46230,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Keys"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46401,30 +46248,11 @@ function Dashboard() {
     d: "M5 12h14M12 5l7 7-7 7"
   })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      fontWeight: 600,
-      color: '#2271B1',
-      textDecoration: 'none',
-      fontFamily: 'var(--font-geist)',
-      fontSize: '0.98rem',
-      letterSpacing: '0.01em',
-      justifyContent: 'space-between',
-      minWidth: 0
-    }
+    className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis'
-    }
+    className: "gty-dashboard__link-label"
   }, "API Support"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    style: {
-      marginLeft: 16,
-      display: 'inline-flex',
-      alignItems: 'center'
-    }
+    className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
     height: "18",
@@ -46437,25 +46265,9 @@ function Dashboard() {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
     d: "M5 12h14M12 5l7 7-7 7"
   })))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      flex: '0 0 60%',
-      minWidth: 0,
-      background: '#EEEEEE',
-      borderRadius: 0,
-      boxShadow: '0 2px 8px 0 rgba(0,0,0,0.06)',
-      padding: '2rem',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center'
-    }
+    className: "gty-dashboard__chart-col"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    style: {
-      fontFamily: 'var(--font-geist)',
-      fontWeight: 700,
-      fontSize: '1.2rem',
-      marginBottom: '1.5rem',
-      color: '#1D2327'
-    }
+    className: "gty-dashboard__chart-title"
   }, "API Requests (last 8 weeks)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.ResponsiveContainer, {
     width: "100%",
     height: 260
@@ -46476,7 +46288,7 @@ function Dashboard() {
       fill: '#888',
       angle: -35,
       textAnchor: 'end',
-      dy: 16 // move labels lower
+      dy: 16
     },
     axisLine: false,
     tickLine: false,
@@ -46486,10 +46298,8 @@ function Dashboard() {
     tick: ({
       x,
       y,
-      payload,
-      ...rest
+      payload
     }) => {
-      // Show min, midpoint, and max
       const values = apiRequestsData.map(d => d.total);
       const min = Math.min(...values);
       const max = Math.max(...values);

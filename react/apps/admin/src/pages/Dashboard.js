@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -59,8 +59,8 @@ function Dashboard() {
   ];
 
   return (
-    <div className="px-4 sm:px-0">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div className="gty-dashboard">
+      <div className="gty-dashboard__stats-grid">
         <StatCard
           title="Collections"
           value={loading ? '...' : stats.totalCollections}
@@ -71,55 +71,43 @@ function Dashboard() {
         />
         <StatCard
           title="Records"
-          value="1,285"
+          value={loading ? '...' : stats.totalRecords}
         />
       </div>
 
       {/* New row: 1/3 links, 2/3 chart */}
-      <div style={{ display: 'flex', gap: '2rem', marginTop: '2.5rem' }}>
+      <div className="gty-dashboard__row">
         {/* 40% column: links */}
-        <div style={{ flex: '0 0 40%', minWidth: 0, display: 'flex', flexDirection: 'row', gap: '2rem' }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Documentation</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Usage Guide</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Reference</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Changelog</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+        <div className="gty-dashboard__links-col">
+          <div className="gty-dashboard__links-group">
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Documentation</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Usage Guide</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Reference</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Changelog</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
           </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Limits</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Status</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Keys</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" style={{ display: 'flex', alignItems: 'center', fontWeight: 600, color: '#2271B1', textDecoration: 'none', fontFamily: 'var(--font-geist)', fontSize: '0.98rem', letterSpacing: '0.01em', justifyContent: 'space-between', minWidth: 0 }}><span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>API Support</span><span style={{ marginLeft: 16, display: 'inline-flex', alignItems: 'center' }}><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+          <div className="gty-dashboard__links-group">
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Limits</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Status</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Keys</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Support</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
           </div>
         </div>
         {/* 60% column: chart */}
-        <div
-          style={{
-            flex: '0 0 60%',
-            minWidth: 0,
-            background: '#EEEEEE',
-            borderRadius: 0,
-            boxShadow: '0 2px 8px 0 rgba(0,0,0,0.06)',
-            padding: '2rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
-          <div style={{ fontFamily: 'var(--font-geist)', fontWeight: 700, fontSize: '1.2rem', marginBottom: '1.5rem', color: '#1D2327' }}>API Requests (last 8 weeks)</div>
+        <div className="gty-dashboard__chart-col">
+          <div className="gty-dashboard__chart-title">API Requests (last 8 weeks)</div>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={apiRequestsData} margin={{ top: 10, right: 40, left: 20, bottom: 30 }}>
               {/* No grid lines */}
               <XAxis
                 dataKey="week"
-                tickFormatter={w => w.slice(5).replace('-', '/')} 
+                tickFormatter={w => w.slice(5).replace('-', '/')}
                 tick={{
                   fontFamily: 'var(--font-geist)',
                   fontSize: 11,
                   fill: '#888',
                   angle: -35,
                   textAnchor: 'end',
-                  dy: 16, // move labels lower
+                  dy: 16,
                 }}
                 axisLine={false}
                 tickLine={false}
@@ -127,8 +115,7 @@ function Dashboard() {
                 height={40}
               />
               <YAxis
-                tick={({ x, y, payload, ...rest }) => {
-                  // Show min, midpoint, and max
+                tick={({ x, y, payload }) => {
                   const values = apiRequestsData.map(d => d.total);
                   const min = Math.min(...values);
                   const max = Math.max(...values);
