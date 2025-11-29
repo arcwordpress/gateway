@@ -187,7 +187,17 @@ class Collection extends EloquentModel
 
     public function getKey()
     {
-        return $this->key;
+        if ($this->key) {
+            return $this->key;
+        }
+
+        // Infer from class name: ProductImage => product_image
+        $className = class_basename(static::class);
+        // Remove "Collection" suffix if present
+        $className = preg_replace('/Collection$/', '', $className);
+        // Convert PascalCase to snake_case
+        $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
+        return $key;
     }
 
     public function getFilters()
