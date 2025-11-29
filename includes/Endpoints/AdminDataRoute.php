@@ -72,8 +72,12 @@ class AdminDataRoute
             $tableName = $collection->getTable();
             $fullTableName = $wpdb->prefix . $tableName;
 
-            // Use Eloquent's static count() to get the number of records for this collection
-            $count = $fqcn::count();
+            // Check if table exists before counting
+            if ($this->tableExists($fullTableName)) {
+                $count = $fqcn::count();
+            } else {
+                $count = 0;
+            }
             $recordCount += $count;
 
             $collectionsData[] = [
@@ -113,4 +117,19 @@ class AdminDataRoute
         return $friendlyRoute;
     }
 
+    /**
+     * Helper to check if a database table exists.
+     * 
+     * This is needed to prevent fatal errors when collections are registered
+     * but their database tables have not yet been created. This allows the
+     * admin UI to load and display the auto-generated migration file that
+     * creates the missing tables. If the UI is ever separated so this code
+     * only runs after tables are created, this check can be removed.
+     */
+    private function tableExists($table) {
+        global $wpdb;
+        return $wpdb->get_var($wpdb->prepare(
+            "SHOW TABLES LIKE %s", $table
+        )) === $table;
+    }
 }
