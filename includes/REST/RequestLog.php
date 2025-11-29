@@ -59,16 +59,15 @@ class RequestLog
         }
 
         $today = new \DateTimeImmutable('today');
-        // Find the most recent Sunday (this week or last week)
-        $lastSunday = $today->modify('last sunday');
-        if ($today->format('w') == 0) { // today is Sunday
-            $lastSunday = $today;
-        }
+        // Find the upcoming (current) Sunday (week ending)
+        $w = (int)$today->format('w');
+        $daysUntilSunday = $w === 0 ? 0 : 7 - $w;
+        $weekEndingSunday = $today->modify("+$daysUntilSunday days");
 
         // Build week ranges (Sun-Sat), newest last
         $weeksArr = [];
         for ($i = $weeks - 1; $i >= 0; $i--) {
-            $weekEnd = $lastSunday->modify("-$i weeks");
+            $weekEnd = $weekEndingSunday->modify("-$i weeks");
             $weekStart = $weekEnd->modify('-6 days');
             $weeksArr[] = [
                 'start' => $weekStart,
