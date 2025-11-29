@@ -46026,30 +46026,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _components_StatCard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/StatCard */ "./src/components/StatCard.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/Tooltip.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/ResponsiveContainer.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/Line.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/XAxis.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/YAxis.js");
-/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/chart/LineChart.js");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+/* harmony import */ var _components_StatCard__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/StatCard */ "./src/components/StatCard.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/Tooltip.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/component/ResponsiveContainer.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/Line.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/XAxis.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/cartesian/YAxis.js");
+/* harmony import */ var recharts__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! recharts */ "./node_modules/recharts/es6/chart/LineChart.js");
+
 
 
 
 
 function Dashboard() {
-  const [stats, setStats] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+  const [stats, setStats] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)({
     totalCollections: 0,
     totalRoutes: 0,
     recordCount: 0
   });
-  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+  const [apiRequestsData, setApiRequestsData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)([]);
+  const [loading, setLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(true);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     fetchStats();
   }, []);
   const fetchStats = async () => {
     try {
-      var _data$record_count;
+      var _data$record_count, _data$weekly_request_;
       const response = await fetch(`${window.gatewayAdminScript.apiUrl}gateway/v1/admin-data`, {
         headers: {
           'X-WP-Nonce': window.gatewayAdminScript.nonce
@@ -46069,50 +46074,26 @@ function Dashboard() {
         totalRoutes: totalRoutes,
         recordCount: (_data$record_count = data.record_count) !== null && _data$record_count !== void 0 ? _data$record_count : 0
       });
+
+      // Use real API request data if available
+      setApiRequestsData((_data$weekly_request_ = data.weekly_request_totals) !== null && _data$weekly_request_ !== void 0 ? _data$weekly_request_ : []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching stats:', err);
       setLoading(false);
     }
   };
-
-  // Mockup data for API Requests chart (past 8 weeks, grouped by week)
-  const apiRequestsData = [{
-    week: '2025-09-29',
-    total: 120
-  }, {
-    week: '2025-10-06',
-    total: 150
-  }, {
-    week: '2025-10-13',
-    total: 180
-  }, {
-    week: '2025-10-20',
-    total: 210
-  }, {
-    week: '2025-10-27',
-    total: 170
-  }, {
-    week: '2025-11-03',
-    total: 220
-  }, {
-    week: '2025-11-10',
-    total: 260
-  }, {
-    week: '2025-11-17',
-    total: 300
-  }];
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard__stats-grid"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_3__["default"], {
     title: "Collections",
     value: loading ? '...' : stats.totalCollections
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_3__["default"], {
     title: "Routes",
     value: loading ? '...' : stats.totalRoutes
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_StatCard__WEBPACK_IMPORTED_MODULE_3__["default"], {
     title: "Records",
     value: loading ? '...' : stats.recordCount
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
@@ -46121,12 +46102,70 @@ function Dashboard() {
     className: "gty-dashboard__links-col"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard__links-group"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Link, {
+    to: "/settings",
     className: "gty-dashboard__link"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "gty-dashboard__link-label"
-  }, "API Documentation"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+  }, "Manage Settings"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gty-dashboard__link-icon"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+    width: "18",
+    height: "18",
+    fill: "none",
+    stroke: "#2271B1",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    viewBox: "0 0 24 24"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
+    d: "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 8.6 15a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 15 8.6a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 15z"
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Link, {
+    to: "/collections",
+    className: "gty-dashboard__link"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gty-dashboard__link-label"
+  }, "View Collections"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gty-dashboard__link-icon"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+    width: "18",
+    height: "18",
+    fill: "none",
+    stroke: "#2271B1",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    viewBox: "0 0 24 24"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("rect", {
+    x: "3",
+    y: "3",
+    width: "7",
+    height: "7"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("rect", {
+    x: "14",
+    y: "3",
+    width: "7",
+    height: "7"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("rect", {
+    x: "14",
+    y: "14",
+    width: "7",
+    height: "7"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("rect", {
+    x: "3",
+    y: "14",
+    width: "7",
+    height: "7"
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Link, {
+    to: "/chat",
+    className: "gty-dashboard__link"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gty-dashboard__link-label"
+  }, "Chat with Maze"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
     className: "gty-dashboard__link-icon"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
     width: "18",
@@ -46138,143 +46177,15 @@ function Dashboard() {
     strokeLinejoin: "round",
     viewBox: "0 0 24 24"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Usage Guide"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Reference"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Changelog"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  }))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-dashboard__links-group"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Limits"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Status"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Keys"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
-  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
-    className: "gty-dashboard__link"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-label"
-  }, "API Support"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gty-dashboard__link-icon"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    width: "18",
-    height: "18",
-    fill: "none",
-    stroke: "#2271B1",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    viewBox: "0 0 24 24"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
-    d: "M5 12h14M12 5l7 7-7 7"
+    d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
   })))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard__chart-col"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-dashboard__chart-title"
-  }, "API Requests (last 8 weeks)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_3__.ResponsiveContainer, {
+  }, "API Requests (last 8 weeks)"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_5__.ResponsiveContainer, {
     width: "100%",
     height: 260
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_7__.LineChart, {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_9__.LineChart, {
     data: apiRequestsData,
     margin: {
       top: 10,
@@ -46282,7 +46193,7 @@ function Dashboard() {
       left: 20,
       bottom: 30
     }
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_5__.XAxis, {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_7__.XAxis, {
     dataKey: "week",
     tickFormatter: w => w.slice(5).replace('-', '/'),
     tick: {
@@ -46297,7 +46208,7 @@ function Dashboard() {
     tickLine: false,
     interval: 0,
     height: 40
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_6__.YAxis, {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_8__.YAxis, {
     tick: ({
       x,
       y,
@@ -46328,10 +46239,10 @@ function Dashboard() {
       left: 8,
       right: 0
     }
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_2__.Tooltip, {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.Tooltip, {
     formatter: v => v.toLocaleString(),
     labelFormatter: l => `Week of ${l}`
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_4__.Line, {
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(recharts__WEBPACK_IMPORTED_MODULE_6__.Line, {
     type: "monotone",
     dataKey: "total",
     stroke: "#2271B1",

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from '@wordpress/element';
+import { Link } from 'react-router-dom';
 import StatCard from '../components/StatCard';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -8,6 +9,7 @@ function Dashboard() {
     totalRoutes: 0,
     recordCount: 0,
   });
+  const [apiRequestsData, setApiRequestsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,24 +43,15 @@ function Dashboard() {
         totalRoutes: totalRoutes,
         recordCount: data.record_count ?? 0,
       });
+
+      // Use real API request data if available
+      setApiRequestsData(data.weekly_request_totals ?? []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching stats:', err);
       setLoading(false);
     }
   };
-
-  // Mockup data for API Requests chart (past 8 weeks, grouped by week)
-  const apiRequestsData = [
-    { week: '2025-09-29', total: 120 },
-    { week: '2025-10-06', total: 150 },
-    { week: '2025-10-13', total: 180 },
-    { week: '2025-10-20', total: 210 },
-    { week: '2025-10-27', total: 170 },
-    { week: '2025-11-03', total: 220 },
-    { week: '2025-11-10', total: 260 },
-    { week: '2025-11-17', total: 300 },
-  ];
 
   return (
     <div className="gty-dashboard">
@@ -79,22 +72,30 @@ function Dashboard() {
 
       {/* New row: 1/3 links, 2/3 chart */}
       <div className="gty-dashboard__row">
-        {/* 40% column: links */}
+        {/* 30% column: links */}
         <div className="gty-dashboard__links-col">
           <div className="gty-dashboard__links-group">
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Documentation</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Usage Guide</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Reference</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Changelog</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-          </div>
-          <div className="gty-dashboard__links-group">
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Limits</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Status</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Keys</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
-            <a href="#" className="gty-dashboard__link"><span className="gty-dashboard__link-label">API Support</span><span className="gty-dashboard__link-icon"><svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></a>
+            <Link to="/settings" className="gty-dashboard__link">
+              <span className="gty-dashboard__link-label">Manage Settings</span>
+              <span className="gty-dashboard__link-icon">
+                <svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 8.6 15a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 15 8.6a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 15z"/></svg>
+              </span>
+            </Link>
+            <Link to="/collections" className="gty-dashboard__link">
+              <span className="gty-dashboard__link-label">View Collections</span>
+              <span className="gty-dashboard__link-icon">
+                <svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </span>
+            </Link>
+            <Link to="/chat" className="gty-dashboard__link">
+              <span className="gty-dashboard__link-label">Chat with Maze</span>
+              <span className="gty-dashboard__link-icon">
+                <svg width="18" height="18" fill="none" stroke="#2271B1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
+            </Link>
           </div>
         </div>
-        {/* 60% column: chart */}
+        {/* 70% column: chart */}
         <div className="gty-dashboard__chart-col">
           <div className="gty-dashboard__chart-title">API Requests (last 8 weeks)</div>
           <ResponsiveContainer width="100%" height={260}>

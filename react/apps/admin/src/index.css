@@ -267,7 +267,7 @@
 
 /* Dashboard BEM styles */
 .gty-dashboard {
-  padding-left: var(--gty-space-4);
+  padding-left: 0;
   padding-right: 0;
 }
 
@@ -289,6 +289,9 @@
   display: flex;
   gap: 2rem;
   margin-top: 2.5rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
@@ -299,11 +302,17 @@
 }
 
 .gty-dashboard__links-col {
-  flex: 0 0 40%;
+  flex: 0 1 30%;
   min-width: 0;
+  background: #EEEEEE;
+  border-radius: 0;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  padding: 2rem;
   display: flex;
-  flex-direction: row;
-  gap: 2rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  box-sizing: border-box;
 }
 
 .gty-dashboard__links-group {
@@ -325,12 +334,28 @@
   justify-content: space-between;
   min-width: 0;
   transition: color 0.2s;
+  margin: 0;
+  padding: 0;
 }
 
 .gty-dashboard__link:hover,
 .gty-dashboard__link:focus {
   color: #1D2327;
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+/* Make dashboard links dark and prevent underline on hover */
+.gty-dashboard__links-col .gty-dashboard__link,
+.gty-dashboard__links-col .gty-dashboard__link:visited,
+.gty-dashboard__links-col .gty-dashboard__link:active {
+  color: #1D2327 !important; /* almost black */
+  text-decoration: none !important;
+}
+
+.gty-dashboard__links-col .gty-dashboard__link:hover,
+.gty-dashboard__links-col .gty-dashboard__link:focus {
+  color: #1D2327 !important;
+  text-decoration: none !important;
 }
 
 .gty-dashboard__link-label {
@@ -346,7 +371,7 @@
 }
 
 .gty-dashboard__chart-col {
-  flex: 0 0 60%;
+  flex: 0 1 70%;
   min-width: 0;
   background: #EEEEEE;
   border-radius: 0;
@@ -355,6 +380,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .gty-dashboard__chart-title {
