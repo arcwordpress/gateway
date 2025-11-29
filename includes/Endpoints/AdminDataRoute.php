@@ -3,6 +3,7 @@
 namespace Gateway\Endpoints;
 
 use Gateway\Plugin;
+use Gateway\REST\RequestLog;
 
 if (!defined('ABSPATH')) exit;
 
@@ -90,6 +91,7 @@ class AdminDataRoute
         return [
             'collections' => $collectionsData,
             'record_count' => $recordCount,
+            'weekly_request_totals' => RequestLog::getWeeklyRequestTotals(),
         ];
     }
 

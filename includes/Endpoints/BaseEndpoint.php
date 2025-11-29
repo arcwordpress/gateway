@@ -56,7 +56,7 @@ abstract class BaseEndpoint
     {
         return [
             'methods' => $this->getMethod(),
-            'callback' => [$this, 'handle'],
+            'callback' => [$this, 'handleRequest'],
             'permission_callback' => [$this, 'checkPermissions'], // Custom permission check for testing
         ];
     }

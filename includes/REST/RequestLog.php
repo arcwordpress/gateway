@@ -15,6 +15,9 @@ class RequestLog
      */
     public static function log($route, $method, $user, $status, $ms)
     {
+
+        error_log('logging is called');
+
         $dir = defined('GATEWAY_REQUEST_LOG_DIR') ? GATEWAY_REQUEST_LOG_DIR : (WP_CONTENT_DIR . '/gateway/requests/logs');
         if (!is_dir($dir)) {
             error_log("RequestLog error: Log directory does not exist: $dir");
@@ -31,8 +34,17 @@ class RequestLog
             'ms'     => $ms,
         ];
 
-        // Append as JSONL
-        file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND | LOCK_EX);
+        // Debug: log before writing
+        if (!is_writable($dir)) {
+            error_log("RequestLog error: Directory not writable: $dir");
+        }
+
+        $result = file_put_contents($file, json_encode($entry) . "\n", FILE_APPEND | LOCK_EX);
+
+        // Debug: log after writing
+        if ($result === false) {
+            error_log("RequestLog error: Failed to write to log file: $file");
+        }
     }
 
     /**
