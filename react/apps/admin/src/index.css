@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;700&display=swap');
+@import "tailwindcss";
 
 :root {
 	--font-lexend: 'Lexend Exa', sans-serif;
@@ -145,14 +146,13 @@
 /* App version label bottom right */
 .gty-admin-version-label {
 	display: block;
-	width: 100%;
 	text-align: right;
 	font-family: var(--font-lexend);
 	font-size: 1rem;
 	font-weight: 700;
 	color: var(--gty-admin-primary-color);
 	margin-top: 60px;
-	padding-right: 20px; /* Match WordPress admin footer text padding. */
+	padding-right: var(--gty-space-8); /* Match main content padding */
 	padding-bottom: var(--gty-space-4);
 }
 
@@ -267,6 +267,9 @@
 
 /* Dashboard BEM styles */
 .gty-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gty-space-8);
   padding-left: 0;
   padding-right: 0;
 }
@@ -285,13 +288,36 @@
   }
 }
 
+/* First row: stats grid spans all columns */
+.gty-dashboard__stats-grid {
+  grid-column: 1 / 4;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gty-space-8);
+  /* Remove margin-top */
+}
+
+/* Second row: links and chart, align with stats grid */
 .gty-dashboard__row {
+  grid-column: 1 / 4;
+  display: grid;
+  grid-template-columns: calc((100% - 2 * var(--gty-space-8)) / 3) 1fr;
+  gap: var(--gty-space-8);
+  /* Remove margin-top */
+}
+
+/* Remove flex from links and chart columns */
+.gty-dashboard__links-col,
+.gty-dashboard__chart-col {
+  min-width: 0;
+  background: #EEEEEE;
+  border-radius: 0;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.06);
+  padding: 2rem;
   display: flex;
-  gap: 2rem;
-  margin-top: 2.5rem;
-  max-width: 100%;
+  flex-direction: column;
+  justify-content: center;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 @media (max-width: 900px) {
@@ -301,6 +327,7 @@
   }
 }
 
+/* Dashboard links column: fill more vertical space */
 .gty-dashboard__links-col {
   flex: 0 1 30%;
   min-width: 0;
@@ -313,13 +340,16 @@
   justify-content: center;
   gap: 0;
   box-sizing: border-box;
+  min-height: 320px;
 }
 
+/* Links group: more vertical gap */
 .gty-dashboard__links-group {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 2.5rem;
+  justify-content: center;
 }
 
 .gty-dashboard__link {
@@ -338,36 +368,43 @@
   padding: 0;
 }
 
-.gty-dashboard__link:hover,
-.gty-dashboard__link:focus {
-  color: #1D2327;
-  text-decoration: none;
-}
-
-/* Make dashboard links dark and prevent underline on hover */
-.gty-dashboard__links-col .gty-dashboard__link,
-.gty-dashboard__links-col .gty-dashboard__link:visited,
-.gty-dashboard__links-col .gty-dashboard__link:active {
-  color: #1D2327 !important; /* almost black */
-  text-decoration: none !important;
-}
-
-.gty-dashboard__links-col .gty-dashboard__link:hover,
-.gty-dashboard__links-col .gty-dashboard__link:focus {
+/* Dashboard link: more padding, no underline, dark color, no focus box */
+.gty-dashboard__link,
+.gty-dashboard__link:visited,
+.gty-dashboard__link:active {
   color: #1D2327 !important;
   text-decoration: none !important;
+  font-size: 1.08rem;
+  font-weight: 700;
+  padding: 0.5rem 0;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: color 0.2s;
+  border: none;
+  background: none;
 }
 
-.gty-dashboard__link-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Remove underline and focus/active box on hover/focus */
+.gty-dashboard__link:hover,
+.gty-dashboard__link:focus {
+  color: #1D2327 !important;
+  text-decoration: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: none;
 }
 
-.gty-dashboard__link-icon {
-  margin-left: 16px;
-  display: inline-flex;
-  align-items: center;
+/* Divider between links except last */
+.gty-dashboard__link:not(:last-child) {
+  border-bottom: 1px solid #e3e3e3;
+}
+
+/* Icon: bigger and nearly black */
+.gty-dashboard__link-icon svg {
+  width: 28px !important;
+  height: 28px !important;
+  stroke: #1D2327 !important;
+  display: block;
 }
 
 .gty-dashboard__chart-col {
