@@ -182,7 +182,31 @@ class Collection extends EloquentModel
 
     public function getFields()
     {
-        return $this->fields;
+        // If already associative, return as is
+        $fields = $this->fields;
+
+        // Check if array is flat (numeric keys)
+        $isFlat = false;
+        if (is_array($fields) && !empty($fields)) {
+            $firstKey = array_key_first($fields);
+            $isFlat = is_int($firstKey);
+        }
+
+        if ($isFlat) {
+            $assoc = [];
+            foreach ($fields as $field) {
+                // Must be array and have 'name' and 'type'
+                if (!is_array($field) || empty($field['name']) || empty($field['type'])) {
+                    error_log("Collection::getFields: Skipping invalid field definition (missing 'name' or 'type').");
+                    continue;
+                }
+                $assoc[$field['name']] = $field;
+            }
+            return $assoc;
+        }
+
+        // Already associative or empty
+        return $fields;
     }
 
     public function getKey()
@@ -340,5 +364,13 @@ class Collection extends EloquentModel
         });
 
         return $query->get();
+    }
+
+    public function getFillable()
+    {
+        // Use getFields() to ensure we have an associative array
+        $fields = $this->getFields();
+        // Return the keys as fillable attributes
+        return array_keys($fields);
     }
 }
