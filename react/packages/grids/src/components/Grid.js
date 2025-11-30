@@ -9,6 +9,8 @@ import { GridProvider } from '../context/GridContext';
 import { collectionApi } from '@arcwp/gateway-data';
 import { generateColumns } from '../services/columnGenerator';
 import { applyFilters } from '../utils/filterUtils';
+import SingleView from './SingleView';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 /**
  * Main Grid Component
@@ -30,8 +32,6 @@ import { applyFilters } from '../utils/filterUtils';
  * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
  * @param {React.ReactNode} [props.children]
  */
-import SingleView from './SingleView';
-
 const Grid = ({
   collectionKey,
   onEdit,
@@ -67,7 +67,6 @@ const Grid = ({
     try {
       // Fetch collection metadata
       const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
-      console.log('Fetched collection:', collectionData);
       setCollection(collectionData);
 
       // Fetch collection records
@@ -75,7 +74,6 @@ const Grid = ({
       const route = collectionData.routes.route;
       const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
       
-      console.log('Fetched records:', records.items);
       setData(records.data.items);
       setError(null);
 
@@ -103,9 +101,6 @@ const Grid = ({
   const filteredData = useMemo(() => {
     return applyFilters(data, filters, filterValues);
   }, [data, filters, filterValues]);
-
-  console.log('Filtered Data: ')
-  console.log(filteredData)
 
   // Handle delete with confirmation
   const handleDeleteClick = (recordId) => {
@@ -266,7 +261,14 @@ const Grid = ({
           {...viewProps}
         />
 
-        {deleteConfirm && <DeleteConfirmModal />}
+        {deleteConfirm && (
+          <DeleteConfirmModal
+            open={!!deleteConfirm}
+            onCancel={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+            loading={deleteConfirm.loading}
+          />
+        )}
       </div>
       {children}
     </GridProvider>
