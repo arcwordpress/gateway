@@ -91,8 +91,8 @@ class Collection extends EloquentModel
         }
 
         // Set fillable from fields if not already set
-        if (empty($this->fillable) && !empty($this->fields)) {
-            $this->fillable = array_keys($this->fields);
+        if (empty($this->fillable) && !empty($this->getFields())) {
+            $this->fillable = array_keys($this->getFields());
         }
 
         // Set route if not configured
@@ -182,8 +182,24 @@ class Collection extends EloquentModel
 
     public function getFields()
     {
-        // If already associative, return as is
         $fields = $this->fields;
+
+        // If $fields is a string, treat as JSON file path and try to load
+        if (is_string($fields)) {
+            if (is_readable($fields)) {
+                $json = file_get_contents($fields);
+                $decoded = json_decode($json, true);
+                if (is_array($decoded)) {
+                    $fields = $decoded;
+                } else {
+                    error_log("Collection::getFields: Failed to decode JSON from file: $fields");
+                    $fields = [];
+                }
+            } else {
+                error_log("Collection::getFields: Fields file not found or not readable: $fields");
+                $fields = [];
+            }
+        }
 
         // Check if array is flat (numeric keys)
         $isFlat = false;
