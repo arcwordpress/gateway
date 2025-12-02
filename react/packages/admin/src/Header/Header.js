@@ -2,20 +2,20 @@ import Logo from './Logo';
 import Menu from './Menu';
 import Buttons from './Buttons';
 
-function Header() {
+function Header({ children }) {
   return (
     <header className="gty-admin-header">
       <div className="gty-admin-header__container">
         <div className="gty-admin-header__row">
-          <Logo />
-          <Menu />
-          <Buttons />
+          {children}
         </div>
       </div>
     </header>
   );
 }
 
+Header.Logo = Logo;
+Header.Menu = Menu;
 Header.Buttons = Buttons;
 
 export default Header;
