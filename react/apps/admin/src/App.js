@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import Menu from './components/Menu';
+import Header from './components/Header/Header';
 import Dashboard from './pages/Dashboard';
 import Collections from './pages/Collections';
 import Settings from './pages/Settings';
@@ -29,7 +29,7 @@ function App() {
   return (
     <Router>
       <div className="gty-admin-app">
-        <Menu />
+        <Header />
         <main className="gty-admin-app__main">
           <Routes>
             <Route path="/" element={<Dashboard />} />

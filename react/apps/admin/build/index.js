@@ -44823,7 +44823,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
-/* harmony import */ var _components_Menu__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Menu */ "./src/components/Menu.js");
+/* harmony import */ var _components_Header_Header__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Header/Header */ "./src/components/Header/Header.js");
 /* harmony import */ var _pages_Dashboard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pages/Dashboard */ "./src/pages/Dashboard.js");
 /* harmony import */ var _pages_Collections__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pages/Collections */ "./src/pages/Collections.js");
 /* harmony import */ var _pages_Settings__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/Settings */ "./src/pages/Settings.js");
@@ -44856,7 +44856,7 @@ function App() {
   }, []);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.HashRouter, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gty-admin-app"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Menu__WEBPACK_IMPORTED_MODULE_3__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_Header_Header__WEBPACK_IMPORTED_MODULE_3__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("main", {
     className: "gty-admin-app__main"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Routes, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/",
@@ -44928,10 +44928,10 @@ function Accordion({
 
 /***/ }),
 
-/***/ "./src/components/Menu.js":
-/*!********************************!*\
-  !*** ./src/components/Menu.js ***!
-  \********************************/
+/***/ "./src/components/Header/Buttons.js":
+/*!******************************************!*\
+  !*** ./src/components/Header/Buttons.js ***!
+  \******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -44944,40 +44944,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
 
 
-
-/**
- * Gateway Navigation Menu (BEM)
- */
-function Menu() {
-  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
-    className: "gty-admin-menu"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-admin-menu__container"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-admin-menu__row"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-admin-menu__brand"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
-    to: "/",
-    className: ({
-      isActive
-    }) => ['gty-admin-menu__title', 'gty-admin-link', isActive ? 'gty-admin-menu__title--active' : ''].join(' '),
-    end: true
-  }, "GATEWAY")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-admin-menu__links"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
-    to: "/collections",
-    className: ({
-      isActive
-    }) => ['gty-admin-menu__link', 'gty-admin-link', isActive ? 'gty-admin-menu__link--active' : ''].join(' ')
-  }, "Collections")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gty-admin-menu__right"
+function Buttons() {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gty-admin-header__right"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
     to: "/chat",
-    className: "gty-admin-menu__icon gty-admin-link",
+    className: "gty-admin-header__icon gty-admin-link",
     "aria-label": "Chat"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    className: "gty-admin-menu__icon-svg",
+    className: "gty-admin-header__icon-svg",
     width: "20",
     height: "20",
     viewBox: "0 0 20 20",
@@ -44991,10 +44966,10 @@ function Menu() {
     strokeLinejoin: "round"
   }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
     to: "/settings",
-    className: "gty-admin-menu__icon gty-admin-link",
+    className: "gty-admin-header__icon gty-admin-link",
     "aria-label": "Settings"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
-    className: "gty-admin-menu__icon-svg",
+    className: "gty-admin-header__icon-svg",
     width: "20",
     height: "20",
     viewBox: "0 0 20 20",
@@ -45020,7 +44995,102 @@ function Menu() {
     width: "20",
     height: "20",
     fill: "white"
-  })))))))));
+  }))))));
+}
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Buttons);
+
+/***/ }),
+
+/***/ "./src/components/Header/Header.js":
+/*!*****************************************!*\
+  !*** ./src/components/Header/Header.js ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Logo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Logo */ "./src/components/Header/Logo.js");
+/* harmony import */ var _Menu__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Menu */ "./src/components/Header/Menu.js");
+/* harmony import */ var _Buttons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Buttons */ "./src/components/Header/Buttons.js");
+
+
+
+
+function Header() {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gty-admin-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gty-admin-header__container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gty-admin-header__row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Logo__WEBPACK_IMPORTED_MODULE_1__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Menu__WEBPACK_IMPORTED_MODULE_2__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Buttons__WEBPACK_IMPORTED_MODULE_3__["default"], null))));
+}
+Header.Buttons = _Buttons__WEBPACK_IMPORTED_MODULE_3__["default"];
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Header);
+
+/***/ }),
+
+/***/ "./src/components/Header/Logo.js":
+/*!***************************************!*\
+  !*** ./src/components/Header/Logo.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+
+
+function Logo() {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gty-admin-header__brand"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
+    to: "/",
+    className: ({
+      isActive
+    }) => ['gty-admin-header__title', 'gty-admin-link', isActive ? 'gty-admin-header__title--active' : ''].join(' '),
+    end: true
+  }, "GATEWAY"));
+}
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Logo);
+
+/***/ }),
+
+/***/ "./src/components/Header/Menu.js":
+/*!***************************************!*\
+  !*** ./src/components/Header/Menu.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+
+
+function Menu() {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gty-admin-header-menu"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.NavLink, {
+    to: "/collections",
+    className: ({
+      isActive
+    }) => ['gty-admin-header-menu__link', isActive ? 'gty-admin-header-menu__link--active' : ''].join(' ')
+  }, "Collections")));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Menu);
 
