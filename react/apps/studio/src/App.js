@@ -14,7 +14,7 @@ function AppContent() {
   return (
     <div className="gty-app">
       <AppHeader collections={collections} />
-      <main className="gty-main">
+      <main className="gty-studio-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/collection/:collectionKey" element={<Dashboard />} />

@@ -43,7 +43,7 @@ function Dashboard() {
             onClick={handleCreate}
             className="gty-dashboard__create-button"
           >
-            Create New
+            Create
           </button>
         </div>
       </div>
