@@ -17,7 +17,8 @@
     "axios": "^1.12.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.0"
+    "react-router-dom": "^6.22.0",
+    "@arcwp/gateway-admin": "file:../../packages/admin"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",

@@ -10,7 +10,7 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/index.css"
   },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",

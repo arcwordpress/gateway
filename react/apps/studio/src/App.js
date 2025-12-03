@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
+import AppHeader from './components/AppHeader';
 
 function AppContent() {
   const { collections, loading } = useCollections();
@@ -12,6 +13,7 @@ function AppContent() {
 
   return (
     <div className="gty-app">
+      <AppHeader collections={collections} />
       <nav className="gty-nav">
         <div className="gty-nav__container">
           <div className="gty-nav__inner">
