@@ -21,7 +21,7 @@ const GridFilters = ({ filters, values, onChange, data }) => {
   }, [filters, data]);
 
   return (
-    <div className="grid__filters">
+    <div className="gty-grid__filters">
       <Filters direction="row">
         {processedFilters.map(filter => (
           <Filter

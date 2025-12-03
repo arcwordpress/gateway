@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid, ViewSwitcher } from '@arcwp/gateway-grids'; // Import ViewSwitcher
+import { Grid } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {
@@ -48,11 +48,6 @@ function Dashboard() {
         </div>
       </div>
       {/* Place ViewSwitcher right above the Grid */}
-      <ViewSwitcher
-        currentView={viewType}
-        onViewChange={setViewType}
-        enabledViews={['table', 'list', 'cards', 'board']}
-      />
       <Grid 
         collectionKey={activeKey} 
         viewType={viewType}

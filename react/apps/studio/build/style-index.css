@@ -3926,7 +3926,7 @@
 
 .filters--row {
   flex-direction: row;
-  align-items: center;
+  align-items: end;
 }
 
 .filters--stack {
@@ -4159,6 +4159,13 @@
 
 .grid__btn--view:hover {
   color: #1e40af;
+}
+
+/**
+ * Filters 
+ */
+.gty-grid__filters {
+  margin: 1rem 0;
 }
 
 /*# sourceMappingURL=style-index.css.map*/

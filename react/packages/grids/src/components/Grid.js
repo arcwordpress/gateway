@@ -55,6 +55,7 @@ const Grid = ({
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterValues, setFilterValues] = useState({});
   const [currentView, setCurrentView] = useState(viewType);
+  const [searchText, setSearchText] = useState('');
 
   // Combined effect to load collection and data
   const loadAll = async () => {
@@ -104,8 +105,19 @@ const Grid = ({
 
   // Unified filtering logic
   const filteredData = useMemo(() => {
-    return applyFilters(data, filters, filterValues);
-  }, [data, filters, filterValues]);
+    let result = applyFilters(data, filters, filterValues);
+    if (searchText.trim()) {
+      const lower = searchText.trim().toLowerCase();
+      result = result.filter(item =>
+        Object.values(item).some(
+          val =>
+            typeof val === 'string' &&
+            val.toLowerCase().includes(lower)
+        )
+      );
+    }
+    return result;
+  }, [data, filters, filterValues, searchText]);
 
   // Handle delete with confirmation
   const handleDeleteClick = (recordId) => {
@@ -221,12 +233,28 @@ const Grid = ({
   return (
     <GridProvider value={gridContextValue}>
       <div className="grid">
-        {/* ViewSwitcher above filters */}
-        <ViewSwitcher
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          enabledViews={['table', 'board', 'list', 'cards']}
-        />
+        {/* Flex row for view switcher and search filter */}
+        <div className="grid__toolbar-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <ViewSwitcher
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            enabledViews={['table', 'board', 'list', 'cards']}
+          />
+          <input
+            type="search"
+            className="grid__search-input"
+            placeholder="Search…"
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            style={{
+              flex: '0 1 240px',
+              padding: '0.5rem',
+              fontSize: '1rem',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
 
         {showFilters && filters.length > 0 && (
           <GridFilters
