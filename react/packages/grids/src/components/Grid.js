@@ -11,6 +11,7 @@ import { generateColumns } from '../services/columnGenerator';
 import { applyFilters } from '../utils/filterUtils';
 import SingleView from './SingleView';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import ViewSwitcher from './ViewSwitcher';
 
 /**
  * Main Grid Component
@@ -41,8 +42,7 @@ const Grid = ({
   onCloseView,
   showActions = true,
   showFilters = true,
-  externalFilters = {},
-  viewType = 'table', // 'table' | 'board'
+  viewType = 'table',
   boardConfig = {},
   singleViewComponent = SingleView,
   children,
@@ -54,7 +54,7 @@ const Grid = ({
   const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterValues, setFilterValues] = useState({});
-
+  const [currentView, setCurrentView] = useState(viewType);
 
   // Combined effect to load collection and data
   const loadAll = async () => {
@@ -91,6 +91,11 @@ const Grid = ({
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collectionKey]);
+
+  // Update currentView when viewType prop changes
+  useEffect(() => {
+    setCurrentView(viewType);
+  }, [viewType]);
 
   // Get filters from collection metadata
   const filters = useMemo(() => {
@@ -192,36 +197,6 @@ const Grid = ({
     auth,
   }), [collection, data, auth, collectionKey]);
 
-  // View component selection
-  let ViewComponent;
-  let viewProps;
-
-  switch (viewType) {
-    case 'board':
-      ViewComponent = BoardView;
-      viewProps = { config: boardConfig, onView, singleViewComponent };
-      break;
-    case 'list':
-      ViewComponent = ListView;
-      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
-      break;
-    case 'cards':
-      ViewComponent = CardsView;
-      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
-      break;
-    case 'table':
-    default:
-      ViewComponent = TableView;
-      viewProps = {
-        columns,
-        onView,
-        selectedRecord,
-        onCloseView,
-        singleViewComponent,
-      };
-      break;
-  }
-
   if (error) {
     return (
       <div className="grid__error">
@@ -246,6 +221,13 @@ const Grid = ({
   return (
     <GridProvider value={gridContextValue}>
       <div className="grid">
+        {/* ViewSwitcher above filters */}
+        <ViewSwitcher
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          enabledViews={['table', 'board', 'list', 'cards']}
+        />
+
         {showFilters && filters.length > 0 && (
           <GridFilters
             filters={filters}
@@ -255,11 +237,43 @@ const Grid = ({
           />
         )}
 
-        <ViewComponent
-          data={filteredData}
-          loading={loading}
-          {...viewProps}
-        />
+        {/* Use currentView for selecting the view component */}
+        {(() => {
+          let ViewComponent;
+          let viewProps;
+          switch (currentView) {
+            case 'board':
+              ViewComponent = BoardView;
+              viewProps = { config: boardConfig, onView, singleViewComponent };
+              break;
+            case 'list':
+              ViewComponent = ListView;
+              viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+              break;
+            case 'cards':
+              ViewComponent = CardsView;
+              viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+              break;
+            case 'table':
+            default:
+              ViewComponent = TableView;
+              viewProps = {
+                columns,
+                onView,
+                selectedRecord,
+                onCloseView,
+                singleViewComponent,
+              };
+              break;
+          }
+          return (
+            <ViewComponent
+              data={filteredData}
+              loading={loading}
+              {...viewProps}
+            />
+          );
+        })()}
 
         {deleteConfirm && (
           <DeleteConfirmModal
