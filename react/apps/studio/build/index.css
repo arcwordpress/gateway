@@ -1465,14 +1465,12 @@ h2.react-datepicker__current-month {
 	letter-spacing: 0.05em;
 }
 
-.gty-admin-header__links {
+.gty-admin-header-menu {
 	display: flex;
 	gap: var(--gty-space-4);
-	margin-left: 0;
 }
 
-.gty-admin-header__link {
-	display: inline-flex;
+.gty-admin-header-menu__link {
 	align-items: center;
 	font-size: 0.925rem;
 	font-weight: 800;

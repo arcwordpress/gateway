@@ -14,29 +14,6 @@ function AppContent() {
   return (
     <div className="gty-app">
       <AppHeader collections={collections} />
-      <nav className="gty-nav">
-        <div className="gty-nav__container">
-          <div className="gty-nav__inner">
-            <div className="gty-nav__content">
-              <div className="gty-nav__brand">
-                <h1 className="gty-nav__brand-title">Gateway</h1>
-              </div>
-              <div className="gty-nav__links">
-                {collections.map((collection) => (
-                  <Link
-                    key={collection.key}
-                    to={`/collection/${collection.key}`}
-                    className="gty-nav__link"
-                  >
-                    {collection.titlePlural || collection.title || collection.key}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <main className="gty-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
