@@ -234,7 +234,7 @@ const Grid = ({
     <GridProvider value={gridContextValue}>
       <div className="grid">
         {/* Flex row for view switcher and search filter */}
-        <div className="grid__toolbar-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div className="grid__toolbar-row">
           <ViewSwitcher
             currentView={currentView}
             onViewChange={setCurrentView}
@@ -246,13 +246,6 @@ const Grid = ({
             placeholder="Search…"
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
-            style={{
-              flex: '0 1 240px',
-              padding: '0.5rem',
-              fontSize: '1rem',
-              border: '1px solid #e5e7eb',
-              borderRadius: '4px'
-            }}
           />
         </div>
 
