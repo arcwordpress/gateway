@@ -11,6 +11,7 @@ function Dashboard() {
 
   // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
+  const activeCollection = collections.find(c => c.key === activeKey);
 
   if (!activeKey) {
     return (
@@ -24,6 +25,10 @@ function Dashboard() {
     navigate(`/collection/${activeKey}/edit/${recordId}`);
   };
 
+  const handleView = (record) => {
+    navigate(`/collection/${activeKey}/view/${record.id}`);
+  };
+
   const handleDelete = (recordId) => {
     console.log('Record deleted:', recordId);
   };
@@ -34,25 +39,21 @@ function Dashboard() {
 
   return (
     <div className="gty-dashboard">
-      <div className="gty-dashboard__header">
-        <h1 className="gty-dashboard__title">
-          {activeKey.replace(/_/g, ' ')}
-        </h1>
-        <div className="gty-dashboard__actions">
+      <Grid 
+        collectionKey={activeKey}
+        title={activeCollection?.title || activeKey}
+        viewType={viewType}
+        onEdit={handleEdit}
+        onView={handleView}
+        onDelete={handleDelete}
+        toolbarActions={
           <button
             onClick={handleCreate}
             className="gty-dashboard__create-button"
           >
             Create
           </button>
-        </div>
-      </div>
-      {/* Place ViewSwitcher right above the Grid */}
-      <Grid 
-        collectionKey={activeKey} 
-        viewType={viewType}
-        onEdit={handleEdit} 
-        onDelete={handleDelete} 
+        }
       />
     </div>
   );

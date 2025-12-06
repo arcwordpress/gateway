@@ -42,7 +42,7 @@ const GridFilters = ({ filters, values, onChange, data }) => {
         aria-expanded={open}
       >
         <MinimizeIcon />
-        <span style={{ fontWeight: 500, color: '#1D2327', fontSize: '1rem' }}>Filters</span>
+        <span className="gty-grid__filters-title">Filters</span>
       </div>
       {open && (
         <div className="gty-grid__filters-container">

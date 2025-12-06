@@ -5,7 +5,7 @@ const VIEW_CONFIGS = {
   table: {
     label: __('Table', 'gateway'),
     icon: (
-      <svg height="48" viewBox="0 0 170 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <svg height="32" viewBox="0 0 170 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <g clipPath="url(#clip0_1_52)">
           <path d="M0 0H30.2222V30.1887H0V0Z" fill="#1D2327"/>
           <path d="M41.5556 0H107.667V30.1887H41.5556V0Z" fill="#1D2327"/>
@@ -28,7 +28,7 @@ const VIEW_CONFIGS = {
   board: {
     label: __('Board', 'gateway'),
     icon: (
-      <svg height="48" viewBox="0 0 123 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <svg height="32" viewBox="0 0 123 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <g clipPath="url(#clip0_1_14)">
           <rect width="123" height="100" fill="white"/>
           <path d="M0 0H34.562V100H0V0Z" fill="#1D2327"/>
@@ -46,7 +46,7 @@ const VIEW_CONFIGS = {
   list: {
     label: __('List', 'gateway'),
     icon: (
-      <svg height="48" viewBox="0 0 127 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <svg height="32" viewBox="0 0 127 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <g clipPath="url(#clip0_1_37)">
           <path d="M0 0H127V25H0V0Z" fill="#1D2327"/>
           <path d="M0 37.5H127V62.5H0V37.5Z" fill="#1D2327"/>
@@ -63,7 +63,7 @@ const VIEW_CONFIGS = {
   cards: {
     label: __('Cards', 'gateway'),
     icon: (
-      <svg height="48" viewBox="0 0 118 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+      <svg height="32" viewBox="0 0 118 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
         <g clipPath="url(#clip0_1_30)">
           <path d="M0 0H34.1205V44.6809H0V0Z" fill="#1D2327"/>
           <path d="M41.9398 0H76.0602V44.6809H41.9398V0Z" fill="#1D2327"/>

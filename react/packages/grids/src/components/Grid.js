@@ -31,6 +31,8 @@ import ViewSwitcher from './ViewSwitcher';
  * @param {string} [props.viewType]
  * @param {object} [props.boardConfig]
  * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
+ * @param {string} [props.title] - Title to display in the grid toolbar
+ * @param {React.ReactNode} [props.toolbarActions] - Custom toolbar actions (e.g., create button)
  * @param {React.ReactNode} [props.children]
  */
 const Grid = ({
@@ -45,6 +47,8 @@ const Grid = ({
   viewType = 'table',
   boardConfig = {},
   singleViewComponent = SingleView,
+  title = '',
+  toolbarActions = null,
   children,
 }) => {
   const { auth } = useGridContext();
@@ -159,7 +163,9 @@ const Grid = ({
 
     const baseColumns = generateColumns(collection);
 
-    if (showActions && (onEdit || onDelete)) {
+    console.log('onView:', onView)
+
+    if (showActions && (onEdit || onDelete || onView)) {
       baseColumns.push({
         id: 'actions',
         header: 'Actions',
@@ -169,6 +175,14 @@ const Grid = ({
           const recordId = row.original.id;
           return (
             <div className="grid__actions">
+              {onView && (
+                <button
+                  onClick={() => onView(row.original)}
+                  className="grid__btn grid__btn--view"
+                >
+                  View
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={() => onEdit(recordId)}
@@ -192,7 +206,7 @@ const Grid = ({
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit, onDelete]);
+  }, [data, collection, showActions, onEdit, onDelete, onView]);
 
   // Context value for child components
   const gridContextValue = useMemo(() => ({
@@ -233,20 +247,29 @@ const Grid = ({
   return (
     <GridProvider value={gridContextValue}>
       <div className="grid">
-        {/* Flex row for view switcher and search filter */}
+
         <div className="grid__toolbar-row">
-          <ViewSwitcher
-            currentView={currentView}
-            onViewChange={setCurrentView}
-            enabledViews={['table', 'board', 'list', 'cards']}
-          />
-          <input
-            type="search"
-            className="grid__search-input"
-            placeholder="Search…"
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-          />
+
+          <div className="grid__toolbar-left">
+            {title && <h2 className="grid__title">{title}</h2>}
+            {toolbarActions}
+          </div>
+          
+          <div className="grid__toolbar-right">
+            <ViewSwitcher
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              enabledViews={['table', 'board', 'list', 'cards']}
+            />
+            <input
+              type="search"
+              className="grid__search-input"
+              placeholder="Search…"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+            />
+          </div>
+          
         </div>
 
         {showFilters && filters.length > 0 && (
@@ -280,10 +303,6 @@ const Grid = ({
               ViewComponent = TableView;
               viewProps = {
                 columns,
-                onView,
-                selectedRecord,
-                onCloseView,
-                singleViewComponent,
               };
               break;
           }
