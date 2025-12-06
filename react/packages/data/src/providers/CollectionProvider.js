@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import CollectionContext from '../contexts/CollectionContext';
 import * as api from '../services/collectionApi';
 
@@ -20,6 +20,12 @@ export const CollectionProvider = ({
   autoLoad = true,
   children,
 }) => {
+  // Use ref to track if initial load has occurred
+  const initialLoadDone = useRef(false);
+  
+  // Stabilize queryParams to prevent unnecessary re-renders
+  const stableQueryParams = useMemo(() => queryParams, [JSON.stringify(queryParams)]);
+
   // Collection metadata state
   const [collection, setCollection] = useState(null);
   const [collectionLoading, setCollectionLoading] = useState(true);
@@ -68,7 +74,7 @@ export const CollectionProvider = ({
       const data = await api.fetchRecords(
         collection.routes.namespace,
         collection.routes.route,
-        queryParams
+        stableQueryParams
       );
       setRecords(data);
     } catch (error) {
@@ -77,7 +83,7 @@ export const CollectionProvider = ({
     } finally {
       setRecordsLoading(false);
     }
-  }, [collection, queryParams]);
+  }, [collection?.routes?.namespace, collection?.routes?.route, stableQueryParams]);
 
   /**
    * Create a new record
@@ -208,10 +214,16 @@ export const CollectionProvider = ({
 
   // Auto-load records when collection is ready
   useEffect(() => {
-    if (autoLoad && collection && !collectionLoading) {
+    if (autoLoad && collection && !collectionLoading && !initialLoadDone.current) {
+      initialLoadDone.current = true;
       fetchCollectionRecords();
     }
-  }, [autoLoad, collection, collectionLoading, fetchCollectionRecords]);
+  }, [autoLoad, collection, collectionLoading]);
+
+  // Reset initial load flag when collectionKey changes
+  useEffect(() => {
+    initialLoadDone.current = false;
+  }, [collectionKey]);
 
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(
