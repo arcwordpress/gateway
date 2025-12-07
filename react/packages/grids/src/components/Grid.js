@@ -5,6 +5,7 @@ import BoardView from './view-types/BoardView';
 import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
+import FilterIcon from './FilterIcon';
 import { GridProvider } from '../context/GridContext';
 import { collectionApi } from '@arcwp/gateway-data';
 import { generateColumns } from '../services/columnGenerator';
@@ -60,6 +61,7 @@ const Grid = ({
   const [filterValues, setFilterValues] = useState({});
   const [currentView, setCurrentView] = useState(viewType);
   const [searchText, setSearchText] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   // Combined effect to load collection and data
   const loadAll = async () => {
@@ -254,6 +256,15 @@ const Grid = ({
             {title && <h2 className="grid__title">{title}</h2>}
             {toolbarActions}
           </div>
+
+          <div className="grid__toolbar-center">
+            {showFilters && filters.length > 0 && (
+              <FilterIcon 
+                onClick={() => setFiltersOpen(v => !v)} 
+                isOpen={filtersOpen}
+              />
+            )}
+          </div>
           
           <div className="grid__toolbar-right">
             <ViewSwitcher
@@ -278,6 +289,7 @@ const Grid = ({
             values={filterValues}
             onChange={setFilterValues}
             data={data}
+            isOpen={filtersOpen}
           />
         )}
 

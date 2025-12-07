@@ -577,7 +577,7 @@
 
 .view-switcher__dropdown {
   position: absolute;
-  top: 110%;
+  top: calc(100% + 2px);
   left: 0;
   min-width: 100%;
   background: #fff;
@@ -660,7 +660,7 @@
  */
 .gty-grid__filters {
   margin: 1rem 0;
-  border: solid 2px var(--gty-admin-light);
+  border: solid 1px #e5e7eb;
   color: var(--gty-admin-dark);
   border-radius: 0.5em;
   padding: 0.75em 1em;
@@ -678,14 +678,15 @@
   flex: 1 1 240px;
   min-width: 240px;
   max-width: 320px;
-  padding: 0.25rem 1rem !important;
-  font-size: 1.125rem;
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem;
   font-weight: 500;
-  background-color: var(--gty-admin-light) !important;
+  background-color: transparent !important;
   color: var(--gty-admin-dark) !important;
-  font-family: var(--font-geist);
-  border: solid 2px var(--gty-admin-dark) !important;
+  font-family: var(--font-lexend);
+  border: solid 1px var(--gty-admin-dark) !important;
   border-radius: 0px !important;
+  line-height: normal !important;
 }
 
 .gty-grid__filters-header {
