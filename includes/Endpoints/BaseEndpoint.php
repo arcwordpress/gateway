@@ -6,13 +6,15 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
 use Gateway\Collection;
-use Gateway\PermissionChecksTrait;
+use Gateway\REST\RouteAuthenticationTrait;
+use Gateway\REST\RoutePermissionTrait;
 use Gateway\REST\RequestLog;
 
 abstract class BaseEndpoint
 {
-    use PermissionChecksTrait;
-
+    use RouteAuthenticationTrait;
+    use RoutePermissionTrait;
+    
     protected $collection;
     protected $collectionName;
 
@@ -42,6 +44,17 @@ abstract class BaseEndpoint
      */
     abstract public function getType();
 
+    /**
+     * Get the default permission type for this route
+     * Can be overridden by child classes to change defaults
+     *
+     * @return string Default permission type ('public', 'public_secured', 'protected')
+     */
+    public function getDefaultRoutePermission()
+    {
+        return 'protected';
+    }
+
     public function getNamespace()
     {
         return $this->collection->getRestNamespace();
@@ -57,7 +70,7 @@ abstract class BaseEndpoint
         return [
             'methods' => $this->getMethod(),
             'callback' => [$this, 'handleRequest'],
-            'permission_callback' => [$this, 'checkPermissions'], // Custom permission check for testing
+            'permission_callback' => [$this, 'checkPermissions'],
         ];
     }
 
@@ -82,6 +95,17 @@ abstract class BaseEndpoint
             return true;
         }
 
+        // For public_secured and protected, first validate authentication
+        $authResult = $this->checkAuthentication();
+        if (is_wp_error($authResult)) {
+            return $authResult;
+        }
+
+        // Basic Auth and JWT bypass WordPress permission checks
+        if ($this->isExternalAuthMethod()) {
+            return true;
+        }
+
         switch ($permissionType) {
             case 'public_secured':
                 return $this->checkPublicSecured();
@@ -94,48 +118,6 @@ abstract class BaseEndpoint
                     ['status' => 500]
                 );
         }
-    }
-
-    /**
-     * Parse the permission type for the current route type.
-     *
-     * @param array $permissions
-     * @return mixed Permission config (array, string, false, or null)
-     */
-    protected function parsePermissionType($permissions)
-    {
-        $routeType = $this->getType();
-
-        // Only check for route-specific permission, no wildcard
-        return $permissions[$routeType]['type'] ?? 'protected';
-    }
-
-    protected function checkPublicSecured()
-    {
-        $nonce = null;
-
-        // Try to get nonce from the X-WP-Nonce header
-        if ( isset( $_SERVER['HTTP_X_WP_NONCE'] ) ) {
-            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
-        } elseif ( isset( $_REQUEST['_wpnonce'] ) ) {
-            // Fallback to _wpnonce param if present
-            $nonce = $_REQUEST['_wpnonce'];
-        }
-
-        if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-            return true;
-        }
-
-        return new \WP_Error(
-            'rest_invalid_nonce',
-            __( 'Invalid or missing nonce.' ),
-            [ 'status' => 403 ]
-        );
-    }
-
-    protected function checkProtected()
-    {
-        return $this->checkProtectedPermission();
     }
 
     protected function sendSuccessResponse($data, $status = 200)

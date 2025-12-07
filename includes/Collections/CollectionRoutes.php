@@ -2,12 +2,12 @@
 
 namespace Gateway\Collections;
 
-use Gateway\PermissionChecksTrait;
+use Gateway\REST\RouteAuthenticationTrait;
 use Gateway\Plugin;
 
 class CollectionRoutes
 {
-    use PermissionChecksTrait;
+    use RouteAuthenticationTrait;
 
     /**
      * @var object|null
@@ -57,11 +57,22 @@ class CollectionRoutes
     }
 
     /**
-     * Check permission
+     * Check permission - these routes require authentication
      */
     public function checkPermission()
     {
-        return $this->checkProtectedPermission();
+        $authResult = $this->checkAuthentication();
+        
+        if (is_wp_error($authResult)) {
+            return $authResult;
+        }
+        
+        // After authentication passes, verify user is logged in
+        return is_user_logged_in() ? true : new \WP_Error(
+            'rest_not_authenticated',
+            __('User not authenticated.'),
+            ['status' => 401]
+        );
     }
 
     /**

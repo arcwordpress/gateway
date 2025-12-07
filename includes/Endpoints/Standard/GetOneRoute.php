@@ -24,6 +24,11 @@ class GetOneRoute extends BaseEndpoint
         return '/(?P<id>\d+)';
     }
 
+    public function getDefaultRoutePermission()
+    {
+        return 'public_secured';
+    }
+
     public function handle(WP_REST_Request $request)
     {
         $id = $request->get_param('id');
