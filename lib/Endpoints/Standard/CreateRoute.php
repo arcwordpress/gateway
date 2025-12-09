@@ -20,6 +20,14 @@ class CreateRoute extends BaseEndpoint
         return 'POST';
     }
 
+    /**
+     * Get the route pattern for this endpoint.
+     * 
+     * Returns empty string because create uses the base collection route.
+     * POST requests to /namespace/collection create new records.
+     * 
+     * @return string Empty string for base route
+     */
     public function getRoute()
     {
         return '';
@@ -32,7 +40,14 @@ class CreateRoute extends BaseEndpoint
         // Remove any system parameters
         unset($data['route'], $data['rest_route']);
 
+        $model = null;
+        $response = null;
+
         try {
+            // Fire pre-hooks
+            do_action('gateway_pre_save_record', $data, $this->collectionName, 'create');
+            do_action('gateway_pre_create_record', $data, $this->collectionName);
+
             // Collection IS the model - create a new record
             $model = $this->collection->create($data);
 
@@ -41,32 +56,26 @@ class CreateRoute extends BaseEndpoint
                 ? $model->toArray()
                 : (array) $model;
 
-            return $this->sendSuccessResponse($responseData, 201);
+            $response = $this->sendSuccessResponse($responseData, 201);
 
         } catch (\Exception $e) {
-            return $this->sendErrorResponse(
+            $response = $this->sendErrorResponse(
                 'Failed to create ' . $this->collectionName . ': ' . $e->getMessage(),
                 'create_failed',
                 500
             );
+        } finally {
+            // Fire post-hooks - these always run
+            do_action('gateway_save_record', $model, $this->collectionName, 'create');
+            do_action('gateway_create_record', $model, $this->collectionName);
         }
+
+        return $response;
     }
 
     public function getArgs()
     {
         $args = parent::getArgs();
-
-        // Add validation args here when ready
-        $args['args'] = [
-            // Example validation - uncomment when needed
-            // 'title' => [
-            //     'required' => true,
-            //     'type' => 'string',
-            //     'description' => 'The title of the item',
-            //     'sanitize_callback' => 'sanitize_text_field',
-            // ],
-        ];
-
         return $args;
     }
 }
