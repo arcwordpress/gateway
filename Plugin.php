@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.7-hotfix-1
+ * Version: 1.1.8
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.7-hotfix-1');
+define('GATEWAY_VERSION', '1.1.8');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -26,11 +26,10 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
 
-
 // Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
-    $base_dir = GATEWAY_PATH . 'includes/';
+    $base_dir = GATEWAY_PATH . 'lib/';
 
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
@@ -113,12 +112,24 @@ class Plugin
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
 
+        // Register core collections. 
+        add_action('gateway_loaded', [$this, 'registerCollections']);
+
     }
 
     public function onInit()
     {
         do_action('gateway_loaded');
     }
+
+    public function registerCollections()
+    {
+        Collections\GatewayProject::register();
+    }
+
+    /**
+     * Object registry getters.
+     **/
 
     public function getRegistry()
     {
@@ -153,8 +164,9 @@ class Plugin
      */
     public function activate()
     {
-        // Run database migrations
-        Database\DatabaseMigration::run();
+
+        // Install database tables for core collections.
+        Migrations\GatewayProjectMigration::create();
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
