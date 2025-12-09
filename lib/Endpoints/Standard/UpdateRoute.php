@@ -57,12 +57,12 @@ class UpdateRoute extends BaseEndpoint
             $model = $this->collection->find($id);
 
             // Fire pre-hooks - always run, model may be null
-            do_action('gateway_pre_save_record', $data, $this->collectionName, 'update', $model);
-            do_action('gateway_pre_update_record', $data, $this->collectionName, $model);
+            do_action('gateway_pre_save_record', $data, $this->collection->getKey(), 'update', $model);
+            do_action('gateway_pre_update_record', $data, $this->collection->getKey(), $model);
 
             if (!$model) {
                 $response = $this->sendErrorResponse(
-                    ucfirst($this->collectionName) . ' not found',
+                    ucfirst($this->collection->getKey()) . ' not found',
                     'not_found',
                     404
                 );
@@ -72,7 +72,7 @@ class UpdateRoute extends BaseEndpoint
 
                 if (!$updatedModel) {
                     $response = $this->sendErrorResponse(
-                        'Failed to update ' . $this->collectionName,
+                        'Failed to update ' . $this->collection->getKey(),
                         'update_failed',
                         500
                     );
@@ -92,14 +92,14 @@ class UpdateRoute extends BaseEndpoint
             
             // Return generic error to client - don't expose internal details
             $response = $this->sendErrorResponse(
-                'Failed to update ' . $this->collectionName,
+                'Failed to update ' . $this->collection->getKey(),
                 'update_failed',
                 500
             );
         } finally {
             // Fire post-hooks - these always run
-            do_action('gateway_save_record', $updatedModel, $this->collectionName, 'update');
-            do_action('gateway_update_record', $updatedModel, $this->collectionName);
+            do_action('gateway_save_record', $updatedModel, $this->collection->getKey(), 'update');
+            do_action('gateway_update_record', $updatedModel, $this->collection->getKey());
         }
 
         return $response;
