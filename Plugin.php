@@ -25,6 +25,7 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
+require_once GATEWAY_PATH . 'includes/gateway-collection-cpt.php';
 
 // Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {

@@ -1,0 +1,30 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/collection-builder",
+  "title": "Gateway Collection Builder",
+  "category": "widgets",
+  "icon": "admin-generic",
+  "description": "A custom collection builder block for Gateway.",
+  "keywords": ["gateway", "collection", "builder", "custom"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "attributes": {
+    "collectionKey": {
+      "type": "string",
+      "default": ""
+    },
+    "fields": {
+      "type": "array",
+      "default": []
+    }
+  },
+  "providesContext": {
+    "gateway/collection-fields": "fields",
+    "gateway/collection-key": "collectionKey"
+  },
+  "supports": {
+    "html": false
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css"
+}

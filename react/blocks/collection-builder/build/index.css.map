@@ -1,0 +1,1 @@
+{"version":3,"file":"collection-builder/build/index.css","mappings":";;;AAAA;EACE,aAAa;AACf","sources":["webpack://gateway-blocks/./blocks/collection-builder/src/index.css"],"sourcesContent":[".gateway-collection-builder {\n  padding: 10px;\n}\n"],"names":[],"ignoreList":[],"sourceRoot":""}

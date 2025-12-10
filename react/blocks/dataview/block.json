@@ -1,0 +1,16 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/dataview",
+  "title": "Gateway Data View",
+  "category": "widgets",
+  "icon": "admin-generic",
+  "description": "A data view block for Gateway.",
+  "keywords": ["gateway", "data", "view", "custom"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "attributes": {},
+  "supports": {
+    "html": false
+  },
+  "editorScript": "file:./build/index.js"
+}

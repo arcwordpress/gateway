@@ -1,0 +1,16 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/form-section",
+  "title": "Gateway Form Section",
+  "category": "widgets",
+  "icon": "admin-generic",
+  "description": "Form section block for Gateway.",
+  "keywords": ["gateway", "forms"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "supports": {
+    "html": false
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css"
+}
