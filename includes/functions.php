@@ -1,5 +1,8 @@
 <?php
 
+// Define constants
+define('GATEWAY_COLLECTION_CPT', 'gateway-collection');
+
 function gateway_core_active() {
     return class_exists('\Gateway\Plugin');
 }
@@ -22,6 +25,56 @@ function gateway_registered_extensions_array() {
     }
     return $result;
 }
+
+/**
+ * Handle Collection CPT saves
+ */
+add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $update) {
+    // Avoid autosaves
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    // Check user permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // Only process published posts
+    if ($post->post_status !== 'publish') {
+        return;
+    }
+    
+    // Parse collection blocks
+    $collectionData = \Gateway\Collections\InterfaceBuild::parseCollectionBlocks($post->post_content);
+    
+    if (!$collectionData) {
+        error_log('[Gateway Collection] Failed to parse collection blocks for: ' . $post->post_title);
+        return;
+    }
+    
+    // Save collection data to JSON file in horizon plugin
+    $saved = \Gateway\Collections\InterfaceBuild::saveCollectionJson($collectionData, 'horizon');
+    
+    if ($saved) {
+        error_log('[Gateway Collection] Saved collection JSON for: ' . $post->post_title);
+    } else {
+        error_log('[Gateway Collection] Failed to save collection JSON for: ' . $post->post_title);
+        return;
+    }
+    
+    // Generate collection class file
+    $generated = \Gateway\Collections\FileFromData::generateCollectionClass($collectionData, 'horizon', 'Horizon');
+    
+    if ($generated) {
+        error_log('[Gateway Collection] Generated collection class for: ' . $post->post_title);
+    } else {
+        error_log('[Gateway Collection] Failed to generate collection class for: ' . $post->post_title);
+    }
+    
+    // TODO: Run migrations
+    
+}, 10, 3);
 
 /**
  * Handle project saves and scaffold plugin extensions
@@ -136,3 +189,4 @@ add_action('gateway_save_record', function($model, $collectionName, $operation) 
     }
     
 }, 10, 3);
+

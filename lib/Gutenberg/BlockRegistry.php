@@ -35,7 +35,6 @@ class BlockRegistry
         foreach ($block_dirs as $block_path) {
             // Check if block.json exists
             if (file_exists($block_path . '/block.json')) {
-                error_log('registered-block-type: '.$block_path);
                 register_block_type($block_path);
             }
         }

@@ -37,7 +37,7 @@ function gateway_register_collection_post_type() {
         'show_in_rest'          => true,
     ];
 
-    register_post_type('gateway_collection', $args);
+    register_post_type(GATEWAY_COLLECTION_CPT, $args);
 }
 
 add_action('init', 'gateway_register_collection_post_type');
