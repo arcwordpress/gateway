@@ -189,7 +189,8 @@ function EditComponent(props) {
     setAttributes
   } = props;
   const {
-    collectionKey
+    collectionKey,
+    project
   } = attributes;
 
   // Watch inner blocks for changes
@@ -209,9 +210,18 @@ function EditComponent(props) {
   }, [allFields, attributes.fields, setAttributes]);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
         title: "Collection Settings",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
+          label: "Project",
+          value: project,
+          onChange: value => setAttributes({
+            project: value
+          }),
+          help: "The project/plugin this collection belongs to",
+          __next40pxDefaultSize: true,
+          __nextHasNoMarginBottom: true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
           label: "Collection Key",
           value: collectionKey,
           onChange: value => setAttributes({
@@ -219,7 +229,7 @@ function EditComponent(props) {
           }),
           __next40pxDefaultSize: true,
           __nextHasNoMarginBottom: true
-        })
+        })]
       })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
       ...(0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(),

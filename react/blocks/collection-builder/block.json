@@ -9,6 +9,10 @@
   "version": "1.0.0",
   "textdomain": "gateway",
   "attributes": {
+    "project": {
+      "type": "string",
+      "default": ""
+    },
     "collectionKey": {
       "type": "string",
       "default": ""

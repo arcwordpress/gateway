@@ -35,6 +35,10 @@ function gateway_register_collection_post_type() {
         'menu_icon'             => 'dashicons-database',
         'supports'              => ['title', 'editor'],
         'show_in_rest'          => true,
+        'template'              => [
+            ['gateway/collection-builder'],
+        ],
+        'template_lock'         => 'all',
     ];
 
     register_post_type(GATEWAY_COLLECTION_CPT, $args);

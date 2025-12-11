@@ -1,4 +1,4 @@
-import { registerBlockType, registerBlockVariation, getBlockVariations, unregisterBlockVariation } from '@wordpress/blocks';
+import { registerBlockType } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls, InnerBlocks } from '@wordpress/block-editor';
 import { PanelBody, TextControl } from '@wordpress/components';
@@ -8,7 +8,7 @@ import './index.css';
 
 function EditComponent(props) {
     const { clientId, attributes, setAttributes } = props;
-    const { collectionKey } = attributes;
+    const { collectionKey, project } = attributes;
 
     // Watch inner blocks for changes
     const innerBlocks = useSelect(
@@ -31,6 +31,14 @@ function EditComponent(props) {
         <>
             <InspectorControls>
                 <PanelBody title="Collection Settings">
+                    <TextControl
+                        label="Project"
+                        value={project}
+                        onChange={(value) => setAttributes({ project: value })}
+                        help="The project/plugin this collection belongs to"
+                        __next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
+                    />
                     <TextControl
                         label="Collection Key"
                         value={collectionKey}
