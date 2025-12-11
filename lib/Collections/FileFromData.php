@@ -12,10 +12,10 @@ class FileFromData
      * 
      * @param array $collectionData Collection data array
      * @param string $pluginSlug Plugin slug (e.g., 'horizon')
-     * @param string $namespace Plugin namespace (e.g., 'Horizon')
+     * @param string $pluginNamespace Plugin namespace (e.g., 'Horizon')
      * @return bool True on success, false on failure
      */
-    public static function generateCollectionClass($collectionData, $pluginSlug = 'horizon', $namespace = 'Horizon')
+    public static function generateCollectionClass($collectionData, $pluginSlug, $pluginNamespace)
     {
         if (empty($collectionData['key']) || empty($collectionData['fields'])) {
             error_log('[Gateway] Collection key or fields missing, cannot generate class');
@@ -28,6 +28,15 @@ class FileFromData
         if (!is_dir($pluginDir)) {
             error_log("[Gateway] Plugin directory does not exist: {$pluginDir}");
             return false;
+        }
+        
+        // Ensure Collections directory exists
+        $collectionsDir = $pluginDir . '/lib/Collections';
+        if (!is_dir($collectionsDir)) {
+            if (!wp_mkdir_p($collectionsDir)) {
+                error_log("[Gateway] Failed to create Collections directory: {$collectionsDir}");
+                return false;
+            }
         }
         
         // Load template
@@ -50,7 +59,7 @@ class FileFromData
         
         // Replace placeholders
         $replacements = [
-            '{{NAMESPACE}}' => $namespace,
+            '{{NAMESPACE}}' => $pluginNamespace,
             '{{CLASS_NAME}}' => $className,
             '{{COLLECTION_KEY}}' => $collectionData['key'],
             '{{COLLECTION_TITLE}}' => $title,
@@ -59,8 +68,8 @@ class FileFromData
         
         $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);
         
-        // Save to plugin root as collection.php
-        $filePath = $pluginDir . '/collection.php';
+        // Save to lib/Collections directory
+        $filePath = $collectionsDir . '/' . $className . '.php';
         $result = file_put_contents($filePath, $classContent);
         
         if ($result === false) {

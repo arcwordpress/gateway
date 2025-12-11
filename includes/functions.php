@@ -27,6 +27,45 @@ function gateway_registered_extensions_array() {
 }
 
 /**
+ * Check if current admin screen is for a specific post type
+ * Can be called early on init before post type is fully available
+ * 
+ * @param string $post_type The post type to check for
+ * @return bool True if current screen matches post type
+ */
+function gateway_is_post_type_screen($post_type) {
+    if (!is_admin()) {
+        return false;
+    }
+    
+    global $pagenow;
+    $typenow = '';
+    
+    if ('post-new.php' === $pagenow) {
+        if (isset($_REQUEST['post_type']) && post_type_exists($_REQUEST['post_type'])) {
+            $typenow = $_REQUEST['post_type'];
+        }
+    } elseif ('post.php' === $pagenow) {
+        if (isset($_GET['post']) && isset($_POST['post_ID']) && (int) $_GET['post'] !== (int) $_POST['post_ID']) {
+            // Do nothing
+        } elseif (isset($_GET['post'])) {
+            $post_id = (int) $_GET['post'];
+        } elseif (isset($_POST['post_ID'])) {
+            $post_id = (int) $_POST['post_ID'];
+        }
+        
+        if (!empty($post_id)) {
+            $post = get_post($post_id);
+            if ($post) {
+                $typenow = $post->post_type;
+            }
+        }
+    }
+    
+    return $typenow === $post_type;
+}
+
+/**
  * Handle Collection CPT saves
  */
 add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $update) {
@@ -45,6 +84,10 @@ add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $upd
         return;
     }
     
+    // TODO: Get plugin slug and namespace from project association
+    $pluginSlug = 'horizon';
+    $pluginNamespace = 'Horizon';
+    
     // Parse collection blocks
     $collectionData = \Gateway\Collections\InterfaceBuild::parseCollectionBlocks($post->post_content);
     
@@ -53,8 +96,8 @@ add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $upd
         return;
     }
     
-    // Save collection data to JSON file in horizon plugin
-    $saved = \Gateway\Collections\InterfaceBuild::saveCollectionJson($collectionData, 'horizon');
+    // Save collection data to JSON file in plugin
+    $saved = \Gateway\Collections\InterfaceBuild::saveCollectionJson($collectionData, $pluginSlug);
     
     if ($saved) {
         error_log('[Gateway Collection] Saved collection JSON for: ' . $post->post_title);
@@ -64,7 +107,7 @@ add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $upd
     }
     
     // Generate collection class file
-    $generated = \Gateway\Collections\FileFromData::generateCollectionClass($collectionData, 'horizon', 'Horizon');
+    $generated = \Gateway\Collections\FileFromData::generateCollectionClass($collectionData, $pluginSlug, $pluginNamespace);
     
     if ($generated) {
         error_log('[Gateway Collection] Generated collection class for: ' . $post->post_title);

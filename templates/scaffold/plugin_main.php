@@ -85,6 +85,37 @@ class Plugin {
     private function init() {
         // Register activation hook
         register_activation_hook(__FILE__, [$this, 'activate']);
+        
+        // Register collections when Gateway is loaded
+        add_action('gateway_loaded', [$this, 'register_collections']);
+    }
+    
+    /**
+     * Register all collections from lib/Collections directory
+     */
+    public function register_collections() {
+        $collections_dir = plugin_dir_path(__FILE__) . 'lib/Collections';
+        
+        // Check if Collections directory exists
+        if (!is_dir($collections_dir)) {
+            return;
+        }
+        
+        // Get all PHP files in Collections directory
+        $collection_files = glob($collections_dir . '/*.php');
+        
+        foreach ($collection_files as $file) {
+            // Get filename without extension
+            $filename = basename($file, '.php');
+            
+            // Build fully qualified class name
+            $class_name = '{{NAMESPACE}}\\Collections\\' . $filename;
+            
+            // Check if class exists and has register method
+            if (class_exists($class_name) && method_exists($class_name, 'register')) {
+                $class_name::register();
+            }
+        }
     }
     
     /**
