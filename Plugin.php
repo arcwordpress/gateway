@@ -126,6 +126,7 @@ class Plugin
     public function registerCollections()
     {
         Collections\GatewayProject::register();
+        Collections\WPUser::register();
     }
 
     /**

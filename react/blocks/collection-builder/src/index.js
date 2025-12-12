@@ -49,6 +49,10 @@ function EditComponent(props) {
                 </PanelBody>
             </InspectorControls>
             <div {...useBlockProps()}>
+                <header className="gty-cob-header">
+                    <h4>{__('Gateway Collection Builder', 'gateway')}</h4>
+                    <h2>{attributes.project}/{attributes.collectionKey}</h2>
+                </header>
                 <InnerBlocks
                     allowedBlocks={['gateway/field-list', 'gateway/form-list']}
                     template={[
