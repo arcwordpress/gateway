@@ -4,7 +4,8 @@ import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import { useForm } from 'react-hook-form';
 import { GatewayFormContext, createGatewayFormContext, useFieldType } from '@arcwp/gateway-forms';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import './index.css';
 
@@ -16,6 +17,7 @@ const FieldRenderer = React.memo(({ config }) => {
 
 function EditComponent(props) {
     const { clientId, attributes, setAttributes } = props;
+    const [isExpanded, setIsExpanded] = useState(true);
     const methods = useForm();
     const contextValue = createGatewayFormContext(
         methods,
@@ -58,17 +60,36 @@ function EditComponent(props) {
     }, [fieldConfigs, attributes.fields, setAttributes]);
 
     return (
-        <div {...useBlockProps({ className: 'gateway-field-list__grid' })}>
-            <div className="gateway-field-list__blocks">
-                <InnerBlocks allowedBlocks={['gateway/field']} />
+        <div {...useBlockProps({ className: 'gateway-field-list__wrapper' })}>
+            <div className="gateway-field-list__header">
+                <Button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    icon={isExpanded ? 'arrow-down' : 'arrow-right'}
+                    className="gateway-field-list__toggle"
+                >
+                    {__('Fields', 'gateway')}
+                </Button>
             </div>
-            <div className="gateway-field-list__form">
-                <GatewayFormContext.Provider value={contextValue}>
-                    {fieldConfigs.map((config, index) => (
-                        <FieldRenderer key={config.name || index} config={config} />
-                    ))}
-                </GatewayFormContext.Provider>
-            </div>
+            {isExpanded && (
+                <div className="gateway-field-list__content">
+                    <div className="gateway-field-list__grid">
+                        <div className="gateway-field-list__blocks">
+                            <InnerBlocks 
+                                allowedBlocks={['gateway/field']}
+                                templateLock={false}
+                                renderAppender={() => <InnerBlocks.ButtonBlockAppender />}
+                            />
+                        </div>
+                        <div className="gateway-field-list__form">
+                            <GatewayFormContext.Provider value={contextValue}>
+                                {fieldConfigs.map((config, index) => (
+                                    <FieldRenderer key={config.name || index} config={config} />
+                                ))}
+                            </GatewayFormContext.Provider>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

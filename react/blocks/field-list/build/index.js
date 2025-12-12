@@ -34,11 +34,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _arcwp_gateway_forms__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @arcwp/gateway-forms */ "./packages/forms/dist/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _index_css__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./index.css */ "./blocks/field-list/src/index.css");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _index_css__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./index.css */ "./blocks/field-list/src/index.css");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
+
 
 
 
@@ -57,7 +60,7 @@ const FieldRenderer = React.memo(({
   const {
     Input
   } = (0,_arcwp_gateway_forms__WEBPACK_IMPORTED_MODULE_5__.useFieldType)(config);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(Input, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(Input, {
     config: config
   });
 });
@@ -67,6 +70,7 @@ function EditComponent(props) {
     attributes,
     setAttributes
   } = props;
+  const [isExpanded, setIsExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_6__.useState)(true);
   const methods = (0,react_hook_form__WEBPACK_IMPORTED_MODULE_4__.useForm)();
   const contextValue = (0,_arcwp_gateway_forms__WEBPACK_IMPORTED_MODULE_5__.createGatewayFormContext)(methods, null, null, true, null, {}, {});
 
@@ -87,7 +91,7 @@ function EditComponent(props) {
         fields: fieldConfigs
       });
       // Send API call to rebuild database columns
-      _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_7___default()({
+      _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_8___default()({
         path: 'gateway/v1/update-fields',
         method: 'POST',
         data: {
@@ -100,28 +104,44 @@ function EditComponent(props) {
       });
     }
   }, [fieldConfigs, attributes.fields, setAttributes]);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
     ...(0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)({
-      className: 'gateway-field-list__grid'
+      className: 'gateway-field-list__wrapper'
     }),
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-      className: "gateway-field-list__blocks",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks, {
-        allowedBlocks: ['gateway/field']
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+      className: "gateway-field-list__header",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_7__.Button, {
+        onClick: () => setIsExpanded(!isExpanded),
+        icon: isExpanded ? 'arrow-down' : 'arrow-right',
+        className: "gateway-field-list__toggle",
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Fields', 'gateway')
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-      className: "gateway-field-list__form",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_arcwp_gateway_forms__WEBPACK_IMPORTED_MODULE_5__.GatewayFormContext.Provider, {
-        value: contextValue,
-        children: fieldConfigs.map((config, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(FieldRenderer, {
-          config: config
-        }, config.name || index))
+    }), isExpanded && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+      className: "gateway-field-list__content",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+        className: "gateway-field-list__grid",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+          className: "gateway-field-list__blocks",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks, {
+            allowedBlocks: ['gateway/field'],
+            templateLock: false,
+            renderAppender: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks.ButtonBlockAppender, {})
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+          className: "gateway-field-list__form",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_arcwp_gateway_forms__WEBPACK_IMPORTED_MODULE_5__.GatewayFormContext.Provider, {
+            value: contextValue,
+            children: fieldConfigs.map((config, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(FieldRenderer, {
+              config: config
+            }, config.name || index))
+          })
+        })]
       })
     })]
   });
 }
 function SaveComponent() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks.Content, {});
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InnerBlocks.Content, {});
 }
 (0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_0__.registerBlockType)('gateway/field-list', {
   title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Gateway Field List', 'gateway'),
@@ -97545,6 +97565,17 @@ module.exports = window["wp"]["blockEditor"];
 
 "use strict";
 module.exports = window["wp"]["blocks"];
+
+/***/ }),
+
+/***/ "@wordpress/components":
+/*!************************************!*\
+  !*** external ["wp","components"] ***!
+  \************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = window["wp"]["components"];
 
 /***/ }),
 
