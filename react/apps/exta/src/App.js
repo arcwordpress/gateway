@@ -1,3 +1,9 @@
+import { useState } from '@wordpress/element';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
+import { ExtensionsProvider } from './context/ExtensionsContext';
+import ExtensionSelector from './components/ExtensionSelector';
+import ExtensionCreate from './pages/ExtensionCreate';
+
 const Logo = () => {
   return (
     <div className="font-lexend text-[3rem] font-black">
@@ -6,16 +12,43 @@ const Logo = () => {
   );
 };
 
-const App = () => {
+const MaximizeIcon = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 px-8 py-4">
-        <Logo />
-      </header>
-      <main className="p-8">
-        {/* App content goes here */}
-      </main>
-    </div>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.2572 2.95556V8.66557H24V0H15.3344V1.74276H21.0444L1.74276 21.0444V15.3344H0V24H8.66557V22.2572H2.95556L22.2572 2.95556Z" fill="black"/>
+    </svg>
+  );
+};
+
+const App = () => {
+  const [selectedExtension, setSelectedExtension] = useState('');
+
+  return (
+    <ExtensionsProvider>
+      <HashRouter>
+        <div className="min-h-screen bg-white">
+          <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <Logo />
+              <ExtensionSelector value={selectedExtension} onChange={setSelectedExtension} />
+              <Link 
+                to="/extension/create"
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                + Extension
+              </Link>
+            </div>
+            <MaximizeIcon />
+          </header>
+          <main className="p-6">
+            <Routes>
+              <Route path="/extension/create" element={<ExtensionCreate />} />
+              <Route path="/" element={<div>Home</div>} />
+            </Routes>
+          </main>
+        </div>
+      </HashRouter>
+    </ExtensionsProvider>
   );
 };
 

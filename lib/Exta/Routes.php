@@ -27,6 +27,12 @@ class Routes
             'callback' => [$this, 'saveCollection'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
+
+        register_rest_route('gateway/v1', '/extensions', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getExtensions'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
     }
 
     /**
@@ -70,6 +76,56 @@ class Routes
             'message' => 'Collection saved successfully',
             'file_path' => $file_path,
             'bytes_written' => $result
+        ], 200);
+    }
+
+    /**
+     * Get all extensions from JSON files in extensions directory
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function getExtensions($request)
+    {
+        $extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
+        $extensions = [];
+
+        // Check if directory exists
+        if (!is_dir($extensions_dir)) {
+            return new \WP_REST_Response([
+                'success' => true,
+                'extensions' => []
+            ], 200);
+        }
+
+        // Scan directory for JSON files
+        $files = glob($extensions_dir . '/*.json');
+
+        if ($files === false) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Failed to read extensions directory'
+            ], 500);
+        }
+
+        // Parse each JSON file
+        foreach ($files as $file) {
+            $json_content = file_get_contents($file);
+            
+            if ($json_content === false) {
+                continue;
+            }
+
+            $parsed = json_decode($json_content, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && $parsed !== null) {
+                $extensions[] = $parsed;
+            }
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'extensions' => $extensions
         ], 200);
     }
 

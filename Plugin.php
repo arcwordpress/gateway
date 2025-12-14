@@ -77,6 +77,7 @@ class Plugin
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
+        new Exta\Routes();
         $this->init();
     }
 
