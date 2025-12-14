@@ -22,9 +22,14 @@ class Routes
      */
     public function registerRoutes()
     {
-        register_rest_route('gateway/v1', '/exta/collection/save', [
-            'methods' => 'POST',
-            'callback' => [$this, 'saveCollection'],
+        register_rest_route('gateway/v1', '/extensions/(?P<key>[^/]+)/collections', [
+            'methods' => ['GET', 'POST'],
+            'callback' => function($request) {
+                if ($request->get_method() === 'POST') {
+                    return $this->saveCollection($request);
+                }
+                return $this->getCollections($request);
+            },
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
@@ -58,13 +63,32 @@ class Routes
             ], 400);
         }
 
-        // Ensure gateway directory exists
-        $gateway_dir = WP_CONTENT_DIR . '/gateway';
-        if (!is_dir($gateway_dir)) {
-            mkdir($gateway_dir, 0755, true);
+        // Get extension key from URL parameter
+        $extension_key = $request->get_param('key');
+
+        if (empty($extension_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension key is required'
+            ], 400);
         }
 
-        $file_path = $gateway_dir . '/collection-exta.json';
+        if (!isset($json_data['key']) || empty($json_data['key'])) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Collection key is required'
+            ], 400);
+        }
+
+        $collection_key = $json_data['key'];
+
+        // Ensure collections directory exists for this extension
+        $collections_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key . '/collections';
+        if (!is_dir($collections_dir)) {
+            mkdir($collections_dir, 0755, true);
+        }
+
+        $file_path = $collections_dir . '/' . $collection_key . '.json';
 
         // Save JSON to file
         $json_string = json_encode($json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -82,6 +106,66 @@ class Routes
             'message' => 'Collection saved successfully',
             'file_path' => $file_path,
             'bytes_written' => $result
+        ], 200);
+    }
+
+    /**
+     * Get all collections for a specific extension
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function getCollections($request)
+    {
+        // Get extension key from URL parameter
+        $extension_key = $request->get_param('key');
+
+        if (empty($extension_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension key is required'
+            ], 400);
+        }
+
+        $collections_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key . '/collections';
+        $collections = [];
+
+        // Check if directory exists
+        if (!is_dir($collections_dir)) {
+            return new \WP_REST_Response([
+                'success' => true,
+                'collections' => []
+            ], 200);
+        }
+
+        // Scan directory for JSON files
+        $files = glob($collections_dir . '/*.json');
+
+        if ($files === false) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Failed to read collections directory'
+            ], 500);
+        }
+
+        // Parse each JSON file
+        foreach ($files as $file) {
+            $json_content = file_get_contents($file);
+            
+            if ($json_content === false) {
+                continue;
+            }
+
+            $parsed = json_decode($json_content, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && $parsed !== null) {
+                $collections[] = $parsed;
+            }
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'collections' => $collections
         ], 200);
     }
 
@@ -104,19 +188,25 @@ class Routes
             ], 200);
         }
 
-        // Scan directory for JSON files
-        $files = glob($extensions_dir . '/*.json');
+        // Scan directory for subdirectories
+        $dirs = glob($extensions_dir . '/*', GLOB_ONLYDIR);
 
-        if ($files === false) {
+        if ($dirs === false) {
             return new \WP_REST_Response([
                 'success' => false,
                 'message' => 'Failed to read extensions directory'
             ], 500);
         }
 
-        // Parse each JSON file
-        foreach ($files as $file) {
-            $json_content = file_get_contents($file);
+        // Parse extension.json from each subdirectory
+        foreach ($dirs as $dir) {
+            $extension_file = $dir . '/extension.json';
+            
+            if (!file_exists($extension_file)) {
+                continue;
+            }
+            
+            $json_content = file_get_contents($extension_file);
             
             if ($json_content === false) {
                 continue;
@@ -159,21 +249,25 @@ class Routes
             ], 400);
         }
 
-        // Ensure extensions directory exists
-        $extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
-        if (!is_dir($extensions_dir)) {
-            mkdir($extensions_dir, 0755, true);
-        }
+        $extension_key = $json_data['key'];
 
-        $file_path = $extensions_dir . '/' . $json_data['key'] . '.json';
-
-        // Check if file already exists
-        if (file_exists($file_path)) {
+        // Ensure extension directory exists
+        $extension_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key;
+        if (is_dir($extension_dir)) {
             return new \WP_REST_Response([
                 'success' => false,
                 'message' => 'Extension with this key already exists'
             ], 409);
         }
+
+        if (!mkdir($extension_dir, 0755, true)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Failed to create extension directory'
+            ], 500);
+        }
+
+        $file_path = $extension_dir . '/extension.json';
 
         // Save JSON to file
         $json_string = json_encode($json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);

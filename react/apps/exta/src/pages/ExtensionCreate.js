@@ -2,13 +2,13 @@ import { useState } from '@wordpress/element';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ExtensionCreateForm from '../components/ExtensionCreateForm';
-import { useExtensions } from '../context/ExtensionsContext';
+import { useExtensionList } from '../context/ExtensionListContext';
 
 const ExtensionCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { refetch } = useExtensions();
+  const { refetch } = useExtensionList();
 
   const handleSubmit = async (data) => {
     setIsSubmitting(true);

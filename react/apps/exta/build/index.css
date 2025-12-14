@@ -587,6 +587,9 @@
   .flex {
     display: flex;
   }
+  .grid {
+    display: grid;
+  }
   .hidden {
     display: none;
   }
@@ -620,6 +623,9 @@
   .justify-between {
     justify-content: space-between;
   }
+  .gap-4 {
+    gap: calc(var(--spacing) * 4);
+  }
   .gap-6 {
     gap: calc(var(--spacing) * 6);
   }
@@ -628,6 +634,13 @@
       --tw-space-y-reverse: 0;
       margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
       margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
+    }
+  }
+  .space-y-6 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 6) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 6) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
   .overflow-auto {
@@ -700,6 +713,10 @@
     font-size: var(--text-sm);
     line-height: var(--tw-leading, var(--text-sm--line-height));
   }
+  .text-xl {
+    font-size: var(--text-xl);
+    line-height: var(--tw-leading, var(--text-xl--line-height));
+  }
   .text-\[3rem\] {
     font-size: 3rem;
   }
@@ -714,6 +731,13 @@
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
+  }
+  .font-semibold {
+    --tw-font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-semibold);
+  }
+  .text-gray-500 {
+    color: var(--color-gray-500);
   }
   .text-gray-600 {
     color: var(--color-gray-600);

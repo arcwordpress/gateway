@@ -1,12 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
-import { useExtensions } from '../context/ExtensionsContext';
+import { useExtensionList } from '../context/ExtensionListContext';
 import { useEffect } from '@wordpress/element';
 
 const ExtensionView = () => {
   const { key } = useParams();
-  const { extensions } = useExtensions();
-  const { activeExtension, setActiveExtension } = useActiveExtension();
+  const { extensions } = useExtensionList();
+  const { activeExtension, setActiveExtension, collections, collectionsLoading, collectionsError } = useActiveExtension();
 
   // Set active extension based on URL param
   useEffect(() => {
@@ -33,13 +33,39 @@ const ExtensionView = () => {
           + Collection
         </Link>
       </div>
-      <div className="space-y-4">
+      
+      <div className="space-y-6">
         <div>
           <span className="font-medium">Key:</span> {activeExtension.key}
         </div>
-        <pre className="p-4 bg-gray-50 rounded-lg overflow-auto">
-          {JSON.stringify(activeExtension, null, 2)}
-        </pre>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Collections</h2>
+          {collectionsLoading && <div>Loading collections...</div>}
+          {collectionsError && <div className="text-red-600">{collectionsError}</div>}
+          {!collectionsLoading && !collectionsError && collections.length === 0 && (
+            <div className="text-gray-500">No collections yet</div>
+          )}
+          {!collectionsLoading && collections.length > 0 && (
+            <div className="grid gap-4">
+              {collections.map((collection) => (
+                <div key={collection.key} className="p-4 border rounded-lg">
+                  <h3 className="font-medium">{collection.title || collection.key}</h3>
+                  {collection.description && (
+                    <p className="text-gray-600 text-sm mt-1">{collection.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Extension Data</h2>
+          <pre className="p-4 bg-gray-50 rounded-lg overflow-auto">
+            {JSON.stringify(activeExtension, null, 2)}
+          </pre>
+        </div>
       </div>
     </div>
   );

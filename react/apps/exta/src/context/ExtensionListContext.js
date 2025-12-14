@@ -1,17 +1,17 @@
 import { createContext, useContext, useState, useEffect, useCallback } from '@wordpress/element';
 import axios from 'axios';
 
-const ExtensionsContext = createContext();
+const ExtensionListContext = createContext();
 
-export const useExtensions = () => {
-  const context = useContext(ExtensionsContext);
+export const useExtensionList = () => {
+  const context = useContext(ExtensionListContext);
   if (!context) {
-    throw new Error('useExtensions must be used within ExtensionsProvider');
+    throw new Error('useExtensionList must be used within ExtensionListProvider');
   }
   return context;
 };
 
-export const ExtensionsProvider = ({ children }) => {
+export const ExtensionListProvider = ({ children }) => {
   const [extensions, setExtensions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,8 +55,8 @@ export const ExtensionsProvider = ({ children }) => {
   };
 
   return (
-    <ExtensionsContext.Provider value={value}>
+    <ExtensionListContext.Provider value={value}>
       {children}
-    </ExtensionsContext.Provider>
+    </ExtensionListContext.Provider>
   );
 };

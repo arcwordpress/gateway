@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useExtensions } from '../context/ExtensionsContext';
+import { useExtensionList } from '../context/ExtensionListContext';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 
 const ExtensionSelector = () => {
   const navigate = useNavigate();
-  const { extensions, loading, error } = useExtensions();
+  const { extensions, loading, error } = useExtensionList();
   const { activeExtension, setActiveExtension } = useActiveExtension();
 
   if (loading) {

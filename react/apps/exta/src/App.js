@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
-import { ExtensionsProvider } from './context/ExtensionsContext';
+import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import ExtensionSelector from './components/ExtensionSelector';
 import ExtensionCreate from './pages/ExtensionCreate';
@@ -24,7 +24,7 @@ const MaximizeIcon = () => {
 
 const App = () => {
   return (
-    <ExtensionsProvider>
+    <ExtensionListProvider>
       <ActiveExtensionProvider>
         <HashRouter>
           <div className="min-h-screen bg-white">
@@ -52,7 +52,7 @@ const App = () => {
         </div>
       </HashRouter>
       </ActiveExtensionProvider>
-    </ExtensionsProvider>
+    </ExtensionListProvider>
   );
 };
 
