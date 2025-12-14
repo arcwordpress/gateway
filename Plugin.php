@@ -97,7 +97,8 @@ class Plugin
 
         // Initialize admin pages
         Admin\Page::init();
-        Admin\CollectionMenus::init();
+        Admin\Records::init();
+        Admin\Builder::init();
         Package\PackageMenus::init(); // Add this line
 
         // Initialize front-end forms

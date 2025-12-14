@@ -9,22 +9,22 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class CollectionMenus
+class Records
 {
     /**
-     * Initialize collection menus
+     * Initialize records menu
      */
     public static function init()
     {
         // Hook into admin_menu with priority 20 to ensure collections are registered first
-        add_action('admin_menu', [__CLASS__, 'add_collection_menus'], 20);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_studio_app']);
+        add_action('admin_menu', [__CLASS__, 'addRecordsMenu'], 20);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueStudioApp']);
     }
 
     /**
-     * Add a single Records submenu item
+     * Add Records submenu item
      */
-    public static function add_collection_menus()
+    public static function addRecordsMenu()
     {
         $registry = Plugin::getInstance()->getRegistry();
         $collections = $registry->getAll();
@@ -40,14 +40,14 @@ class CollectionMenus
             'Records', // Menu title
             'manage_options', // Capability
             'gateway-collections', // Menu slug
-            [__CLASS__, 'render_collection_page']
+            [__CLASS__, 'renderCollectionPage']
         );
     }
 
     /**
      * Enqueue the React studio app for collection pages
      */
-    public static function enqueue_studio_app($hook)
+    public static function enqueueStudioApp($hook)
     {
         // Only load on the records page
         if ($hook !== 'gateway_page_gateway-collections') {
@@ -100,40 +100,9 @@ class CollectionMenus
     }
 
     /**
-     * Get the title for a collection
-     *
-     * @param \Gateway\Collection $collection
-     * @return string
-     */
-    private static function getCollectionTitle($collection)
-    {
-        // Check if collection has a title property
-        $reflectionClass = new \ReflectionClass($collection);
-
-        if ($reflectionClass->hasProperty('title')) {
-            $property = $reflectionClass->getProperty('title');
-            $property->setAccessible(true);
-            $title = $property->getValue($collection);
-
-            if (!empty($title)) {
-                return $title;
-            }
-        }
-
-        // Fallback: Generate title from class name
-        $className = class_basename(get_class($collection));
-        $name = str_replace('Collection', '', $className);
-
-        // Convert PascalCase to Title Case with spaces
-        $title = preg_replace('/(?<!^)[A-Z]/', ' $0', $name);
-
-        return ucwords($title);
-    }
-
-    /**
      * Render the records admin page
      */
-    public static function render_collection_page()
+    public static function renderCollectionPage()
     {
         ?>
         <div gateway-studio-app data-package="default"></div>
