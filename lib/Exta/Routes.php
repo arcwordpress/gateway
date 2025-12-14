@@ -33,6 +33,12 @@ class Routes
             'callback' => [$this, 'getExtensions'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
+
+        register_rest_route('gateway/v1', '/extensions', [
+            'methods' => 'POST',
+            'callback' => [$this, 'createExtension'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
     }
 
     /**
@@ -127,6 +133,65 @@ class Routes
             'success' => true,
             'extensions' => $extensions
         ], 200);
+    }
+
+    /**
+     * Create a new extension
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function createExtension($request)
+    {
+        $json_data = $request->get_json_params();
+
+        if (empty($json_data)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'No JSON data provided'
+            ], 400);
+        }
+
+        if (!isset($json_data['key']) || empty($json_data['key'])) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension key is required'
+            ], 400);
+        }
+
+        // Ensure extensions directory exists
+        $extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
+        if (!is_dir($extensions_dir)) {
+            mkdir($extensions_dir, 0755, true);
+        }
+
+        $file_path = $extensions_dir . '/' . $json_data['key'] . '.json';
+
+        // Check if file already exists
+        if (file_exists($file_path)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension with this key already exists'
+            ], 409);
+        }
+
+        // Save JSON to file
+        $json_string = json_encode($json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $result = file_put_contents($file_path, $json_string);
+
+        if ($result === false) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Failed to save extension file'
+            ], 500);
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'message' => 'Extension created successfully',
+            'file_path' => $file_path,
+            'extension' => $json_data
+        ], 201);
     }
 
     /**

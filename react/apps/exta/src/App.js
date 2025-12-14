@@ -1,6 +1,6 @@
-import { useState } from '@wordpress/element';
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { ExtensionsProvider } from './context/ExtensionsContext';
+import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import ExtensionSelector from './components/ExtensionSelector';
 import ExtensionCreate from './pages/ExtensionCreate';
 
@@ -21,17 +21,16 @@ const MaximizeIcon = () => {
 };
 
 const App = () => {
-  const [selectedExtension, setSelectedExtension] = useState('');
-
   return (
     <ExtensionsProvider>
-      <HashRouter>
-        <div className="min-h-screen bg-white">
-          <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Logo />
-              <ExtensionSelector value={selectedExtension} onChange={setSelectedExtension} />
-              <Link 
+      <ActiveExtensionProvider>
+        <HashRouter>
+          <div className="min-h-screen bg-white">
+            <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <Logo />
+                <ExtensionSelector />
+                <Link 
                 to="/extension/create"
                 className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
               >
@@ -49,7 +48,8 @@ const App = () => {
         </div>
       </HashRouter>
     </ExtensionsProvider>
-  );
+  );  </ActiveExtensionProvider>
+    
 };
 
 export default App;

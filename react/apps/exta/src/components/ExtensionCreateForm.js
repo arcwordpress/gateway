@@ -1,7 +1,7 @@
 import { useEffect } from '@wordpress/element';
 import { useForm } from 'react-hook-form';
 
-const ExtensionCreateForm = () => {
+const ExtensionCreateForm = ({ onSubmit: onSubmitProp, isSubmitting }) => {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       title: '',
@@ -22,12 +22,8 @@ const ExtensionCreateForm = () => {
     }
   }, [titleValue, setValue]);
 
-  const onSubmit = (data) => {
-    console.log('Form submitted:', data);
-  };
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmitProp)} className="space-y-4">
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
           Title
@@ -63,9 +59,10 @@ const ExtensionCreateForm = () => {
 
       <button
         type="submit"
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        disabled={isSubmitting}
+        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Create Extension
+        {isSubmitting ? 'Creating...' : 'Create Extension'}
       </button>
     </form>
   );

@@ -1,7 +1,9 @@
 import { useExtensions } from '../context/ExtensionsContext';
+import { useActiveExtension } from '../context/ActiveExtensionContext';
 
-const ExtensionSelector = ({ value, onChange }) => {
+const ExtensionSelector = () => {
   const { extensions, loading, error } = useExtensions();
+  const { activeExtension, setActiveExtension } = useActiveExtension();
 
   if (loading) {
     return (
@@ -30,12 +32,15 @@ const ExtensionSelector = ({ value, onChange }) => {
   return (
     <select
       className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
+      value={activeExtension?.key || ''}
+      onChange={(e) => {
+        const selected = extensions.find(ext => ext.key === e.target.value);
+        setActiveExtension(selected || null);
+      }}
     >
       <option value="">Select an extension</option>
       {extensions.map((extension, index) => (
-        <option key={index} value={index}>
+        <option key={extension.key || index} value={extension.key}>
           {extension.title || `Extension ${index + 1}`}
         </option>
       ))}
