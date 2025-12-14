@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { useExtensions } from '../context/ExtensionsContext';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 
 const ExtensionSelector = () => {
+  const navigate = useNavigate();
   const { extensions, loading, error } = useExtensions();
   const { activeExtension, setActiveExtension } = useActiveExtension();
 
@@ -35,7 +37,13 @@ const ExtensionSelector = () => {
       value={activeExtension?.key || ''}
       onChange={(e) => {
         const selected = extensions.find(ext => ext.key === e.target.value);
-        setActiveExtension(selected || null);
+        if (selected) {
+          setActiveExtension(selected);
+          navigate(`/extension/${selected.key}`);
+        } else {
+          setActiveExtension(null);
+          navigate('/');
+        }
       }}
     >
       <option value="">Select an extension</option>

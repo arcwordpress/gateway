@@ -3,6 +3,8 @@ import { ExtensionsProvider } from './context/ExtensionsContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import ExtensionSelector from './components/ExtensionSelector';
 import ExtensionCreate from './pages/ExtensionCreate';
+import ExtensionView from './pages/ExtensionView';
+import CollectionCreate from './pages/CollectionCreate';
 
 const Logo = () => {
   return (
@@ -42,14 +44,16 @@ const App = () => {
           <main className="p-6">
             <Routes>
               <Route path="/extension/create" element={<ExtensionCreate />} />
+              <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
+              <Route path="/extension/:key" element={<ExtensionView />} />
               <Route path="/" element={<div>Home</div>} />
             </Routes>
           </main>
         </div>
       </HashRouter>
+      </ActiveExtensionProvider>
     </ExtensionsProvider>
-  );  </ActiveExtensionProvider>
-    
+  );
 };
 
 export default App;
