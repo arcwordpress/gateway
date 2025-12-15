@@ -16060,6 +16060,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_ExtensionCreate__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/ExtensionCreate */ "./src/pages/ExtensionCreate.js");
 /* harmony import */ var _pages_ExtensionView__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pages/ExtensionView */ "./src/pages/ExtensionView.js");
 /* harmony import */ var _pages_CollectionCreate__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./pages/CollectionCreate */ "./src/pages/CollectionCreate.js");
+/* harmony import */ var _pages_CollectionEditor__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pages/CollectionEditor */ "./src/pages/CollectionEditor.js");
+
 
 
 
@@ -16103,6 +16105,9 @@ const App = () => {
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/extension/:key/collection/create",
     element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_CollectionCreate__WEBPACK_IMPORTED_MODULE_8__["default"], null)
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+    path: "/extension/:key/:collectionKey",
+    element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_CollectionEditor__WEBPACK_IMPORTED_MODULE_9__["default"], null)
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
     path: "/extension/:key",
     element: (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_pages_ExtensionView__WEBPACK_IMPORTED_MODULE_7__["default"], null)
@@ -16556,7 +16561,8 @@ const CollectionCreate = () => {
     key: extensionKey
   } = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useParams)();
   const {
-    activeExtension
+    activeExtension,
+    setActiveExtension
   } = (0,_context_ActiveExtensionContext__WEBPACK_IMPORTED_MODULE_5__.useActiveExtension)();
   const handleSubmit = async data => {
     setIsSubmitting(true);
@@ -16569,6 +16575,10 @@ const CollectionCreate = () => {
         }
       });
       if (response.data.success) {
+        // Update active extension with returned data including collections
+        if (response.data.extension) {
+          setActiveExtension(response.data.extension);
+        }
         // Redirect back to extension view
         navigate(`/extension/${extensionKey}`);
       } else {
@@ -16596,6 +16606,190 @@ const CollectionCreate = () => {
   }));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CollectionCreate);
+
+/***/ }),
+
+/***/ "./src/pages/CollectionEditor.js":
+/*!***************************************!*\
+  !*** ./src/pages/CollectionEditor.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
+/* harmony import */ var _context_ActiveExtensionContext__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../context/ActiveExtensionContext */ "./src/context/ActiveExtensionContext.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
+
+
+
+
+const CollectionEditor = () => {
+  const {
+    key: extensionKey,
+    collectionKey
+  } = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useParams)();
+  const navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useNavigate)();
+  const {
+    activeExtension,
+    collections,
+    collectionsLoading,
+    refetchCollections
+  } = (0,_context_ActiveExtensionContext__WEBPACK_IMPORTED_MODULE_3__.useActiveExtension)();
+  const [collection, setCollection] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [formData, setFormData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)({
+    title: '',
+    key: ''
+  });
+  const [isSubmitting, setIsSubmitting] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [error, setError] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [successMessage, setSuccessMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (!collectionsLoading && collections.length > 0) {
+      const found = collections.find(c => c.key === collectionKey);
+      if (found) {
+        setCollection(found);
+        setFormData({
+          title: found.title || '',
+          key: found.key || ''
+        });
+      } else {
+        setCollection(null);
+      }
+    }
+  }, [collectionKey, collections, collectionsLoading]);
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const response = await (0,axios__WEBPACK_IMPORTED_MODULE_4__["default"])({
+        method: 'PUT',
+        url: `${window.gatewayAdminScript.apiUrl}gateway/v1/extensions/${extensionKey}/collections/${collectionKey}`,
+        data: {
+          ...collection,
+          ...formData
+        },
+        headers: {
+          'X-WP-Nonce': window.gatewayAdminScript.nonce,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.data.success) {
+        setSuccessMessage('Collection updated successfully');
+        await refetchCollections();
+
+        // If key changed, navigate to new URL
+        if (response.data.key_changed) {
+          setTimeout(() => {
+            navigate(`/extension/${extensionKey}/${response.data.new_key}`);
+          }, 1000);
+        }
+      } else {
+        setError(response.data.message || 'Failed to update collection');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to update collection');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleChange = e => {
+    const {
+      name,
+      value
+    } = e.target;
+    if (name === 'title') {
+      // Auto-generate key from title
+      const generatedKey = value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      setFormData(prev => ({
+        ...prev,
+        title: value,
+        key: generatedKey
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+  if (collectionsLoading) {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, "Loading collection...");
+  }
+  if (!collection) {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+      className: "text-2xl font-bold mb-4"
+    }, "Collection not found"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+      onClick: () => navigate(`/extension/${extensionKey}`),
+      className: "px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+    }, "Back to Extension"));
+  }
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mb-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    onClick: () => navigate(`/extension/${extensionKey}`),
+    className: "text-gray-600 hover:text-gray-800 mb-2"
+  }, "\u2190 Back to ", activeExtension?.title || 'Extension'), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "text-2xl font-bold"
+  }, "Edit Collection")), successMessage && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600"
+  }, successMessage), error && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600"
+  }, error), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white border rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold mb-4"
+  }, "Collection Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
+    onSubmit: handleSubmit,
+    className: "space-y-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    htmlFor: "title",
+    className: "block text-sm font-medium text-gray-700 mb-1"
+  }, "Title"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    id: "title",
+    name: "title",
+    type: "text",
+    value: formData.title,
+    onChange: handleChange,
+    required: true,
+    className: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "Enter collection title"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    htmlFor: "key",
+    className: "block text-sm font-medium text-gray-700 mb-1"
+  }, "Key"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    id: "key",
+    name: "key",
+    type: "text",
+    value: formData.key,
+    onChange: handleChange,
+    required: true,
+    className: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "collection_key"
+  }), formData.key !== collectionKey && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "mt-1 text-sm text-amber-600"
+  }, "Warning: Changing the key will rename the collection file")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "submit",
+    disabled: isSubmitting,
+    className: "px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+  }, isSubmitting ? 'Saving...' : 'Save Changes'))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold mb-4"
+  }, "Collection Data"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("pre", {
+    className: "p-4 bg-gray-50 rounded-lg overflow-auto"
+  }, JSON.stringify(collection, null, 2)))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CollectionEditor);
 
 /***/ }),
 
@@ -16738,9 +16932,10 @@ const ExtensionView = () => {
     className: "text-gray-500"
   }, "No collections yet"), !collectionsLoading && collections.length > 0 && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "grid gap-4"
-  }, collections.map(collection => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, collections.map(collection => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Link, {
     key: collection.key,
-    className: "p-4 border rounded-lg"
+    to: `/extension/${activeExtension.key}/${collection.key}`,
+    className: "block p-4 border rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
     className: "font-medium"
   }, collection.title || collection.key), collection.description && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {

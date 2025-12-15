@@ -5,6 +5,7 @@ import ExtensionSelector from './components/ExtensionSelector';
 import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
+import CollectionEditor from './pages/CollectionEditor';
 
 const Logo = () => {
   return (
@@ -45,6 +46,7 @@ const App = () => {
             <Routes>
               <Route path="/extension/create" element={<ExtensionCreate />} />
               <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
+              <Route path="/extension/:key/:collectionKey" element={<CollectionEditor />} />
               <Route path="/extension/:key" element={<ExtensionView />} />
               <Route path="/" element={<div>Home</div>} />
             </Routes>

@@ -49,12 +49,16 @@ const ExtensionView = () => {
           {!collectionsLoading && collections.length > 0 && (
             <div className="grid gap-4">
               {collections.map((collection) => (
-                <div key={collection.key} className="p-4 border rounded-lg">
+                <Link
+                  key={collection.key}
+                  to={`/extension/${activeExtension.key}/${collection.key}`}
+                  className="block p-4 border rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                >
                   <h3 className="font-medium">{collection.title || collection.key}</h3>
                   {collection.description && (
                     <p className="text-gray-600 text-sm mt-1">{collection.description}</p>
                   )}
-                </div>
+                </Link>
               ))}
             </div>
           )}

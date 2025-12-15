@@ -9,7 +9,7 @@ const CollectionCreate = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { key: extensionKey } = useParams();
-  const { activeExtension } = useActiveExtension();
+  const { activeExtension, setActiveExtension } = useActiveExtension();
 
   const handleSubmit = async (data) => {
     setIsSubmitting(true);
@@ -28,6 +28,10 @@ const CollectionCreate = () => {
       );
 
       if (response.data.success) {
+        // Update active extension with returned data including collections
+        if (response.data.extension) {
+          setActiveExtension(response.data.extension);
+        }
         // Redirect back to extension view
         navigate(`/extension/${extensionKey}`);
       } else {
