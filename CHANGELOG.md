@@ -2,6 +2,14 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.1.9] - 2025-12-16
+
+### Added 
+- Prototype no/low code extension builder interface.
+
+### Fixed 
+- Permissions handling with new authorization trait.
+
 ## [1.1.8] - 2025-12-08
 
 ### Added 
