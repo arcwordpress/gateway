@@ -1,17 +1,33 @@
 import { useState, useEffect } from '@wordpress/element';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
+import { useExtensionList } from '../context/ExtensionListContext';
+import FieldEditor from '../components/FieldEditor';
+import FilterEditor from '../components/FilterEditor';
+import ColumnEditor from '../components/ColumnEditor';
 import axios from 'axios';
 
 const CollectionEditor = () => {
   const { key: extensionKey, collectionKey } = useParams();
   const navigate = useNavigate();
-  const { activeExtension, collections, collectionsLoading, refetchCollections } = useActiveExtension();
+  const { activeExtension, setActiveExtension, collections, collectionsLoading, refetchCollections } = useActiveExtension();
+  const { extensions } = useExtensionList();
   const [collection, setCollection] = useState(null);
-  const [formData, setFormData] = useState({ title: '', key: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ title: '', key: '', fields: [], filters: [], columns: [] });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Set active extension based on URL param (handles page refresh)
+  useEffect(() => {
+    if (extensionKey && extensions.length > 0) {
+      const extension = extensions.find(ext => ext.key === extensionKey);
+      if (extension && (!activeExtension || activeExtension.key !== extensionKey)) {
+        setActiveExtension(extension);
+      }
+    }
+  }, [extensionKey, extensions, activeExtension, setActiveExtension]);
 
   useEffect(() => {
     if (!collectionsLoading && collections.length > 0) {
@@ -21,6 +37,9 @@ const CollectionEditor = () => {
         setFormData({
           title: found.title || '',
           key: found.key || '',
+          fields: found.fields || [],
+          filters: found.filters || [],
+          columns: found.columns || [],
         });
       } else {
         setCollection(null);
@@ -28,11 +47,10 @@ const CollectionEditor = () => {
     }
   }, [collectionKey, collections, collectionsLoading]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const saveChanges = async () => {
+    setIsSaving(true);
+    setSaveStatus('saving');
     setError(null);
-    setSuccessMessage(null);
 
     try {
       const response = await axios({
@@ -46,8 +64,14 @@ const CollectionEditor = () => {
       });
 
       if (response.data.success) {
-        setSuccessMessage('Collection updated successfully');
-        await refetchCollections();
+        setSaveStatus('saved');
+        setHasUnsavedChanges(false);
+        
+        // Update local collection state with saved data
+        setCollection({ ...collection, ...formData });
+        
+        // Clear saved status after 2 seconds
+        setTimeout(() => setSaveStatus(null), 2000);
         
         // If key changed, navigate to new URL
         if (response.data.key_changed) {
@@ -56,14 +80,27 @@ const CollectionEditor = () => {
           }, 1000);
         }
       } else {
+        setSaveStatus('error');
         setError(response.data.message || 'Failed to update collection');
       }
     } catch (err) {
+      setSaveStatus('error');
       setError(err.response?.data?.message || err.message || 'Failed to update collection');
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
+
+  // Autosave with debounce
+  useEffect(() => {
+    if (!hasUnsavedChanges || !collection) return;
+
+    const timeoutId = setTimeout(() => {
+      saveChanges();
+    }, 1500); // Wait 1.5 seconds after last change
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, hasUnsavedChanges]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +115,121 @@ const CollectionEditor = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+    setHasUnsavedChanges(true);
+  };
+
+  const addField = () => {
+    setFormData(prev => ({
+      ...prev,
+      fields: [...prev.fields, { type: 'text', label: '', name: '' }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const removeField = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      fields: prev.fields.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateField = (index, fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      fields: prev.fields.map((field, i) => 
+        i === index ? { ...field, [fieldName]: value } : field
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const moveField = (index, direction) => {
+    const newFields = [...formData.fields];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (newIndex < 0 || newIndex >= newFields.length) return;
+    
+    [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
+    
+    setFormData(prev => ({ ...prev, fields: newFields }));
+    setHasUnsavedChanges(true);
+  };
+
+  const addFilter = () => {
+    setFormData(prev => ({
+      ...prev,
+      filters: [...prev.filters, { type: 'text', field: '', label: '' }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const removeFilter = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      filters: prev.filters.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateFilter = (index, filterName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      filters: prev.filters.map((filter, i) => 
+        i === index ? { ...filter, [filterName]: value } : filter
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const moveFilter = (index, direction) => {
+    const newFilters = [...formData.filters];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (newIndex < 0 || newIndex >= newFilters.length) return;
+    
+    [newFilters[index], newFilters[newIndex]] = [newFilters[newIndex], newFilters[index]];
+    
+    setFormData(prev => ({ ...prev, filters: newFilters }));
+    setHasUnsavedChanges(true);
+  };
+
+  const addColumn = () => {
+    setFormData(prev => ({
+      ...prev,
+      columns: [...prev.columns, { field: '', label: '', sortable: true }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const removeColumn = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateColumn = (index, columnName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.map((column, i) => 
+        i === index ? { ...column, [columnName]: value } : column
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const moveColumn = (index, direction) => {
+    const newColumns = [...formData.columns];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (newIndex < 0 || newIndex >= newColumns.length) return;
+    
+    [newColumns[index], newColumns[newIndex]] = [newColumns[newIndex], newColumns[index]];
+    
+    setFormData(prev => ({ ...prev, columns: newColumns }));
+    setHasUnsavedChanges(true);
   };
 
   if (collectionsLoading) {
@@ -107,14 +259,19 @@ const CollectionEditor = () => {
         >
           ← Back to {activeExtension?.title || 'Extension'}
         </button>
-        <h1 className="text-2xl font-bold">Edit Collection</h1>
-      </div>
-
-      {successMessage && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
-          {successMessage}
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">Edit Collection</h1>
+          {saveStatus === 'saving' && (
+            <span className="text-sm text-gray-500">Saving...</span>
+          )}
+          {saveStatus === 'saved' && (
+            <span className="text-sm text-green-600">✓ Saved</span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="text-sm text-red-600">✕ Error saving</span>
+          )}
         </div>
-      )}
+      </div>
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
@@ -125,7 +282,7 @@ const CollectionEditor = () => {
       <div className="space-y-6">
         <div className="bg-white border rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Collection Details</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
                 Title
@@ -136,6 +293,7 @@ const CollectionEditor = () => {
                 type="text"
                 value={formData.title}
                 onChange={handleChange}
+                onBlur={() => hasUnsavedChanges && saveChanges()}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter collection title"
@@ -152,6 +310,7 @@ const CollectionEditor = () => {
                 type="text"
                 value={formData.key}
                 onChange={handleChange}
+                onBlur={() => hasUnsavedChanges && saveChanges()}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="collection_key"
@@ -162,15 +321,106 @@ const CollectionEditor = () => {
                 </p>
               )}
             </div>
+          </div>
+        </div>
 
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Fields</h2>
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={addField}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              + Add Field
             </button>
-          </form>
+          </div>
+
+          {formData.fields.length === 0 ? (
+            <p className="text-gray-500 text-sm">No fields yet. Click "Add Field" to create one.</p>
+          ) : (
+            <div className="space-y-3">
+              {formData.fields.map((field, index) => (
+                <FieldEditor
+                  key={index}
+                  field={field}
+                  index={index}
+                  onUpdate={updateField}
+                  onMove={moveField}
+                  onRemove={removeField}
+                  isFirst={index === 0}
+                  isLast={index === formData.fields.length - 1}
+                  onBlur={() => hasUnsavedChanges && saveChanges()}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Filters</h2>
+            <button
+              type="button"
+              onClick={addFilter}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
+            >
+              + Add Filter
+            </button>
+          </div>
+
+          {formData.filters.length === 0 ? (
+            <p className="text-gray-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
+          ) : (
+            <div className="space-y-3">
+              {formData.filters.map((filter, index) => (
+                <FilterEditor
+                  key={index}
+                  filter={filter}
+                  index={index}
+                  onUpdate={updateFilter}
+                  onMove={moveFilter}
+                  onRemove={removeFilter}
+                  isFirst={index === 0}
+                  isLast={index === formData.filters.length - 1}
+                  onBlur={() => hasUnsavedChanges && saveChanges()}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Columns</h2>
+            <button
+              type="button"
+              onClick={addColumn}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              + Add Column
+            </button>
+          </div>
+
+          {formData.columns.length === 0 ? (
+            <p className="text-gray-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
+          ) : (
+            <div className="space-y-3">
+              {formData.columns.map((column, index) => (
+                <ColumnEditor
+                  key={index}
+                  column={column}
+                  index={index}
+                  onUpdate={updateColumn}
+                  onMove={moveColumn}
+                  onRemove={removeColumn}
+                  isFirst={index === 0}
+                  isLast={index === formData.columns.length - 1}
+                  onBlur={() => hasUnsavedChanges && saveChanges()}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

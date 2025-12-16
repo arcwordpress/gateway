@@ -16205,6 +16205,86 @@ const CollectionCreateForm = ({
 
 /***/ }),
 
+/***/ "./src/components/ColumnEditor.js":
+/*!****************************************!*\
+  !*** ./src/components/ColumnEditor.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+const ColumnEditor = ({
+  column,
+  index,
+  onUpdate,
+  onMove,
+  onRemove,
+  isFirst,
+  isLast,
+  onBlur
+}) => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 items-start p-3 bg-gray-50 rounded-lg"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-col gap-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'up'),
+    disabled: isFirst,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25B2"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'down'),
+    disabled: isLast,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25BC")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1 grid grid-cols-3 gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Field"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: column.field,
+    onChange: e => onUpdate(index, 'field', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "field_name"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Label"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: column.label,
+    onChange: e => onUpdate(index, 'label', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "Column Label"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Sortable"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center h-[38px]"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "flex items-center cursor-pointer"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "checkbox",
+    checked: column.sortable || false,
+    onChange: e => onUpdate(index, 'sortable', e.target.checked),
+    className: "w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "ml-2 text-sm text-gray-700"
+  }, "Enable sorting"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onRemove(index),
+    className: "p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+  }, "\u2715"));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ColumnEditor);
+
+/***/ }),
+
 /***/ "./src/components/ExtensionCreateForm.js":
 /*!***********************************************!*\
   !*** ./src/components/ExtensionCreateForm.js ***!
@@ -16359,6 +16439,180 @@ const ExtensionSelector = () => {
   }, extension.title || `Extension ${index + 1}`)));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ExtensionSelector);
+
+/***/ }),
+
+/***/ "./src/components/FieldEditor.js":
+/*!***************************************!*\
+  !*** ./src/components/FieldEditor.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+const FieldEditor = ({
+  field,
+  index,
+  onUpdate,
+  onMove,
+  onRemove,
+  isFirst,
+  isLast,
+  onBlur
+}) => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 items-start p-3 bg-gray-50 rounded-lg"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-col gap-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'up'),
+    disabled: isFirst,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25B2"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'down'),
+    disabled: isLast,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25BC")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1 grid grid-cols-3 gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: field.type,
+    onChange: e => onUpdate(index, 'type', e.target.value),
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "text"
+  }, "Text"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "textarea"
+  }, "Textarea"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "number"
+  }, "Number"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "email"
+  }, "Email"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "url"
+  }, "URL"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "date"
+  }, "Date"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "checkbox"
+  }, "Checkbox"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "select"
+  }, "Select"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Label"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: field.label,
+    onChange: e => onUpdate(index, 'label', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "Field Label"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Name"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: field.name,
+    onChange: e => onUpdate(index, 'name', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "field_name"
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onRemove(index),
+    className: "p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+  }, "\u2715"));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (FieldEditor);
+
+/***/ }),
+
+/***/ "./src/components/FilterEditor.js":
+/*!****************************************!*\
+  !*** ./src/components/FilterEditor.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+const FilterEditor = ({
+  filter,
+  index,
+  onUpdate,
+  onMove,
+  onRemove,
+  isFirst,
+  isLast,
+  onBlur
+}) => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex gap-3 items-start p-3 bg-gray-50 rounded-lg"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex flex-col gap-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'up'),
+    disabled: isFirst,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25B2"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onMove(index, 'down'),
+    disabled: isLast,
+    className: "p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+  }, "\u25BC")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex-1 grid grid-cols-3 gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Type"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("select", {
+    value: filter.type,
+    onChange: e => onUpdate(index, 'type', e.target.value),
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "text"
+  }, "Text"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "select"
+  }, "Select"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "number"
+  }, "Number"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "date"
+  }, "Date"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "daterange"
+  }, "Date Range"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("option", {
+    value: "checkbox"
+  }, "Checkbox"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Field"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: filter.field,
+    onChange: e => onUpdate(index, 'field', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "field_name"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
+    className: "block text-xs font-medium text-gray-700 mb-1"
+  }, "Label"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("input", {
+    type: "text",
+    value: filter.label,
+    onChange: e => onUpdate(index, 'label', e.target.value),
+    onBlur: onBlur,
+    className: "w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500",
+    placeholder: "Filter Label"
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: () => onRemove(index),
+    className: "p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+  }, "\u2715"));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (FilterEditor);
 
 /***/ }),
 
@@ -16625,7 +16879,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
 /* harmony import */ var _context_ActiveExtensionContext__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../context/ActiveExtensionContext */ "./src/context/ActiveExtensionContext.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var _context_ExtensionListContext__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../context/ExtensionListContext */ "./src/context/ExtensionListContext.js");
+/* harmony import */ var _components_FieldEditor__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../components/FieldEditor */ "./src/components/FieldEditor.js");
+/* harmony import */ var _components_FilterEditor__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../components/FilterEditor */ "./src/components/FilterEditor.js");
+/* harmony import */ var _components_ColumnEditor__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../components/ColumnEditor */ "./src/components/ColumnEditor.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+
+
+
+
 
 
 
@@ -16639,18 +16901,36 @@ const CollectionEditor = () => {
   const navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useNavigate)();
   const {
     activeExtension,
+    setActiveExtension,
     collections,
     collectionsLoading,
     refetchCollections
   } = (0,_context_ActiveExtensionContext__WEBPACK_IMPORTED_MODULE_3__.useActiveExtension)();
+  const {
+    extensions
+  } = (0,_context_ExtensionListContext__WEBPACK_IMPORTED_MODULE_4__.useExtensionList)();
   const [collection, setCollection] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
   const [formData, setFormData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)({
     title: '',
-    key: ''
+    key: '',
+    fields: [],
+    filters: [],
+    columns: []
   });
-  const [isSubmitting, setIsSubmitting] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [isSaving, setIsSaving] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [saveStatus, setSaveStatus] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null); // 'saving', 'saved', 'error'
   const [error, setError] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-  const [successMessage, setSuccessMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+
+  // Set active extension based on URL param (handles page refresh)
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (extensionKey && extensions.length > 0) {
+      const extension = extensions.find(ext => ext.key === extensionKey);
+      if (extension && (!activeExtension || activeExtension.key !== extensionKey)) {
+        setActiveExtension(extension);
+      }
+    }
+  }, [extensionKey, extensions, activeExtension, setActiveExtension]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     if (!collectionsLoading && collections.length > 0) {
       const found = collections.find(c => c.key === collectionKey);
@@ -16658,20 +16938,22 @@ const CollectionEditor = () => {
         setCollection(found);
         setFormData({
           title: found.title || '',
-          key: found.key || ''
+          key: found.key || '',
+          fields: found.fields || [],
+          filters: found.filters || [],
+          columns: found.columns || []
         });
       } else {
         setCollection(null);
       }
     }
   }, [collectionKey, collections, collectionsLoading]);
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const saveChanges = async () => {
+    setIsSaving(true);
+    setSaveStatus('saving');
     setError(null);
-    setSuccessMessage(null);
     try {
-      const response = await (0,axios__WEBPACK_IMPORTED_MODULE_4__["default"])({
+      const response = await (0,axios__WEBPACK_IMPORTED_MODULE_8__["default"])({
         method: 'PUT',
         url: `${window.gatewayAdminScript.apiUrl}gateway/v1/extensions/${extensionKey}/collections/${collectionKey}`,
         data: {
@@ -16684,8 +16966,17 @@ const CollectionEditor = () => {
         }
       });
       if (response.data.success) {
-        setSuccessMessage('Collection updated successfully');
-        await refetchCollections();
+        setSaveStatus('saved');
+        setHasUnsavedChanges(false);
+
+        // Update local collection state with saved data
+        setCollection({
+          ...collection,
+          ...formData
+        });
+
+        // Clear saved status after 2 seconds
+        setTimeout(() => setSaveStatus(null), 2000);
 
         // If key changed, navigate to new URL
         if (response.data.key_changed) {
@@ -16694,14 +16985,26 @@ const CollectionEditor = () => {
           }, 1000);
         }
       } else {
+        setSaveStatus('error');
         setError(response.data.message || 'Failed to update collection');
       }
     } catch (err) {
+      setSaveStatus('error');
       setError(err.response?.data?.message || err.message || 'Failed to update collection');
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
+
+  // Autosave with debounce
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (!hasUnsavedChanges || !collection) return;
+    const timeoutId = setTimeout(() => {
+      saveChanges();
+    }, 1500); // Wait 1.5 seconds after last change
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, hasUnsavedChanges]);
   const handleChange = e => {
     const {
       name,
@@ -16721,6 +17024,124 @@ const CollectionEditor = () => {
         [name]: value
       }));
     }
+    setHasUnsavedChanges(true);
+  };
+  const addField = () => {
+    setFormData(prev => ({
+      ...prev,
+      fields: [...prev.fields, {
+        type: 'text',
+        label: '',
+        name: ''
+      }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const removeField = index => {
+    setFormData(prev => ({
+      ...prev,
+      fields: prev.fields.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const updateField = (index, fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      fields: prev.fields.map((field, i) => i === index ? {
+        ...field,
+        [fieldName]: value
+      } : field)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const moveField = (index, direction) => {
+    const newFields = [...formData.fields];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= newFields.length) return;
+    [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
+    setFormData(prev => ({
+      ...prev,
+      fields: newFields
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const addFilter = () => {
+    setFormData(prev => ({
+      ...prev,
+      filters: [...prev.filters, {
+        type: 'text',
+        field: '',
+        label: ''
+      }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const removeFilter = index => {
+    setFormData(prev => ({
+      ...prev,
+      filters: prev.filters.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const updateFilter = (index, filterName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      filters: prev.filters.map((filter, i) => i === index ? {
+        ...filter,
+        [filterName]: value
+      } : filter)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const moveFilter = (index, direction) => {
+    const newFilters = [...formData.filters];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= newFilters.length) return;
+    [newFilters[index], newFilters[newIndex]] = [newFilters[newIndex], newFilters[index]];
+    setFormData(prev => ({
+      ...prev,
+      filters: newFilters
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const addColumn = () => {
+    setFormData(prev => ({
+      ...prev,
+      columns: [...prev.columns, {
+        field: '',
+        label: '',
+        sortable: true
+      }]
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const removeColumn = index => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.filter((_, i) => i !== index)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const updateColumn = (index, columnName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      columns: prev.columns.map((column, i) => i === index ? {
+        ...column,
+        [columnName]: value
+      } : column)
+    }));
+    setHasUnsavedChanges(true);
+  };
+  const moveColumn = (index, direction) => {
+    const newColumns = [...formData.columns];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= newColumns.length) return;
+    [newColumns[index], newColumns[newIndex]] = [newColumns[newIndex], newColumns[index]];
+    setFormData(prev => ({
+      ...prev,
+      columns: newColumns
+    }));
+    setHasUnsavedChanges(true);
   };
   if (collectionsLoading) {
     return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, "Loading collection...");
@@ -16738,11 +17159,17 @@ const CollectionEditor = () => {
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     onClick: () => navigate(`/extension/${extensionKey}`),
     className: "text-gray-600 hover:text-gray-800 mb-2"
-  }, "\u2190 Back to ", activeExtension?.title || 'Extension'), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+  }, "\u2190 Back to ", activeExtension?.title || 'Extension'), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center gap-3"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
     className: "text-2xl font-bold"
-  }, "Edit Collection")), successMessage && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600"
-  }, successMessage), error && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  }, "Edit Collection"), saveStatus === 'saving' && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm text-gray-500"
+  }, "Saving..."), saveStatus === 'saved' && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm text-green-600"
+  }, "\u2713 Saved"), saveStatus === 'error' && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "text-sm text-red-600"
+  }, "\u2715 Error saving"))), error && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600"
   }, error), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "space-y-6"
@@ -16750,8 +17177,7 @@ const CollectionEditor = () => {
     className: "bg-white border rounded-lg p-6"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "text-xl font-semibold mb-4"
-  }, "Collection Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("form", {
-    onSubmit: handleSubmit,
+  }, "Collection Details"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "space-y-4"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("label", {
     htmlFor: "title",
@@ -16762,6 +17188,7 @@ const CollectionEditor = () => {
     type: "text",
     value: formData.title,
     onChange: handleChange,
+    onBlur: () => hasUnsavedChanges && saveChanges(),
     required: true,
     className: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
     placeholder: "Enter collection title"
@@ -16774,16 +17201,85 @@ const CollectionEditor = () => {
     type: "text",
     value: formData.key,
     onChange: handleChange,
+    onBlur: () => hasUnsavedChanges && saveChanges(),
     required: true,
     className: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
     placeholder: "collection_key"
   }), formData.key !== collectionKey && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
     className: "mt-1 text-sm text-amber-600"
-  }, "Warning: Changing the key will rename the collection file")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
-    type: "submit",
-    disabled: isSubmitting,
-    className: "px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-  }, isSubmitting ? 'Saving...' : 'Save Changes'))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+  }, "Warning: Changing the key will rename the collection file")))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white border rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between mb-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold"
+  }, "Fields"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: addField,
+    className: "px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+  }, "+ Add Field")), formData.fields.length === 0 ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-gray-500 text-sm"
+  }, "No fields yet. Click \"Add Field\" to create one.") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3"
+  }, formData.fields.map((field, index) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_FieldEditor__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    key: index,
+    field: field,
+    index: index,
+    onUpdate: updateField,
+    onMove: moveField,
+    onRemove: removeField,
+    isFirst: index === 0,
+    isLast: index === formData.fields.length - 1,
+    onBlur: () => hasUnsavedChanges && saveChanges()
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white border rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between mb-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold"
+  }, "Filters"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: addFilter,
+    className: "px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
+  }, "+ Add Filter")), formData.filters.length === 0 ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-gray-500 text-sm"
+  }, "No filters yet. Click \"Add Filter\" to create one.") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3"
+  }, formData.filters.map((filter, index) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_FilterEditor__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    key: index,
+    filter: filter,
+    index: index,
+    onUpdate: updateFilter,
+    onMove: moveFilter,
+    onRemove: removeFilter,
+    isFirst: index === 0,
+    isLast: index === formData.filters.length - 1,
+    onBlur: () => hasUnsavedChanges && saveChanges()
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "bg-white border rounded-lg p-6"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "flex items-center justify-between mb-4"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "text-xl font-semibold"
+  }, "Columns"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    onClick: addColumn,
+    className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+  }, "+ Add Column")), formData.columns.length === 0 ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "text-gray-500 text-sm"
+  }, "No columns yet. Click \"Add Column\" to create one.") : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "space-y-3"
+  }, formData.columns.map((column, index) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ColumnEditor__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    key: index,
+    column: column,
+    index: index,
+    onUpdate: updateColumn,
+    onMove: moveColumn,
+    onRemove: removeColumn,
+    isFirst: index === 0,
+    isLast: index === formData.columns.length - 1,
+    onBlur: () => hasUnsavedChanges && saveChanges()
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "text-xl font-semibold mb-4"
   }, "Collection Data"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("pre", {
     className: "p-4 bg-gray-50 rounded-lg overflow-auto"
