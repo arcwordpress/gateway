@@ -10,12 +10,16 @@ import * as api from '../services/collectionApi';
  *
  * @param {Object} props
  * @param {string} props.collectionKey - Collection key (e.g., 'events')
+ * @param {Object} props.directAccess - Optional direct route info to skip metadata fetch: { namespace, route }
+ * @param {boolean} props.skipMetadata - Skip fetching collection metadata (default: false)
  * @param {Object} props.queryParams - Optional query parameters for fetching records
  * @param {boolean} props.autoLoad - Whether to automatically load records (default: true)
  * @param {React.ReactNode} props.children - Child components
  */
 export const CollectionProvider = ({
   collectionKey,
+  directAccess,
+  skipMetadata = false,
   queryParams = {},
   autoLoad = true,
   children,
@@ -25,6 +29,23 @@ export const CollectionProvider = ({
   
   // Stabilize queryParams to prevent unnecessary re-renders
   const stableQueryParams = useMemo(() => queryParams, [JSON.stringify(queryParams)]);
+
+  // Determine route info from either directAccess or collection metadata
+  const routeInfo = useMemo(() => {
+    if (directAccess?.namespace && directAccess?.route) {
+      return {
+        namespace: directAccess.namespace,
+        route: directAccess.route
+      };
+    }
+    if (collection?.routes?.namespace && collection?.routes?.route) {
+      return {
+        namespace: collection.routes.namespace,
+        route: collection.routes.route
+      };
+    }
+    return null;
+  }, [directAccess, collection?.routes]);
 
   // Collection metadata state
   const [collection, setCollection] = useState(null);
@@ -63,8 +84,8 @@ export const CollectionProvider = ({
    * Fetch collection records
    */
   const fetchCollectionRecords = useCallback(async () => {
-    if (!collection?.routes?.namespace || !collection?.routes?.route) {
-      // Don't fetch records until we have collection metadata
+    if (!routeInfo?.namespace || !routeInfo?.route) {
+      // Don't fetch records until we have route info (from metadata or directAccess)
       return;
     }
 
@@ -72,8 +93,8 @@ export const CollectionProvider = ({
       setRecordsLoading(true);
       setRecordsError(null);
       const data = await api.fetchRecords(
-        collection.routes.namespace,
-        collection.routes.route,
+        routeInfo.namespace,
+        routeInfo.route,
         stableQueryParams
       );
       setRecords(data);
@@ -83,21 +104,21 @@ export const CollectionProvider = ({
     } finally {
       setRecordsLoading(false);
     }
-  }, [collection?.routes?.namespace, collection?.routes?.route, stableQueryParams]);
+  }, [routeInfo?.namespace, routeInfo?.route, stableQueryParams]);
 
   /**
    * Create a new record
    */
   const createRecord = useCallback(
     async (data) => {
-      if (!collection?.routes?.namespace || !collection?.routes?.route) {
-        throw new Error('Collection not loaded');
+      if (!routeInfo?.namespace || !routeInfo?.route) {
+        throw new Error('Collection route info not available');
       }
 
       try {
         const newRecord = await api.createRecord(
-          collection.routes.namespace,
-          collection.routes.route,
+          routeInfo.namespace,
+          routeInfo.route,
           data
         );
 
@@ -113,7 +134,7 @@ export const CollectionProvider = ({
         throw error;
       }
     },
-    [collection, fetchCollectionRecords]
+    [routeInfo, fetchCollectionRecords]
   );
 
   /**
@@ -121,14 +142,14 @@ export const CollectionProvider = ({
    */
   const updateRecord = useCallback(
     async (id, data) => {
-      if (!collection?.routes?.namespace || !collection?.routes?.route) {
-        throw new Error('Collection not loaded');
+      if (!routeInfo?.namespace || !routeInfo?.route) {
+        throw new Error('Collection route info not available');
       }
 
       try {
         const updatedRecord = await api.updateRecord(
-          collection.routes.namespace,
-          collection.routes.route,
+          routeInfo.namespace,
+          routeInfo.route,
           id,
           data
         );
@@ -149,7 +170,7 @@ export const CollectionProvider = ({
         throw error;
       }
     },
-    [collection, fetchCollectionRecords]
+    [routeInfo, fetchCollectionRecords]
   );
 
   /**
@@ -157,14 +178,14 @@ export const CollectionProvider = ({
    */
   const deleteRecord = useCallback(
     async (id) => {
-      if (!collection?.routes?.namespace || !collection?.routes?.route) {
-        throw new Error('Collection not loaded');
+      if (!routeInfo?.namespace || !routeInfo?.route) {
+        throw new Error('Collection route info not available');
       }
 
       try {
         await api.deleteRecord(
-          collection.routes.namespace,
-          collection.routes.route,
+          routeInfo.namespace,
+          routeInfo.route,
           id
         );
 
@@ -180,7 +201,7 @@ export const CollectionProvider = ({
         throw error;
       }
     },
-    [collection, fetchCollectionRecords]
+    [routeInfo, fetchCollectionRecords]
   );
 
   /**
@@ -207,18 +228,23 @@ export const CollectionProvider = ({
     await fetchCollectionInfo();
   }, [fetchCollectionInfo]);
 
-  // Initial load - fetch collection metadata
+  // Initial load - fetch collection metadata (unless skipped)
   useEffect(() => {
-    fetchCollectionInfo();
-  }, [fetchCollectionInfo]);
+    if (!skipMetadata) {
+      fetchCollectionInfo();
+    } else {
+      // If skipping metadata, mark as not loading
+      setCollectionLoading(false);
+    }
+  }, [skipMetadata, fetchCollectionInfo]);
 
-  // Auto-load records when collection is ready
+  // Auto-load records when route info is available
   useEffect(() => {
-    if (autoLoad && collection && !collectionLoading && !initialLoadDone.current) {
+    if (autoLoad && routeInfo && !collectionLoading && !initialLoadDone.current) {
       initialLoadDone.current = true;
       fetchCollectionRecords();
     }
-  }, [autoLoad, collection, collectionLoading]);
+  }, [autoLoad, routeInfo, collectionLoading, fetchCollectionRecords]);
 
   // Reset initial load flag when collectionKey changes
   useEffect(() => {

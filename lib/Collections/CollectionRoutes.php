@@ -62,6 +62,9 @@ class CollectionRoutes
     public function checkPermission()
     {
         $authResult = $this->checkAuthentication();
+
+        error_log('authResult at 66');
+        error_log(print_r($authResult,1));
         
         if (is_wp_error($authResult)) {
             return $authResult;
