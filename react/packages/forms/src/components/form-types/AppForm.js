@@ -23,6 +23,7 @@
  * @param {function} [props.onFieldUpdate] - Callback invoked after a successful field update
  * @param {function} [props.onFieldError] - Callback invoked when field update fails
  * @param {function} [props.onLoad] - Callback invoked after collection and record are successfully loaded
+ * @param {function} [props.onSave] - Optional callback invoked before autosave; receives the full form values object
  */
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -50,6 +51,7 @@ const AppForm = ({
   onFieldUpdate, 
   onFieldError,
   onLoad,
+  onSave, // called before autosave with full form values
   children 
 }) => {
   // Derive whether we were given a key or an object via the `collection` prop
@@ -93,9 +95,25 @@ const AppForm = ({
     }
   }, [recordId, collection]);
 
-  // Watch for field changes and trigger auto-save
+  // Watch for field changes and trigger auto-save.
+  // Call `onSave` once per DOM update (safely) and only schedule autosave timers when enabled.
   useEffect(() => {
-    if (!collection || !recordId || loading) return;
+    // Call onSave synchronously per update (snapshot of full form values). Swallow errors from user code.
+    if (typeof onSave === 'function') {
+      try {
+        onSave({ ...formValues });
+      } catch (err) {
+        // swallow user errors to avoid breaking autosave
+      }
+    }
+
+    // If autosave not enabled, update previousValuesRef to avoid treating initial values as changes
+    if (!collection || !recordId || loading) {
+      Object.keys(formValues).forEach(fieldName => {
+        previousValuesRef.current[fieldName] = formValues[fieldName];
+      });
+      return;
+    }
 
     Object.keys(formValues).forEach(fieldName => {
       const currentValue = formValues[fieldName];
@@ -105,6 +123,7 @@ const AppForm = ({
         return;
       }
 
+      // Save current value as previous immediately to avoid duplicate scheduling
       previousValuesRef.current[fieldName] = currentValue;
 
       if (previousValue === undefined) {
@@ -119,7 +138,7 @@ const AppForm = ({
         updateField(fieldName, currentValue);
       }, 300);
     });
-  }, [formValues, collection, recordId, loading]);
+  }, [formValues, collection, recordId, loading, updatingFields, onSave]);
 
   useEffect(() => {
     return () => {
