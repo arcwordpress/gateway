@@ -1,9 +1,10 @@
 import { useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import Field from '../../field';
 import './style.css';
 
 // Input Component (for forms)
-const TextFieldTypeInput = ({ config = {} }) => {
+const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
 
   const { register, formState } = useGatewayForm(); // Get RHF methods from context
   const name = config.name;
@@ -20,6 +21,7 @@ const TextFieldTypeInput = ({ config = {} }) => {
     placeholder = '',
     required = false,
     help = '',
+    instructions = '',
     default: defaultValue = ''
   } = config;
 
@@ -30,30 +32,51 @@ const TextFieldTypeInput = ({ config = {} }) => {
 
   const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
+  // If children were passed to the Input component, render them directly (consumer composition).
+  // Otherwise render the default composed Field with label, control, help and error.
+  if (children) {
+    return (
+      <Field className="text-field" {...props}>
+        {children}
+      </Field>
+    );
+  }
+
+  const helpId = help ? `${name}-help` : undefined;
+  const instructionsId = instructions ? `${name}-instructions` : undefined;
+  const ariaDescribedBy = [helpId, instructionsId].filter(Boolean).join(' ') || undefined;
+
   return (
-    <div className="text-field">
-      <label
-        htmlFor={name}
-        className="text-field__label"
-      >
+    <Field className={`text-field ${fieldError ? 'text-field--error' : ''}`.trim()} {...props}>
+      <Field.Label htmlFor={name}>
         {labelText}
         {required && <span className="text-field__required">*</span>}
-      </label>
-      <input
-        type="text"
+        {help && (
+          <Field.Help aria-describedby={helpId} className="text-field__help-icon" />
+        )}
+      </Field.Label>
+
+      <Field.Control
         id={name}
         {...register(name)}
         defaultValue={defaultValue}
         placeholder={placeholder}
         className={inputClasses.join(' ')}
+        aria-describedby={ariaDescribedBy}
       />
+
       {help && (
-        <p className="text-field__help">{help}</p>
+        <Field.Instructions id={helpId} className="text-field__help">{help}</Field.Instructions>
       )}
+
+      {instructions && (
+        <Field.Instructions id={instructionsId} className="text-field__instructions">{instructions}</Field.Instructions>
+      )}
+
       {fieldError && (
-        <p className="text-field__error">{fieldError.message}</p>
+        <p className="text-field__error" role="alert">{fieldError.message}</p>
       )}
-    </div>
+    </Field>
   );
 };
 
@@ -75,6 +98,7 @@ export const textFieldType = {
     label: '',
     placeholder: '',
     help: '',
+    instructions: '',
     required: false,
     default: ''
   }

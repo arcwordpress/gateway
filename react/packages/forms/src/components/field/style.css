@@ -1,0 +1,36 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field__label {
+  font-weight: 600;
+  color: var(--color-text, #111);
+}
+
+.field__help-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  color: var(--color-muted, #666);
+}
+
+.field__instructions {
+  font-size: 0.875rem;
+  color: var(--color-muted, #666);
+}
+
+.field__control {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border, #d0d0d0);
+  border-radius: 4px;
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #111);
+}
+
+.field__control--textarea {
+  min-height: 6rem;
+  resize: vertical;
+}

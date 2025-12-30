@@ -41,6 +41,11 @@
   color: #6b7280;
 }
 
+.text-field__instructions {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: #4b5563;
+}
 .text-field__error {
   margin-top: 0.25rem;
   font-size: 0.875rem;
