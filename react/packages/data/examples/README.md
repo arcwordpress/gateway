@@ -52,12 +52,7 @@ Comprehensive examples showing advanced features and patterns.
 - Side-by-side collection displays
 - Independent state management per collection
 
-#### Example 2: Custom API Configuration
-- Using GatewayDataProvider to override defaults
-- Custom API URL
-- Basic Auth configuration
-
-#### Example 3: Nested Providers with Different Auth
+#### Example 2: Query Parameters
 - Public collections with default auth
 - Private collections with Basic Auth
 - Nested provider hierarchy
@@ -175,19 +170,6 @@ wp_localize_script('events-app', 'gatewayAdminScript', [
 </CollectionProvider>
 ```
 
-### Pattern 4: Headless/Decoupled WordPress
-
-```jsx
-<GatewayDataProvider
-  apiUrl="https://your-wordpress-site.com/wp-json/"
-  auth={{ username: 'api-user', password: 'api-password' }}
->
-  <CollectionProvider collectionKey="events">
-    <EventsList />
-  </CollectionProvider>
-</GatewayDataProvider>
-```
-
 ## Authentication Examples
 
 ### WordPress Nonce (Default)
@@ -202,15 +184,12 @@ wp_localize_script('events-app', 'gatewayAdminScript', [
 ### Basic Auth for Headless
 
 ```js
-// Option 1: Via GatewayDataProvider
-<GatewayDataProvider auth={{ username: 'admin', password: 'pass' }}>
-  <CollectionProvider collectionKey="events">
-    <YourComponent />
-  </CollectionProvider>
-</GatewayDataProvider>
-
-// Option 2: Via window global
+// Set via window global
 window.gatewayAuth = { username: 'admin', password: 'pass' };
+
+<CollectionProvider collectionKey="events">
+  <YourComponent />
+</CollectionProvider>
 ```
 
 ### Custom Token Auth

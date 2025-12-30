@@ -27,7 +27,7 @@ export function CollectionsProvider({ children, packageKey }) {
         }
 
         const data = await response.json();
-        setCollections(data.data || []);
+        setCollections(data || []);
         setLoading(false);
       } catch (err) {
         setError(err.message);

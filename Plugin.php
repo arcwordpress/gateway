@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.6
+ * Version: 1.1.9
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,17 +16,21 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.6');
+define('GATEWAY_VERSION', '1.1.9');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
+define('GATEWAY_DATA_DIR', WP_CONTENT_DIR . '/gateway');
+define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 
 require_once GATEWAY_PATH . 'vendor/autoload.php';
+require_once GATEWAY_PATH . 'includes/functions.php';
+require_once GATEWAY_PATH . 'includes/gateway-collection-cpt.php';
 
 // Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
-    $base_dir = GATEWAY_PATH . 'includes/';
+    $base_dir = GATEWAY_PATH . 'lib/';
 
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
@@ -67,12 +71,13 @@ class Plugin
         $this->registry = new CollectionRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
-        $this->collectionRoutes = new CollectionRoutes();
+        new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
+        new Exta\Routes();
         $this->init();
     }
 
@@ -93,7 +98,8 @@ class Plugin
 
         // Initialize admin pages
         Admin\Page::init();
-        Admin\CollectionMenus::init();
+        Admin\Records::init();
+        Admin\Builder::init();
         Package\PackageMenus::init(); // Add this line
 
         // Initialize front-end forms
@@ -109,12 +115,25 @@ class Plugin
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
 
+        // Register core collections. 
+        add_action('gateway_loaded', [$this, 'registerCollections']);
+
     }
 
     public function onInit()
     {
         do_action('gateway_loaded');
     }
+
+    public function registerCollections()
+    {
+        Collections\GatewayProject::register();
+        Collections\WPUser::register();
+    }
+
+    /**
+     * Object registry getters.
+     **/
 
     public function getRegistry()
     {
@@ -149,8 +168,17 @@ class Plugin
      */
     public function activate()
     {
-        // Run database migrations
-        Database\DatabaseMigration::run();
+
+        // Install database tables for core collections.
+        Migrations\GatewayProjectMigration::create();
+
+        // Create directories for request log tracking
+        if (!is_dir(GATEWAY_DATA_DIR)) {
+            mkdir(GATEWAY_DATA_DIR, 0755, true);
+        }
+        if (!is_dir(GATEWAY_REQUEST_LOG_DIR)) {
+            mkdir(GATEWAY_REQUEST_LOG_DIR, 0755, true);
+        }
 
         // Flush rewrite rules
         flush_rewrite_rules();

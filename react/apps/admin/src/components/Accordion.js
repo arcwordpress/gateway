@@ -8,20 +8,18 @@ function Accordion({ items }) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="gty-accordion">
       {items.map((item, index) => (
-        <div key={index} className="border border-gray-200 rounded">
+        <div key={index} className="gty-accordion__item">
           <button
             onClick={() => toggleAccordion(index)}
-            className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
+            className="gty-accordion__trigger"
           >
-            <div className="flex items-center space-x-3">
+            <div className="gty-accordion__trigger-content">
               {item.trigger}
             </div>
             <svg
-              className={`w-4 h-4 text-gray-500 transition-transform ${
-                openIndex === index ? 'transform rotate-180' : ''
-              }`}
+              className={`gty-accordion__icon${openIndex === index ? ' gty-accordion__icon--open' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -35,7 +33,7 @@ function Accordion({ items }) {
             </svg>
           </button>
           {openIndex === index && (
-            <div className="px-3 py-3 border-t border-gray-200 bg-gray-50">
+            <div className="gty-accordion__content">
               {item.content}
             </div>
           )}

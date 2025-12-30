@@ -1,6 +1,11 @@
 export { AppForm } from './components/form-types/AppForm';
 export { Form } from './components/form-types/Form';
-export { useGatewayForm, useGatewayFormField, createGatewayFormContext, GatewayFormContext } from './utils/gatewayFormContext';
+export { 
+  useGatewayForm, 
+  useGatewayFormField, 
+  createGatewayFormContext, 
+  GatewayFormContext 
+} from './utils/gatewayFormContext';
 export * from './services/api';
 export * from './utils/zodSchemaGenerator';
 export * from './fieldTypeRegistry';

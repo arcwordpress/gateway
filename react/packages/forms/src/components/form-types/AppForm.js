@@ -1,33 +1,65 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'; // Remove createContext, useContext
+/**
+ * AppForm - Form state manager with auto-save functionality
+ *
+ * Notes:
+ * - The `collection` prop accepts either a string collection key (which triggers a network fetch)
+ *   or a collection JSON object (which is used immediately without fetching).
+ * - `collectionKey` prop is deprecated but still supported for backward compatibility.
+ * - If neither `collection` (object) nor a collection key is provided, the component renders silently in demo/offline mode
+ *   (no validation or auto-save).
+ * - Auto-save runs only when both `recordId` and a valid collection endpoint are available.
+ * - Runtime safety: component is silent by default (no console output or UI banners) when `collection` or `recordId` are missing;
+ *   it guards against missing data and should not throw uncaught errors. Consuming code (children) should be prepared to receive
+ *   `null` or incomplete `collection` values from context until load succeeds.
+ *
+ * Recommended usage:
+ * - Prefer passing `collection` (object) or a collection key string; pass `recordId` for auto-save.
+ * - Use `onLoad`, `onFieldUpdate`, and `onFieldError` as needed.
+ *
+ * @param {string|object} props.collection - Collection key (string) or collection JSON (object)
+ * @param {string} [props.collectionKey] - Deprecated: collection key to load (use `collection` instead)
+ * @param {number} props.recordId - Record ID to edit (required for auto-save)
+ * @param {object} [props.apiAuth] - Optional auth object passed to API helpers
+ * @param {function} [props.onFieldUpdate] - Callback invoked after a successful field update
+ * @param {function} [props.onFieldError] - Callback invoked when field update fails
+ * @param {function} [props.onLoad] - Callback invoked after collection and record are successfully loaded
+ * @param {function} [props.onSave] - Optional callback invoked before autosave; receives the full form values object
+ */
+
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, getRecord, updateRecord } from '../../services/api';
 import { generateZodSchema } from '../../utils/zodSchemaGenerator';
-import { createGatewayFormContext, GatewayFormContext } from '../../utils/gatewayFormContext'; // Add imports
+import { createGatewayFormContext, GatewayFormContext } from '../../utils/gatewayFormContext';
 
-/**
- * AppForm - Form state manager with auto-save functionality
- * Allows custom layouts by passing field components as children
- *
- * @param {string} collectionKey - The collection key to load
- * @param {number} recordId - The record ID to edit (required for auto-save)
- * @param {object} apiAuth - Optional API authentication credentials
- * @param {function} onFieldUpdate - Optional callback when a field updates successfully
- * @param {function} onFieldError - Optional callback when a field update fails
- * @param {function} onLoad - Optional callback when collection and record are loaded
- * @param {ReactNode} children - Custom layout with field components
- */
+// Helper: determine whether a prop is a collection key (string) or an actual collection object
+const isCollectionKey = (value) => typeof value === 'string' && value.trim().length > 0;
+const isCollectionObject = (value) => {
+  return value && typeof value === 'object' && (
+    Array.isArray(value.fields) || // typical collection shape
+    typeof value.routes === 'object' ||
+    typeof value.key === 'string'
+  );
+};
+
 const AppForm = ({ 
-  collectionKey, 
+  collectionKey, // deprecated: prefer `collection` prop
+  collection: collectionProp, // can be a string key or a collection object
   recordId, 
   apiAuth, 
   onFieldUpdate, 
   onFieldError,
   onLoad,
+  onSave, // called before autosave with full form values
   children 
 }) => {
-  const [collection, setCollection] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Derive whether we were given a key or an object via the `collection` prop
+  const providedCollectionKey = isCollectionKey(collectionProp) ? collectionProp : collectionKey;
+  const immediateCollection = isCollectionObject(collectionProp) ? collectionProp : null;
+  const [collection, setCollection] = useState(immediateCollection || null);
+  // Only set loading when we expect to fetch a remote collection
+  const [loading, setLoading] = useState(Boolean(providedCollectionKey && !immediateCollection));
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [updatingFields, setUpdatingFields] = useState({});
@@ -50,10 +82,12 @@ const AppForm = ({
   const formValues = watch();
 
   useEffect(() => {
-    if (collectionKey) {
+    if (providedCollectionKey && !immediateCollection) {
       loadCollection();
+    } else if (!providedCollectionKey && !immediateCollection) {
+      setLoading(false);
     }
-  }, [collectionKey]);
+  }, [providedCollectionKey, immediateCollection]);
 
   useEffect(() => {
     if (recordId && collection) {
@@ -61,9 +95,25 @@ const AppForm = ({
     }
   }, [recordId, collection]);
 
-  // Watch for field changes and trigger auto-save
+  // Watch for field changes and trigger auto-save.
+  // Call `onSave` once per DOM update (safely) and only schedule autosave timers when enabled.
   useEffect(() => {
-    if (!collection || !recordId || loading) return;
+    // Call onSave synchronously per update (snapshot of full form values). Swallow errors from user code.
+    if (typeof onSave === 'function') {
+      try {
+        onSave({ ...formValues });
+      } catch (err) {
+        // swallow user errors to avoid breaking autosave
+      }
+    }
+
+    // If autosave not enabled, update previousValuesRef to avoid treating initial values as changes
+    if (!collection || !recordId || loading) {
+      Object.keys(formValues).forEach(fieldName => {
+        previousValuesRef.current[fieldName] = formValues[fieldName];
+      });
+      return;
+    }
 
     Object.keys(formValues).forEach(fieldName => {
       const currentValue = formValues[fieldName];
@@ -73,6 +123,7 @@ const AppForm = ({
         return;
       }
 
+      // Save current value as previous immediately to avoid duplicate scheduling
       previousValuesRef.current[fieldName] = currentValue;
 
       if (previousValue === undefined) {
@@ -87,7 +138,7 @@ const AppForm = ({
         updateField(fieldName, currentValue);
       }, 300);
     });
-  }, [formValues, collection, recordId, loading]);
+  }, [formValues, collection, recordId, loading, updatingFields, onSave]);
 
   useEffect(() => {
     return () => {
@@ -101,12 +152,12 @@ const AppForm = ({
     try {
       setLoading(true);
       setError(null);
-      const response = await getCollection(collectionKey, { auth: apiAuth });
+      const response = await getCollection(providedCollectionKey, { auth: apiAuth });
       console.log('Collection response:', response);
-      setCollection(response.data);
+      setCollection(response);
     } catch (err) {
       const errorMessage = err.response?.status === 404
-        ? `Collection "${collectionKey}" not found`
+        ? `Collection "${providedCollectionKey}" not found`
         : err.message || 'Failed to load collection';
       setError(errorMessage);
     } finally {
@@ -192,7 +243,6 @@ const AppForm = ({
     }
   };
 
-  // Combined context value to provide to children
   const contextValue = useMemo(() => createGatewayFormContext(
     methods,
     collection,
@@ -203,28 +253,9 @@ const AppForm = ({
     updatingFields
   ), [methods, collection, recordId, loading, error, fieldErrors, updatingFields]);
 
-  if (!collectionKey) {
-    return (
-      <div className="gty-appform__container">
-        <div className="gty-appform__alert gty-appform__alert--warning">
-          No collection key provided. Add collectionKey prop.
-        </div>
-      </div>
-    );
-  }
-
-  if (!recordId) {
-    return (
-      <div className="gty-appform__container">
-        <div className="gty-appform__alert gty-appform__alert--warning">
-          No record ID provided. AppForm requires a record ID for auto-save functionality.
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
-    return <div className="gty-appform__container">Loading collection "{collectionKey}"...</div>;
+    const displayKey = providedCollectionKey || collection?.key || '';
+    return <div className="gty-appform__container">Loading collection "{displayKey}"...</div>;
   }
 
   if (error) {
@@ -232,16 +263,6 @@ const AppForm = ({
       <div className="gty-appform__container">
         <div className="gty-appform__alert gty-appform__alert--error">
           <strong>Error:</strong> {error}
-        </div>
-      </div>
-    );
-  }
-
-  if (!collection) {
-    return (
-      <div className="gty-appform__container">
-        <div className="gty-appform__alert gty-appform__alert--warning">
-          Collection "{collectionKey}" could not be loaded.
         </div>
       </div>
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../../services/api';
@@ -70,7 +70,7 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
       setError(null);
       const response = await getCollection(collectionKey, { auth: apiAuth });
       console.log('Collection response:', response);
-      setCollection(response.data);
+      setCollection(response);
     } catch (err) {
       const errorMessage = err.response?.status === 404
         ? `Collection "${collectionKey}" not found`

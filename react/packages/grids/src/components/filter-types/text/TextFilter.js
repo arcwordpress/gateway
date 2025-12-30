@@ -44,11 +44,6 @@ const TextFilter = ({
 
   return (
     <div className={`flex flex-col gap-1 ${className}`.trim()}>
-      {label && (
-        <label className="text-sm font-medium text-gray-700">
-          {label}
-        </label>
-      )}
       <input
         type="text"
         value={localValue}

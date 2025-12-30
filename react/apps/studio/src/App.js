@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
+import AppHeader from './components/AppHeader';
 
 function AppContent() {
   const { collections, loading } = useCollections();
@@ -12,30 +13,8 @@ function AppContent() {
 
   return (
     <div className="gty-app">
-      <nav className="gty-nav">
-        <div className="gty-nav__container">
-          <div className="gty-nav__inner">
-            <div className="gty-nav__content">
-              <div className="gty-nav__brand">
-                <h1 className="gty-nav__brand-title">Gateway</h1>
-              </div>
-              <div className="gty-nav__links">
-                {collections.map((collection) => (
-                  <Link
-                    key={collection.key}
-                    to={`/collection/${collection.key}`}
-                    className="gty-nav__link"
-                  >
-                    {collection.titlePlural || collection.title || collection.key}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="gty-main">
+      <AppHeader collections={collections} />
+      <main className="gty-studio-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/collection/:collectionKey" element={<Dashboard />} />

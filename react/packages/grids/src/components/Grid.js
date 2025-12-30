@@ -5,10 +5,14 @@ import BoardView from './view-types/BoardView';
 import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
+import FilterIcon from './FilterIcon';
 import { GridProvider } from '../context/GridContext';
 import { collectionApi } from '@arcwp/gateway-data';
 import { generateColumns } from '../services/columnGenerator';
 import { applyFilters } from '../utils/filterUtils';
+import SingleView from './SingleView';
+import DeleteConfirmModal from './DeleteConfirmModal';
+import ViewSwitcher from './ViewSwitcher';
 
 /**
  * Main Grid Component
@@ -28,10 +32,10 @@ import { applyFilters } from '../utils/filterUtils';
  * @param {string} [props.viewType]
  * @param {object} [props.boardConfig]
  * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
+ * @param {string} [props.title] - Title to display in the grid toolbar
+ * @param {React.ReactNode} [props.toolbarActions] - Custom toolbar actions (e.g., create button)
  * @param {React.ReactNode} [props.children]
  */
-import SingleView from './SingleView';
-
 const Grid = ({
   collectionKey,
   onEdit,
@@ -41,10 +45,11 @@ const Grid = ({
   onCloseView,
   showActions = true,
   showFilters = true,
-  externalFilters = {},
-  viewType = 'table', // 'table' | 'board'
+  viewType = 'table',
   boardConfig = {},
   singleViewComponent = SingleView,
+  title = '',
+  toolbarActions = null,
   children,
 }) => {
   const { auth } = useGridContext();
@@ -54,47 +59,35 @@ const Grid = ({
   const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [filterValues, setFilterValues] = useState({});
+  const [currentView, setCurrentView] = useState(viewType);
+  const [searchText, setSearchText] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
-  // Fetch collection metadata
-  useEffect(() => {
+  // Combined effect to load collection and data
+  const loadAll = async () => {
     if (!collectionKey) {
       setError('No collection key provided');
       setLoading(false);
       return;
     }
-
-    const loadCollection = async () => {
-      try {
-        setLoading(true);
-        const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
-        setCollection(collectionData);
-        setError(null);
-      } catch (err) {
-        setError(`Failed to load collection: ${err.message}`);
-        console.error('Error loading collection:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCollection();
-  }, [collectionKey]);
-
-  // Fetch collection data (records)
-  const fetchData = async () => {
-    if (!collection) return;
-
+    setLoading(true);
     try {
-      setLoading(true);
-      const namespace = collection.routes.namespace;
-      const route = collection.routes.route;
+      // Fetch collection metadata
+      const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
+      setCollection(collectionData);
 
+      // Fetch collection records
+      const namespace = collectionData.routes.namespace;
+      const route = collectionData.routes.route;
       const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
-      setData(Array.isArray(records) ? records : []);
+      
+      setData(records.data.items);
       setError(null);
+
     } catch (err) {
-      setError(`Failed to load data: ${err.message}`);
-      console.error('Error loading data:', err);
+      setError(`Failed to load collection or data: ${err.message}`);
+      console.error('Error loading collection or data:', err);
+      setCollection(null);
       setData([]);
     } finally {
       setLoading(false);
@@ -102,8 +95,14 @@ const Grid = ({
   };
 
   useEffect(() => {
-    fetchData();
-  }, [collection]);
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionKey]);
+
+  // Update currentView when viewType prop changes
+  useEffect(() => {
+    setCurrentView(viewType);
+  }, [viewType]);
 
   // Get filters from collection metadata
   const filters = useMemo(() => {
@@ -112,8 +111,19 @@ const Grid = ({
 
   // Unified filtering logic
   const filteredData = useMemo(() => {
-    return applyFilters(data, filters, filterValues);
-  }, [data, filters, filterValues]);
+    let result = applyFilters(data, filters, filterValues);
+    if (searchText.trim()) {
+      const lower = searchText.trim().toLowerCase();
+      result = result.filter(item =>
+        Object.values(item).some(
+          val =>
+            typeof val === 'string' &&
+            val.toLowerCase().includes(lower)
+        )
+      );
+    }
+    return result;
+  }, [data, filters, filterValues, searchText]);
 
   // Handle delete with confirmation
   const handleDeleteClick = (recordId) => {
@@ -155,7 +165,9 @@ const Grid = ({
 
     const baseColumns = generateColumns(collection);
 
-    if (showActions && (onEdit || onDelete)) {
+    console.log('onView:', onView)
+
+    if (showActions && (onEdit || onDelete || onView)) {
       baseColumns.push({
         id: 'actions',
         header: 'Actions',
@@ -165,6 +177,14 @@ const Grid = ({
           const recordId = row.original.id;
           return (
             <div className="grid__actions">
+              {onView && (
+                <button
+                  onClick={() => onView(row.original)}
+                  className="grid__btn grid__btn--view"
+                >
+                  View
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={() => onEdit(recordId)}
@@ -188,7 +208,7 @@ const Grid = ({
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit, onDelete]);
+  }, [data, collection, showActions, onEdit, onDelete, onView]);
 
   // Context value for child components
   const gridContextValue = useMemo(() => ({
@@ -201,39 +221,9 @@ const Grid = ({
       // Support both numeric and string IDs
       return data.find(record => record.id == id) || null;
     },
-    onRefresh: fetchData,
+    onRefresh: loadAll,
     auth,
-  }), [collection, data, auth]);
-
-  // View component selection
-  let ViewComponent;
-  let viewProps;
-
-  switch (viewType) {
-    case 'board':
-      ViewComponent = BoardView;
-      viewProps = { config: boardConfig, onView, singleViewComponent };
-      break;
-    case 'list':
-      ViewComponent = ListView;
-      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
-      break;
-    case 'cards':
-      ViewComponent = CardsView;
-      viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
-      break;
-    case 'table':
-    default:
-      ViewComponent = TableView;
-      viewProps = {
-        columns,
-        onView,
-        selectedRecord,
-        onCloseView,
-        singleViewComponent,
-      };
-      break;
-  }
+  }), [collection, data, auth, collectionKey]);
 
   if (error) {
     return (
@@ -259,22 +249,92 @@ const Grid = ({
   return (
     <GridProvider value={gridContextValue}>
       <div className="grid">
+
+        <div className="grid__toolbar-row">
+
+          <div className="grid__toolbar-left">
+            {title && <h2 className="grid__title">{title}</h2>}
+            {toolbarActions}
+          </div>
+
+          <div className="grid__toolbar-center">
+            {showFilters && filters.length > 0 && (
+              <FilterIcon 
+                onClick={() => setFiltersOpen(v => !v)} 
+                isOpen={filtersOpen}
+              />
+            )}
+          </div>
+          
+          <div className="grid__toolbar-right">
+            <ViewSwitcher
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              enabledViews={['table', 'board', 'list', 'cards']}
+            />
+            <input
+              type="search"
+              className="grid__search-input"
+              placeholder="Search…"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+            />
+          </div>
+          
+        </div>
+
         {showFilters && filters.length > 0 && (
           <GridFilters
             filters={filters}
             values={filterValues}
             onChange={setFilterValues}
             data={data}
+            isOpen={filtersOpen}
           />
         )}
 
-        <ViewComponent
-          data={filteredData}
-          loading={loading}
-          {...viewProps}
-        />
+        {/* Use currentView for selecting the view component */}
+        {(() => {
+          let ViewComponent;
+          let viewProps;
+          switch (currentView) {
+            case 'board':
+              ViewComponent = BoardView;
+              viewProps = { config: boardConfig, onView, singleViewComponent };
+              break;
+            case 'list':
+              ViewComponent = ListView;
+              viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+              break;
+            case 'cards':
+              ViewComponent = CardsView;
+              viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };
+              break;
+            case 'table':
+            default:
+              ViewComponent = TableView;
+              viewProps = {
+                columns,
+              };
+              break;
+          }
+          return (
+            <ViewComponent
+              data={filteredData}
+              loading={loading}
+              {...viewProps}
+            />
+          );
+        })()}
 
-        {deleteConfirm && <DeleteConfirmModal />}
+        {deleteConfirm && (
+          <DeleteConfirmModal
+            open={!!deleteConfirm}
+            onCancel={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+            loading={deleteConfirm.loading}
+          />
+        )}
       </div>
       {children}
     </GridProvider>

@@ -1,6 +1,6 @@
 {
   "name": "@arcwp/gateway-data",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared data layer for Gateway collections - provides unified API access and state management",
   "main": "dist/index.js",
   "module": "dist/index.js",

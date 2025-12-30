@@ -1,0 +1,42 @@
+{
+  "name": "@arcwp/gateway-admin",
+  "version": "1.0.0",
+  "description": "Gateway Admin React UI component library",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "style": "dist/style.css",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./style.css": "./dist/index.css"
+  },
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "gateway",
+    "admin",
+    "react",
+    "ui",
+    "components"
+  ],
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/preset-react": "^7.24.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

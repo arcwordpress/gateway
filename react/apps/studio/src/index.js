@@ -6,6 +6,7 @@ import './index.css';
 import '@arcwp/gateway-forms/style.css';
 import '@arcwp/gateway-grids/style.css';
 import '@arcwp/gateway-grids/board-styles.css';
+import '@arcwp/gateway-admin/style.css';
 
 const rootElement = document.querySelector('[gateway-studio-app]');
 
