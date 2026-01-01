@@ -1,71 +1,85 @@
 import React from 'react';
 import './style.css';
 
-// Core Field container (forwardRef)
-export const Field = React.forwardRef(function Field({ children, className, ...props }, ref) {
-  return (
-    <div className={`field ${className || ''}`.trim()} ref={ref} {...props}>
-      {children}
-    </div>
-  );
-});
-
-Field.Label = function Label({ children = 'Field Label', labelRef, className, ...props }) {
-  return (
-    <label className={`field__label ${className || ''}`.trim()} ref={labelRef} {...props}>
-      {children}
-    </label>
-  );
-};
-
-Field.Help = function Help({ helpRef, className, ...props }) {
-  // simple help icon uses currentColor for easy theming
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={`field__help-icon ${className || ''}`.trim()}
-      ref={helpRef}
-      aria-hidden="true"
-      {...props}
-    >
-      <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
-      <text x="10" y="15" textAnchor="middle" fontSize="14" fill="currentColor" fontFamily="sans-serif">?</text>
-    </svg>
-  );
-};
-
-Field.Instructions = function Instructions({ children = 'These are instructions for the field.', instructionsRef, className, ...props }) {
-  return (
-    <div className={`field__instructions ${className || ''}`.trim()} ref={instructionsRef} {...props}>
-      {children}
-    </div>
-  );
-};
-
-Field.Control = function Control({ controlRef, type = 'text', className, ...props }) {
-  if (type === 'textarea') {
+function Field({
+  config = {},
+  children,
+  fieldControl
+}) {
+  // Render a consumer composition if children are provided.
+  if (children) {
     return (
-      <textarea
-        className={`field__control field__control--textarea ${className || ''}`.trim()}
-        placeholder={props.placeholder || ''}
-        ref={controlRef}
-        {...props}
-      />
+      <div className="field">
+        {children}
+      </div>
     );
   }
 
   return (
-    <input
-      className={`field__control field__control--input ${className || ''}`.trim()}
-      type={type}
-      placeholder={props.placeholder || ''}
-      ref={controlRef}
-      {...props}
-    />
+    <div className="field">
+      <Field.Header>
+        {config.label && <Field.Label label={config.label} />}
+        {config.help && <Field.Help help={config.help} />}
+      </Field.Header>
+      <Field.Body>
+        <Field.Control fieldControl={fieldControl} />
+      </Field.Body>
+      <Field.Footer>
+        {config.instructions && <Field.Instructions instructions={config.instructions} />}
+      </Field.Footer>
+    </div>
+  );
+}
+
+Field.Label = function Label({ label }) {
+  if (!label) return null;
+  return (
+    <label className="field__label">{label}</label>
+  );
+};
+
+Field.Help = function Help({ help }) {
+  if (!help) return null;
+  return (
+    <div className="field__help">{help}</div>
+  );
+};
+
+Field.Header = function Header({ children }) {
+  if (!children) return null;
+  return (
+    <div className="field__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {children}
+    </div>
+  );
+};
+
+Field.Body = function Body({ children }) {
+  return <div className="field__body">{children}</div>;
+};
+
+Field.Control = function Control({ fieldControl }) {
+  if (!fieldControl || (typeof fieldControl !== 'object' && typeof fieldControl !== 'function')) {
+    return null;
+  }
+  if (React.isValidElement(fieldControl)) {
+    return <div className="field__control">{fieldControl}</div>;
+  }
+  if (typeof fieldControl === 'function') {
+    return <div className="field__control">{fieldControl()}</div>;
+  }
+  return null;
+};
+
+Field.Footer = function Footer({ children }) {
+  if (!children) return null;
+  return <div className="field__footer">{children}</div>;
+};
+
+Field.Instructions = function Instructions({ instructions }) {
+  if (!instructions) return null;
+  return (
+    <div className="field__instructions">{instructions}</div>
   );
 };
 

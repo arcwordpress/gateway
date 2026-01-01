@@ -32,7 +32,3 @@ This short reference explains the two example styles in this package and when to
 ## Where to look
 - See `docs/app.example.js` — manual usage with specific hooks.
 - See `docs/usingFieldType.example.js` — dynamic loop usage and recommended pattern.
-
----
-
-If you'd like, I can also add a TypeScript variant or a short linter note to prevent accidental hook-order issues.
