@@ -153,7 +153,6 @@ const AppForm = ({
       setLoading(true);
       setError(null);
       const response = await getCollection(providedCollectionKey, { auth: apiAuth });
-      console.log('Collection response:', response);
       setCollection(response);
     } catch (err) {
       const errorMessage = err.response?.status === 404
@@ -174,7 +173,6 @@ const AppForm = ({
         throw new Error('No endpoint available for this collection');
       }
       const response = await getRecord(endpoint, recordId, { auth: apiAuth });
-      console.log('Record loaded:', response);
 
       if (response.data) {
         reset(response.data);
@@ -213,11 +211,8 @@ const AppForm = ({
 
       const updateData = { [fieldName]: value };
 
-      console.log(`[AppForm] Updating field "${fieldName}":`, value);
 
       const response = await updateRecord(endpoint, recordId, updateData, { auth: apiAuth });
-
-      console.log(`[AppForm] Field "${fieldName}" updated successfully:`, response);
 
       if (onFieldUpdate) {
         onFieldUpdate(fieldName, value, response);

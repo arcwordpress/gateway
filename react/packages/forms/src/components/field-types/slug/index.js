@@ -17,9 +17,7 @@ const slugify = (text) => {
 
 // Input Component (for forms)
 const SlugFieldTypeInput = ({ config = {} }) => {
-  console.log('[SlugField] COMPONENT RENDER');
 
-  // Move this destructuring to the top!
   const {
     label,
     required = false,
@@ -36,28 +34,22 @@ const SlugFieldTypeInput = ({ config = {} }) => {
 
   // DEBUG: Subscribe to all form changes
   useEffect(() => {
-    console.log('[SlugField] Setting up global watch subscription');
     const subscription = watch((allValues, { name: changedName }) => {
-      console.log('[SlugField] RHF watch subscription:', { changedName, allValues });
       if (changedName === config.watchField) {
         setRerender(r => r + 1); // Force re-render when watched field changes
       }
     });
     return () => {
-      console.log('[SlugField] Cleaning up global watch subscription');
       subscription.unsubscribe();
     };
   }, [watch, config.watchField]);
 
   // Subscribe only to the watched field
   useEffect(() => {
-    console.log('[SlugField] Setting up watch subscription for:', watchField);
     const subscription = watch((value, { name: changedName }) => {
-      console.log('[SlugField] RHF watch subscription:', { changedName, value });
       setRerender(r => r + 1); // Force re-render when watched field changes
     }, watchField); // <-- Only subscribe to the specific field
     return () => {
-      console.log('[SlugField] Cleaning up watch subscription');
       subscription.unsubscribe();
     };
   }, [watch, watchField]);
@@ -72,31 +64,21 @@ const SlugFieldTypeInput = ({ config = {} }) => {
   const currentValue = watch(name);
   const watchedValue = watch(watchField);
 
-  console.log('[SlugField] watch(name):', name, '=>', currentValue);
-  console.log('[SlugField] watch(watchField):', watchField, '=>', watchedValue);
-
-  // DEBUG: Log values on every render
-  console.log('[SlugField] name:', name, 'currentValue:', currentValue, 'watchField:', watchField, 'watchedValue:', watchedValue, 'isManuallyEdited:', isManuallyEdited);
-
   // Auto-generate slug from watched field
   useEffect(() => {
-    console.log('[SlugField] useEffect RUN', { isManuallyEdited, watchedValue, currentValue });
     if (!isManuallyEdited && watchedValue !== undefined) {
       const newSlug = slugify(watchedValue);
       if (newSlug !== currentValue) {
-        console.log('[SlugField] setValue', newSlug);
         setValue(name, newSlug, { shouldValidate: true });
       }
     }
   }, [watchedValue, isManuallyEdited, currentValue, name, setValue]);
 
   const handleEditClick = () => {
-    console.log('[SlugField] handleEditClick');
     setIsManuallyEdited(true);
   };
 
   const handleUnlock = () => {
-    console.log('[SlugField] handleUnlock');
     setIsManuallyEdited(false);
     if (watchedValue !== undefined) {
       setValue(name, slugify(watchedValue), { shouldValidate: true });
@@ -105,7 +87,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
 
   // Always provide handlers, but only process in manual mode
   const handleChange = (e) => {
-    console.log('[SlugField] handleChange', e.target.value);
     if (isManuallyEdited) {
       const masked = slugify(e.target.value);
       setValue(name, masked, { shouldValidate: true });
@@ -113,7 +94,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
   };
 
   const handleBlur = (e) => {
-    console.log('[SlugField] handleBlur', e.target.value);
     if (isManuallyEdited) {
       // Slugify the manually entered value
       const slugified = slugify(e.target.value);
