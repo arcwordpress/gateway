@@ -1,14 +1,19 @@
-export { AppForm } from './components/form-types/AppForm';
+// Note: API functions in './services/api' are for internal use only and are not exported from the main package API.
+
+// Form type component exports.
 export { Form } from './components/form-types/Form';
+export { AppForm } from './components/form-types/AppForm';
+
+// Context and services exports.
 export { 
   useGatewayForm, 
   useGatewayFormField, 
   createGatewayFormContext, 
   GatewayFormContext 
 } from './utils/gatewayFormContext';
-export * from './services/api';
-export * from './utils/zodSchemaGenerator';
-export * from './fieldTypeRegistry';
+
+// @TODO: Refactor to remove getFieldLabel from zodSchemaGenerator and move to a more appropriate utility module.
+export { generateZodSchema, getFieldLabel } from './utils/zodSchemaGenerator';
 
 // Field Registry System
 export {
@@ -51,9 +56,6 @@ export { useUrlField } from './components/field-types/url';
 export { useUserField } from './components/field-types/user';
 export { useWysiwygField } from './components/field-types/wysiwyg';
 
-// Re-export everything from fieldTypeRegistry (as in original)
-export * from './fieldTypeRegistry';
-
-// Initialize field types when the package is imported (as in original)
+// Initialize field types when the package is imported.
 import { initializeFieldTypes } from './registerInternalFieldTypes';
 initializeFieldTypes();

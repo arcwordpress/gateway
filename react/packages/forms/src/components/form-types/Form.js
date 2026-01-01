@@ -30,7 +30,6 @@ const FieldRenderer = React.memo(({ fieldConfig }) => {
   return <Input config={fieldConfig} error={error} />;
 });
 
-// Change from FormBuilder to Form
 const Form = ({ collectionKey, recordId, apiAuth }) => {
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);

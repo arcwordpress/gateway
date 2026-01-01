@@ -1,3 +1,5 @@
+// INTERNAL USE ONLY: These API helpers are not exported from the main package API.
+// Consumers should use the Gateway Data Package (@arcwp/gateway-data) directly for data access.
 import { collectionApi, getApiClient } from '@arcwp/gateway-data';
 
 /**
