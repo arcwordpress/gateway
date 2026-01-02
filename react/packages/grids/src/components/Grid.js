@@ -165,8 +165,6 @@ const Grid = ({
 
     const baseColumns = generateColumns(collection);
 
-    console.log('onView:', onView)
-
     if (showActions && (onEdit || onDelete || onView)) {
       baseColumns.push({
         id: 'actions',

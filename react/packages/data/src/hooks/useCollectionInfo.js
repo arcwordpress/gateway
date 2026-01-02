@@ -16,8 +16,6 @@ import CollectionContext from '../contexts/CollectionContext';
  * if (loading) return <div>Loading...</div>;
  * if (error) return <div>Error: {error}</div>;
  *
- * console.log(collection.fields); // Access collection fields
- * console.log(collection.routes); // Access collection routes
  */
 export const useCollectionInfo = () => {
   const context = useContext(CollectionContext);

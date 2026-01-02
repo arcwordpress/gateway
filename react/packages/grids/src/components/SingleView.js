@@ -16,11 +16,6 @@ const SingleView = ({ recordId, record: directRecord, collectionKey }) => {
     // Use direct record if provided, otherwise use context record
     const record = directRecord || contextRecord;
 
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-        console.log('[SingleView] Debug:', { recordId, directRecord, contextRecord, record });
-    }
-
     // Fallback to placeholder if no record found
     const data = record || {
         id: recordId || 1,

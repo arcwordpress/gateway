@@ -23,11 +23,7 @@
 }
 
 .field__control {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border, #d0d0d0);
-  border-radius: 4px;
-  background: var(--color-bg, #fff);
-  color: var(--color-text, #111);
+
 }
 
 .field__control--textarea {
