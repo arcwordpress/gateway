@@ -1,9 +1,11 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './number-style.css';
 
-const NumberFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const NumberControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +13,6 @@ const NumberFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -25,8 +26,6 @@ const NumberFieldTypeInput = ({ config = {} }) => {
     default: defaultValue
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   const inputClasses = ['number-field__input'];
   if (fieldError) {
     inputClasses.push('number-field__input--error');
@@ -34,10 +33,6 @@ const NumberFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="number-field">
-      <label htmlFor={name} className="number-field__label">
-        {labelText}
-        {required && <span className="number-field__required">*</span>}
-      </label>
       <input
         type="number"
         id={name}
@@ -49,14 +44,14 @@ const NumberFieldTypeInput = ({ config = {} }) => {
         step={step}
         className={inputClasses.join(' ')}
       />
-      {help && (
-        <p className="number-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="number-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const NumberFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<NumberControl config={config} />} />
+    );
 };
 
 const NumberFieldTypeDisplay = ({ value, config }) => {
