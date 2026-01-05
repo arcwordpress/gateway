@@ -45,11 +45,9 @@ const TextareaControl = ({ config = {} }) => {
 };
 
 const TextareaFieldTypeInput = ({ config = {} }) => {
-
     return ( 
         <Field config={config} fieldControl={<TextareaControl config={config} />} />
     );
-
 };
 
 const TextareaFieldTypeDisplay = ({ value, config }) => {
