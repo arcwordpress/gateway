@@ -49,7 +49,6 @@ export { useRadioField } from './components/field-types/radio';
 export { useRangeField } from './components/field-types/range';
 export { useReadOnlyField } from './components/field-types/readonly';
 export { useSelectField } from './components/field-types/select';
-export { useSortableChildrenField } from './components/field-types/sortable-children';
 export { useTextareaField } from './components/field-types/textarea';
 export { useTimePickerField } from './components/field-types/time-picker';
 export { useUrlField } from './components/field-types/url';

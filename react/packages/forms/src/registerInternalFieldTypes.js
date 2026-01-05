@@ -22,7 +22,6 @@ import { radioFieldType } from './components/field-types/radio';
 import { rangeFieldType } from './components/field-types/range';
 import { readonlyFieldType } from './components/field-types/readonly';
 import { selectFieldType } from './components/field-types/select';
-import { sortableChildrenFieldType } from './components/field-types/sortable-children';
 import { textareaFieldType } from './components/field-types/textarea';
 import { timePickerFieldType } from './components/field-types/time-picker';
 import { urlFieldType } from './components/field-types/url';
@@ -45,10 +44,7 @@ export const initializeFieldTypes = () => {
 
   isInitialized = true;
 
-  // Register Relation field type
   registerFieldType(relationFieldType);
-
-  // Register Text field type
   registerFieldType(textFieldType);
 
   // Register Slug field type
@@ -92,43 +88,16 @@ export const initializeFieldTypes = () => {
 
   // Register Number field type
   registerFieldType(numberFieldType);
-
-  // Register OEmbed field type
   registerFieldType(oembedFieldType);
-
-  // Register Password field type
   registerFieldType(passwordFieldType);
-
-  // Register Post Object field type
   registerFieldType(postObjectFieldType);
-
-  // Register Radio field type
   registerFieldType(radioFieldType);
-
-  // Register Range field type
   registerFieldType(rangeFieldType);
-
-  // Register Read Only field type
   registerFieldType(readonlyFieldType);
-
-  // Register Select field type
   registerFieldType(selectFieldType);
-
-  // Register Sortable Children field type
-  registerFieldType(sortableChildrenFieldType);
-
-  // Register Textarea field type
   registerFieldType(textareaFieldType);
-
-  // Register Time Picker field type
   registerFieldType(timePickerFieldType);
-
-  // Register URL field type
   registerFieldType(urlFieldType);
-
-  // Register User field type
   registerFieldType(userFieldType);
-
-  // Register WYSIWYG field type
   registerFieldType(wysiwygFieldType);
 };
