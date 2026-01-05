@@ -1,13 +1,15 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './readonly-style.css';
 
-const ReadOnlyFieldTypeInput = ({ config = {} }) => {
-  const { register, watch } = useGatewayForm(); // Get RHF methods from context
+const ReadOnlyControl = ({ config = {} }) => {
+
+  const { register, watch } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('ReadOnlyFieldTypeInput: No "name" provided in config');
+    console.warn('Read Only Field: No "name" provided in config');
     return null;
   }
 
@@ -21,13 +23,8 @@ const ReadOnlyFieldTypeInput = ({ config = {} }) => {
   const currentValue = watch(name);
   const fieldValue = currentValue || configValue || defaultValue;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="readonly-field">
-      <label htmlFor={name} className="readonly-field__label">
-        {labelText}
-      </label>
       <input
         type="text"
         id={name}
@@ -36,11 +33,14 @@ const ReadOnlyFieldTypeInput = ({ config = {} }) => {
         readOnly
         className="readonly-field__input"
       />
-      {help && (
-        <p className="readonly-field__help">{help}</p>
-      )}
     </div>
   );
+};
+
+const ReadOnlyFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<ReadOnlyControl config={config} />} />
+    );
 };
 
 const ReadOnlyFieldTypeDisplay = ({ value, config }) => {

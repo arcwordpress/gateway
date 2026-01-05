@@ -1,18 +1,18 @@
 import { useState, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './color-picker-style.css';
 
-// Input Component (for forms)
-const ColorPickerFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const ColorPickerControl = ({ config = {} }) => {
+
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('ColorPickerFieldTypeInput: No "name" provided in config');
+    console.warn('Color Picker: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -24,7 +24,6 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
     help = '',
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const currentValue = watch(name) || defaultValue;
   const [showPicker, setShowPicker] = useState(false);
 
@@ -35,23 +34,14 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
 
   const defaultSwatches = [
     '#000000', '#FFFFFF', '#EF4444', '#F59E0B',
-    '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'
   ];
 
   const swatches = customSwatches || defaultSwatches;
 
   return (
     <div className="color-picker-field">
-      <label className="color-picker-field__label">
-        {labelText}
-        {required && <span className="color-picker-field__required">*</span>}
-      </label>
-
-      {/* Hidden input for form registration */}
       <input type="hidden" {...register(name)} />
-
       <div className="color-picker-field__controls">
-        {/* Color preview with picker */}
         <div className="color-picker-field__preview-container">
           <button
             type="button"
@@ -60,7 +50,6 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
             style={{ backgroundColor: currentValue }}
             aria-label="Pick color"
           />
-
           {showPicker && (
             <>
               <div
@@ -78,8 +67,6 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
             </>
           )}
         </div>
-
-        {/* Text input for manual entry */}
         <div className="color-picker-field__input-wrapper">
           <input
             type="text"
@@ -93,8 +80,6 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
             className={`color-picker-field__input ${fieldError ? 'color-picker-field__input--error' : ''}`}
           />
         </div>
-
-        {/* Common color swatches */}
         {showSwatches && (
           <div className="color-picker-field__swatches">
             {swatches.map((color) => (
@@ -116,24 +101,20 @@ const ColorPickerFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {help && (
-        <p className="color-picker-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="color-picker-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const ColorPickerFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<ColorPickerControl config={config} />} />
+    );
+};
+
 const ColorPickerFieldTypeDisplay = ({ value, config }) => {
-  // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="color-picker-field__display color-picker-field__display--empty">-</span>;
   }
-
   return (
     <span className="color-picker-field__display">
       <span
@@ -146,7 +127,6 @@ const ColorPickerFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Type Definition for registry
 export const colorPickerFieldType = {
   type: 'color-picker',
   Input: ColorPickerFieldTypeInput,
@@ -157,7 +137,6 @@ export const colorPickerFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useColorPickerField = (config) => {
   return useMemo(() => ({
     Input: (props) => <ColorPickerFieldTypeInput {...props} config={config} />,
