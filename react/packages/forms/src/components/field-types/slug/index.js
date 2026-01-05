@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
-import './style.css';
+import Field from '../../field';
+import './slug-style.css';
 
-// Utility function to slugify a string
 const slugify = (text) => {
+
   return text
     .toString()
     .toLowerCase()
@@ -15,8 +16,7 @@ const slugify = (text) => {
     .replace(/-+$/, '');            // Trim - from end of text
 };
 
-// Input Component (for forms)
-const SlugFieldTypeInput = ({ config = {} }) => {
+const SlugControl = ({ config = {} }) => {
 
   const {
     label,
@@ -32,11 +32,10 @@ const SlugFieldTypeInput = ({ config = {} }) => {
   const [isManuallyEdited, setIsManuallyEdited] = useState(false);
   const [rerender, setRerender] = useState(0);
 
-  // DEBUG: Subscribe to all form changes
   useEffect(() => {
     const subscription = watch((allValues, { name: changedName }) => {
       if (changedName === config.watchField) {
-        setRerender(r => r + 1); // Force re-render when watched field changes
+        setRerender(r => r + 1);
       }
     });
     return () => {
@@ -44,11 +43,10 @@ const SlugFieldTypeInput = ({ config = {} }) => {
     };
   }, [watch, config.watchField]);
 
-  // Subscribe only to the watched field
   useEffect(() => {
     const subscription = watch((value, { name: changedName }) => {
-      setRerender(r => r + 1); // Force re-render when watched field changes
-    }, watchField); // <-- Only subscribe to the specific field
+      setRerender(r => r + 1);
+    }, watchField);
     return () => {
       subscription.unsubscribe();
     };
@@ -60,11 +58,9 @@ const SlugFieldTypeInput = ({ config = {} }) => {
   }
 
   const fieldError = formState.errors[name];
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const currentValue = watch(name);
   const watchedValue = watch(watchField);
 
-  // Auto-generate slug from watched field
   useEffect(() => {
     if (!isManuallyEdited && watchedValue !== undefined) {
       const newSlug = slugify(watchedValue);
@@ -85,7 +81,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
     }
   };
 
-  // Always provide handlers, but only process in manual mode
   const handleChange = (e) => {
     if (isManuallyEdited) {
       const masked = slugify(e.target.value);
@@ -95,7 +90,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
 
   const handleBlur = (e) => {
     if (isManuallyEdited) {
-      // Slugify the manually entered value
       const slugified = slugify(e.target.value);
       setValue(name, slugified, { shouldValidate: true });
     }
@@ -103,11 +97,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="slug-field">
-      <label htmlFor={name} className="slug-field__label">
-        {labelText}
-        {required && <span className="slug-field__required">*</span>}
-      </label>
-
       <div className="slug-field__input-wrapper">
         {prefix && (
           <span className="slug-field__prefix">{prefix}</span>
@@ -131,9 +120,10 @@ const SlugFieldTypeInput = ({ config = {} }) => {
             className="slug-field__edit"
             title="Edit slug manually"
             aria-label="Edit slug manually"
-            style={{ marginLeft: 6 }}
           >
-            ✏️
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9016 20.6488L11.0346 20.9645L11.3711 15.7748L27.1468 0L32 4.8529L16.2242 20.6278L15.9016 20.6488ZM0 3.60995V32H28.3917L28.3903 17.6334H25.2097V28.8184H3.18053V6.78945H14.3661V3.60899L0 3.60995Z" fill="black"/>
+            </svg>
           </button>
         ) : (
           <button
@@ -142,32 +132,34 @@ const SlugFieldTypeInput = ({ config = {} }) => {
             className="slug-field__unlock"
             title="Re-enable auto-generation"
             aria-label="Re-enable auto-generation from watched field"
-            style={{ marginLeft: 6 }}
           >
-            🔄
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9016 20.6488L11.0346 20.9645L11.3711 15.7748L27.1468 0L32 4.8529L16.2242 20.6278L15.9016 20.6488ZM0 3.60995V32H28.3917L28.3903 17.6334H25.2097V28.8184H3.18053V6.78945H14.3661V3.60899L0 3.60995Z" fill="black"/>
+            </svg>
           </button>
         )}
       </div>
-
-      {help && <p className="slug-field__help">{help}</p>}
       {!isManuallyEdited && watchField && (
         <p className="slug-field__info">
-          Auto-generating from <strong>{watchField}</strong> field. Click ✏️ to edit manually.
+          Automatically generated.
         </p>
       )}
       {isManuallyEdited && (
         <p className="slug-field__info">
-          Manual mode. Click 🔄 to resume auto-generation.
+          Manual mode.
         </p>
-      )}
-      {fieldError && (
-        <p className="slug-field__error">{fieldError.message}</p>
       )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const SlugFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<SlugControl config={config} />} />
+    );
+};
+
+
 const SlugFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="slug-field__display slug-field__display--empty">-</span>;
