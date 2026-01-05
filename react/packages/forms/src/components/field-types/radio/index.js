@@ -1,9 +1,11 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './radio-style.css';
 
-const RadioFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const RadioControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +13,6 @@ const RadioFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -22,8 +23,6 @@ const RadioFieldTypeInput = ({ config = {} }) => {
     help = '',
     default: defaultValue
   } = config;
-
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const normalizedOptions = options.map(option => {
     if (typeof option === 'string') {
@@ -39,11 +38,6 @@ const RadioFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="radio-field">
-      <label className="radio-field__label">
-        {labelText}
-        {required && <span className="radio-field__required">*</span>}
-      </label>
-
       <div className={containerClasses.join(' ')}>
         {normalizedOptions.map((option, index) => (
           <div key={index} className="radio-field__option">
@@ -64,15 +58,14 @@ const RadioFieldTypeInput = ({ config = {} }) => {
           </div>
         ))}
       </div>
-
-      {help && (
-        <p className="radio-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="radio-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const RadioFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<RadioControl config={config} />} />
+    );
 };
 
 const RadioFieldTypeDisplay = ({ value, config }) => {

@@ -14,7 +14,6 @@ const RelationControl = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
