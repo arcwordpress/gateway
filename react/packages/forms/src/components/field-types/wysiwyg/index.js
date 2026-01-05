@@ -1,18 +1,18 @@
 import { useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import TextAlign from '@tiptap/extension-text-align';
-import './style.css';
+import './wysiwyg-style.css';
 
-/**
- * WysiwygInput Component
- * Renders a WYSIWYG editor using TipTap
- */
-const WysiwygFieldTypeInput = ({ config = {} }) => {
-    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+// @TODO Review the handling of buttons. Why are we providing the icons, doesn't TipTap have it's own buttons?
+
+const WysiwygControl = ({ config = {} }) => {
+
+    const { register, setValue, watch, formState } = useGatewayForm();
     const name = config.name;
     
     if (!name) {
@@ -20,7 +20,6 @@ const WysiwygFieldTypeInput = ({ config = {} }) => {
         return null;
     }
 
-    // Get error directly from context
     const fieldError = formState.errors[name];
 
     const {
@@ -32,7 +31,6 @@ const WysiwygFieldTypeInput = ({ config = {} }) => {
 
     const currentValue = watch(name);
 
-    // Initialize value on mount
     useEffect(() => {
         register(name);
 
@@ -59,7 +57,6 @@ const WysiwygFieldTypeInput = ({ config = {} }) => {
         },
     });
 
-    // Update editor content when external value changes
     useEffect(() => {
         if (editor && currentValue !== editor.getHTML()) {
             editor.commands.setContent(currentValue || '');
@@ -219,6 +216,12 @@ const WysiwygFieldTypeInput = ({ config = {} }) => {
             {help && <p className="wysiwyg-field__help">{help}</p>}
             {fieldError && <p className="wysiwyg-field__error">{fieldError.message}</p>}
         </div>
+    );
+};
+
+const WysiwygFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<WysiwygControl config={config} />} />
     );
 };
 
