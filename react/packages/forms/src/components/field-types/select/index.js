@@ -62,11 +62,9 @@ const SelectControl = ({ config = {} }) => {
 };
 
 const SelectFieldTypeInput = ({ config = {} }) => {
-
     return ( 
         <Field config={config} fieldControl={<SelectControl config={config} />} />
     );
-
 };
 
 const SelectFieldTypeDisplay = ({ value, config }) => {
