@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './image-style.css';
 
-// Input Component (for forms)
-const ImageFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const ImageControl = ({ config = {} }) => {
+
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -12,7 +13,6 @@ const ImageFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -36,7 +36,6 @@ const ImageFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -119,19 +118,8 @@ const ImageFieldTypeInput = ({ config = {} }) => {
     containerClasses.push('image-field__container--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="image-field">
-      <label htmlFor={name} className="image-field__label">
-        {labelText}
-        {required && <span className="image-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="image-field__help">{help}</p>
-      )}
-
       <div className={containerClasses.join(' ')}>
         {imageUrl ? (
           <div className="image-field__preview">
@@ -197,15 +185,16 @@ const ImageFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {fieldError && (
-        <p className="image-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const ImageFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<ImageControl config={config} />} />
+    );
+};
+
 const ImageFieldTypeDisplay = ({ value, config }) => {
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -249,7 +238,6 @@ const ImageFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Type Definition for registry
 export const imageFieldType = {
   type: 'image',
   Input: ImageFieldTypeInput,
@@ -264,7 +252,6 @@ export const imageFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useImageField = (config) => {
   return useMemo(() => ({
     Input: (props) => <ImageFieldTypeInput {...props} config={config} />,
