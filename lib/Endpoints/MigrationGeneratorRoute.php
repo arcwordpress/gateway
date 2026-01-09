@@ -37,14 +37,26 @@ class MigrationGeneratorRoute
             ],
         ]);
 
-        // Install migration to extension
-        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/install', [
-            'methods' => 'POST',
-            'callback' => [$this, 'installMigration'],
         // Run migration for a specific collection
         register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/run', [
             'methods' => 'POST',
             'callback' => [$this, 'runCollectionMigration'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
+            'args' => [
+                'key' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'Collection key',
+                ],
+            ],
+        ]);
+
+        // Install migration to a specific extension
+        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/install', [
+            'methods' => 'POST',
+            'callback' => [$this, 'installMigrationToExtension'],
             'permission_callback' => function () {
                 return current_user_can('manage_options');
             },
@@ -69,9 +81,6 @@ class MigrationGeneratorRoute
             'permission_callback' => function () {
                 return current_user_can('manage_options');
             }
-        ]);
-
-            ],
         ]);
 
         // Get migrations for all collections
@@ -140,20 +149,6 @@ class MigrationGeneratorRoute
     }
 
     /**
-     * Install migration to extension
-     */
-    public function installMigration($request)
-    {
-        $key = $request->get_param('key');
-        $extensionKey = $request->get_param('extension');
-
-        $registry = Plugin::getInstance()->getRegistry();
-        $extensionRegistry = \Gateway\Extensions\ExtensionRegistry::instance();
-
-        // Get the collection
-        try {
-            $collection = $registry->get($key);
-        } catch (\Exception $e) {
      * Run migration for a specific collection
      */
     public function runCollectionMigration($request)
@@ -173,33 +168,6 @@ class MigrationGeneratorRoute
             );
         }
 
-        // Get the extension
-        try {
-            $extension = $extensionRegistry->get($extensionKey);
-        } catch (\Exception $e) {
-            return new \WP_Error(
-                'extension_not_found',
-                'Extension not found',
-                ['status' => 404]
-            );
-        }
-
-        // Install the migration
-        try {
-            $result = MigrationGenerator::installToExtension($collection, $extension);
-
-            if (!$result['success']) {
-                return new \WP_Error(
-                    'migration_install_failed',
-                    $result['message'],
-                    ['status' => 400, 'result' => $result]
-                );
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            return new \WP_Error(
-                'migration_install_error',
         try {
             // Get table info
             $tableName = $collection->getTable();
@@ -296,6 +264,68 @@ class MigrationGeneratorRoute
                 ['status' => 500]
             );
         }
+    }
+
+    /**
+     * Install migration to a specific extension
+     */
+    public function installMigrationToExtension($request)
+    {
+        $key = $request->get_param('key');
+        $extensionKey = $request->get_param('extension');
+        $registry = Plugin::getInstance()->getRegistry();
+
+        $collection = $registry->get($key);
+
+        if (!$collection) {
+            return new \WP_Error(
+                'collection_not_found',
+                'Collection not found',
+                ['status' => 404]
+            );
+        }
+
+        try {
+            $migration = MigrationGenerator::generate($collection);
+            $extensions = MigrationGenerator::getAvailableExtensions();
+
+            if (!isset($extensions[$extensionKey])) {
+                return new \WP_Error(
+                    'extension_not_found',
+                    'Extension not found',
+                    ['status' => 404]
+                );
+            }
+
+            $extension = $extensions[$extensionKey];
+            $databasePath = $extension->getDatabasePath();
+            $filePath = $databasePath . '/' . $migration['className'] . '.php';
+
+            // Ensure directory exists
+            if (!file_exists($databasePath)) {
+                mkdir($databasePath, 0755, true);
+            }
+
+            // Write migration file
+            if (file_put_contents($filePath, $migration['code']) === false) {
+                throw new \Exception('Failed to write migration file');
+            }
+
+            return [
+                'success' => true,
+                'message' => "Migration installed to {$extension->getPluginSlug()}",
+                'filePath' => $filePath,
+            ];
+        } catch (\Exception $e) {
+            return new \WP_Error(
+                'migration_install_failed',
+                $e->getMessage(),
+                ['status' => 500]
+            );
+        }
+    }
+
+    /**
      * Get column definition for a field (helper for runCollectionMigration)
      */
     private function getColumnDefinition($column, $fields, $casts)

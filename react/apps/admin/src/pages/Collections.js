@@ -20,6 +20,7 @@ function Collections() {
   const [copied, setCopied] = useState(false);
   const [runningMigrations, setRunningMigrations] = useState({});
   const [runningModalMigration, setRunningModalMigration] = useState(false);
+  const [runningMigration, setRunningMigration] = useState(null);
 
   useEffect(() => {
     fetchCollections();
@@ -167,83 +168,6 @@ function Collections() {
     }
   };
 
-  const runMigration = async (collectionKey, autoGenerate = true) => {
-    // Set running state for this collection
-    setRunningMigrations(prev => ({ ...prev, [collectionKey]: true }));
-
-    try {
-      const response = await fetch(
-        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${collectionKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'X-WP-Nonce': window.gatewayAdminScript.nonce,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            autoGenerate: autoGenerate,
-            saveToFile: false,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to run migration');
-      }
-
-      const data = await response.json();
-      alert(`Success! ${data.message}`);
-
-      // Refresh collections to update any status
-      await fetchCollections();
-    } catch (err) {
-      alert('Error running migration: ' + err.message);
-    } finally {
-      // Clear running state
-      setRunningMigrations(prev => ({ ...prev, [collectionKey]: false }));
-    }
-  };
-
-  const runMigrationFromModal = async () => {
-    if (!migrationModal.collectionKey) return;
-
-    setRunningModalMigration(true);
-
-    try {
-      const response = await fetch(
-        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${migrationModal.collectionKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'X-WP-Nonce': window.gatewayAdminScript.nonce,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            autoGenerate: true,
-            saveToFile: false,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to run migration');
-      }
-
-      const data = await response.json();
-      alert(`Success! ${data.message}`);
-
-      // Close modal and refresh collections
-      closeMigrationModal();
-      await fetchCollections();
-    } catch (err) {
-      alert('Error running migration: ' + err.message);
-    } finally {
-      setRunningModalMigration(false);
-    }
-  };
-
   const runMigration = async (collectionKey) => {
     if (!confirm('Are you sure you want to run this migration? This will create or update the database table.')) {
       return;
@@ -277,6 +201,41 @@ function Collections() {
       alert('Error running migration: ' + err.message);
     } finally {
       setRunningMigration(null);
+    }
+  };
+
+  const runMigrationFromModal = async () => {
+    if (!migrationModal.collectionKey) return;
+
+    setRunningModalMigration(true);
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${migrationModal.collectionKey}/run`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to run migration');
+      }
+
+      const data = await response.json();
+      alert(`Success! ${data.message}`);
+
+      // Close modal and refresh collections
+      closeMigrationModal();
+      await fetchCollections();
+    } catch (err) {
+      alert('Error running migration: ' + err.message);
+    } finally {
+      setRunningModalMigration(false);
     }
   };
 
@@ -382,68 +341,48 @@ function Collections() {
                     View details →
                   </Link>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => runMigration(collection.key)}
-                    disabled={runningMigrations[collection.key]}
-                    className={`px-3 py-1.5 text-sm rounded transition-colors ${
-                      runningMigrations[collection.key]
-                        ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-green-600 text-white hover:bg-green-700'
-                    }`}
-                  >
-                    {runningMigrations[collection.key] ? 'Running...' : 'Run Migration'}
-                  </button>
-                  <button
-                    onClick={() => generateMigration(collection.key)}
-                    className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-                  >
-                    Generate Migration
-                  </button>
-                </div>
               </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500">Key</dt>
-                    <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
-                      {collection.key}
-                    </dd>
-                  </div>
-
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500">Class Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
-                      {collection.className}
-                    </dd>
-                  </div>
-
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500">Fully Qualified Class Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded break-all">
-                      {collection.fqcn}
-                    </dd>
-                  </div>
-
-                  <div>
-                    <dt className="text-xs font-medium text-gray-500">Database Table</dt>
-                    <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
-                      {collection.table}
-                    </dd>
-                  </div>
-
-                  {collection.recordCount !== undefined && (
-                    <div>
-                      <dt className="text-xs font-medium text-gray-500">Records</dt>
-                      <dd className="mt-1 text-sm text-gray-900 font-semibold">
-                        {collection.recordCount.toLocaleString()}
-                      </dd>
-                    </div>
-                  )}
+              <div className="space-y-3">
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Key</dt>
+                  <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
+                    {collection.key}
+                  </dd>
                 </div>
+
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Class Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
+                    {collection.className}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Fully Qualified Class Name</dt>
+                  <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded break-all">
+                    {collection.fqcn}
+                  </dd>
+                </div>
+
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Database Table</dt>
+                  <dd className="mt-1 text-sm text-gray-900 font-mono bg-gray-50 px-2 py-1 rounded">
+                    {collection.table}
+                  </dd>
+                </div>
+
+                {collection.recordCount !== undefined && (
+                  <div>
+                    <dt className="text-xs font-medium text-gray-500">Records</dt>
+                    <dd className="mt-1 text-sm text-gray-900 font-semibold">
+                      {collection.recordCount.toLocaleString()}
+                    </dd>
+                  </div>
+                )}
               </div>
 
-              <div className="border-t border-gray-200 pt-4 flex gap-2">
+              <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
                 <button
                   onClick={() => generateMigration(collection.key)}
                   className="flex-1 px-3 py-2 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
