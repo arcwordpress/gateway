@@ -237,18 +237,6 @@ const LinkControl = ({ config = {} }) => {
             </p>
           </div>
         )}
-
-        {!hasLink && !isEditing && (
-          <div className="link-field__empty">
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="link-field__button link-field__button--add"
-            >
-              {addButtonText}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

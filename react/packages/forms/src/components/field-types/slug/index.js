@@ -159,7 +159,6 @@ const SlugFieldTypeInput = ({ config = {} }) => {
     );
 };
 
-
 const SlugFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="slug-field__display slug-field__display--empty">-</span>;
@@ -175,7 +174,6 @@ const SlugFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Type Definition for registry
 export const slugFieldType = {
   type: 'slug',
   Input: SlugFieldTypeInput,
@@ -187,7 +185,6 @@ export const slugFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useSlugField = (config) => {
   return useMemo(() => ({
     Input: (props) => <SlugFieldTypeInput {...props} config={config} />,

@@ -66,7 +66,6 @@ const WysiwygControl = ({ config = {} }) => {
     if (!editor) {
         return (
             <div className="wysiwyg-field">
-                {label && <label className="wysiwyg-field__label">{label}</label>}
                 <div className="wysiwyg-field__loading">Loading editor...</div>
             </div>
         );
@@ -74,12 +73,6 @@ const WysiwygControl = ({ config = {} }) => {
 
     return (
         <div className="wysiwyg-field">
-            {label && (
-                <label htmlFor={name} className="wysiwyg-field__label">
-                    {label}
-                </label>
-            )}
-
             <div className="wysiwyg-field__editor-container">
                 <div className="wysiwyg-field__toolbar">
                     <button
@@ -225,10 +218,6 @@ const WysiwygFieldTypeInput = ({ config = {} }) => {
     );
 };
 
-/**
- * WysiwygDisplay Component
- * Displays WYSIWYG content as rendered HTML
- */
 const WysiwygFieldTypeDisplay = ({ value, config }) => {
   if (!value) {
     return <span className="wysiwyg-field__display wysiwyg-field__display--empty">-</span>;

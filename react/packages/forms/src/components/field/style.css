@@ -5,16 +5,18 @@
 }
 
 .field__label {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-text, #111);
 }
 
 .field__help-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  vertical-align: middle;
-  margin-left: 0.5rem;
   color: var(--color-muted, #666);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .field__instructions {

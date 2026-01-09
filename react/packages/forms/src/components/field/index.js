@@ -69,6 +69,7 @@ Field.Label = function Label({ label, innerRef }) {
 };
 
 Field.Help = function Help({ help, innerRef }) {
+
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef(null);
 
@@ -96,14 +97,6 @@ Field.Help = function Help({ help, innerRef }) {
         onClick={toggle}
         aria-label="Show help"
         className="field__help-icon"
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-        }}
       >
         <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

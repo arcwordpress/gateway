@@ -12,7 +12,6 @@
 }
 
 .number-field__input {
-  width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
@@ -24,27 +23,6 @@
   outline: none;
   box-shadow: 0 0 0 2px #3b82f6;
   border-color: #3b82f6;
-}
-
-.number-field__input--error {
-  border-color: #ef4444;
-}
-
-.number-field__input--error:focus {
-  box-shadow: 0 0 0 2px #ef4444;
-  border-color: #ef4444;
-}
-
-.number-field__help {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.number-field__error {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-  color: #dc2626;
 }
 
 .number-field__display {

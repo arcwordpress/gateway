@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import { getApiClient } from '@arcwp/gateway-data';
-import './style.css';
+import './user-style.css';
 
-/**
- * UserInput Component
- * Renders a user selection field with search and dropdown
- */
-const UserFieldTypeInput = ({ config = {} }) => {
-    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const UserControl = ({ config = {} }) => {
+    const { register, setValue, watch, formState } = useGatewayForm();
     const name = config.name;
     
     if (!name) {
@@ -16,7 +13,6 @@ const UserFieldTypeInput = ({ config = {} }) => {
         return null;
     }
 
-    // Get error directly from context
     const fieldError = formState.errors[name];
 
     const {
@@ -36,7 +32,6 @@ const UserFieldTypeInput = ({ config = {} }) => {
     const dropdownRef = useRef(null);
     const currentValue = watch(name);
 
-    // Initialize value on mount
     useEffect(() => {
         register(name);
 
@@ -141,12 +136,6 @@ const UserFieldTypeInput = ({ config = {} }) => {
 
     return (
         <div className="user-field">
-            {label && (
-                <label htmlFor={name} className="user-field__label">
-                    {label}
-                </label>
-            )}
-
             {selectedUser ? (
                 <div className="user-field__selected">
                     <div className="user-field__user-info">
@@ -228,17 +217,16 @@ const UserFieldTypeInput = ({ config = {} }) => {
                     )}
                 </div>
             )}
-
-            {help && <p className="user-field__help">{help}</p>}
-            {fieldError && <p className="user-field__error">{fieldError.message}</p>}
         </div>
     );
 };
 
-/**
- * UserDisplay Component
- * Displays selected user with avatar and details
- */
+const UserFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<UserControl config={config} />} />
+    );
+};
+
 const UserFieldTypeDisplay = ({ value, config }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -275,7 +263,6 @@ const UserFieldTypeDisplay = ({ value, config }) => {
 
     return (
         <div className="user-field">
-            {config.label && <span className="user-field__label">{config.label}</span>}
             <div className="user-field__display">
                 {loading ? (
                     <span className="user-field__loading">Loading user...</span>
@@ -312,9 +299,6 @@ const UserFieldTypeDisplay = ({ value, config }) => {
     );
 };
 
-/**
- * Field Definition for Registry
- */
 export const userFieldType = {
     type: 'user',
     Input: UserFieldTypeInput,
@@ -329,9 +313,6 @@ export const userFieldType = {
     }
 };
 
-/**
- * Custom Hook for User Field
- */
 export const useUserField = (config) => {
     return useMemo(() => ({
         Input: (props) => <UserFieldTypeInput {...props} config={config} />,

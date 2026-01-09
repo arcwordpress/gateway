@@ -1,17 +1,17 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './url-style.css';
 
-const URLFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const URLControl = ({ config = {} }) => {
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('URLFieldTypeInput: No "name" provided in config');
+    console.warn('URL Field: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -28,12 +28,6 @@ const URLFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="url-field">
-      {label && (
-        <label htmlFor={name} className="url-field__label">
-          {label}
-        </label>
-      )}
-
       <input
         type="url"
         id={name}
@@ -42,11 +36,14 @@ const URLFieldTypeInput = ({ config = {} }) => {
         defaultValue={defaultValue}
         placeholder={placeholder}
       />
-
-      {help && <p className="url-field__help">{help}</p>}
-      {fieldError && <p className="url-field__error">{fieldError.message}</p>}
     </div>
   );
+};
+
+const URLFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<URLControl config={config} />} />
+    );
 };
 
 const URLFieldTypeDisplay = ({ value, config }) => {
