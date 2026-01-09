@@ -18,6 +18,8 @@ function Collections() {
     installSuccess: null
   });
   const [copied, setCopied] = useState(false);
+  const [runningMigrations, setRunningMigrations] = useState({});
+  const [runningModalMigration, setRunningModalMigration] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -176,6 +178,83 @@ function Collections() {
     }
   };
 
+  const runMigration = async (collectionKey, autoGenerate = true) => {
+    // Set running state for this collection
+    setRunningMigrations(prev => ({ ...prev, [collectionKey]: true }));
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${collectionKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            autoGenerate: autoGenerate,
+            saveToFile: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to run migration');
+      }
+
+      const data = await response.json();
+      alert(`Success! ${data.message}`);
+
+      // Refresh collections to update any status
+      await fetchCollections();
+    } catch (err) {
+      alert('Error running migration: ' + err.message);
+    } finally {
+      // Clear running state
+      setRunningMigrations(prev => ({ ...prev, [collectionKey]: false }));
+    }
+  };
+
+  const runMigrationFromModal = async () => {
+    if (!migrationModal.collectionKey) return;
+
+    setRunningModalMigration(true);
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${migrationModal.collectionKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            autoGenerate: true,
+            saveToFile: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to run migration');
+      }
+
+      const data = await response.json();
+      alert(`Success! ${data.message}`);
+
+      // Close modal and refresh collections
+      closeMigrationModal();
+      await fetchCollections();
+    } catch (err) {
+      alert('Error running migration: ' + err.message);
+    } finally {
+      setRunningModalMigration(false);
+    }
+  };
+
   const copyToClipboard = async () => {
     if (!migrationModal.migration?.code) return;
 
@@ -223,6 +302,7 @@ function Collections() {
       installSuccess: null
     });
     setCopied(false);
+    setRunningModalMigration(false);
   };
 
   if (loading) {
@@ -277,12 +357,25 @@ function Collections() {
                     View details →
                   </Link>
                 </div>
-                <button
-                  onClick={() => generateMigration(collection.key)}
-                  className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-                >
-                  Generate Migration
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => runMigration(collection.key)}
+                    disabled={runningMigrations[collection.key]}
+                    className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                      runningMigrations[collection.key]
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    {runningMigrations[collection.key] ? 'Running...' : 'Run Migration'}
+                  </button>
+                  <button
+                    onClick={() => generateMigration(collection.key)}
+                    className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                  >
+                    Generate Migration
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -489,7 +582,18 @@ function Collections() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
+              <button
+                onClick={runMigrationFromModal}
+                disabled={runningModalMigration || migrationModal.loading}
+                className={`px-4 py-2 rounded transition-colors ${
+                  runningModalMigration || migrationModal.loading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
+              >
+                {runningModalMigration ? 'Running Migration...' : 'Run Now'}
+              </button>
               <button
                 onClick={closeMigrationModal}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
