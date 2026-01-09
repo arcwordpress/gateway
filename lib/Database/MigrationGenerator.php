@@ -299,4 +299,82 @@ class MigrationGenerator
 
         return $migrations;
     }
+
+    /**
+     * Install migration to an extension's Database directory
+     *
+     * @param Collection $collection
+     * @param \Gateway\Extension $extension
+     * @return array ['success' => bool, 'filePath' => string, 'message' => string, 'migration' => array]
+     */
+    public static function installToExtension(Collection $collection, \Gateway\Extension $extension)
+    {
+        // Check if extension has standard structure
+        if (!$extension->hasStandardStructure()) {
+            $databasePath = $extension->getDatabasePath();
+            return [
+                'success' => false,
+                'message' => "Extension does not have standard directory structure. Expected directory: {$databasePath}",
+                'filePath' => null,
+                'migration' => null,
+            ];
+        }
+
+        // Generate the migration
+        $migration = self::generate($collection);
+
+        // Build the file path
+        $databasePath = $extension->getDatabasePath();
+        $fileName = $migration['className'] . '.php';
+        $filePath = $databasePath . '/' . $fileName;
+
+        // Check if file already exists
+        if (file_exists($filePath)) {
+            return [
+                'success' => false,
+                'message' => "Migration file already exists: {$fileName}",
+                'filePath' => $filePath,
+                'migration' => $migration,
+            ];
+        }
+
+        // Write the file
+        $result = file_put_contents($filePath, $migration['code']);
+
+        if ($result === false) {
+            return [
+                'success' => false,
+                'message' => "Failed to write migration file. Check directory permissions.",
+                'filePath' => $filePath,
+                'migration' => $migration,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => "Migration successfully installed to extension",
+            'filePath' => $filePath,
+            'migration' => $migration,
+        ];
+    }
+
+    /**
+     * Get all extensions that have the standard directory structure
+     *
+     * @return array Array of Extension instances
+     */
+    public static function getAvailableExtensions()
+    {
+        $extensionRegistry = \Gateway\Extensions\ExtensionRegistry::instance();
+        $extensions = $extensionRegistry->getAll();
+        $available = [];
+
+        foreach ($extensions as $key => $extension) {
+            if ($extension->hasStandardStructure()) {
+                $available[$key] = $extension;
+            }
+        }
+
+        return $available;
+    }
 }
