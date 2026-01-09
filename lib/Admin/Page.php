@@ -68,6 +68,8 @@ class Page
      */
     public static function add_admin_menu()
     {
+        // Main Gateway menu - temporarily kept for submenu structure
+        // TODO: Remove when Gateway admin page is ready
         add_menu_page(
             'Gateway',
             'Gateway',
@@ -76,6 +78,16 @@ class Page
             [__CLASS__, 'render_page'],
             'dashicons-admin-generic',
             30
+        );
+
+        // Rename the first submenu item from "Gateway" to "Dashboard"
+        add_submenu_page(
+            'gateway',        // parent slug
+            'Dashboard',      // page title
+            'Dashboard',      // menu title
+            'manage_options', // capability
+            'gateway',        // menu slug (same as parent to override default)
+            [__CLASS__, 'render_page']
         );
     }
 
