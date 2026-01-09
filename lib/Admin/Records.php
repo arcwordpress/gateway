@@ -33,7 +33,7 @@ class Records
             return;
         }
 
-        // Add single "Records" submenu item (shows all collections - will be trimmed later)
+        // Add single "Records" submenu item
         add_submenu_page(
             'gateway', // Parent slug
             'Records', // Page title
@@ -42,21 +42,6 @@ class Records
             'gateway-collections', // Menu slug
             [__CLASS__, 'renderCollectionPage']
         );
-
-        // Add individual submenu item for each collection
-        foreach ($collections as $collection) {
-            $collectionKey = $collection->getKey();
-            $collectionTitle = $collection->getTitlePlural();
-
-            add_submenu_page(
-                'gateway',                              // Parent slug
-                $collectionTitle,                       // Page title
-                $collectionTitle,                       // Menu title
-                'manage_options',                       // Capability
-                'gateway-collection-' . $collectionKey, // Menu slug
-                [__CLASS__, 'renderIndividualCollectionPage']
-            );
-        }
     }
 
     /**
@@ -64,11 +49,8 @@ class Records
      */
     public static function enqueueStudioApp($hook)
     {
-        // Check if we're on the main records page or any individual collection page
-        $isRecordsPage = $hook === 'gateway_page_gateway-collections';
-        $isCollectionPage = strpos($hook, 'gateway_page_gateway-collection-') === 0;
-
-        if (!$isRecordsPage && !$isCollectionPage) {
+        // Only load on the records page
+        if ($hook !== 'gateway_page_gateway-collections') {
             return;
         }
 
@@ -118,35 +100,12 @@ class Records
     }
 
     /**
-     * Render the records admin page (shows all collections)
+     * Render the records admin page
      */
     public static function renderCollectionPage()
     {
         ?>
         <div gateway-studio-app data-package="default"></div>
-        <?php
-    }
-
-    /**
-     * Render an individual collection page
-     */
-    public static function renderIndividualCollectionPage()
-    {
-        // Extract collection key from the menu slug
-        $page = $_GET['page'] ?? '';
-        $collectionKey = str_replace('gateway-collection-', '', $page);
-
-        $registry = Plugin::getInstance()->getRegistry();
-
-        // Verify collection exists
-        if (!$registry->has($collectionKey)) {
-            echo '<div class="wrap"><h1>Collection not found</h1></div>';
-            return;
-        }
-
-        $collection = $registry->get($collectionKey);
-        ?>
-        <div gateway-studio-app data-collection="<?php echo esc_attr($collectionKey); ?>"></div>
         <?php
     }
 }
