@@ -55,6 +55,7 @@ class Plugin
     private $settingsRoute;
     private $testConnectionRoute;
     private $migrationGeneratorRoute;
+    private $migrationRunnerRoute;
     private $mazeRoutes;
 
     public static function getInstance()
@@ -75,8 +76,13 @@ class Plugin
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
+        $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
+
+        // Initialize migration hooks
+        Database\MigrationHooks::init();
+
         $this->init();
     }
 
@@ -167,9 +173,8 @@ class Plugin
      */
     public function activate()
     {
-
-        // Install database tables for core collections.
-        Migrations\GatewayProjectMigration::create();
+        // Run core migrations via action hook
+        Database\MigrationHooks::runCoreMigrations();
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
