@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import Header from '@arcwp/gateway-admin';
 import Dashboard from './pages/Dashboard';
 import Collections from './pages/Collections';
+import CollectionDetail from './pages/CollectionDetail';
 import Settings from './pages/Settings';
 import Chat from './pages/Chat';
 
@@ -82,6 +83,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/collections" element={<Collections />} />
+            <Route path="/collections/:collectionKey" element={<CollectionDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/chat" element={<Chat />} />
           </Routes>

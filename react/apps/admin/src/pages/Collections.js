@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Accordion from '../components/Accordion';
 import RouteTest from '../components/RouteTest';
 
@@ -265,9 +266,17 @@ function Collections() {
               className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {collection.title}
-                </h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {collection.title}
+                  </h3>
+                  <Link
+                    to={`/collections/${collection.key}`}
+                    className="text-sm text-indigo-600 hover:text-indigo-700"
+                  >
+                    View details →
+                  </Link>
+                </div>
                 <button
                   onClick={() => generateMigration(collection.key)}
                   className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
