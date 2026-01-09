@@ -2,6 +2,9 @@ import { createRoot } from '@wordpress/element';
 import App from './App';
 import './index.css';
 
+// Import admin package styles
+import '@arcwp/gateway-admin/style.css';
+
 const rootElement = document.getElementById('gateway-admin-root');
 
 if (rootElement) {
