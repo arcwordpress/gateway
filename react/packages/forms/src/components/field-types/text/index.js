@@ -6,7 +6,8 @@ import './style.css';
 // Input Component (for forms)
 const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
 
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+  const { register, formState, refs } = useGatewayForm(); // Get RHF methods from context
+
   if (!config.name) {
     console.warn('TextFieldTypeInput: No "name" provided in config');
     return null;

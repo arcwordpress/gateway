@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './file-style.css';
 
-// Input Component (for forms)
-const FileFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const FileControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('FileFieldTypeInput: No "name" provided in config');
+    console.warn('File Field: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -35,7 +34,6 @@ const FileFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -149,19 +147,8 @@ const FileFieldTypeInput = ({ config = {} }) => {
     containerClasses.push('file-field__container--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="file-field">
-      <label htmlFor={name} className="file-field__label">
-        {labelText}
-        {required && <span className="file-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="file-field__help">{help}</p>
-      )}
-
       <div className={containerClasses.join(' ')}>
         {file ? (
           <div className="file-field__preview">
@@ -257,15 +244,16 @@ const FileFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {fieldError && (
-        <p className="file-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const FileFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<FileControl config={config} />} />
+    );
+};
+
 const FileFieldTypeDisplay = ({ value, config }) => {
   const [file, setFile] = useState(null);
 
@@ -310,7 +298,6 @@ const FileFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Type Definition for registry
 export const fileFieldType = {
   type: 'file',
   Input: FileFieldTypeInput,
@@ -324,7 +311,6 @@ export const fileFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useFileField = (config) => {
   return useMemo(() => ({
     Input: (props) => <FileFieldTypeInput {...props} config={config} />,

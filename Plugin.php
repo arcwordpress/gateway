@@ -25,7 +25,6 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
-require_once GATEWAY_PATH . 'includes/gateway-collection-cpt.php';
 
 // Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {
@@ -56,6 +55,7 @@ class Plugin
     private $settingsRoute;
     private $testConnectionRoute;
     private $migrationGeneratorRoute;
+    private $migrationRunnerRoute;
     private $mazeRoutes;
 
     public static function getInstance()
@@ -76,8 +76,13 @@ class Plugin
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
+        $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
+
+        // Initialize migration hooks
+        Database\MigrationHooks::init();
+
         $this->init();
     }
 
@@ -99,8 +104,8 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\Records::init();
-        Admin\Builder::init();
-        Package\PackageMenus::init(); // Add this line
+        // Admin\Builder::init(); // Removed Builder admin link
+        Package\PackageMenus::init();
 
         // Initialize front-end forms
         Forms\Render::init();
@@ -168,9 +173,8 @@ class Plugin
      */
     public function activate()
     {
-
-        // Install database tables for core collections.
-        Migrations\GatewayProjectMigration::create();
+        // Run core migrations via action hook
+        Database\MigrationHooks::runCoreMigrations();
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {

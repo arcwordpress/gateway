@@ -1,12 +1,25 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Accordion from '../components/Accordion';
+import RouteTest from '../components/RouteTest';
 
 function Collections() {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [migrationModal, setMigrationModal] = useState({ isOpen: false, migration: null, loading: false });
+  const [migrationModal, setMigrationModal] = useState({
+    isOpen: false,
+    migration: null,
+    loading: false,
+    collectionKey: null,
+    extensions: [],
+    extensionsLoading: false,
+    installing: false,
+    installSuccess: null
+  });
   const [copied, setCopied] = useState(false);
-  const [runningMigration, setRunningMigration] = useState(null);
+  const [runningMigrations, setRunningMigrations] = useState({});
+  const [runningModalMigration, setRunningModalMigration] = useState(false);
 
   useEffect(() => {
     fetchCollections();
@@ -36,12 +49,10 @@ function Collections() {
     }
   };
 
-  const generateMigration = async (collectionKey) => {
-    setMigrationModal({ isOpen: true, migration: null, loading: true });
-
+  const fetchExtensions = async () => {
     try {
       const response = await fetch(
-        `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${collectionKey}`,
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/extensions/list`,
         {
           headers: {
             'X-WP-Nonce': window.gatewayAdminScript.nonce,
@@ -50,14 +61,186 @@ function Collections() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to generate migration');
+        throw new Error('Failed to fetch extensions');
       }
 
       const data = await response.json();
-      setMigrationModal({ isOpen: true, migration: data.migration, loading: false });
+      return data.extensions || [];
+    } catch (err) {
+      console.error('Error fetching extensions:', err);
+      return [];
+    }
+  };
+
+  const generateMigration = async (collectionKey) => {
+    setMigrationModal({
+      isOpen: true,
+      migration: null,
+      loading: true,
+      collectionKey,
+      extensions: [],
+      extensionsLoading: true,
+      installing: false,
+      installSuccess: null
+    });
+
+    try {
+      // Fetch both migration and extensions in parallel
+      const [migrationResponse, extensions] = await Promise.all([
+        fetch(
+          `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${collectionKey}`,
+          {
+            headers: {
+              'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            },
+          }
+        ),
+        fetchExtensions()
+      ]);
+
+      if (!migrationResponse.ok) {
+        throw new Error('Failed to generate migration');
+      }
+
+      const migrationData = await migrationResponse.json();
+
+      setMigrationModal({
+        isOpen: true,
+        migration: migrationData.migration,
+        loading: false,
+        collectionKey,
+        extensions,
+        extensionsLoading: false,
+        installing: false,
+        installSuccess: null
+      });
     } catch (err) {
       alert('Error generating migration: ' + err.message);
-      setMigrationModal({ isOpen: false, migration: null, loading: false });
+      setMigrationModal({
+        isOpen: false,
+        migration: null,
+        loading: false,
+        collectionKey: null,
+        extensions: [],
+        extensionsLoading: false,
+        installing: false,
+        installSuccess: null
+      });
+    }
+  };
+
+  const installMigration = async (extensionKey) => {
+    if (!migrationModal.collectionKey) return;
+
+    setMigrationModal(prev => ({ ...prev, installing: true, installSuccess: null }));
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/migrations/${migrationModal.collectionKey}/install`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ extension: extensionKey }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to install migration');
+      }
+
+      setMigrationModal(prev => ({
+        ...prev,
+        installing: false,
+        installSuccess: {
+          message: data.message,
+          filePath: data.filePath
+        }
+      }));
+    } catch (err) {
+      alert('Error installing migration: ' + err.message);
+      setMigrationModal(prev => ({ ...prev, installing: false, installSuccess: null }));
+    }
+  };
+
+  const runMigration = async (collectionKey, autoGenerate = true) => {
+    // Set running state for this collection
+    setRunningMigrations(prev => ({ ...prev, [collectionKey]: true }));
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${collectionKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            autoGenerate: autoGenerate,
+            saveToFile: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to run migration');
+      }
+
+      const data = await response.json();
+      alert(`Success! ${data.message}`);
+
+      // Refresh collections to update any status
+      await fetchCollections();
+    } catch (err) {
+      alert('Error running migration: ' + err.message);
+    } finally {
+      // Clear running state
+      setRunningMigrations(prev => ({ ...prev, [collectionKey]: false }));
+    }
+  };
+
+  const runMigrationFromModal = async () => {
+    if (!migrationModal.collectionKey) return;
+
+    setRunningModalMigration(true);
+
+    try {
+      const response = await fetch(
+        `${window.gatewayAdminScript.apiUrl}gateway/v1/collection/migration/${migrationModal.collectionKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'X-WP-Nonce': window.gatewayAdminScript.nonce,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            autoGenerate: true,
+            saveToFile: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to run migration');
+      }
+
+      const data = await response.json();
+      alert(`Success! ${data.message}`);
+
+      // Close modal and refresh collections
+      closeMigrationModal();
+      await fetchCollections();
+    } catch (err) {
+      alert('Error running migration: ' + err.message);
+    } finally {
+      setRunningModalMigration(false);
     }
   };
 
@@ -133,8 +316,18 @@ function Collections() {
   };
 
   const closeMigrationModal = () => {
-    setMigrationModal({ isOpen: false, migration: null, loading: false });
+    setMigrationModal({
+      isOpen: false,
+      migration: null,
+      loading: false,
+      collectionKey: null,
+      extensions: [],
+      extensionsLoading: false,
+      installing: false,
+      installSuccess: null
+    });
     setCopied(false);
+    setRunningModalMigration(false);
   };
 
   if (loading) {
@@ -177,10 +370,38 @@ function Collections() {
               key={collection.key}
               className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  {collection.title}
-                </h3>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {collection.title}
+                  </h3>
+                  <Link
+                    to={`/collections/${collection.key}`}
+                    className="text-sm text-indigo-600 hover:text-indigo-700"
+                  >
+                    View details →
+                  </Link>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => runMigration(collection.key)}
+                    disabled={runningMigrations[collection.key]}
+                    className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                      runningMigrations[collection.key]
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                  >
+                    {runningMigrations[collection.key] ? 'Running...' : 'Run Migration'}
+                  </button>
+                  <button
+                    onClick={() => generateMigration(collection.key)}
+                    className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                  >
+                    Generate Migration
+                  </button>
+                </div>
+              </div>
 
                 <div className="space-y-3">
                   <div>
@@ -269,15 +490,60 @@ function Collections() {
                 </div>
               ) : migrationModal.migration ? (
                 <div className="space-y-4">
+                  {/* Install Success Message */}
+                  {migrationModal.installSuccess && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-green-900 mb-2 flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Migration Installed Successfully!
+                      </h4>
+                      <p className="text-sm text-green-800">{migrationModal.installSuccess.message}</p>
+                      <p className="text-xs text-green-700 mt-2 font-mono bg-green-100 px-2 py-1 rounded">
+                        {migrationModal.installSuccess.filePath}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Install to Extension Section */}
+                  {migrationModal.extensions.length > 0 && !migrationModal.installSuccess && (
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-indigo-900 mb-3">Install to Extension</h4>
+                      <p className="text-sm text-indigo-800 mb-3">
+                        Install this migration directly to one of your registered extensions:
+                      </p>
+                      <div className="space-y-2">
+                        {migrationModal.extensions.map((extension) => (
+                          <div key={extension.key} className="flex items-center justify-between bg-white p-3 rounded border border-indigo-100">
+                            <div>
+                              <div className="font-medium text-gray-900">{extension.slug}</div>
+                              <div className="text-xs text-gray-500 font-mono">{extension.databasePath}</div>
+                            </div>
+                            <button
+                              onClick={() => installMigration(extension.key)}
+                              disabled={migrationModal.installing}
+                              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {migrationModal.installing ? 'Installing...' : 'Install'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Instructions */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 mb-2">Usage Instructions:</h4>
-                    <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                      <li>Save this file to your plugin (e.g., <code className="bg-blue-100 px-1 rounded">/lib/{migrationModal.migration.className}.php</code>)</li>
-                      <li>Require the file in your plugin</li>
-                      <li>Call <code className="bg-blue-100 px-1 rounded">{migrationModal.migration.className}::create()</code> from your activation hook</li>
-                    </ol>
-                  </div>
+                  {!migrationModal.installSuccess && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 mb-2">Manual Installation Instructions:</h4>
+                      <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                        <li>Save this file to your plugin (e.g., <code className="bg-blue-100 px-1 rounded">/lib/Database/{migrationModal.migration.className}.php</code>)</li>
+                        <li>Require the file in your plugin</li>
+                        <li>Call <code className="bg-blue-100 px-1 rounded">{migrationModal.migration.className}::create()</code> from your activation hook</li>
+                      </ol>
+                    </div>
+                  )}
 
                   {/* Notes */}
                   {migrationModal.migration.notes && migrationModal.migration.notes.length > 0 && (
@@ -311,7 +577,18 @@ function Collections() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
+              <button
+                onClick={runMigrationFromModal}
+                disabled={runningModalMigration || migrationModal.loading}
+                className={`px-4 py-2 rounded transition-colors ${
+                  runningModalMigration || migrationModal.loading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
+              >
+                {runningModalMigration ? 'Running Migration...' : 'Run Now'}
+              </button>
               <button
                 onClick={closeMigrationModal}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"

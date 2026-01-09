@@ -1,0 +1,35 @@
+.readonly-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.readonly-field__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+.readonly-field__input:focus {
+  outline: none;
+}
+
+.readonly-field__help {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.readonly-field__display {
+  color: #1d2327;
+}
+
+.readonly-field__display--empty {
+  color: #9ca3af;
+  font-style: italic;
+}

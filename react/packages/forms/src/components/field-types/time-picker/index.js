@@ -1,15 +1,12 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './style.css';
+import './time-picker-style.css';
 
-/**
- * TimePickerInput Component
- * Renders a time picker field using react-datepicker
- */
-export const TimePickerInput = ({ config = {} }) => {
-    const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+export const TimePickerControl = ({ config = {} }) => {
+    const { register, setValue, watch, formState } = useGatewayForm();
     const name = config.name;
     
     if (!name) {
@@ -17,7 +14,6 @@ export const TimePickerInput = ({ config = {} }) => {
         return null;
     }
 
-    // Get error directly from context
     const fieldError = formState.errors[name];
 
     const {
@@ -33,7 +29,6 @@ export const TimePickerInput = ({ config = {} }) => {
     const [selectedTime, setSelectedTime] = useState(null);
     const currentValue = watch(name);
 
-    // Initialize value on mount
     useEffect(() => {
         register(name);
 
@@ -98,11 +93,13 @@ export const TimePickerInput = ({ config = {} }) => {
     );
 };
 
-/**
- * TimePickerDisplay Component
- * Displays time value in formatted string
- */
-export const TimePickerDisplay = ({ value, config = {} }) => {
+const TimePickerFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<TimePickerControl config={config} />} />
+    );
+};
+
+export const TimePickerFieldTypeDisplay = ({ value, config = {} }) => {
     const { label = '' } = config;
 
     if (!value) {
@@ -132,13 +129,10 @@ export const TimePickerDisplay = ({ value, config = {} }) => {
     );
 };
 
-/**
- * Field Definition for Registry
- */
 export const timePickerFieldType = {
     type: 'time-picker',
-    Input: TimePickerInput,
-    Display: TimePickerDisplay,
+    Input: TimePickerFieldTypeInput,
+    Display: TimePickerFieldTypeDisplay,
     defaultConfig: {
         label: '',
         placeholder: '',
@@ -150,12 +144,9 @@ export const timePickerFieldType = {
     }
 };
 
-/**
- * Custom Hook for Time Picker Field
- */
 export const useTimePickerField = (config) => {
     return useMemo(() => ({
-        Input: (props) => <TimePickerInput {...props} config={config} />,
-        Display: (props) => <TimePickerDisplay {...props} config={config} />
+        Input: (props) => <TimePickerFieldTypeInput {...props} config={config} />,
+        Display: (props) => <TimePickerFieldTypeDisplay {...props} config={config} />
     }), [config]);
 };

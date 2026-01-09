@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './link-style.css';
 
-// Input Component (for forms)
-const LinkFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const LinkControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -12,7 +12,6 @@ const LinkFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -39,7 +38,6 @@ const LinkFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -101,19 +99,8 @@ const LinkFieldTypeInput = ({ config = {} }) => {
     containerClasses.push('link-field__container--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="link-field">
-      <label htmlFor={name} className="link-field__label">
-        {labelText}
-        {required && <span className="link-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="link-field__help">{help}</p>
-      )}
-
       <div className={containerClasses.join(' ')}>
         {hasLink ? (
           <div className="link-field__preview">
@@ -250,28 +237,17 @@ const LinkFieldTypeInput = ({ config = {} }) => {
             </p>
           </div>
         )}
-
-        {!hasLink && !isEditing && (
-          <div className="link-field__empty">
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="link-field__button link-field__button--add"
-            >
-              {addButtonText}
-            </button>
-          </div>
-        )}
       </div>
-
-      {fieldError && (
-        <p className="link-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const LinkFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<LinkControl config={config} />} />
+    );
+};
+
 const LinkFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="link-field__display link-field__display--empty">-</span>;

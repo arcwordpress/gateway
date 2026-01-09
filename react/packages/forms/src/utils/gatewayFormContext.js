@@ -19,23 +19,37 @@ export const createGatewayFormContext = (
   error,
   fieldErrors = {},
   updatingFields = {}
-) => ({
-  // RHF methods
-  ...methods,
-  // Shared form data
-  collection,
-  recordId,
-  loading,
-  error,
-  fieldErrors,
-  updatingFields,
-  isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
-  getFieldError: (fieldName) => fieldErrors[fieldName] || null,
-  getFieldConfig: (fieldName) => {
-    if (!collection?.fields?.[fieldName]) return null;
-    return { name: fieldName, ...collection.fields[fieldName] };
-  },
-});
+) => {
+  const refs = {
+    fields: {}
+  };
+
+  return {
+    // RHF methods
+    ...methods,
+    // Shared form data
+    collection,
+    recordId,
+    loading,
+    error,
+    fieldErrors,
+    updatingFields,
+    // Refs management
+    refs,
+    registerFieldRefs: (fieldName, fieldRefs) => {
+      refs.fields[fieldName] = fieldRefs;
+    },
+    unregisterFieldRefs: (fieldName) => {
+      delete refs.fields[fieldName];
+    },
+    isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
+    getFieldError: (fieldName) => fieldErrors[fieldName] || null,
+    getFieldConfig: (fieldName) => {
+      if (!collection?.fields?.[fieldName]) return null;
+      return { name: fieldName, ...collection.fields[fieldName] };
+    },
+  };
+};
 
 export const GatewayFormContext = createContext();
 

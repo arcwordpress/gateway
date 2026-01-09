@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import { getApiClient } from '@arcwp/gateway-data';
-import './style.css';
+import './relation-style.css';
 
-const RelationFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const RelationControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -12,7 +14,6 @@ const RelationFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -62,19 +63,8 @@ const RelationFieldTypeInput = ({ config = {} }) => {
     fetchOptions();
   }, [endpoint]);
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="relation-field">
-      <label htmlFor={name} className="relation-field__label">
-        {labelText}
-        {required && <span className="relation-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="relation-field__help">{help}</p>
-      )}
-
       {loading ? (
         <div className="relation-field__loading">
           Loading options...
@@ -97,12 +87,14 @@ const RelationFieldTypeInput = ({ config = {} }) => {
           ))}
         </select>
       )}
-
-      {fieldError && (
-        <p className="relation-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const RelationFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<RelationControl config={config} />} />
+    );
 };
 
 const RelationFieldTypeDisplay = ({ value, config }) => {

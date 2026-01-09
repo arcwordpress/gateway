@@ -1,13 +1,15 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './hidden-style.css';
 
-const HiddenFieldTypeInput = ({ config = {} }) => {
-  const { register } = useGatewayForm(); // Get RHF methods from context
+const HiddenControl = ({ config = {} }) => {
+
+  const { register } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('HiddenFieldTypeInput: No "name" provided in config');
+    console.warn('Hidden Field: No "name" provided in config');
     return null;
   }
 
@@ -24,6 +26,12 @@ const HiddenFieldTypeInput = ({ config = {} }) => {
   );
 };
 
+const HiddenFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<HiddenControl config={config} />} />
+    );
+};
+
 const HiddenFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="hidden-field__display hidden-field__display--empty">-</span>;
@@ -32,7 +40,6 @@ const HiddenFieldTypeDisplay = ({ value, config }) => {
   return <span className="hidden-field__display">{String(value)}</span>;
 };
 
-// Field Type Definition for registry
 export const hiddenFieldType = {
   type: 'hidden',
   Input: HiddenFieldTypeInput,

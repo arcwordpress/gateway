@@ -1,9 +1,11 @@
 import { useState, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './password-style.css';
 
-const PasswordFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const PasswordControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +13,6 @@ const PasswordFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -22,8 +23,6 @@ const PasswordFieldTypeInput = ({ config = {} }) => {
     autoComplete = 'current-password',
     default: defaultValue
   } = config;
-
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -38,10 +37,6 @@ const PasswordFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="password-field">
-      <label htmlFor={name} className="password-field__label">
-        {labelText}
-        {required && <span className="password-field__required">*</span>}
-      </label>
       <div className="password-field__wrapper">
         <input
           type={showPassword ? 'text' : 'password'}
@@ -70,14 +65,14 @@ const PasswordFieldTypeInput = ({ config = {} }) => {
           )}
         </button>
       </div>
-      {help && (
-        <p className="password-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="password-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const PasswordFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<PasswordControl config={config} />} />
+    );
 };
 
 const PasswordFieldTypeDisplay = ({ value, config }) => {

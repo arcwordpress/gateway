@@ -1,0 +1,60 @@
+.email-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.email-field__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.email-field__input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: #3b82f6;
+}
+
+.email-field__input--error {
+  border-color: #ef4444;
+}
+
+.email-field__input--error:focus {
+  box-shadow: 0 0 0 2px #ef4444;
+  border-color: #ef4444;
+}
+
+.email-field__help {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.email-field__error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.email-field__display {
+  color: #1d2327;
+}
+
+.email-field__display--empty {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.email-field__display--link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.email-field__display--link:hover {
+  text-decoration: underline;
+}

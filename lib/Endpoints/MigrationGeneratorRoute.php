@@ -37,6 +37,10 @@ class MigrationGeneratorRoute
             ],
         ]);
 
+        // Install migration to extension
+        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/install', [
+            'methods' => 'POST',
+            'callback' => [$this, 'installMigration'],
         // Run migration for a specific collection
         register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/run', [
             'methods' => 'POST',
@@ -50,6 +54,23 @@ class MigrationGeneratorRoute
                     'type' => 'string',
                     'description' => 'Collection key',
                 ],
+                'extension' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'Extension key',
+                ],
+            ],
+        ]);
+
+        // Get available extensions
+        register_rest_route('gateway/v1', '/migrations/extensions/list', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getAvailableExtensions'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
+        ]);
+
             ],
         ]);
 
@@ -119,6 +140,20 @@ class MigrationGeneratorRoute
     }
 
     /**
+     * Install migration to extension
+     */
+    public function installMigration($request)
+    {
+        $key = $request->get_param('key');
+        $extensionKey = $request->get_param('extension');
+
+        $registry = Plugin::getInstance()->getRegistry();
+        $extensionRegistry = \Gateway\Extensions\ExtensionRegistry::instance();
+
+        // Get the collection
+        try {
+            $collection = $registry->get($key);
+        } catch (\Exception $e) {
      * Run migration for a specific collection
      */
     public function runCollectionMigration($request)
@@ -138,6 +173,33 @@ class MigrationGeneratorRoute
             );
         }
 
+        // Get the extension
+        try {
+            $extension = $extensionRegistry->get($extensionKey);
+        } catch (\Exception $e) {
+            return new \WP_Error(
+                'extension_not_found',
+                'Extension not found',
+                ['status' => 404]
+            );
+        }
+
+        // Install the migration
+        try {
+            $result = MigrationGenerator::installToExtension($collection, $extension);
+
+            if (!$result['success']) {
+                return new \WP_Error(
+                    'migration_install_failed',
+                    $result['message'],
+                    ['status' => 400, 'result' => $result]
+                );
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            return new \WP_Error(
+                'migration_install_error',
         try {
             // Get table info
             $tableName = $collection->getTable();
@@ -205,6 +267,35 @@ class MigrationGeneratorRoute
     }
 
     /**
+     * Get available extensions with standard directory structure
+     */
+    public function getAvailableExtensions($request)
+    {
+        try {
+            $extensions = MigrationGenerator::getAvailableExtensions();
+
+            // Format extensions for API response
+            $formatted = [];
+            foreach ($extensions as $key => $extension) {
+                $formatted[] = [
+                    'key' => $key,
+                    'slug' => $extension->getPluginSlug(),
+                    'pluginPath' => $extension->getPluginPath(),
+                    'databasePath' => $extension->getDatabasePath(),
+                ];
+            }
+
+            return [
+                'success' => true,
+                'extensions' => $formatted,
+            ];
+        } catch (\Exception $e) {
+            return new \WP_Error(
+                'extensions_fetch_failed',
+                $e->getMessage(),
+                ['status' => 500]
+            );
+        }
      * Get column definition for a field (helper for runCollectionMigration)
      */
     private function getColumnDefinition($column, $fields, $casts)

@@ -1,9 +1,11 @@
-import { createElement, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './textarea-style.css';
 
-const TextareaFieldTypeInput = ({ config = {} }) => {
-    const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const TextareaControl = ({ config = {} }) => {
+
+    const { register, formState } = useGatewayForm();
     const name = config.name;
     
     if (!name) {
@@ -11,7 +13,7 @@ const TextareaFieldTypeInput = ({ config = {} }) => {
         return null;
     }
 
-    // Get error directly from context
+    // Get errors for this field.
     const fieldError = formState.errors[name];
 
     const {
@@ -28,13 +30,7 @@ const TextareaFieldTypeInput = ({ config = {} }) => {
     }
 
     return (
-        <div className="textarea-field">
-            {label && (
-                <label htmlFor={name} className="textarea-field__label">
-                    {label}
-                </label>
-            )}
-
+        <div className="gty-field-control gty-textarea-field-control">
             <textarea
                 id={name}
                 className={textareaClasses.join(' ')}
@@ -43,10 +39,14 @@ const TextareaFieldTypeInput = ({ config = {} }) => {
                 rows={rows}
                 placeholder={placeholder}
             />
-
-            {help && <p className="textarea-field__help">{help}</p>}
-            {fieldError && <p className="textarea-field__error">{fieldError.message}</p>}
         </div>
+    );
+
+};
+
+const TextareaFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<TextareaControl config={config} />} />
     );
 };
 

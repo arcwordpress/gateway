@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import SimpleMDE from 'react-simplemde-editor';
 import 'easymde/dist/easymde.min.css';
-import './style.css';
+import './markdown-style.css';
 
-const MarkdownFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const MarkdownControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -13,7 +14,6 @@ const MarkdownFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -35,7 +35,6 @@ const MarkdownFieldTypeInput = ({ config = {} }) => {
     setIsReady(true);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -81,17 +80,8 @@ const MarkdownFieldTypeInput = ({ config = {} }) => {
     wrapperClasses.push('markdown-field__wrapper--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="markdown-field">
-      <label htmlFor={name} className="markdown-field__label">
-        {labelText}
-        {required && <span className="markdown-field__required">*</span>}
-      </label>
-      {help && (
-        <p className="markdown-field__help">{help}</p>
-      )}
       <div className={wrapperClasses.join(' ')}>
         <SimpleMDE
           id={name}
@@ -100,11 +90,14 @@ const MarkdownFieldTypeInput = ({ config = {} }) => {
           options={editorOptions}
         />
       </div>
-      {fieldError && (
-        <p className="markdown-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const MarkdownFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<MarkdownControl config={config} />} />
+    );
 };
 
 const MarkdownFieldTypeDisplay = ({ value, config }) => {
@@ -120,6 +113,8 @@ const MarkdownFieldTypeDisplay = ({ value, config }) => {
     </span>
   );
 };
+
+
 
 export const markdownFieldType = {
   type: 'markdown',
