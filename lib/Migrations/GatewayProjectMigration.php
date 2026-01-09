@@ -42,14 +42,4 @@ class GatewayProjectMigration
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
-
-    /**
-     * Drop the database table (use with caution!)
-     */
-    public static function drop()
-    {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'gateway_project';
-        $wpdb->query("DROP TABLE IF EXISTS $table_name");
-    }
 }
