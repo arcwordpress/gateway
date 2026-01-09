@@ -276,15 +276,6 @@ class MigrationGenerator
         $code .= "        ) \$charset_collate;\";\n\n";
         $code .= "        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');\n";
         $code .= "        dbDelta(\$sql);\n";
-        $code .= "    }\n\n";
-        $code .= "    /**\n";
-        $code .= "     * Drop the database table (use with caution!)\n";
-        $code .= "     */\n";
-        $code .= "    public static function drop()\n";
-        $code .= "    {\n";
-        $code .= "        global \$wpdb;\n";
-        $code .= "        \$table_name = \$wpdb->prefix . '{$tableName}';\n";
-        $code .= "        \$wpdb->query(\"DROP TABLE IF EXISTS \$table_name\");\n";
         $code .= "    }\n";
         $code .= "}\n";
 
