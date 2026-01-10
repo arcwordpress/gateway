@@ -79,6 +79,7 @@ class Plugin
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
+        new Blocks\BlockRoutes();
 
         // Initialize migration hooks
         Database\MigrationHooks::init();
@@ -119,6 +120,9 @@ class Plugin
 
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
+
+        // Initialize dynamic blocks (programmatic registration and asset enqueuing)
+        Blocks\BlockInit::init();
 
         // Register core collections. 
         add_action('gateway_loaded', [$this, 'registerCollections']);

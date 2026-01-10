@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/box",
+  "title": "Box",
+  "category": "layout",
+  "icon": "grid-view",
+  "description": "A box block",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "gateway",
+  "editorScript": "file:../../build/index.js",
+  "render": "file:../../template.php"
+}
