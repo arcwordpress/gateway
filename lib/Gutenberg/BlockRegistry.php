@@ -3,7 +3,10 @@
 namespace Gateway\Gutenberg;
 
 /**
- * Block Registry - Registers and manages Gutenberg blocks
+ * Block Registry - Registers Core Gateway Block Types
+ * 
+ * This registry handles Gateway's internal blocks located in /react/blocks
+ * For consumer/developer blocks using the Block class system, see Gateway\Blocks\BlockRegistry
  *
  * @package Gateway
  */
@@ -18,22 +21,25 @@ class BlockRegistry
     }
 
     /**
-     * Register all blocks from /react/blocks directory
+     * Register all core blocks from /react/blocks directory
      */
     public static function register_blocks()
     {
         $blocks_dir = GATEWAY_PATH . 'react/blocks';
         
-        // Check if blocks directory exists
         if (!is_dir($blocks_dir)) {
             return;
         }
         
-        // Get all subdirectories in blocks folder
         $block_dirs = glob($blocks_dir . '/*', GLOB_ONLYDIR);
         
         foreach ($block_dirs as $block_path) {
-            // Check if block.json exists
+            // Skip gt1 - it's for consumer block experiments, not core blocks
+            if (basename($block_path) === 'gt1') {
+                continue;
+            }
+            
+            // Standard block registration
             if (file_exists($block_path . '/block.json')) {
                 register_block_type($block_path);
             }
