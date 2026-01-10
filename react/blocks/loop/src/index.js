@@ -21,8 +21,7 @@ import './index.css';
 // Component that renders the actual editable InnerBlocks for the active loop item
 function LoopItemInnerBlocks() {
     const innerBlocksProps = useInnerBlocksProps(
-        { className: 'gateway-loop-item' },
-        { renderAppender: false }
+        { className: 'gateway-loop-item' }
     );
     return <div {...innerBlocksProps} />;
 }
@@ -209,6 +208,9 @@ registerBlockType('gateway/loop', {
     title: __('Gateway Loop', 'gateway'),
     icon: 'update',
     category: 'widgets',
+    supports: {
+        html: false,
+    },
     edit: EditComponent,
     save: SaveComponent,
 });
