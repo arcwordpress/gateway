@@ -1,22 +1,41 @@
 import { registerBlockType } from '@wordpress/blocks';
-import apiFetch from '@wordpress/api-fetch';
+import { InnerBlocks } from '@wordpress/block-editor';
 import ServerSideRender from '@wordpress/server-side-render';
 
-// Fetch blocks from the Gateway API and register them
-apiFetch({ path: '/gateway/v1/blocks' })
-    .then(data => {
-        const blocks = data || [];
+// Use blocks data passed from PHP via wp_localize_script
+const registerBlocks = (blocks) => {
+    blocks.forEach(block => {
+        // Grid block has innerBlocks support
+        const isGridBlock = block.name === 'gateway/grid';
         
-        blocks.forEach(block => {
-            registerBlockType(block.name, {
-                title: block.title,
-                category: 'layout',
-                edit: (props) => <ServerSideRender 
+        registerBlockType(block.name, {
+            title: block.title,
+            category: 'layout',
+            edit: (props) => isGridBlock ? (
+                <div>
+                    <ServerSideRender 
+                        block={block.name}
+                        attributes={props.attributes}
+                    />
+                    <div style={{ marginTop: '20px', padding: '10px', border: '1px dashed #ccc' }}>
+                        <h3>Inner Blocks</h3>
+                        <InnerBlocks />
+                    </div>
+                </div>
+            ) : (
+                <ServerSideRender 
                     block={block.name}
                     attributes={props.attributes}
-                />,
-                save: () => null,
-            });
+                />
+            ),
+            save: (props) => isGridBlock ? (
+                <InnerBlocks.Content />
+            ) : null,
         });
-    })
-    .catch(error => console.error('Error loading blocks:', error));
+    });
+};
+
+// Check if blocks data was passed from PHP
+if (typeof gatewayBlocks !== 'undefined' && gatewayBlocks.length > 0) {
+    registerBlocks(gatewayBlocks);
+}
