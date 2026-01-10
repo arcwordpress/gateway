@@ -3,11 +3,13 @@
 namespace Gateway\Endpoints\Standard;
 
 use Gateway\Endpoints\BaseEndpoint;
+use Gateway\Traits\CollectionFilterable;
 use WP_REST_Request;
 use WP_REST_Response;
 
 class GetManyRoute extends BaseEndpoint
 {
+    use CollectionFilterable;
 
     public function getType()
     {
@@ -50,9 +52,14 @@ class GetManyRoute extends BaseEndpoint
                 $order = 'asc';
             }
 
+            // Get filterable fields from collection's $fields property
+            $fieldNames = CollectionFilterable::getFilterableFieldNames($this->collection);
+
+            // Get custom filters from collection's $filters property
             $filterConfig = $this->collection->getFilters() ?: [];
 
-            $allowedFilterFields = $this->normalizeConfigToFields($filterConfig);
+            // Merge field names with custom filters to get all allowed filter fields
+            $allowedFilterFields = CollectionFilterable::mergeFilterableFields($fieldNames, $filterConfig);
 
             $parsedParams = [
                 'page' => $page,
@@ -100,20 +107,15 @@ class GetManyRoute extends BaseEndpoint
             // Start with base query builder - Collection IS the model now
             $query = $this->collection->query();
 
-            // Apply filters from request params
-            $filtersApplied = [];
-            $filtersSkipped = [];
-            $filters = $request->get_params();
-            foreach ($filters as $key => $value) {
-                if (!in_array($key, ['page', 'per_page', 'order_by', 'order', 'search']) && $value !== null) {
-                    if (in_array($key, $allowedFilterFields, true)) {
-                        $query->where($key, $value);
-                        $filtersApplied[$key] = $value;
-                    } else {
-                        $filtersSkipped[$key] = $value;
-                    }
-                }
-            }
+            // Apply filters from request params using the trait
+            $filterResult = CollectionFilterable::applyFieldFilters(
+                $query,
+                $request->get_params(),
+                $allowedFilterFields
+            );
+
+            $filtersApplied = $filterResult['applied'];
+            $filtersSkipped = $filterResult['skipped'];
 
             // Apply ordering
             $orderApplied = null;
@@ -218,43 +220,5 @@ class GetManyRoute extends BaseEndpoint
         if ($message !== false) {
             error_log('[GetManyRoute] ' . $message);
         }
-    }
-
-    /**
-     * Normalize filter/sort configuration arrays to a flat list of column names.
-     *
-     * @param array $config
-     * @return array
-     */
-    protected function normalizeConfigToFields(array $config): array
-    {
-        $fields = [];
-
-        foreach ($config as $key => $value) {
-            if (is_string($value)) {
-                $fields[] = $value;
-                continue;
-            }
-
-            if (is_array($value)) {
-                if (!empty($value['field']) && is_string($value['field'])) {
-                    $fields[] = $value['field'];
-                    continue;
-                }
-
-                if (!empty($value['column']) && is_string($value['column'])) {
-                    $fields[] = $value['column'];
-                    continue;
-                }
-            }
-
-            if (is_string($key) && $key !== '') {
-                $fields[] = $key;
-            }
-        }
-
-        $fields = array_unique(array_filter($fields, static fn ($field) => is_string($field) && $field !== ''));
-
-        return array_values($fields);
     }
 }
