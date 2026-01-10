@@ -44,6 +44,27 @@ abstract class Block {
             'title' => static::getTitle(),
         ];
     }
+
+    /**
+     * Get the registration type for this block
+     * 'json' = register via block.json (default)
+     * 'code' = register via code only
+     */
+    public static function getRegistrationType(): string
+    {
+        return 'json';
+    }
+
+    /**
+     * Get block registration arguments for code-based registration
+     * Only used when getRegistrationType() returns 'code'
+     * 
+     * @return array Arguments to pass to register_block_type()
+     */
+    public static function getBlockArgs(): array
+    {
+        return [];
+    }
     
     /**
      * Render the block output

@@ -1,25 +1,17 @@
 <?php
 
-namespace Gateway\Blocks\BlockTypes\Box;
+namespace Gateway\Blocks\BlockTypes\Grid;
 
-class Box extends \Gateway\Block
+class Grid extends \Gateway\Block
 {
-    protected static string $title = 'Box';
+    protected static string $title = 'Grid';
 
     /**
      * Get the block name
      */
     public static function getName(): string
     {
-        return 'gateway/box';
-    }
-
-    /**
-     * Register this block via code only (no block.json)
-     */
-    public static function getRegistrationType(): string
-    {
-        return 'code';
+        return 'gateway/grid';
     }
 
     /**

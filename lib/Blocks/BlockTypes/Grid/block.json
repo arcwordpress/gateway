@@ -1,11 +1,11 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/circle",
-  "title": "Circle",
+  "name": "gateway/grid",
+  "title": "Grid",
   "category": "layout",
-  "icon": "marker",
-  "description": "A circle block",
+  "icon": "grid-view",
+  "description": "A grid block with 4 equal columns",
   "supports": {
     "html": false
   },
