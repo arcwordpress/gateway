@@ -1,0 +1,73 @@
+.gateway-loop-block {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    background: #f9f9f9;
+}
+
+.gateway-loop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #ddd;
+}
+
+.gateway-loop-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e1e1e;
+}
+
+.gateway-loop-count {
+    font-size: 12px;
+    color: #757575;
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 3px;
+}
+
+.gateway-loop-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gateway-loop-item {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Preview items (non-active) */
+.gateway-loop-item[role="button"] {
+    opacity: 0.8;
+}
+
+.gateway-loop-item[role="button"]:hover {
+    border-color: #2271b1;
+    box-shadow: 0 2px 6px rgba(34, 113, 177, 0.1);
+    opacity: 1;
+}
+
+.gateway-loop-item[role="button"]:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* Active item (editable) */
+.gateway-loop-item:not([role="button"]) {
+    border-color: #2271b1;
+    border-style: solid;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* Ensure block preview container doesn't add extra margins */
+.gateway-loop-item .block-editor-block-preview__container {
+    margin: 0;
+}
