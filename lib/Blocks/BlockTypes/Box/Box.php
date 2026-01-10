@@ -23,12 +23,32 @@ class Box extends \Gateway\Block
     }
 
     /**
+     * Get block registration arguments
+     */
+    public static function getBlockArgs(): array
+    {
+        return [
+            'api_version' => 3,
+            'title' => 'Box',
+            'category' => 'layout',
+            'supports' => [
+                'html' => false,
+            ],
+        ];
+    }
+
+    /**
      * Render the block output
      */
     public function render(array $attributes, string $content, $block): string
     {
         ob_start();
         include __DIR__ . '/template.php';
-        return ob_get_clean();
+        $output = ob_get_clean();
+
+        // Replace <InnerBlocks /> placeholder with actual rendered inner blocks content
+        $output = preg_replace('/<InnerBlocks\s*\/?>/i', $content, $output);
+
+        return $output;
     }
 }

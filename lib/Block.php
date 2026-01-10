@@ -35,6 +35,23 @@ abstract class Block {
     }
     
     /**
+     * Check if the block template contains InnerBlocks
+     */
+    public static function hasInnerBlocks(): bool
+    {
+        $templatePath = static::getBlockDir() . '/template.php';
+
+        if (!file_exists($templatePath)) {
+            return false;
+        }
+
+        $templateContent = file_get_contents($templatePath);
+
+        // Check for <InnerBlocks /> or <InnerBlocks> or <InnerBlocks/>
+        return preg_match('/<InnerBlocks\s*\/?>/i', $templateContent) === 1;
+    }
+
+    /**
      * Get block metadata for API/JS consumption
      */
     public static function getMetadata(): array
@@ -42,6 +59,7 @@ abstract class Block {
         return [
             'name' => static::getName(),
             'title' => static::getTitle(),
+            'hasInnerBlocks' => static::hasInnerBlocks(),
         ];
     }
 
