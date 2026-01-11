@@ -34,6 +34,9 @@ class BlockInit
         
         // Register Grid block
         BlockTypes\Grid\Grid::register();
+
+        // Register GridItem block (used inside Grid)
+        BlockTypes\GridItem\GridItem::register();
     }
 
     /**
@@ -99,8 +102,8 @@ class BlockInit
                     $json_data = json_decode($json_content, true);
                     
                     if (is_array($json_data)) {
-                        // Merge in render callback
-                        $json_data['render_callback'] = [$block, 'render'];
+                        // Merge in central render callback (handles <InnerBlocks> replacement)
+                        $json_data['render_callback'] = [$block, 'renderCallback'];
                         $json_data['editor_script_handles'] = ['gateway-gt1-blocks'];
                         register_block_type($name, $json_data);
                     } else {
@@ -112,7 +115,9 @@ class BlockInit
             } elseif ($registration_type === 'code') {
                 // Pure code registration - get args from block
                 $args = $block::getBlockArgs();
-                $args['render_callback'] = [$block, 'render'];
+                // Use central render callback so templates don't need to manually
+                // inject inner block content.
+                $args['render_callback'] = [$block, 'renderCallback'];
                 $args['editor_script_handles'] = ['gateway-gt1-blocks'];
                 register_block_type($name, $args);
             } else {

@@ -21,6 +21,7 @@ class Grid extends \Gateway\Block
     {
         ob_start();
         include __DIR__ . '/template.php';
-        return ob_get_clean();
+        $output = ob_get_clean();
+        return $output;
     }
 }

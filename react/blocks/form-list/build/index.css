@@ -1,1 +1,19 @@
-.gateway-form-list__grid{display:grid;gap:20px;grid-template-columns:2fr 3fr}.gateway-form-list__blocks,.gateway-form-list__form{padding:10px}
+/*!************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./blocks/form-list/src/index.css ***!
+  \************************************************************************************************************************************************************************************/
+.gateway-form-list__grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 20px;
+}
+
+.gateway-form-list__blocks {
+  padding: 10px;
+}
+
+.gateway-form-list__form {
+  padding: 10px;
+}
+
+
+/*# sourceMappingURL=index.css.map*/

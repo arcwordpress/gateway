@@ -45,6 +45,9 @@ class BlockRoutes
 
     /**
      * Get template content for a specific block
+     * Calls render() to get the template — works with both file-based
+     * templates (that call include template.php) and method-based templates
+     * (that return HTML directly from render()).
      *
      * @param \WP_REST_Request $request
      * @return \WP_REST_Response
@@ -63,21 +66,22 @@ class BlockRoutes
         }
 
         $block = $registry->get($block_name);
-        $template_path = $block::getBlockDir() . '/template.php';
-
-        if (!file_exists($template_path)) {
+        
+        try {
+            // Call render() with empty parameters to get the template content
+            // This works whether the template is in a file or defined in the method
+            $template_content = $block->render([], '', null);
+            
+            return rest_ensure_response([
+                'template' => $template_content,
+                'blockName' => $block_name,
+            ]);
+        } catch (\Throwable $e) {
             return new \WP_Error(
-                'template_not_found',
-                'Template file not found',
-                ['status' => 404]
+                'render_error',
+                'Failed to render template: ' . $e->getMessage(),
+                ['status' => 500]
             );
         }
-
-        $template_content = file_get_contents($template_path);
-
-        return rest_ensure_response([
-            'template' => $template_content,
-            'blockName' => $block_name,
-        ]);
     }
 }

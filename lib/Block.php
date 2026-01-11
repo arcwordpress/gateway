@@ -36,19 +36,23 @@ abstract class Block {
     
     /**
      * Check if the block template contains InnerBlocks
+     * Calls the actual render() method to check, so it works with
+     * both file-based templates and method-based templates.
      */
     public static function hasInnerBlocks(): bool
     {
-        $templatePath = static::getBlockDir() . '/template.php';
-
-        if (!file_exists($templatePath)) {
+        try {
+            // Create a temporary instance and call render() to check if
+            // it returns content with <InnerBlocks> placeholder
+            $instance = new static();
+            $output = $instance->render([], '', null);
+            
+            // Check if output contains <InnerBlocks> in any form
+            return preg_match('/<InnerBlocks\b/i', $output) === 1;
+        } catch (\Throwable $e) {
+            // If we can't instantiate or render, assume no inner blocks
             return false;
         }
-
-        $templateContent = file_get_contents($templatePath);
-
-        // Check for <InnerBlocks /> or <InnerBlocks> or <InnerBlocks/>
-        return preg_match('/<InnerBlocks\s*\/?>/i', $templateContent) === 1;
     }
 
     /**
@@ -88,6 +92,26 @@ abstract class Block {
      * Render the block output
      */
     abstract public function render(array $attributes, string $content, $block): string;
+
+    /**
+     * Central render callback used when registering blocks with WordPress.
+     * Calls the concrete `render()` implementation and then ensures any
+     * <InnerBlocks ...> placeholder is replaced with the rendered inner
+     * blocks content. This allows templates to include <InnerBlocks/> in
+     * any form (attributes, self-closing or with closing tag).
+     *
+     * @see BlockInit::registerBlocks() — registration will use this callback.
+     */
+    public function renderCallback(array $attributes, string $content, $block): string
+    {
+        $output = $this->render($attributes, $content, $block);
+
+        // Replace <InnerBlocks ... /> or <InnerBlocks ...></InnerBlocks> (with any attributes or content)
+        // Match from < to > inclusive, handling self-closing and paired tags
+        $output = preg_replace('/<InnerBlocks\b[^>]*(?:\/>|>(?:.*?)<\/InnerBlocks\s*>)/is', $content, $output);
+
+        return $output;
+    }
     
     /**
      * Register this block

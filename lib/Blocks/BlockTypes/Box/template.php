@@ -6,6 +6,5 @@
  */
 ?>
 <div class="gateway-box" style="padding:20px;background:red;color:white;">
-    <h3>Box Container</h3>
     <InnerBlocks />
 </div>
