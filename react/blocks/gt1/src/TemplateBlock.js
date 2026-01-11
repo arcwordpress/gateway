@@ -59,27 +59,19 @@ function parseTemplate(templateString) {
         .replace(/<\?php[\s\S]*?\?>/gi, '') // Remove PHP tags
         .trim();
 
-    // Split on <InnerBlocks /> to handle it specially
-    const parts = cleaned.split(/<InnerBlocks\s*\/?>/i);
-
-    if (parts.length === 1) {
+    // Check if there's an InnerBlocks placeholder
+    if (!/<InnerBlocks\s*\/?>/i.test(cleaned)) {
         // No InnerBlocks found, just parse as HTML
         return parse(cleaned);
     }
 
-    // We have InnerBlocks - parse each part and inject InnerBlocks component
-    return parts.map((part, index) => {
-        if (index === parts.length - 1) {
-            // Last part - no InnerBlocks after it
-            return <span key={index}>{parse(part)}</span>;
+    // Parse with custom replace function to handle InnerBlocks
+    return parse(cleaned, {
+        replace: (domNode) => {
+            // Check if this is an InnerBlocks element
+            if (domNode.type === 'tag' && domNode.name.toLowerCase() === 'innerblocks') {
+                return <InnerBlocks />;
+            }
         }
-
-        // Parse this part and add InnerBlocks after it
-        return (
-            <span key={index}>
-                {parse(part)}
-                <InnerBlocks />
-            </span>
-        );
     });
 }
