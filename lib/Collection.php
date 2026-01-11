@@ -113,6 +113,25 @@ class Collection extends EloquentModel
     }
 
     /**
+     * Prepare an interactivity store with collection records
+     *
+     * @param string $namespace The store namespace (e.g., 'myBlock/tickets')
+     * @param mixed $query Optional query builder to filter records
+     * @param array $options Additional state options to merge into the store
+     * @return void
+     */
+    public static function prepareStore(string $namespace, $query = null, array $options = [])
+    {
+        $builder = $query ?? static::query();
+
+        wp_interactivity_state($namespace, array_merge([
+            'records' => $builder->get()->toArray(),
+            'loading' => false,
+            'error' => null,
+        ], $options));
+    }
+
+    /**
      * Generate table name from collection key or class name
      *
      * @return string The generated table name
