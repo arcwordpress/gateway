@@ -37,6 +37,9 @@ class BlockInit
 
         // Register GridItem block (used inside Grid)
         BlockTypes\GridItem\GridItem::register();
+        
+        // Register ProjectList block (shows gateway projects and prepares interactivity store)
+        BlockTypes\ProjectList\ProjectList::register();
     }
 
     /**
