@@ -7,7 +7,9 @@
   "icon": "list-view",
   "description": "Displays a list of Gateway projects (title and slug).",
   "supports": {
-    "html": false
+    "html": false,
+    "interactivity": true
   },
+  "viewScript": "file:./view.js",
   "textdomain": "gateway"
 }
