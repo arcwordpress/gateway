@@ -1,6 +1,7 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks } from '@wordpress/block-editor';
 import ServerSideRender from '@wordpress/server-side-render';
+import TemplateBlock from './TemplateBlock';
 
 // Use blocks data passed from PHP via wp_localize_script
 const registerBlocks = (blocks) => {
@@ -12,16 +13,10 @@ const registerBlocks = (blocks) => {
             title: block.title,
             category: 'layout',
             edit: (props) => hasInnerBlocks ? (
-                <div>
-                    <ServerSideRender
-                        block={block.name}
-                        attributes={props.attributes}
-                    />
-                    <div style={{ marginTop: '20px', padding: '10px', border: '1px dashed #ccc' }}>
-                        <h3>Inner Blocks</h3>
-                        <InnerBlocks />
-                    </div>
-                </div>
+                <TemplateBlock
+                    blockName={block.name}
+                    attributes={props.attributes}
+                />
             ) : (
                 <ServerSideRender
                     block={block.name}
