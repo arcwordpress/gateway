@@ -5,15 +5,15 @@ import ServerSideRender from '@wordpress/server-side-render';
 // Use blocks data passed from PHP via wp_localize_script
 const registerBlocks = (blocks) => {
     blocks.forEach(block => {
-        // Grid block has innerBlocks support
-        const isGridBlock = block.name === 'gateway/grid';
-        
+        // Check if block supports InnerBlocks based on PHP template detection
+        const hasInnerBlocks = block.hasInnerBlocks || false;
+
         registerBlockType(block.name, {
             title: block.title,
             category: 'layout',
-            edit: (props) => isGridBlock ? (
+            edit: (props) => hasInnerBlocks ? (
                 <div>
-                    <ServerSideRender 
+                    <ServerSideRender
                         block={block.name}
                         attributes={props.attributes}
                     />
@@ -23,12 +23,12 @@ const registerBlocks = (blocks) => {
                     </div>
                 </div>
             ) : (
-                <ServerSideRender 
+                <ServerSideRender
                     block={block.name}
                     attributes={props.attributes}
                 />
             ),
-            save: (props) => isGridBlock ? (
+            save: (props) => hasInnerBlocks ? (
                 <InnerBlocks.Content />
             ) : null,
         });
