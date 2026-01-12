@@ -5,37 +5,45 @@
  * @var WP_Block $block      Block instance
  */
 
-use Gateway\Collections\GatewayProject;
-
-// Prepare the interactivity store for projects (editor + frontend)
-GatewayProject::prepareStore('gateway/projects');
 ?>
 <div
     data-wp-interactive="gateway/projects"
-    <?php echo wp_interactivity_data_wp_context(['initialized' => false]); ?>
     class="gateway-project-list"
 >
+    <div class="gateway-project-list-filter">
+        <input 
+            type="text" 
+            placeholder="Search projects..."
+            data-wp-on--input="actions.updateSearch"
+        />
+    </div>
+
     <div
-        data-wp-bind--hidden="!state.loading"
+        data-wp-bind--hidden="state.hasRecords"
         class="gateway-project-list-loading"
     >
         Loading...
     </div>
 
     <div
-        data-wp-bind--hidden="state.loading || state.records.length > 0"
+        data-wp-bind--hidden="state.hasRecords"
         class="gateway-project-list-empty"
     >
         No projects found
     </div>
 
-    <ul data-wp-bind--hidden="state.loading || state.records.length === 0">
-        <template data-wp-each--project="state.records">
-            <li data-wp-each-child>
-                <strong data-wp-text="context.project.title"></strong>
+    <ul data-wp-bind--hidden="!state.hasRecords">
+        <template data-wp-each--record="state.filteredRecords">
+            <li>
+                <strong data-wp-text="context.record.title"></strong>
                 &nbsp;—&nbsp;
-                <em data-wp-text="context.project.slug"></em>
+                <em data-wp-text="context.record.slug"></em>
             </li>
         </template>
     </ul>
+
+    <button data-wp-on--click="actions.updateSearch">
+        Test Click
+    </button>
+
 </div>

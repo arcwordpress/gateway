@@ -44,6 +44,8 @@ spl_autoload_register(function ($class) {
     }
 });
 
+use Gateway\Collections\GatewayProject;
+
 class Plugin
 {
     private static $instance = null;
@@ -93,7 +95,7 @@ class Plugin
     private function init()
     {
         // Boot Eloquent on plugins_loaded
-        add_action('plugins_loaded', [__CLASS__, 'bootEloquent']);
+        $this->bootEloquent();
 
         // Register activation and deactivation hooks
         register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
@@ -123,6 +125,11 @@ class Plugin
 
         // Initialize dynamic blocks (programmatic registration and asset enqueuing)
         Blocks\BlockInit::init();
+
+        /*
+         * Test for preparing interactivity stores.
+         */
+        GatewayProject::prepareStore('gateway/projects');
 
         // Register core collections. 
         add_action('gateway_loaded', [$this, 'registerCollections']);

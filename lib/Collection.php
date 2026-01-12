@@ -123,12 +123,16 @@ class Collection extends EloquentModel
     public static function prepareStore(string $namespace, $query = null, array $options = [])
     {
         $builder = $query ?? static::query();
+        $records = $builder->get()->toArray();
 
-        wp_interactivity_state($namespace, array_merge([
-            'records' => $builder->get()->toArray(),
+        $context = wp_interactivity_state($namespace, array_merge([
+            'records' => $records,
+            'searchTerm' => '', // Add this for filtering
             'loading' => false,
             'error' => null,
-        ], $options));
+            'hasRecords' => count($records) > 0,
+            'options' => $options
+        ]));
     }
 
     /**

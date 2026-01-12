@@ -17,6 +17,7 @@ class BlockInit
         
         // Register all blocks programmatically
         add_action('init', [self::class, 'registerBlocks'], 10);
+
     }
 
     /**
@@ -24,6 +25,19 @@ class BlockInit
      */
     public static function registerInternalBlocks()
     {
+
+        add_action('wp_enqueue_scripts', function() {
+            wp_enqueue_script_module('@wordpress/interactivity');
+            
+            $asset_file = include GATEWAY_PATH . 'js/interactivity/build/view.asset.php';
+            wp_enqueue_script_module(
+                'gateway-interactivity',
+                GATEWAY_URL . 'js/interactivity/build/view.js',
+                $asset_file['dependencies'],
+                $asset_file['version']
+            );
+        });
+
         $registry = BlockRegistry::instance();
         
         // Register Box block
@@ -108,6 +122,7 @@ class BlockInit
                         // Merge in central render callback (handles <InnerBlocks> replacement)
                         $json_data['render_callback'] = [$block, 'renderCallback'];
                         $json_data['editor_script_handles'] = ['gateway-gt1-blocks'];
+                        $json_data['view_script_handles'] = ['gateway-interactivity'];
                         register_block_type($name, $json_data);
                     } else {
                         error_log("Gateway Block - Invalid JSON in block.json for {$name}");
@@ -122,6 +137,7 @@ class BlockInit
                 // inject inner block content.
                 $args['render_callback'] = [$block, 'renderCallback'];
                 $args['editor_script_handles'] = ['gateway-gt1-blocks'];
+                $args['view_script_handles'] = ['gateway-interactivity'];
                 register_block_type($name, $args);
             } else {
                 throw new \Exception(
