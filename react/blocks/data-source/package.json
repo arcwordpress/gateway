@@ -1,0 +1,30 @@
+{
+  "name": "@gateway/data-source-block",
+  "version": "1.0.0",
+  "description": "Generic data source block for Gateway collections with WordPress Interactivity API",
+  "private": true,
+  "main": "build/index.js",
+  "scripts": {
+    "build": "echo 'Run npm run build from /react directory to build all blocks'",
+    "start": "echo 'Run npm run start from /react directory to start development mode'"
+  },
+  "keywords": [
+    "wordpress",
+    "gutenberg",
+    "block",
+    "interactivity-api",
+    "gateway"
+  ],
+  "dependencies": {
+    "@wordpress/interactivity": "^6.5.0"
+  },
+  "peerDependencies": {
+    "@wordpress/block-editor": "^12.0.0",
+    "@wordpress/blocks": "^12.0.0",
+    "@wordpress/components": "^25.0.0",
+    "@wordpress/element": "^5.0.0",
+    "@wordpress/i18n": "^4.0.0"
+  },
+  "author": "Gateway",
+  "license": "GPL-2.0-or-later"
+}
