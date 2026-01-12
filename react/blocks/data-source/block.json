@@ -24,6 +24,8 @@
     "html": false,
     "interactivity": true
   },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
   "viewScriptModule": "file:./build/view.js",
   "textdomain": "gateway"
 }
