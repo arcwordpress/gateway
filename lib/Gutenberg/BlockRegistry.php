@@ -18,6 +18,16 @@ class BlockRegistry
     public static function init()
     {
         add_action('init', [__CLASS__, 'register_blocks']);
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_interactivity_api']);
+    }
+
+    /**
+     * Enqueue WordPress Interactivity API for frontend
+     */
+    public static function enqueue_interactivity_api()
+    {
+        // Enqueue the Interactivity API module for all blocks that use it
+        wp_enqueue_script_module('@wordpress/interactivity');
     }
 
     /**

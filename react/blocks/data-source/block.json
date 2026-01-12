@@ -26,6 +26,6 @@
   },
   "editorScript": "file:./build/index.js",
   "editorStyle": "file:./build/index.css",
-  "viewScript": "file:./build/view.js",
+  "viewScriptModule": "file:./build/view.js",
   "textdomain": "gateway"
 }
