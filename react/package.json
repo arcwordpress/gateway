@@ -18,6 +18,7 @@
     "@wordpress/element": "^5.0.0",
     "@wordpress/i18n": "^4.0.0",
     "@wordpress/icons": "^9.0.0",
+    "@wordpress/interactivity": "^6.5.0",
     "@wordpress/server-side-render": "^4.0.0",
     "html-react-parser": "^1.4.14",
     "react-hook-form": "^7.50.0"

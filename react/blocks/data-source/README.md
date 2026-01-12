@@ -87,21 +87,39 @@ A generic data source block that enables using Gateway collections with the Word
 
 ## Build Configuration
 
-This block uses a **view script** (src/view.js) that needs to be built as an ES module for the WordPress Interactivity API.
+⚠️ **IMPORTANT**: This block requires webpack configuration updates to work properly.
+
+This block uses a **view script** (src/view.js) that needs to be built as an ES module for the WordPress Interactivity API. The current webpack config ONLY builds `src/index.js` files and will NOT build `src/view.js`.
 
 ### Required Webpack Configuration Update
 
-The `/react/webpack.config.js` needs to be updated to build view scripts in addition to index.js files:
+Edit `/home/user/gateway/react/webpack.config.js` and update the entries generation:
 
+**Current code (lines 13-16):**
 ```javascript
-// Add this after the existing entries generation
-blocks.forEach(block => {
+const entries = blocks.reduce((acc, block) => {
+    acc[`${block}/build/index`] = path.join(blocksDir, block, 'src/index.js');
+    return acc;
+}, {});
+```
+
+**Updated code:**
+```javascript
+const entries = blocks.reduce((acc, block) => {
+    // Build index.js (editor script)
+    acc[`${block}/build/index`] = path.join(blocksDir, block, 'src/index.js');
+
+    // Build view.js (frontend interactivity script) if it exists
     const viewScriptPath = path.join(blocksDir, block, 'src/view.js');
     if (fs.existsSync(viewScriptPath)) {
         entries[`${block}/build/view`] = viewScriptPath;
     }
-});
+
+    return acc;
+}, {});
 ```
+
+Without this change, the `build/view.js` file won't exist and the block will fail to load on the frontend.
 
 ### Experimental Features
 
