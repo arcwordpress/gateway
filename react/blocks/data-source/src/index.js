@@ -53,7 +53,27 @@ registerBlockType('gateway/data-source', {
 		);
 	},
 
-	save: () => {
-		return <InnerBlocks.Content />;
+	save: ({ attributes }) => {
+		const { collectionSlug, namespace } = attributes;
+
+		// Create the context object with all necessary data
+		const context = JSON.stringify({
+			collectionSlug,
+			records: [],
+			loading: false,
+			error: null,
+			searchQuery: '',
+			searchFields: ['title', 'slug'],
+		});
+
+		return (
+			<div
+				data-wp-interactive={namespace}
+				data-wp-context={context}
+				data-wp-init="callbacks.init"
+			>
+				<InnerBlocks.Content />
+			</div>
+		);
 	},
 });

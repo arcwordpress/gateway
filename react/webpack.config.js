@@ -12,6 +12,13 @@ const blocks = fs.readdirSync(blocksDir).filter(file => {
 
 const entries = blocks.reduce((acc, block) => {
     acc[`${block}/build/index`] = path.join(blocksDir, block, 'src/index.js');
+
+    // Build view.js if it exists (for Interactivity API blocks)
+    const viewPath = path.join(blocksDir, block, 'src/view.js');
+    if (fs.existsSync(viewPath)) {
+        acc[`${block}/build/view`] = viewPath;
+    }
+
     return acc;
 }, {});
 
