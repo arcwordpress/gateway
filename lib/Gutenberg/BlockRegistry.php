@@ -31,27 +31,38 @@ class BlockRegistry
     }
 
     /**
-     * Register all core blocks from /react/blocks directory
+     * Register all core blocks from /react/blocks and /js/blocks directories
      */
     public static function register_blocks()
     {
-        $blocks_dir = GATEWAY_PATH . 'react/blocks';
-        
-        if (!is_dir($blocks_dir)) {
-            return;
-        }
-        
-        $block_dirs = glob($blocks_dir . '/*', GLOB_ONLYDIR);
-        
-        foreach ($block_dirs as $block_path) {
-            // Skip gt1 - it's for consumer block experiments, not core blocks
-            if (basename($block_path) === 'gt1') {
-                continue;
+        // Register React blocks from /react/blocks
+        $react_blocks_dir = GATEWAY_PATH . 'react/blocks';
+        if (is_dir($react_blocks_dir)) {
+            $block_dirs = glob($react_blocks_dir . '/*', GLOB_ONLYDIR);
+
+            foreach ($block_dirs as $block_path) {
+                // Skip gt1 - it's for consumer block experiments, not core blocks
+                if (basename($block_path) === 'gt1') {
+                    continue;
+                }
+
+                // Standard block registration
+                if (file_exists($block_path . '/block.json')) {
+                    register_block_type($block_path);
+                }
             }
-            
-            // Standard block registration
-            if (file_exists($block_path . '/block.json')) {
-                register_block_type($block_path);
+        }
+
+        // Register interactive blocks from /js/blocks (using Interactivity API)
+        $js_blocks_dir = GATEWAY_PATH . 'js/blocks';
+        if (is_dir($js_blocks_dir)) {
+            $block_dirs = glob($js_blocks_dir . '/*', GLOB_ONLYDIR);
+
+            foreach ($block_dirs as $block_path) {
+                // Standard block registration
+                if (file_exists($block_path . '/block.json')) {
+                    register_block_type($block_path);
+                }
             }
         }
     }
