@@ -24,8 +24,29 @@
 export const createFieldRegister = (registerFn) => {
   // If it's already RHF's register function, return as-is
   // RHF's register returns an object with { name, onChange, onBlur, ref }
-  if (typeof registerFn === 'function' && registerFn.name === 'register') {
-    return registerFn;
+  // We detect this by testing if calling it returns an object with the expected shape
+  if (typeof registerFn === 'function') {
+    try {
+      // Test if this is RHF's register by calling it with a test name
+      const testResult = registerFn('__test__');
+
+      // Check if the result has RHF's register signature
+      if (
+        testResult &&
+        typeof testResult === 'object' &&
+        'name' in testResult &&
+        'onChange' in testResult &&
+        'onBlur' in testResult &&
+        'ref' in testResult &&
+        typeof testResult.onChange === 'function'
+      ) {
+        // This is RHF's register - return it as-is
+        return registerFn;
+      }
+    } catch (e) {
+      // If calling it throws, it's not RHF's register
+      // Fall through to custom handler
+    }
   }
 
   // Custom registration handler (for Gutenberg blocks, etc.)
