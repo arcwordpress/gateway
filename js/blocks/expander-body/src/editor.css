@@ -2,9 +2,19 @@
  * Editor styles for Gateway Expander Body block
  */
 
+/* Override frontend styles to ensure body is always visible in editor */
+.gateway-expander-body {
+	max-height: none !important;
+	opacity: 1 !important;
+	padding: 0 !important;
+	display: block !important;
+}
+
 .gateway-expander-body-editor {
 	padding: 1em;
 	background: #fff;
+	border-top: 1px dashed #e0e0e0;
+	min-height: 60px;
 }
 
 /* Nested InnerBlocks styling */
