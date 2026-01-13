@@ -145,6 +145,7 @@ class Plugin
     {
         Collections\GatewayProject::register();
         Collections\WPUser::register();
+        Collections\PostCollection::register();
     }
 
     /**
