@@ -1,21 +1,21 @@
-<?php 
+<?php
 
-namespace Gateway\Collections;
+namespace Gateway\Collections\WP;
 
-class WPUser extends \Gateway\Collection {
+class User extends \Gateway\Collection {
 
     protected $key    = 'wp_user';
     protected $title  = 'User';
     protected $titlePlural = 'Users';
     protected $table = 'users';
-    
+
     /**
      * The primary key for the model.
      *
      * @var string
      */
     protected $primaryKey = 'ID';
-    
+
     /**
      * WordPress users table uses custom timestamp columns
      */
