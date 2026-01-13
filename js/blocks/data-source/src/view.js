@@ -4,6 +4,40 @@
 import { store, getContext } from '@wordpress/interactivity';
 
 /**
+ * Cache for collection info to avoid repeated API calls
+ */
+const collectionInfoCache = {};
+
+/**
+ * Fetch collection info from the Gateway API
+ * Returns the collection metadata including the correct route endpoint
+ */
+async function getCollectionInfo(collectionSlug) {
+	// Return cached info if available
+	if (collectionInfoCache[collectionSlug]) {
+		return collectionInfoCache[collectionSlug];
+	}
+
+	try {
+		const response = await fetch(`/wp-json/gateway/v1/collections/${collectionSlug}`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch collection info: ${response.statusText}`);
+		}
+
+		const collectionInfo = await response.json();
+
+		// Cache the collection info
+		collectionInfoCache[collectionSlug] = collectionInfo;
+
+		return collectionInfo;
+	} catch (err) {
+		console.error('GT Data Source: Error fetching collection info', err);
+		throw err;
+	}
+}
+
+/**
  * Generic Data Source Store for Gateway Collections
  *
  * This store provides a generic interface for using Gateway collections
@@ -110,7 +144,15 @@ store('gateway/data-source', {
 			context.error = null;
 
 			try {
-				const response = await fetch(`/wp-json/gateway/v1/${collectionSlug}`);
+				// Fetch collection info to get the correct endpoint
+				const collectionInfo = await getCollectionInfo(collectionSlug);
+				const endpoint = collectionInfo.routes?.endpoint;
+
+				if (!endpoint) {
+					throw new Error('Collection endpoint not found in collection info');
+				}
+
+				const response = await fetch(endpoint);
 
 				if (!response.ok) {
 					throw new Error(`Failed to fetch records: ${response.statusText}`);
@@ -196,7 +238,15 @@ store('gateway/data-source', {
 
 			// Fetch initial data
 			try {
-				const response = await fetch(`/wp-json/gateway/v1/${collectionSlug}`);
+				// Fetch collection info to get the correct endpoint
+				const collectionInfo = await getCollectionInfo(collectionSlug);
+				const endpoint = collectionInfo.routes?.endpoint;
+
+				if (!endpoint) {
+					throw new Error('Collection endpoint not found in collection info');
+				}
+
+				const response = await fetch(endpoint);
 
 				if (!response.ok) {
 					throw new Error(`Failed to fetch records: ${response.statusText}`);
