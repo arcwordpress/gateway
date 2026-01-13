@@ -4,7 +4,7 @@ import { PanelBody, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
 
-registerBlockType('gateway/data-source', {
+registerBlockType('gateway/data-source-2', {
 	edit: ({ attributes, setAttributes }) => {
 		const { collectionSlug, namespace } = attributes;
 		const blockProps = useBlockProps({
