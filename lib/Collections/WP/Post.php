@@ -1,8 +1,8 @@
 <?php
 
-namespace Gateway\Collections;
+namespace Gateway\Collections\WP;
 
-class PostCollection extends \Gateway\Collection {
+class Post extends \Gateway\Collection {
 
     protected $key    = 'wp_post';
     protected $title  = 'Post';
