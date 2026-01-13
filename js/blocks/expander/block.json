@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/expander",
+  "title": "GT Expander",
+  "category": "design",
+  "icon": "arrow-down-alt2",
+  "description": "An expandable content block with heading and body sections.",
+  "attributes": {
+    "isOpen": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "style": "file:./build/style-index.css",
+  "viewScriptModule": "file:./build/view.js",
+  "textdomain": "gateway"
+}

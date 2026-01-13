@@ -1,0 +1,87 @@
+/**
+ * Frontend styles for Gateway Expander block
+ */
+
+/* Main expander container */
+.gateway-expander {
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	margin: 1em 0;
+	background: #fff;
+	overflow: hidden;
+}
+
+/* Expander heading */
+.gateway-expander-heading {
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+	display: flex;
+	align-items: center;
+	padding: 1em;
+	background: #f9f9f9;
+	border-bottom: 1px solid #e0e0e0;
+	transition: background-color 0.2s ease;
+}
+
+.gateway-expander-heading:hover {
+	background: #f0f0f0;
+}
+
+.gateway-expander-heading:focus {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.gateway-expander-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	margin-right: 0.5em;
+	font-size: 14px;
+	flex-shrink: 0;
+	color: #666;
+	transition: transform 0.3s ease;
+}
+
+.gateway-expander-icon.is-open {
+	transform: rotate(90deg);
+}
+
+.gateway-expander-heading-content {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Expander body */
+.gateway-expander-body {
+	padding: 1em;
+	background: #fff;
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.gateway-expander-body.is-open {
+	max-height: 5000px;
+	opacity: 1;
+	padding: 1em;
+}
+
+.gateway-expander-body[hidden] {
+	display: none;
+}
+
+/* Nested content spacing */
+.gateway-expander-heading-content > *:first-child,
+.gateway-expander-body > *:first-child {
+	margin-top: 0;
+}
+
+.gateway-expander-heading-content > *:last-child,
+.gateway-expander-body > *:last-child {
+	margin-bottom: 0;
+}

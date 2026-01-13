@@ -1,0 +1,89 @@
+/**
+ * Editor styles for Gateway Expander block
+ */
+
+/* Main expander container */
+.gateway-expander {
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	margin: 1em 0;
+	background: #fff;
+}
+
+/* Expander heading */
+.gateway-expander-heading {
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+}
+
+.gateway-expander-heading-editor {
+	display: flex;
+	align-items: center;
+	padding: 1em;
+	background: #f9f9f9;
+	border-bottom: 1px solid #e0e0e0;
+	min-height: 60px;
+}
+
+.gateway-expander-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	margin-right: 0.5em;
+	font-size: 14px;
+	flex-shrink: 0;
+	color: #666;
+}
+
+.gateway-expander-heading-content {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Expander body */
+.gateway-expander-body-editor {
+	padding: 1em;
+	background: #fff;
+}
+
+/* Editor placeholder styling */
+.gateway-expander-heading .block-editor-block-list__layout > .block-list-appender {
+	margin: 0;
+}
+
+.gateway-expander-body .block-editor-block-list__layout > .block-list-appender {
+	margin: 0;
+}
+
+/* Nested InnerBlocks styling */
+.gateway-expander-heading .block-editor-inner-blocks,
+.gateway-expander-body .block-editor-inner-blocks {
+	width: 100%;
+}
+
+/* Block list layout adjustments */
+.gateway-expander-heading .block-editor-block-list__layout,
+.gateway-expander-body .block-editor-block-list__layout {
+	margin: 0;
+}
+
+/* Ensure proper spacing for nested blocks */
+.gateway-expander-heading-content > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block,
+.gateway-expander-body-editor > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block {
+	margin-top: 0;
+	margin-bottom: 0.5em;
+}
+
+.gateway-expander-heading-content > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:last-child,
+.gateway-expander-body-editor > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block:last-child {
+	margin-bottom: 0;
+}
+
+/* Placeholder text styling */
+.gateway-expander-heading .block-editor-default-block-appender__content::before,
+.gateway-expander-body .block-editor-default-block-appender__content::before {
+	color: #999;
+}
