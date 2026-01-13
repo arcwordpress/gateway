@@ -5,12 +5,19 @@ export { Form } from './components/form-types/Form';
 export { AppForm } from './components/form-types/AppForm';
 
 // Context and services exports.
-export { 
-  useGatewayForm, 
-  useGatewayFormField, 
-  createGatewayFormContext, 
-  GatewayFormContext 
+export {
+  useGatewayForm,
+  useGatewayFormField,
+  createGatewayFormContext,
+  GatewayFormContext
 } from './utils/gatewayFormContext';
+
+// Field registration abstraction exports.
+export {
+  createFieldRegister,
+  createMockFormState,
+  createGutenbergRegister
+} from './utils/fieldRegistration';
 
 // @TODO: Refactor to remove getFieldLabel from zodSchemaGenerator and move to a more appropriate utility module.
 export { generateZodSchema, getFieldLabel } from './utils/zodSchemaGenerator';
@@ -25,6 +32,15 @@ export {
   getFieldTypeDisplay,
   getFieldTypeInput,
 } from './fieldTypeRegistry';
+
+// Gutenberg Block Adapter
+export {
+  GutenbergFieldProvider,
+  GutenbergField,
+  GutenbergFieldGroup,
+  useGutenbergField,
+  useGutenbergFieldWithContext
+} from './adapters/gutenbergFieldAdapter';
 
 // Field type exports.
 export { useRelationField } from './components/field-types/relation';
