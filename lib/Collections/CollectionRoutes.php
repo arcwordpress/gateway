@@ -45,7 +45,7 @@ class CollectionRoutes
         register_rest_route('gateway/v1', '/collections/(?P<key>[a-z_]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getOne'],
-            'permission_callback' => [$this, 'checkPermission'],
+            'permission_callback' => '__return_true',
             'args' => [
                 'key' => [
                     'required' => true,
