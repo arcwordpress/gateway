@@ -1,0 +1,15 @@
+{
+  "name": "@gateway/gt-section-block",
+  "version": "1.0.0",
+  "description": "Gateway Section block - Simple wrapping container with background color control",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  },
+  "dependencies": {
+    "@arcwp/gateway-forms": "file:../../../react/packages/forms"
+  }
+}
