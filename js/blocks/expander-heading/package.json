@@ -1,0 +1,19 @@
+{
+  "name": "@gateway/expander-heading-block",
+  "version": "1.0.0",
+  "description": "Gateway Expander Heading Block",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "keywords": [
+    "wordpress",
+    "block"
+  ],
+  "author": "Gateway",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  }
+}
