@@ -143,9 +143,22 @@ class Plugin
 
     public function registerCollections()
     {
+        // Gateway collections
         Collections\GatewayProject::register();
-        Collections\WPUser::register();
-        Collections\PostCollection::register();
+
+        // WordPress core table collections
+        Collections\WP\Post::register();
+        Collections\WP\User::register();
+        Collections\WP\Comment::register();
+        Collections\WP\Option::register();
+        Collections\WP\PostMeta::register();
+        Collections\WP\UserMeta::register();
+        Collections\WP\CommentMeta::register();
+        Collections\WP\Term::register();
+        Collections\WP\TermTaxonomy::register();
+        Collections\WP\TermRelationship::register();
+        Collections\WP\TermMeta::register();
+        Collections\WP\Link::register();
     }
 
     /**
