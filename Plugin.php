@@ -126,6 +126,9 @@ class Plugin
         // Initialize dynamic blocks (programmatic registration and asset enqueuing)
         Blocks\BlockInit::init();
 
+        // Initialize block bindings for collections
+        Blocks\BlockBindings::init();
+
         /*
          * Test for preparing interactivity stores.
          */
