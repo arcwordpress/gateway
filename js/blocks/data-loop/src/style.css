@@ -3,7 +3,7 @@
  * Placeholder styles for testing visibility
  */
 
-.gateway-data-loop {
+.gateway-data-loop-item {
 	/* Placeholder styling for visibility during testing */
 	min-height: 100px;
 	margin: 20px 0;
@@ -14,8 +14,8 @@
 	position: relative;
 }
 
-.gateway-data-loop::before {
-	content: 'GT Data Loop Container';
+.gateway-data-loop-item::before {
+	content: 'GT Data Loop Item';
 	position: absolute;
 	top: 4px;
 	left: 8px;
@@ -27,16 +27,11 @@
 	opacity: 0.7;
 }
 
-/* Space between loop iterations */
-.gateway-data-loop > * {
-	margin-bottom: 12px;
+/* Space between child blocks within each iteration */
+.gateway-data-loop-item > * {
+	margin-bottom: 8px;
 }
 
-.gateway-data-loop > *:last-child {
+.gateway-data-loop-item > *:last-child {
 	margin-bottom: 0;
-}
-
-/* Make the template tag not interfere with layout */
-.gateway-data-loop template {
-	display: contents;
 }

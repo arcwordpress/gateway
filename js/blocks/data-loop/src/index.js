@@ -79,7 +79,7 @@ registerBlockType(metadata.name, {
 	},
 
 	save: ({ attributes }) => {
-		const { contextNamespace, arrayProperty, itemName } = attributes;
+		const { arrayProperty, itemName } = attributes;
 
 		// Build the data-wp-each directive
 		// Format: data-wp-each--itemName="sourceExpression"
@@ -90,29 +90,18 @@ registerBlockType(metadata.name, {
 			? arrayProperty
 			: `context.${arrayProperty}`;
 
-		// Build wrapper attributes
-		const wrapperAttributes = {
-			...useBlockProps.save({
-				className: 'gateway-data-loop',
-			}),
-		};
-
-		// Add namespace if specified
-		if (contextNamespace) {
-			wrapperAttributes['data-wp-interactive'] = contextNamespace;
-		}
-
 		// Build template attributes
 		const templateAttributes = {
+			...useBlockProps.save(),
 			[eachDirective]: sourceExpression,
 		};
 
 		return (
-			<div {...wrapperAttributes}>
-				<template {...templateAttributes}>
+			<template {...templateAttributes}>
+				<div className="gateway-data-loop-item">
 					<InnerBlocks.Content />
-				</template>
-			</div>
+				</div>
+			</template>
 		);
 	},
 });
