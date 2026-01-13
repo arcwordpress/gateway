@@ -1,0 +1,16 @@
+{
+  "name": "@gateway/data-source-2-block",
+  "version": "1.0.0",
+  "description": "Gateway Data Source 2 block - Interactive block using WordPress Interactivity API with @arcwp/gateway-data package",
+  "scripts": {
+    "build": "wp-scripts build --experimental-modules",
+    "start": "wp-scripts start --experimental-modules"
+  },
+  "dependencies": {
+    "@arcwp/gateway-data": "file:../../../react/packages/data",
+    "@wordpress/interactivity": "^6.5.0"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  }
+}

@@ -4,19 +4,48 @@
 import { store, getContext } from '@wordpress/interactivity';
 
 /**
- * Generic Data Source Store for Gateway Collections
+ * Data Source Store Using Collection Info Pattern
  *
- * This store provides a generic interface for using Gateway collections
- * as data sources with the WordPress Interactivity API.
+ * This store uses the Gateway collection info approach to dynamically
+ * determine the correct namespace and route for each collection.
+ *
+ * Pattern:
+ * 1. Fetch collection info: /wp-json/gateway/v1/collections/{slug}
+ * 2. Use routes.namespace and routes.route from the collection info
+ * 3. Fetch records: /wp-json/{namespace}/{route}
  *
  * Usage:
- * - Set data-wp-interactive="gateway/data-source" (or custom namespace)
+ * - Set data-wp-interactive="gateway/data-source-2" (or custom namespace)
  * - Set data-wp-init="callbacks.init" to initialize data fetching
  * - Access state.records for the fetched data
- * - Use state.loading, state.error for status
- * - Use actions for filtering, sorting, pagination
  */
-store('gateway/data-source', {
+
+/**
+ * Fetch collection info to get namespace and route
+ */
+async function fetchCollectionInfo(collectionSlug) {
+	const response = await fetch(`/wp-json/gateway/v1/collections/${collectionSlug}`);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch collection info: ${response.statusText}`);
+	}
+	return await response.json();
+}
+
+/**
+ * Fetch collection records using namespace and route
+ */
+async function fetchCollectionRecords(namespace, route, params = {}) {
+	const queryString = new URLSearchParams(params).toString();
+	const url = `/wp-json/${namespace}/${route}${queryString ? '?' + queryString : ''}`;
+
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch records: ${response.statusText}`);
+	}
+	return await response.json();
+}
+
+store('gateway/data-source-2', {
 	state: {
 		get records() {
 			const context = getContext();
@@ -78,31 +107,25 @@ store('gateway/data-source', {
 	},
 
 	actions: {
-		/**
-		 * Update search query
-		 */
 		updateSearch: (event) => {
 			const context = getContext();
 			context.searchQuery = event.target.value;
 		},
 
-		/**
-		 * Clear search
-		 */
 		clearSearch: () => {
 			const context = getContext();
 			context.searchQuery = '';
 		},
 
 		/**
-		 * Refresh data from the collection
+		 * Refresh data using collection info pattern
 		 */
 		async refresh() {
 			const context = getContext();
 			const collectionSlug = context.collectionSlug;
 
 			if (!collectionSlug) {
-				console.error('GT Data Source: No collection slug specified');
+				console.error('GT Data Source 2: No collection slug specified');
 				return;
 			}
 
@@ -110,26 +133,26 @@ store('gateway/data-source', {
 			context.error = null;
 
 			try {
-				const response = await fetch(`/wp-json/gateway/v1/${collectionSlug}`);
+				// Step 1: Get collection info to determine namespace and route
+				const collectionInfo = await fetchCollectionInfo(collectionSlug);
+				const namespace = collectionInfo.routes?.namespace || 'gateway/v1';
+				const route = collectionInfo.routes?.route || collectionSlug;
 
-				if (!response.ok) {
-					throw new Error(`Failed to fetch records: ${response.statusText}`);
-				}
+				// Step 2: Fetch records using the collection's routes
+				const response = await fetchCollectionRecords(namespace, route, {
+					per_page: -1
+				});
 
-				const result = await response.json();
-				// Handle Gateway API response format: { success: true, data: { items: [...], pagination: {...} } }
-				context.records = result.data?.items || result.items || result || [];
+				// Handle Gateway API response format
+				context.records = response.data?.items || response.items || response || [];
 				context.loading = false;
 			} catch (err) {
-				console.error('GT Data Source: Error fetching records', err);
+				console.error('GT Data Source 2: Error fetching records', err);
 				context.error = err.message;
 				context.loading = false;
 			}
 		},
 
-		/**
-		 * Sort records by field
-		 */
 		sortBy: (event) => {
 			const context = getContext();
 			const field = event.target.dataset.field;
@@ -150,9 +173,6 @@ store('gateway/data-source', {
 			context.records = records;
 		},
 
-		/**
-		 * Filter records by custom predicate
-		 */
 		filterBy: (event) => {
 			const context = getContext();
 			const field = event.target.dataset.field;
@@ -160,7 +180,6 @@ store('gateway/data-source', {
 
 			if (!field) return;
 
-			// Store filter criteria
 			if (!context.filters) {
 				context.filters = {};
 			}
@@ -175,15 +194,14 @@ store('gateway/data-source', {
 
 	callbacks: {
 		/**
-		 * Initialize the data source
-		 * Called when the block is mounted
+		 * Initialize using collection info pattern
 		 */
 		init: async () => {
 			const context = getContext();
 			const collectionSlug = context.collectionSlug;
 
 			if (!collectionSlug) {
-				console.warn('GT Data Source: No collection slug specified. Set collectionSlug in block attributes.');
+				console.warn('GT Data Source 2: No collection slug specified. Set collectionSlug in block attributes.');
 				return;
 			}
 
@@ -194,20 +212,22 @@ store('gateway/data-source', {
 			context.searchQuery = context.searchQuery || '';
 			context.searchFields = context.searchFields || ['title', 'slug'];
 
-			// Fetch initial data
 			try {
-				const response = await fetch(`/wp-json/gateway/v1/${collectionSlug}`);
+				// Step 1: Get collection info to determine namespace and route
+				const collectionInfo = await fetchCollectionInfo(collectionSlug);
+				const namespace = collectionInfo.routes?.namespace || 'gateway/v1';
+				const route = collectionInfo.routes?.route || collectionSlug;
 
-				if (!response.ok) {
-					throw new Error(`Failed to fetch records: ${response.statusText}`);
-				}
+				// Step 2: Fetch records using the collection's routes
+				const response = await fetchCollectionRecords(namespace, route, {
+					per_page: -1
+				});
 
-				const result = await response.json();
-				// Handle Gateway API response format: { success: true, data: { items: [...], pagination: {...} } }
-				context.records = result.data?.items || result.items || result || [];
+				// Handle Gateway API response format
+				context.records = response.data?.items || response.items || response || [];
 				context.loading = false;
 			} catch (err) {
-				console.error('GT Data Source: Error fetching records', err);
+				console.error('GT Data Source 2: Error fetching records', err);
 				context.error = err.message;
 				context.loading = false;
 			}
