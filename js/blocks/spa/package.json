@@ -1,0 +1,17 @@
+{
+  "name": "gt-spa",
+  "version": "1.0.0",
+  "description": "Experimental SPA block using Interactivity Router",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build --experimental-modules",
+    "start": "wp-scripts start --experimental-modules"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^27.0.0"
+  },
+  "dependencies": {
+    "@wordpress/interactivity": "^6.0.0",
+    "@wordpress/interactivity-router": "^2.0.0"
+  }
+}

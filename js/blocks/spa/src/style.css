@@ -1,0 +1,129 @@
+.gt-spa-block {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.gt-spa-nav {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #f0f0f0;
+}
+
+.gt-spa-nav a {
+  padding: 12px 24px;
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.gt-spa-nav a:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-2px);
+}
+
+.gt-spa-nav a.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.gt-spa-content {
+  min-height: 300px;
+  position: relative;
+}
+
+.gt-spa-slot {
+  display: none;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.gt-spa-slot.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gt-spa-slot h2 {
+  margin-top: 0;
+  color: #212529;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.gt-spa-slot p {
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.gt-spa-slot ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.gt-spa-slot li {
+  padding: 10px 0;
+  color: #495057;
+  font-size: 16px;
+}
+
+.gt-spa-button {
+  padding: 10px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gt-spa-button:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.gt-spa-debug {
+  margin-top: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  border-radius: 4px;
+}
+
+.gt-spa-debug small {
+  color: #6c757d;
+  font-family: monospace;
+}
+
+.gt-spa-debug code {
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
