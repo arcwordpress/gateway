@@ -1,0 +1,7 @@
+/**
+ * Frontend styles for GT Viewport block
+ */
+.gateway-viewport {
+	/* No visual styling by default - this is a functional container */
+	/* Child blocks can style based on the inViewport context if needed */
+}
