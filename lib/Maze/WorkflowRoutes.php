@@ -2,6 +2,8 @@
 
 namespace Gateway\Maze;
 
+use Gateway\Security\Encryption;
+
 class WorkflowRoutes
 {
     public function __construct()
@@ -93,7 +95,7 @@ class WorkflowRoutes
         if (!$apiKey) {
             return new \WP_Error(
                 'api_key_missing',
-                'ANTHROPIC_API_KEY not found. Check .env file and ensure it is loaded.',
+                'Anthropic API key not found. Please add it in the Gateway settings or in your .env file.',
                 ['status' => 500]
             );
         }
@@ -131,21 +133,34 @@ class WorkflowRoutes
 
     private function getAnthropicApiKey()
     {
-        // Try multiple sources
+        // Priority 1: Check for stored encrypted key in WordPress options
+        $encryptedKey = get_option('gateway_anthropic_api_key', '');
+        if (!empty($encryptedKey)) {
+            $decrypted = Encryption::decrypt($encryptedKey);
+            if ($decrypted !== false) {
+                return $decrypted;
+            }
+            // If decryption fails, log error and continue to fallback
+            error_log('Gateway: Failed to decrypt stored Anthropic API key');
+        }
+
+        // Priority 2: Try $_SERVER
         if (isset($_SERVER['ANTHROPIC_API_KEY'])) {
             return $_SERVER['ANTHROPIC_API_KEY'];
         }
 
+        // Priority 3: Try $_ENV
         if (isset($_ENV['ANTHROPIC_API_KEY'])) {
             return $_ENV['ANTHROPIC_API_KEY'];
         }
 
+        // Priority 4: Try getenv
         $key = getenv('ANTHROPIC_API_KEY');
         if ($key) {
             return $key;
         }
 
-        // Manually parse .env file
+        // Priority 5: Manually parse .env file
         $envPath = GATEWAY_PATH . '.env';
 
         if (file_exists($envPath)) {

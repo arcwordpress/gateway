@@ -2,6 +2,8 @@
 
 namespace Gateway\Endpoints;
 
+use Gateway\Security\Encryption;
+
 class SettingsRoute
 {
     public function __construct()
@@ -28,28 +30,61 @@ class SettingsRoute
                     'validate_callback' => [$this, 'validate_port'],
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
+                'anthropic_api_key' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
             ],
         ]);
     }
 
     public function get_settings(\WP_REST_Request $request)
     {
+        $encryptedKey = get_option('gateway_anthropic_api_key', '');
+        $hasKey = !empty($encryptedKey);
+
         return rest_ensure_response([
             'port' => get_option('gateway_connection_port', ''),
+            'anthropic_api_key' => '', // Never send the actual key to frontend
+            'has_anthropic_key' => $hasKey,
         ]);
     }
 
     public function save_settings(\WP_REST_Request $request)
     {
         $port = $request->get_param('port');
+        $apiKey = $request->get_param('anthropic_api_key');
 
         // Save the port (empty string is valid for default)
-        update_option('gateway_connection_port', $port);
+        if ($request->has_param('port')) {
+            update_option('gateway_connection_port', $port);
+        }
+
+        // Save the API key if provided
+        if ($request->has_param('anthropic_api_key')) {
+            if (empty($apiKey)) {
+                // If empty, delete the stored key
+                delete_option('gateway_anthropic_api_key');
+            } else {
+                // Encrypt and store the API key
+                $encrypted = Encryption::encrypt($apiKey);
+                if ($encrypted === false) {
+                    return new \WP_Error(
+                        'encryption_failed',
+                        __('Failed to encrypt API key. Please try again.', 'gateway'),
+                        ['status' => 500]
+                    );
+                }
+                update_option('gateway_anthropic_api_key', $encrypted);
+            }
+        }
 
         return rest_ensure_response([
             'success' => true,
             'message' => __('Settings saved successfully.', 'gateway'),
             'port' => $port,
+            'has_anthropic_key' => !empty($apiKey) || !empty(get_option('gateway_anthropic_api_key')),
         ]);
     }
 

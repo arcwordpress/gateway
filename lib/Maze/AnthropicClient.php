@@ -3,6 +3,7 @@
 namespace Gateway\Maze;
 
 use Anthropic\Client;
+use Gateway\Security\Encryption;
 
 class AnthropicClient
 {
@@ -37,23 +38,34 @@ class AnthropicClient
 
     private function getApiKey()
     {
-        // First try $_SERVER (most reliable for loaded .env)
+        // Priority 1: Check for stored encrypted key in WordPress options
+        $encryptedKey = get_option('gateway_anthropic_api_key', '');
+        if (!empty($encryptedKey)) {
+            $decrypted = Encryption::decrypt($encryptedKey);
+            if ($decrypted !== false) {
+                return $decrypted;
+            }
+            // If decryption fails, log error and continue to fallback
+            error_log('Gateway: Failed to decrypt stored Anthropic API key');
+        }
+
+        // Priority 2: Try $_SERVER (most reliable for loaded .env)
         if (isset($_SERVER['ANTHROPIC_API_KEY'])) {
             return $_SERVER['ANTHROPIC_API_KEY'];
         }
 
-        // Then try $_ENV
+        // Priority 3: Try $_ENV
         if (isset($_ENV['ANTHROPIC_API_KEY'])) {
             return $_ENV['ANTHROPIC_API_KEY'];
         }
 
-        // Try getenv
+        // Priority 4: Try getenv
         $apiKey = getenv('ANTHROPIC_API_KEY');
         if ($apiKey) {
             return $apiKey;
         }
 
-        // Try to reload .env if not found
+        // Priority 5: Try to reload .env if not found
         $this->loadEnvIfNeeded();
 
         // Check again after reload
@@ -94,7 +106,7 @@ class AnthropicClient
         if (!$this->isConfigured()) {
             $apiKey = $this->getApiKey();
             $errorMsg = !$apiKey
-                ? 'ANTHROPIC_API_KEY not found. Please add it to your .env file in the plugin root.'
+                ? 'Anthropic API key not found. Please add it in the Gateway settings or in your .env file.'
                 : 'Failed to initialize Anthropic client. Check error logs.';
 
             return new \WP_Error(
