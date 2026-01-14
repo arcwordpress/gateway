@@ -1,0 +1,15 @@
+{
+	"name": "@gateway/checkbox-filter",
+	"version": "0.1.0",
+	"description": "GT Checkbox Filter block",
+	"scripts": {
+		"build": "wp-scripts build --experimental-modules",
+		"start": "wp-scripts start --experimental-modules"
+	},
+	"dependencies": {
+		"@wordpress/interactivity": "^6.5.0"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^27.0.0"
+	}
+}
