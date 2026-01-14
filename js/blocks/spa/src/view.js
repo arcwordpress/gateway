@@ -1,82 +1,53 @@
-import { store, getContext } from '@wordpress/interactivity';
+/**
+ * GT SPA Block - Proper Interactivity Router Implementation
+ *
+ * This implementation follows the WordPress Interactivity Router API:
+ * - Uses actual URL navigation (query params, not hash fragments)
+ * - Imports and uses actions.navigate() from @wordpress/interactivity-router
+ * - Defines proper router regions that get updated automatically
+ * - No manual show/hide logic - the router handles content updates
+ */
+
+import { store, withSyncEvent } from '@wordpress/interactivity';
 
 store('gateway/spa', {
-  state: {
-    get currentUrl() {
-      return window.location.href;
-    },
-    get currentSlotLabel() {
-      const ctx = getContext();
-      return ctx.currentSlot || 'home';
-    },
-    get showHome() {
-      const ctx = getContext();
-      return ctx.currentSlot === 'home';
-    },
-    get showAbout() {
-      const ctx = getContext();
-      return ctx.currentSlot === 'about';
-    },
-    get showContact() {
-      const ctx = getContext();
-      return ctx.currentSlot === 'contact';
-    },
-    get isActive() {
-      const ctx = getContext();
-      const parentCtx = ctx.parent || {};
-      return parentCtx.currentSlot === ctx.slot;
-    },
-  },
   actions: {
-    navigate: (event) => {
+    /**
+     * Navigate to a different view using the Interactivity Router
+     *
+     * This action:
+     * 1. Prevents default link behavior
+     * 2. Dynamically imports the router package (reduces initial bundle size)
+     * 3. Calls the router's navigate() action which:
+     *    - Fetches the new URL
+     *    - Extracts router regions from the response
+     *    - Updates only those regions on the current page
+     *    - Manages browser history
+     */
+    navigateToView: withSyncEvent(function* (event) {
       event.preventDefault();
-      const ctx = getContext();
-      const parentCtx = ctx.parent || {};
 
-      // Get the slot from the link's context
-      const targetSlot = ctx.slot;
+      const href = event.target.href;
 
-      // Update parent context
-      parentCtx.currentSlot = targetSlot;
+      console.log('[GT SPA] Navigating to:', href);
 
-      // Update URL hash for browser history
-      window.history.pushState({}, '', `#${targetSlot}`);
+      // Dynamic import to reduce initial bundle size (recommended by docs)
+      const { actions } = yield import('@wordpress/interactivity-router');
 
-      console.log(`Navigated to: ${targetSlot}`);
-    },
-    goHome: (event) => {
-      const ctx = getContext();
-      const parentCtx = ctx.parent || {};
-
-      // Navigate back to home
-      parentCtx.currentSlot = 'home';
-      window.history.pushState({}, '', '#home');
-
-      console.log('Navigated back to home');
-    },
-  },
-  callbacks: {
-    init: () => {
-      const ctx = getContext();
-
-      // Initialize from URL hash
-      const hash = window.location.hash.replace('#', '');
-      if (hash && ['home', 'about', 'contact'].includes(hash)) {
-        ctx.currentSlot = hash;
-      } else {
-        ctx.currentSlot = 'home';
-      }
-
-      // Handle browser back/forward buttons
-      window.addEventListener('hashchange', () => {
-        const newHash = window.location.hash.replace('#', '') || 'home';
-        if (['home', 'about', 'contact'].includes(newHash)) {
-          ctx.currentSlot = newHash;
-          console.log(`Hash changed to: ${newHash}`);
-        }
+      // Use the router's navigate action - this handles:
+      // - Fetching the new page
+      // - Updating router regions
+      // - Managing browser history
+      // - Loading animations
+      // - Screen reader announcements
+      yield actions.navigate(href, {
+        force: false, // Use cache if available
+        timeout: 10000, // 10 second timeout
+        loadingAnimation: true, // Show loading indicator
+        screenReaderAnnouncement: true, // Announce navigation to screen readers
       });
 
-      console.log('GT SPA Router initialized with slot:', ctx.currentSlot);
-    },
+      console.log('[GT SPA] Navigation complete');
+    }),
   },
 });
