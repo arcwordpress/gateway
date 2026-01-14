@@ -11,13 +11,33 @@ class BlockInit
     {
         // Register internal/experimental blocks
         self::registerInternalBlocks();
-        
+
         // Enqueue block editor assets (scripts and styles for block editing)
         add_action('enqueue_block_editor_assets', [self::class, 'enqueueBlockEditorAssets']);
-        
+
         // Register all blocks programmatically
         add_action('init', [self::class, 'registerBlocks'], 10);
 
+        // Register custom block categories
+        add_filter('block_categories_all', [self::class, 'registerBlockCategories'], 10, 2);
+
+    }
+
+    /**
+     * Register custom block categories
+     */
+    public static function registerBlockCategories($categories, $context)
+    {
+        return array_merge(
+            $categories,
+            [
+                [
+                    'slug'  => 'interactive',
+                    'title' => __('Interactive', 'gateway'),
+                    'icon'  => null,
+                ],
+            ]
+        );
     }
 
     /**
@@ -28,7 +48,7 @@ class BlockInit
 
         add_action('wp_enqueue_scripts', function() {
             wp_enqueue_script_module('@wordpress/interactivity');
-            
+
             $asset_file = include GATEWAY_PATH . 'js/interactivity/build/view.asset.php';
             wp_enqueue_script_module(
                 'gateway-interactivity',
@@ -39,19 +59,19 @@ class BlockInit
         });
 
         $registry = BlockRegistry::instance();
-        
+
         // Register Box block
         BlockTypes\Box\Box::register();
-        
+
         // Register Circle block
         BlockTypes\Circle\Circle::register();
-        
+
         // Register Grid block
         BlockTypes\Grid\Grid::register();
 
         // Register GridItem block (used inside Grid)
         BlockTypes\GridItem\GridItem::register();
-        
+
         // Register ProjectList block (shows gateway projects and prepares interactivity store)
         BlockTypes\ProjectList\ProjectList::register();
     }

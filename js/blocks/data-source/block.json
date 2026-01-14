@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/data-source",
   "title": "GT Data Source",
-  "category": "widgets",
+  "category": "interactive",
   "icon": "database",
   "description": "Generic data source block that enables using Gateway collections with the WordPress Interactivity API.",
   "attributes": {
