@@ -59,6 +59,7 @@ class Plugin
     private $migrationGeneratorRoute;
     private $migrationRunnerRoute;
     private $mazeRoutes;
+    private $patternRegistry;
 
     public static function getInstance()
     {
@@ -82,6 +83,7 @@ class Plugin
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
         new Blocks\BlockRoutes();
+        $this->patternRegistry = new Patterns\PatternRegistry();
 
         // Initialize migration hooks
         Database\MigrationHooks::init();
@@ -128,6 +130,9 @@ class Plugin
 
         // Initialize block bindings for collections
         Blocks\BlockBindings::init();
+
+        // Initialize block patterns
+        $this->patternRegistry->init();
 
         /*
          * Test for preparing interactivity stores.
@@ -186,6 +191,11 @@ class Plugin
     public function getCollectionRoutes()
     {
         return $this->collectionRoutes;
+    }
+
+    public function getPatternRegistry()
+    {
+        return $this->patternRegistry;
     }
 
     /**
