@@ -74,4 +74,25 @@ class DatabaseConnection
     {
         return self::$capsule;
     }
+
+    /**
+     * Test if database connection is available
+     *
+     * @return bool True if connection is working, false otherwise
+     */
+    public static function testConnection()
+    {
+        try {
+            if (self::$capsule === null) {
+                return false;
+            }
+
+            // Try a simple query to test the connection
+            self::$capsule->getConnection()->getPdo();
+            return true;
+        } catch (\Exception $e) {
+            error_log('Gateway database connection test failed: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

@@ -122,17 +122,32 @@ class Collection extends EloquentModel
      */
     public static function prepareStore(string $namespace, $query = null, array $options = [])
     {
-        $builder = $query ?? static::query();
-        $records = $builder->get()->toArray();
+        try {
+            $builder = $query ?? static::query();
+            $records = $builder->get()->toArray();
 
-        $context = wp_interactivity_state($namespace, array_merge([
-            'records' => $records,
-            'searchTerm' => '', // Add this for filtering
-            'loading' => false,
-            'error' => null,
-            'hasRecords' => count($records) > 0,
-            'options' => $options
-        ]));
+            $context = wp_interactivity_state($namespace, array_merge([
+                'records' => $records,
+                'searchTerm' => '', // Add this for filtering
+                'loading' => false,
+                'error' => null,
+                'hasRecords' => count($records) > 0,
+                'options' => $options
+            ]));
+        } catch (\Exception $e) {
+            // Log the error but don't crash the plugin
+            error_log('Gateway Collection::prepareStore failed for ' . $namespace . ': ' . $e->getMessage());
+
+            // Initialize store with empty records and error state
+            wp_interactivity_state($namespace, array_merge([
+                'records' => [],
+                'searchTerm' => '',
+                'loading' => false,
+                'error' => 'Database connection failed',
+                'hasRecords' => false,
+                'options' => $options
+            ]));
+        }
     }
 
     /**
