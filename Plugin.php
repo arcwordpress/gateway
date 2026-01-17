@@ -136,10 +136,13 @@ class Plugin
 
         /*
          * Test for preparing interactivity stores.
+         * Skip during plugin activation or if database connection is not available.
          */
-        GatewayProject::prepareStore('gateway/projects');
+        if (!$this->isActivating() && Database\DatabaseConnection::testConnection()) {
+            GatewayProject::prepareStore('gateway/projects');
+        }
 
-        // Register core collections. 
+        // Register core collections.
         add_action('gateway_loaded', [$this, 'registerCollections']);
 
     }
@@ -204,6 +207,32 @@ class Plugin
     public static function bootEloquent()
     {
         Database\DatabaseConnection::boot();
+    }
+
+    /**
+     * Check if the plugin is currently being activated
+     *
+     * @return bool
+     */
+    private function isActivating()
+    {
+        // Check if we're in the admin activation context
+        if (!is_admin()) {
+            return false;
+        }
+
+        // Check if activation is in progress
+        global $pagenow;
+        if ($pagenow === 'plugins.php' && isset($_GET['action']) && $_GET['action'] === 'activate') {
+            return true;
+        }
+
+        // Check if this is being called during register_activation_hook
+        if (did_action('activate_plugin') && !did_action('activated_plugin')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
