@@ -59,6 +59,7 @@ class Page
             [
                 'apiUrl' => rest_url(),
                 'nonce' => wp_create_nonce('wp_rest'),
+                'version' => GATEWAY_VERSION,
             ]
         );
     }

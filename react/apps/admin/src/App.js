@@ -88,7 +88,7 @@ function App() {
             <Route path="/chat" element={<Chat />} />
           </Routes>
         </main>
-        <div className="gty-admin-version-label">GATEWAY V1.1.6</div>
+        <div className="gty-admin-version-label">GATEWAY V{window.gatewayAdminScript?.version || '1.1.6'}</div>
       </div>
     </Router>
   );
