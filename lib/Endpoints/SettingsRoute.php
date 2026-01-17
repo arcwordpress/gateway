@@ -3,6 +3,8 @@
 namespace Gateway\Endpoints;
 
 use Gateway\Security\Encryption;
+use Gateway\Plugin;
+use Gateway\Database\DatabaseConnection;
 
 class SettingsRoute
 {
@@ -35,6 +37,17 @@ class SettingsRoute
                     'type' => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
+                'db_driver' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'validate_callback' => [$this, 'validate_db_driver'],
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
+                'sqlite_path' => [
+                    'required' => false,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ],
             ],
         ]);
     }
@@ -44,10 +57,18 @@ class SettingsRoute
         $encryptedKey = get_option('gateway_anthropic_api_key', '');
         $hasKey = !empty($encryptedKey);
 
+        // Get database configuration
+        $db_config = get_option('gateway_db_config', []);
+        $driver = $db_config['driver'] ?? 'mysql';
+        $sqlite_path = $db_config['database'] ?? '';
+
         return rest_ensure_response([
             'port' => get_option('gateway_connection_port', ''),
             'anthropic_api_key' => '', // Never send the actual key to frontend
             'has_anthropic_key' => $hasKey,
+            'db_driver' => $driver,
+            'sqlite_path' => $sqlite_path,
+            'is_sqlite_environment' => Plugin::isSQLiteEnvironment(),
         ]);
     }
 
@@ -55,6 +76,8 @@ class SettingsRoute
     {
         $port = $request->get_param('port');
         $apiKey = $request->get_param('anthropic_api_key');
+        $dbDriver = $request->get_param('db_driver');
+        $sqlitePath = $request->get_param('sqlite_path');
 
         // Save the port (empty string is valid for default)
         if ($request->has_param('port')) {
@@ -77,6 +100,31 @@ class SettingsRoute
                     );
                 }
                 update_option('gateway_anthropic_api_key', $encrypted);
+            }
+        }
+
+        // Save database configuration
+        if ($request->has_param('db_driver')) {
+            $db_config = get_option('gateway_db_config', []);
+            $db_config['driver'] = $dbDriver;
+
+            // If switching to SQLite, set the path
+            if ($dbDriver === 'sqlite') {
+                if (!empty($sqlitePath)) {
+                    $db_config['database'] = $sqlitePath;
+                } else {
+                    // Use detected path or default
+                    $db_config['database'] = Plugin::findSQLiteDatabase();
+                }
+            }
+
+            update_option('gateway_db_config', $db_config);
+        } elseif ($request->has_param('sqlite_path')) {
+            // Update just the SQLite path if driver is already SQLite
+            $db_config = get_option('gateway_db_config', []);
+            if (($db_config['driver'] ?? 'mysql') === 'sqlite') {
+                $db_config['database'] = $sqlitePath;
+                update_option('gateway_db_config', $db_config);
             }
         }
 
@@ -111,6 +159,20 @@ class SettingsRoute
             return new \WP_Error(
                 'invalid_port_range',
                 __('Port must be between 1 and 65535.', 'gateway'),
+                ['status' => 400]
+            );
+        }
+
+        return true;
+    }
+
+    public function validate_db_driver($value, $request, $param)
+    {
+        // Must be either 'mysql' or 'sqlite'
+        if (!in_array($value, ['mysql', 'sqlite'], true)) {
+            return new \WP_Error(
+                'invalid_db_driver',
+                __('Database driver must be either "mysql" or "sqlite".', 'gateway'),
                 ['status' => 400]
             );
         }
