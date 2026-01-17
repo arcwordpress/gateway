@@ -302,6 +302,10 @@ class Plugin
         // Auto-configure database driver on first activation
         $this->autoConfigureDatabase();
 
+        // Register collections before running migrations
+        // This ensures collections are available in the registry during activation
+        $this->registerCollections();
+
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();
 
