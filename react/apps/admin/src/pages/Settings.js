@@ -12,6 +12,9 @@ const Settings = () => {
     const [success, setSuccess] = useState('');
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState(null);
+    const [dbDriver, setDbDriver] = useState('mysql');
+    const [sqlitePath, setSqlitePath] = useState('');
+    const [isSqliteEnvironment, setIsSqliteEnvironment] = useState(false);
 
     useEffect(() => {
         loadSettings();
@@ -32,6 +35,9 @@ const Settings = () => {
             setPort(data.port || '');
             setLocalPort(data.port || '');
             setHasAnthropicKey(data.has_anthropic_key || false);
+            setDbDriver(data.db_driver || 'mysql');
+            setSqlitePath(data.sqlite_path || '');
+            setIsSqliteEnvironment(data.is_sqlite_environment || false);
         } catch (err) {
             setError('Failed to load settings');
         } finally {
@@ -53,6 +59,12 @@ const Settings = () => {
                 payload.anthropic_api_key = anthropicApiKey;
             }
 
+            // Include database configuration
+            payload.db_driver = dbDriver;
+            if (dbDriver === 'sqlite') {
+                payload.sqlite_path = sqlitePath;
+            }
+
             const response = await fetch(
                 `${window.gatewayAdminScript.apiUrl}gateway/v1/settings`,
                 {
@@ -71,8 +83,8 @@ const Settings = () => {
                 setPort(localPort);
                 setHasAnthropicKey(data.has_anthropic_key || false);
                 setAnthropicApiKey(''); // Clear the input after save
-                setSuccess(data.message || 'Settings saved successfully.');
-                setTimeout(() => setSuccess(''), 3000);
+                setSuccess(data.message || 'Settings saved successfully. Please reload the page for database changes to take effect.');
+                setTimeout(() => setSuccess(''), 5000);
             } else {
                 setError(data.message || 'Failed to save settings');
             }
@@ -125,36 +137,130 @@ const Settings = () => {
 
     return (
         <div className="p-6 space-y-6">
-            {/* Port Settings Section */}
+            {/* Database Driver Settings Section */}
             <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Database Port Settings
+                    Database Driver
                 </h2>
+
+                {isSqliteEnvironment && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded">
+                        <p className="text-blue-700 text-sm flex items-center">
+                            <span className="mr-2">ℹ️</span>
+                            <strong>SQLite Environment Detected:</strong>&nbsp;This appears to be a WordPress Playground or SQLite-based installation.
+                        </p>
+                    </div>
+                )}
 
                 <form onSubmit={handleSave} className="space-y-4">
                     <div>
                         <label
-                            htmlFor="port"
+                            htmlFor="db_driver"
                             className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                            Database Port
+                            Database Type
                         </label>
-                        <input
-                            type="number"
-                            id="port"
-                            min="1"
-                            max="65535"
-                            value={localPort}
-                            onChange={(e) => setLocalPort(e.target.value)}
-                            placeholder="3306"
+                        <select
+                            id="db_driver"
+                            value={dbDriver}
+                            onChange={(e) => setDbDriver(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        >
+                            <option value="mysql">MySQL</option>
+                            <option value="sqlite">SQLite</option>
+                        </select>
                         <p className="mt-1 text-sm text-gray-500">
-                            Enter a custom port number for database connections. Leave
-                            empty to use default (3306). For Local WP, check the site
-                            overview for the correct MySQL port.
+                            Select SQLite for WordPress Playground or SQLite integration environments.
                         </p>
                     </div>
+
+                    {dbDriver === 'sqlite' && (
+                        <div>
+                            <label
+                                htmlFor="sqlite_path"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                SQLite Database Path
+                            </label>
+                            <input
+                                type="text"
+                                id="sqlite_path"
+                                value={sqlitePath}
+                                onChange={(e) => setSqlitePath(e.target.value)}
+                                placeholder="/wp-content/database/.ht.sqlite"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                            />
+                            <p className="mt-1 text-sm text-gray-500">
+                                Absolute path to the SQLite database file. The path is auto-detected during activation.
+                            </p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded">
+                            <p className="text-red-600 text-sm flex items-center">
+                                <span className="mr-2">✗</span>
+                                {error}
+                            </p>
+                        </div>
+                    )}
+
+                    {success && (
+                        <div className="p-4 bg-green-50 border border-green-200 rounded">
+                            <p className="text-green-600 text-sm flex items-center">
+                                <span className="mr-2">✓</span>
+                                {success}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex space-x-3">
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className={`px-4 py-2 rounded font-medium transition-colors ${
+                                saving
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                        >
+                            {saving ? 'Saving...' : 'Save Settings'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {/* Port Settings Section - Only show for MySQL */}
+            {dbDriver === 'mysql' && (
+                <div className="bg-white shadow rounded-lg p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        Database Port Settings
+                    </h2>
+
+                    <form onSubmit={handleSave} className="space-y-4">
+                        <div>
+                            <label
+                                htmlFor="port"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Database Port
+                            </label>
+                            <input
+                                type="number"
+                                id="port"
+                                min="1"
+                                max="65535"
+                                value={localPort}
+                                onChange={(e) => setLocalPort(e.target.value)}
+                                placeholder="3306"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <p className="mt-1 text-sm text-gray-500">
+                                Enter a custom port number for database connections. Leave
+                                empty to use default (3306). For Local WP, check the site
+                                overview for the correct MySQL port.
+                            </p>
+                        </div>
 
                     {error && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded">
@@ -196,6 +302,7 @@ const Settings = () => {
                     </div>
                 </form>
             </div>
+            )}
 
             {/* Maze AI Settings Section */}
             <div className="bg-white shadow rounded-lg p-6">
@@ -363,6 +470,12 @@ const Settings = () => {
                                     ✓ Connection Successful
                                 </p>
                                 <div className="mt-4 space-y-2 text-sm">
+                                    {testResult.driver && (
+                                        <div>
+                                            <span className="font-medium">Database Driver:</span>{' '}
+                                            <span className="uppercase">{testResult.driver}</span>
+                                        </div>
+                                    )}
                                     <div>
                                         <span className="font-medium">Server Version:</span>{' '}
                                         {testResult.server_version}

@@ -210,6 +210,65 @@ class Plugin
     }
 
     /**
+     * Detect if WordPress is using SQLite
+     *
+     * @return bool
+     */
+    public static function isSQLiteEnvironment()
+    {
+        // Check for DB_ENGINE constant (set by SQLite integration plugin)
+        if (defined('DB_ENGINE') && DB_ENGINE === 'sqlite') {
+            return true;
+        }
+
+        // Check if db.php drop-in exists (SQLite integration)
+        if (file_exists(WP_CONTENT_DIR . '/db.php')) {
+            $db_php_content = file_get_contents(WP_CONTENT_DIR . '/db.php');
+            if (stripos($db_php_content, 'sqlite') !== false) {
+                return true;
+            }
+        }
+
+        // Check for SQLite database file in common Playground locations
+        $sqlite_paths = [
+            WP_CONTENT_DIR . '/database/.ht.sqlite',
+            WP_CONTENT_DIR . '/database/wordpress.sqlite',
+            WP_CONTENT_DIR . '/database/database.sqlite',
+        ];
+
+        foreach ($sqlite_paths as $path) {
+            if (file_exists($path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Find SQLite database file path
+     *
+     * @return string|null Path to SQLite database or null if not found
+     */
+    public static function findSQLiteDatabase()
+    {
+        $sqlite_paths = [
+            WP_CONTENT_DIR . '/database/.ht.sqlite',
+            WP_CONTENT_DIR . '/database/wordpress.sqlite',
+            WP_CONTENT_DIR . '/database/database.sqlite',
+        ];
+
+        foreach ($sqlite_paths as $path) {
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        // Default to Playground standard location
+        return WP_CONTENT_DIR . '/database/.ht.sqlite';
+    }
+
+    /**
      * Check if the plugin is currently being activated
      *
      * @return bool
@@ -240,6 +299,9 @@ class Plugin
      */
     public function activate()
     {
+        // Auto-configure database driver on first activation
+        $this->autoConfigureDatabase();
+
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();
 
@@ -253,6 +315,30 @@ class Plugin
 
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Auto-configure database driver based on environment detection
+     */
+    private function autoConfigureDatabase()
+    {
+        $existing_config = get_option('gateway_db_config');
+
+        // Only auto-configure if not already set
+        if (empty($existing_config) || !isset($existing_config['driver'])) {
+            $is_sqlite = self::isSQLiteEnvironment();
+
+            $default_config = [
+                'driver' => $is_sqlite ? 'sqlite' : 'mysql',
+            ];
+
+            // Add SQLite-specific configuration
+            if ($is_sqlite) {
+                $default_config['database'] = self::findSQLiteDatabase();
+            }
+
+            update_option('gateway_db_config', $default_config);
+        }
     }
 
     /**

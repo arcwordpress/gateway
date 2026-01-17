@@ -28,6 +28,7 @@ class TestConnectionRoute
             'server_version' => '',
             'table_count' => 0,
             'custom_port' => '',
+            'driver' => '',
         ];
 
         try {
@@ -35,19 +36,36 @@ class TestConnectionRoute
 
             $capsule = DatabaseConnection::getCapsule();
             $connection = $capsule->getConnection();
+            $driver = DatabaseConnection::getDriver();
+            $result['driver'] = $driver;
 
-            // Get server version
-            $version = $connection->selectOne('SELECT VERSION() as version');
-            $result['server_version'] = $version->version;
+            // Get server version (driver-specific)
+            if ($driver === 'sqlite') {
+                $version = $connection->selectOne('SELECT sqlite_version() as version');
+                $result['server_version'] = 'SQLite ' . $version->version;
+            } else {
+                $version = $connection->selectOne('SELECT VERSION() as version');
+                $result['server_version'] = $version->version;
+            }
 
-            // Get table count with WordPress prefix
-            $tables = $connection->select("SHOW TABLES LIKE '" . $wpdb->prefix . "%'");
-            $result['table_count'] = count($tables);
+            // Get table count with WordPress prefix (driver-specific)
+            if ($driver === 'sqlite') {
+                $tables = $connection->select(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?",
+                    [$wpdb->prefix . '%']
+                );
+                $result['table_count'] = count($tables);
+            } else {
+                $tables = $connection->select("SHOW TABLES LIKE '" . $wpdb->prefix . "%'");
+                $result['table_count'] = count($tables);
+            }
 
-            // Get custom port if set
-            $custom_port = get_option('gateway_connection_port', '');
-            if (!empty($custom_port)) {
-                $result['custom_port'] = intval($custom_port);
+            // Get custom port if set (only relevant for MySQL)
+            if ($driver === 'mysql') {
+                $custom_port = get_option('gateway_connection_port', '');
+                if (!empty($custom_port)) {
+                    $result['custom_port'] = intval($custom_port);
+                }
             }
 
             $result['success'] = true;
