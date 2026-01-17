@@ -1,1 +1,160 @@
-(()=>{"use strict";const e=window.React,t=window.wp.blocks,a=window.wp.blockEditor;(0,t.registerBlockType)("gateway/spa",{edit:()=>{const t=(0,a.useBlockProps)({className:"gt-spa-block-editor"});return(0,e.createElement)("div",{...t},(0,e.createElement)("div",{className:"gt-spa-editor-notice"},(0,e.createElement)("h3",null,"🚀 GT SPA Router Experiment"),(0,e.createElement)("p",null,"This block demonstrates the Interactivity Router with 3 navigable slots."),(0,e.createElement)("p",null,(0,e.createElement)("strong",null,"Preview on the frontend to see the router in action!"))),(0,e.createElement)("div",{className:"gt-spa-editor-preview"},(0,e.createElement)("div",{className:"gt-spa-nav"},(0,e.createElement)("span",null,"Home"),(0,e.createElement)("span",null,"About"),(0,e.createElement)("span",null,"Contact")),(0,e.createElement)("div",{className:"gt-spa-content"},(0,e.createElement)("p",null,"📍 Content will be displayed here on the frontend"))))},save:()=>{const t=a.useBlockProps.save({className:"gt-spa-block"});return(0,e.createElement)("div",{...t},(0,e.createElement)("div",{"data-wp-interactive":"gateway/spa"},(0,e.createElement)("nav",{className:"gt-spa-nav"},(0,e.createElement)("a",{href:"?view=home","data-wp-on--click":"actions.navigateToView","data-view":"home"},"🏠 Home"),(0,e.createElement)("a",{href:"?view=about","data-wp-on--click":"actions.navigateToView","data-view":"about"},"ℹ️ About"),(0,e.createElement)("a",{href:"?view=contact","data-wp-on--click":"actions.navigateToView","data-view":"contact"},"📧 Contact")),(0,e.createElement)("div",{className:"gt-spa-content","data-wp-interactive":"gateway/spa","data-wp-router-region":"spa-main-content"},(0,e.createElement)("div",{className:"gt-spa-view","data-view-name":"home"},(0,e.createElement)("h2",null,"Welcome Home! 🏠"),(0,e.createElement)("p",null,"This demonstrates the WordPress Interactivity Router with client-side view switching."),(0,e.createElement)("p",null,"Click the navigation links above to switch between views!"),(0,e.createElement)("ul",null,(0,e.createElement)("li",null,"✅ All content is pre-rendered"),(0,e.createElement)("li",null,"✅ Router manages view switching"),(0,e.createElement)("li",null,"✅ No page reloads"),(0,e.createElement)("li",null,"✅ Browser history works")))),(0,e.createElement)("template",{"data-view-template":"home"},(0,e.createElement)("div",{className:"gt-spa-content","data-wp-interactive":"gateway/spa","data-wp-router-region":"spa-main-content"},(0,e.createElement)("div",{className:"gt-spa-view","data-view-name":"home"},(0,e.createElement)("h2",null,"Welcome Home! 🏠"),(0,e.createElement)("p",null,"This demonstrates the WordPress Interactivity Router with client-side view switching."),(0,e.createElement)("p",null,"Click the navigation links above to switch between views!"),(0,e.createElement)("ul",null,(0,e.createElement)("li",null,"✅ All content is pre-rendered"),(0,e.createElement)("li",null,"✅ Router manages view switching"),(0,e.createElement)("li",null,"✅ No page reloads"),(0,e.createElement)("li",null,"✅ Browser history works"))))),(0,e.createElement)("template",{"data-view-template":"about"},(0,e.createElement)("div",{className:"gt-spa-content","data-wp-interactive":"gateway/spa","data-wp-router-region":"spa-main-content"},(0,e.createElement)("div",{className:"gt-spa-view","data-view-name":"about"},(0,e.createElement)("h2",null,"About This Block ℹ️"),(0,e.createElement)("p",null,"This block demonstrates the WordPress Interactivity Router."),(0,e.createElement)("h3",null,"How it works:"),(0,e.createElement)("ol",null,(0,e.createElement)("li",null,"All views are pre-rendered in templates"),(0,e.createElement)("li",null,"Navigation clicks extract template HTML"),(0,e.createElement)("li",null,"Router updates the region with new content"),(0,e.createElement)("li",null,"No server requests needed!")),(0,e.createElement)("p",null,"📚 ",(0,e.createElement)("a",{href:"https://developer.wordpress.org/block-editor/reference-guides/packages/packages-interactivity-router/",target:"_blank"},"Read the docs"))))),(0,e.createElement)("template",{"data-view-template":"contact"},(0,e.createElement)("div",{className:"gt-spa-content","data-wp-interactive":"gateway/spa","data-wp-router-region":"spa-main-content"},(0,e.createElement)("div",{className:"gt-spa-view","data-view-name":"contact"},(0,e.createElement)("h2",null,"Contact Us 📧"),(0,e.createElement)("p",null,"This is the contact view, showing pre-rendered content!"),(0,e.createElement)("div",{className:"gt-spa-contact-info"},(0,e.createElement)("p",null,"📍 All content was loaded with the initial page"),(0,e.createElement)("p",null,"🎯 Navigation happens without server requests"),(0,e.createElement)("p",null,"⚡ Router manages the view switching")))))))}})})();
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "@wordpress/block-editor"
+/*!*************************************!*\
+  !*** external ["wp","blockEditor"] ***!
+  \*************************************/
+(module) {
+
+module.exports = window["wp"]["blockEditor"];
+
+/***/ },
+
+/***/ "@wordpress/blocks"
+/*!********************************!*\
+  !*** external ["wp","blocks"] ***!
+  \********************************/
+(module) {
+
+module.exports = window["wp"]["blocks"];
+
+/***/ },
+
+/***/ "react"
+/*!************************!*\
+  !*** external "React" ***!
+  \************************/
+(module) {
+
+module.exports = window["React"];
+
+/***/ }
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Check if module exists (development only)
+/******/ 		if (__webpack_modules__[moduleId] === undefined) {
+/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
+/******/ 			e.code = 'MODULE_NOT_FOUND';
+/******/ 			throw e;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
+(() => {
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/blocks */ "@wordpress/blocks");
+/* harmony import */ var _wordpress_blocks__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_blocks__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+(0,_wordpress_blocks__WEBPACK_IMPORTED_MODULE_1__.registerBlockType)('gateway/spa', {
+  edit: () => {
+    const blockProps = (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)();
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      ...blockProps
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "SPA Router Block - Preview on frontend"));
+  },
+  save: () => {
+    const blockProps = _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps.save();
+
+    // Get current tab from URL (would normally be server-side)
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTab = urlParams.get('tab') || '1';
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      ...blockProps
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      "data-wp-interactive": "gateway/spa"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+      href: "?tab=1",
+      "data-wp-on--click": "actions.navigateToView"
+    }, "Tab 1"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+      href: "?tab=2",
+      "data-wp-on--click": "actions.navigateToView"
+    }, "Tab 2"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+      href: "?tab=3",
+      "data-wp-on--click": "actions.navigateToView"
+    }, "Tab 3")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+      "data-wp-router-region": "tab-content"
+    }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Content for TAB-", currentTab))));
+  }
+});
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=index.js.map
