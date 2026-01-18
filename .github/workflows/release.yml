@@ -51,7 +51,7 @@ jobs:
           cd /tmp
           zip -r $GITHUB_WORKSPACE/gateway.zip gateway
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (Private Repo)
         uses: softprops/action-gh-release@v1
         with:
           files: gateway.zip
@@ -67,3 +67,35 @@ jobs:
           name: gateway
           path: gateway.zip
           retention-days: 30
+
+      # Public release steps
+      - name: Push to Public Release Repo
+        if: endsWith(github.ref_name, '-public')
+        env:
+          PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          # Extract clean version (remove -public suffix)
+          VERSION=${GITHUB_REF_NAME%-public}
+          
+          # Clone public repo
+          git clone https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git public-repo
+          cd public-repo
+          
+          # Copy zip
+          cp $GITHUB_WORKSPACE/gateway.zip .
+          
+          # Commit and tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git
+          git add gateway.zip
+          git commit -m "Release ${VERSION}"
+          git tag ${VERSION}
+          git push origin main
+          git push origin ${VERSION}
+          
+          # Create GitHub release in public repo
+          gh release create ${VERSION} gateway.zip \
+            --title "Release ${VERSION}" \
+            --generate-notes
