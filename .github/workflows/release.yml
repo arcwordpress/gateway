@@ -73,6 +73,7 @@ jobs:
         if: endsWith(github.ref_name, '-public')
         env:
           PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
           # Extract clean version (remove -public suffix)
           VERSION=${GITHUB_REF_NAME%-public}
@@ -97,5 +98,3 @@ jobs:
           gh release create ${VERSION} gateway.zip \
             --title "Release ${VERSION}" \
             --generate-notes
-        env:
-          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
