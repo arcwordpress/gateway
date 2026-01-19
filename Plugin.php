@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.7
+ * Version: 1.1.10
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.7');
+define('GATEWAY_VERSION', '1.1.10');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -26,11 +26,10 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
 
-
 // Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
-    $base_dir = GATEWAY_PATH . 'includes/';
+    $base_dir = GATEWAY_PATH . 'lib/';
 
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
@@ -45,6 +44,8 @@ spl_autoload_register(function ($class) {
     }
 });
 
+use Gateway\Collections\GatewayProject;
+
 class Plugin
 {
     private static $instance = null;
@@ -56,7 +57,9 @@ class Plugin
     private $settingsRoute;
     private $testConnectionRoute;
     private $migrationGeneratorRoute;
+    private $migrationRunnerRoute;
     private $mazeRoutes;
+    private $patternRegistry;
 
     public static function getInstance()
     {
@@ -76,7 +79,15 @@ class Plugin
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
+        $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
+        new Exta\Routes();
+        new Blocks\BlockRoutes();
+        $this->patternRegistry = new Patterns\PatternRegistry();
+
+        // Initialize migration hooks
+        Database\MigrationHooks::init();
+
         $this->init();
     }
 
@@ -86,19 +97,16 @@ class Plugin
     private function init()
     {
         // Boot Eloquent on plugins_loaded
-        add_action('plugins_loaded', [__CLASS__, 'bootEloquent']);
-
-        // Register activation and deactivation hooks
-        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
-        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
+        $this->bootEloquent();
 
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);
 
         // Initialize admin pages
         Admin\Page::init();
-        Admin\CollectionMenus::init();
-        Package\PackageMenus::init(); // Add this line
+        Admin\Records::init();
+        // Admin\Builder::init(); // Removed Builder admin link
+        Package\PackageMenus::init();
 
         // Initialize front-end forms
         Forms\Render::init();
@@ -113,12 +121,52 @@ class Plugin
         // Initialize Gutenberg blocks
         Gutenberg\BlockRegistry::init();
 
+        // Initialize dynamic blocks (programmatic registration and asset enqueuing)
+        Blocks\BlockInit::init();
+
+        // Initialize block bindings for collections
+        Blocks\BlockBindings::init();
+
+        // Initialize block patterns
+        $this->patternRegistry->init();
+
+        // Register core collections. 
+        add_action('gateway_loaded', [$this, 'registerCollections']);
+
     }
 
     public function onInit()
     {
         do_action('gateway_loaded');
+
+        // Register activation and deactivation hooks
+        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
+        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
     }
+
+    public function registerCollections()
+    {
+        // Gateway collections
+        Collections\GatewayProject::register();
+
+        // WordPress core table collections
+        Collections\WP\Post::register();
+        Collections\WP\User::register();
+        Collections\WP\Comment::register();
+        Collections\WP\Option::register();
+        Collections\WP\PostMeta::register();
+        Collections\WP\UserMeta::register();
+        Collections\WP\CommentMeta::register();
+        Collections\WP\Term::register();
+        Collections\WP\TermTaxonomy::register();
+        Collections\WP\TermRelationship::register();
+        Collections\WP\TermMeta::register();
+        Collections\WP\Link::register();
+    }
+
+    /**
+     * Object registry getters.
+     **/
 
     public function getRegistry()
     {
@@ -140,6 +188,11 @@ class Plugin
         return $this->collectionRoutes;
     }
 
+    public function getPatternRegistry()
+    {
+        return $this->patternRegistry;
+    }
+
     /**
      * Boot Eloquent ORM
      */
@@ -153,8 +206,8 @@ class Plugin
      */
     public function activate()
     {
-        // Run database migrations
-        Database\DatabaseMigration::run();
+        // Run core migrations via action hook
+        Database\MigrationHooks::runCoreMigrations();
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
