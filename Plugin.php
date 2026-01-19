@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.10-rc1
+ * Version: 1.1.10
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.10-rc1');
+define('GATEWAY_VERSION', '1.1.10');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -99,10 +99,6 @@ class Plugin
         // Boot Eloquent on plugins_loaded
         $this->bootEloquent();
 
-        // Register activation and deactivation hooks
-        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
-        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
-
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);
 
@@ -134,15 +130,7 @@ class Plugin
         // Initialize block patterns
         $this->patternRegistry->init();
 
-        /*
-         * Test for preparing interactivity stores.
-         * Skip during plugin activation or if database connection is not available.
-         */
-        if (!$this->isActivating() && Database\DatabaseConnection::testConnection()) {
-            GatewayProject::prepareStore('gateway/projects');
-        }
-
-        // Register core collections.
+        // Register core collections. 
         add_action('gateway_loaded', [$this, 'registerCollections']);
 
     }
@@ -150,6 +138,10 @@ class Plugin
     public function onInit()
     {
         do_action('gateway_loaded');
+
+        // Register activation and deactivation hooks
+        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
+        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
     }
 
     public function registerCollections()
@@ -210,102 +202,10 @@ class Plugin
     }
 
     /**
-     * Detect if WordPress is using SQLite
-     *
-     * @return bool
-     */
-    public static function isSQLiteEnvironment()
-    {
-        // Check for DB_ENGINE constant (set by SQLite integration plugin)
-        if (defined('DB_ENGINE') && DB_ENGINE === 'sqlite') {
-            return true;
-        }
-
-        // Check if db.php drop-in exists (SQLite integration)
-        if (file_exists(WP_CONTENT_DIR . '/db.php')) {
-            $db_php_content = file_get_contents(WP_CONTENT_DIR . '/db.php');
-            if (stripos($db_php_content, 'sqlite') !== false) {
-                return true;
-            }
-        }
-
-        // Check for SQLite database file in common Playground locations
-        $sqlite_paths = [
-            WP_CONTENT_DIR . '/database/.ht.sqlite',
-            WP_CONTENT_DIR . '/database/wordpress.sqlite',
-            WP_CONTENT_DIR . '/database/database.sqlite',
-        ];
-
-        foreach ($sqlite_paths as $path) {
-            if (file_exists($path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Find SQLite database file path
-     *
-     * @return string|null Path to SQLite database or null if not found
-     */
-    public static function findSQLiteDatabase()
-    {
-        $sqlite_paths = [
-            WP_CONTENT_DIR . '/database/.ht.sqlite',
-            WP_CONTENT_DIR . '/database/wordpress.sqlite',
-            WP_CONTENT_DIR . '/database/database.sqlite',
-        ];
-
-        foreach ($sqlite_paths as $path) {
-            if (file_exists($path)) {
-                return $path;
-            }
-        }
-
-        // Default to Playground standard location
-        return WP_CONTENT_DIR . '/database/.ht.sqlite';
-    }
-
-    /**
-     * Check if the plugin is currently being activated
-     *
-     * @return bool
-     */
-    private function isActivating()
-    {
-        // Check if we're in the admin activation context
-        if (!is_admin()) {
-            return false;
-        }
-
-        // Check if activation is in progress
-        global $pagenow;
-        if ($pagenow === 'plugins.php' && isset($_GET['action']) && $_GET['action'] === 'activate') {
-            return true;
-        }
-
-        // Check if this is being called during register_activation_hook
-        if (did_action('activate_plugin') && !did_action('activated_plugin')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Plugin activation
      */
     public function activate()
     {
-        // Auto-configure database driver on first activation
-        $this->autoConfigureDatabase();
-
-        // Register collections before running migrations
-        // This ensures collections are available in the registry during activation
-        $this->registerCollections();
-
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();
 
@@ -319,30 +219,6 @@ class Plugin
 
         // Flush rewrite rules
         flush_rewrite_rules();
-    }
-
-    /**
-     * Auto-configure database driver based on environment detection
-     */
-    private function autoConfigureDatabase()
-    {
-        $existing_config = get_option('gateway_db_config');
-
-        // Only auto-configure if not already set
-        if (empty($existing_config) || !isset($existing_config['driver'])) {
-            $is_sqlite = self::isSQLiteEnvironment();
-
-            $default_config = [
-                'driver' => $is_sqlite ? 'sqlite' : 'mysql',
-            ];
-
-            // Add SQLite-specific configuration
-            if ($is_sqlite) {
-                $default_config['database'] = self::findSQLiteDatabase();
-            }
-
-            update_option('gateway_db_config', $default_config);
-        }
     }
 
     /**
