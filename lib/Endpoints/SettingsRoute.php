@@ -62,13 +62,16 @@ class SettingsRoute
         $driver = $db_config['driver'] ?? 'mysql';
         $sqlite_path = $db_config['database'] ?? '';
 
+        // Check if we're in a SQLite environment (WordPress Playground detection)
+        $is_sqlite_env = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
+
         return rest_ensure_response([
             'port' => get_option('gateway_connection_port', ''),
             'anthropic_api_key' => '', // Never send the actual key to frontend
             'has_anthropic_key' => $hasKey,
             'db_driver' => $driver,
             'sqlite_path' => $sqlite_path,
-            'is_sqlite_environment' => Plugin::isSQLiteEnvironment(),
+            'is_sqlite_environment' => $is_sqlite_env,
         ]);
     }
 
@@ -79,9 +82,13 @@ class SettingsRoute
         $dbDriver = $request->get_param('db_driver');
         $sqlitePath = $request->get_param('sqlite_path');
 
+        // Track if we need to clear connection cache
+        $clear_cache = false;
+
         // Save the port (empty string is valid for default)
         if ($request->has_param('port')) {
             update_option('gateway_connection_port', $port);
+            $clear_cache = true; // Port change affects connection
         }
 
         // Save the API key if provided
@@ -113,19 +120,26 @@ class SettingsRoute
                 if (!empty($sqlitePath)) {
                     $db_config['database'] = $sqlitePath;
                 } else {
-                    // Use detected path or default
-                    $db_config['database'] = Plugin::findSQLiteDatabase();
+                    // Use default path (findSQLiteDatabase method needs implementation)
+                    $db_config['database'] = WP_CONTENT_DIR . '/database/.ht.sqlite';
                 }
             }
 
             update_option('gateway_db_config', $db_config);
+            $clear_cache = true; // Driver change affects connection
         } elseif ($request->has_param('sqlite_path')) {
             // Update just the SQLite path if driver is already SQLite
             $db_config = get_option('gateway_db_config', []);
             if (($db_config['driver'] ?? 'mysql') === 'sqlite') {
                 $db_config['database'] = $sqlitePath;
                 update_option('gateway_db_config', $db_config);
+                $clear_cache = true; // Path change affects connection
             }
+        }
+
+        // Clear connection cache if any database settings changed
+        if ($clear_cache && function_exists('gateway_clear_connection_cache')) {
+            gateway_clear_connection_cache();
         }
 
         return rest_ensure_response([

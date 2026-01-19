@@ -206,6 +206,27 @@ class Plugin
      */
     public function activate()
     {
+        // Test database connection before attempting migrations
+        // Use testConnection() with the configured timeout from boot()
+        if (!Database\DatabaseConnection::testConnection()) {
+            $message = 'Gateway plugin activation failed: Unable to connect to database. ';
+            $message .= 'Please check your database configuration and try again.';
+
+            // For MySQL, provide additional guidance about port configuration
+            if (Database\DatabaseConnection::getDriver() === 'mysql') {
+                $message .= '<br><br>';
+                $message .= 'If you are using Local WP or another development tool with dynamic database ports, ';
+                $message .= 'you may need to configure the connection port in Gateway settings after activation. ';
+                $message .= 'Please ensure your database server is running and accessible.';
+            }
+
+            wp_die(
+                $message,
+                'Gateway Activation Error',
+                ['back_link' => true, 'response' => 500]
+            );
+        }
+
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();
 
