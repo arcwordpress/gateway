@@ -1,0 +1,30 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/loop",
+  "title": "Gateway Loop",
+  "category": "widgets",
+  "icon": "update",
+  "description": "Loop through posts and render child blocks for each item.",
+  "keywords": ["gateway", "loop", "query", "posts"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "attributes": {
+    "postType": {
+      "type": "string",
+      "default": "post"
+    },
+    "postsPerPage": {
+      "type": "number",
+      "default": 10
+    }
+  },
+  "providesContext": {
+    "gateway/postId": "postId",
+    "gateway/postType": "postType"
+  },
+  "supports": {
+    "html": false
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css"
+}

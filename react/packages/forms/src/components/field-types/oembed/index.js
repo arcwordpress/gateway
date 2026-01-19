@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './oembed-style.css';
 
-const OEmbedFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const OEmbedControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +12,6 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -33,7 +33,6 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -111,19 +110,8 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
     containerClasses.push('oembed-field__container--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="oembed-field">
-      <label htmlFor={name} className="oembed-field__label">
-        {labelText}
-        {required && <span className="oembed-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="oembed-field__help">{help}</p>
-      )}
-
       <div className={containerClasses.join(' ')}>
         {hasEmbed ? (
           <div className="oembed-field__preview">
@@ -135,20 +123,17 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
                 />
               )}
             </div>
-
             <div className="oembed-field__meta">
               {embedData.title && (
                 <div className="oembed-field__title">
                   {embedData.title}
                 </div>
               )}
-
               {embedData.author_name && (
                 <div className="oembed-field__author">
                   by {embedData.author_name}
                 </div>
               )}
-
               <a
                 href={url}
                 target="_blank"
@@ -157,7 +142,6 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
               >
                 {url}
               </a>
-
               {embedData.provider_name && (
                 <div className="oembed-field__provider">
                   <span className="oembed-field__provider-name">
@@ -171,7 +155,6 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
                 </div>
               )}
             </div>
-
             <div className="oembed-field__actions">
               <button
                 type="button"
@@ -208,13 +191,11 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
                   {embedError}
                 </div>
               )}
-
               {loading && (
                 <div className="oembed-field__loading">
                   Loading preview...
                 </div>
               )}
-
               <div className="oembed-field__buttons">
                 <button
                   type="submit"
@@ -233,7 +214,6 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
                   </button>
                 )}
               </div>
-
               <p className="oembed-field__hint">
                 Supports YouTube, Vimeo, Twitter, Instagram, Spotify, SoundCloud, and more
               </p>
@@ -241,15 +221,16 @@ const OEmbedFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {fieldError && (
-        <p className="oembed-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const OEmbedFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<OEmbedControl config={config} />} />
+    );
+};
+
 const OEmbedFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="oembed-field__display oembed-field__display--empty">-</span>;
@@ -267,7 +248,6 @@ const OEmbedFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Type Definition for registry
 export const oembedFieldType = {
   type: 'oembed',
   Input: OEmbedFieldTypeInput,
@@ -277,7 +257,6 @@ export const oembedFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useOEmbedField = (config) => {
   return useMemo(() => ({
     Input: (props) => <OEmbedFieldTypeInput {...props} config={config} />,

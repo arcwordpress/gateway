@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  GatewayDataProvider,
   CollectionProvider,
   useCollectionInfo,
   useCollectionRecords,
@@ -11,8 +10,6 @@ import {
  *
  * Demonstrates:
  * - Multiple collections in one app
- * - Custom API configuration with GatewayDataProvider
- * - Nested providers with different auth
  * - Query parameters for filtering/pagination
  */
 
@@ -64,21 +61,6 @@ function CollectionSection({ title }) {
   );
 }
 
-// Example 2: Custom API Configuration
-export function CustomApiConfigApp() {
-  return (
-    <GatewayDataProvider
-      apiUrl="https://custom-api.example.com/wp-json/"
-      auth={{ username: 'admin', password: 'secret' }}
-    >
-      <CollectionProvider collectionKey="events">
-        <h2>Using Custom API URL and Auth</h2>
-        <EventsList />
-      </CollectionProvider>
-    </GatewayDataProvider>
-  );
-}
-
 function EventsList() {
   const { records, loading } = useCollectionRecords();
 
@@ -93,34 +75,7 @@ function EventsList() {
   );
 }
 
-// Example 3: Nested Providers with Different Auth
-export function MultiAuthApp() {
-  return (
-    <GatewayDataProvider apiUrl="/wp-json/">
-      <h1>Public and Private Collections</h1>
-
-      {/* Public collection - uses default auth (nonce or no auth) */}
-      <div>
-        <h2>Public Events</h2>
-        <CollectionProvider collectionKey="public-events">
-          <EventsList />
-        </CollectionProvider>
-      </div>
-
-      {/* Private collection - uses Basic Auth */}
-      <GatewayDataProvider auth={{ username: 'admin', password: 'secret' }}>
-        <div>
-          <h2>Admin Events (with Basic Auth)</h2>
-          <CollectionProvider collectionKey="admin-events">
-            <EventsList />
-          </CollectionProvider>
-        </div>
-      </GatewayDataProvider>
-    </GatewayDataProvider>
-  );
-}
-
-// Example 4: Query Parameters for Filtering and Pagination
+// Example 2: Query Parameters for Filtering and Pagination
 export function FilteredCollectionApp() {
   const [page, setPage] = React.useState(1);
   const [status, setStatus] = React.useState('published');

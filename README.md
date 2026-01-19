@@ -32,4 +32,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Version
 
-1.1.7
+1.1.10-rc1

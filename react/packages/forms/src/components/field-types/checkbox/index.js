@@ -1,17 +1,17 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './checkbox-style.css';
 
-// Input Component (for forms)
-const CheckboxFieldTypeInput = ({ config = {}, error }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const CheckboxControl = ({ config = {}, error }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   if (!name) {
     console.warn('CheckboxFieldTypeInput: No "name" provided in config');
     return null;
   }
 
-  // Use error from props if provided, otherwise from formState
   const fieldError = error || formState.errors[name];
 
   const {
@@ -20,8 +20,6 @@ const CheckboxFieldTypeInput = ({ config = {}, error }) => {
     help = '',
     default: defaultChecked = false
   } = config;
-
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="checkbox-field">
@@ -37,38 +35,35 @@ const CheckboxFieldTypeInput = ({ config = {}, error }) => {
           htmlFor={name}
           className="checkbox-field__label"
         >
-          {labelText}
+          {label}
           {required && <span className="checkbox-field__required">*</span>}
         </label>
       </div>
-      {help && (
-        <p className="checkbox-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="checkbox-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const CheckboxFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<CheckboxControl config={config} />} />
+    );
+};
+
 const CheckboxFieldTypeDisplay = ({ value, config }) => {
-  // Handle null/undefined values
+
   if (value === null || value === undefined) {
     return <span className="checkbox-field__display checkbox-field__display--unchecked">☐</span>;
   }
 
-  // Convert to boolean
   const isChecked = Boolean(value);
-
   return (
     <span className={`checkbox-field__display ${isChecked ? 'checkbox-field__display--checked' : 'checkbox-field__display--unchecked'}`}>
       {isChecked ? '☑' : '☐'}
     </span>
   );
+  
 };
 
-// Field Type Definition for registry
 export const checkboxFieldType = {
   type: 'checkbox',
   Input: CheckboxFieldTypeInput,
@@ -78,7 +73,6 @@ export const checkboxFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useCheckboxField = (config) => {
   return useMemo(() => ({
     Input: (props) => <CheckboxFieldTypeInput {...props} config={config} />,

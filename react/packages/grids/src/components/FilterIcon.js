@@ -1,0 +1,23 @@
+const FilterIcon = ({ onClick, isOpen }) => (
+  <button
+    onClick={onClick}
+    className="filter-icon-button"
+    aria-label="Toggle filters"
+    aria-expanded={isOpen}
+    style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '0.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}
+  >
+    <svg width="27" height="24" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M34.3333 1H1L14.3333 16.7667V27.6667L21 31V16.7667L34.3333 1Z" stroke="#1D2327" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  </button>
+);
+
+export default FilterIcon;

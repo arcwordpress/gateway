@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './gallery-style.css';
 
-// Input Component (for forms)
-const GalleryFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const GalleryControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
-    console.warn('GalleryFieldTypeInput: No "name" provided in config');
+    console.warn('Gallery FieldType: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -36,7 +35,6 @@ const GalleryFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -182,19 +180,8 @@ const GalleryFieldTypeInput = ({ config = {} }) => {
     containerClasses.push('gallery-field__container--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="gallery-field">
-      <label htmlFor={name} className="gallery-field__label">
-        {labelText}
-        {required && <span className="gallery-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="gallery-field__help">{help}</p>
-      )}
-
       <div className={containerClasses.join(' ')}>
         {images.length > 0 ? (
           <div className="gallery-field__preview">
@@ -330,15 +317,16 @@ const GalleryFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {fieldError && (
-        <p className="gallery-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const GalleryFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<GalleryControl config={config} />} />
+    );
+};
+
 const GalleryFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="gallery-field__display gallery-field__display--empty">-</span>;
@@ -360,7 +348,6 @@ const GalleryFieldTypeDisplay = ({ value, config }) => {
   return <span className="gallery-field__display gallery-field__display--empty">-</span>;
 };
 
-// Field Type Definition for registry
 export const galleryFieldType = {
   type: 'gallery',
   Input: GalleryFieldTypeInput,

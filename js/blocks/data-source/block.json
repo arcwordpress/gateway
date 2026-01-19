@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/data-source",
+  "title": "GT Data Source",
+  "category": "interactive",
+  "icon": "database",
+  "description": "Generic data source block that enables using Gateway collections with the WordPress Interactivity API.",
+  "attributes": {
+    "collectionSlug": {
+      "type": "string",
+      "default": ""
+    },
+    "query": {
+      "type": "object",
+      "default": {}
+    },
+    "namespace": {
+      "type": "string",
+      "default": "gateway/data-source"
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "viewScriptModule": "file:./build/view.js",
+  "textdomain": "gateway"
+}

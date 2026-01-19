@@ -51,9 +51,9 @@
 /**
  * Menu Styles
  * Component: Menu.js
- * BEM: .gty-admin-menu, .gty-admin-menu__*
+ * BEM: .gty-admin-header, .gty-admin-header__*
  */
-.gty-admin-menu {
+.gty-admin-header {
 	font-family: var(--font-lexend);
 	background-color: var(--gty-admin-header-bg-color);
 	box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03);
@@ -67,23 +67,25 @@
 }
 
 /* Semi-transparent header background while actively scrolling */
-.gty-admin-menu--scrolling {
+.gty-admin-header--scrolling {
 	background-color: rgba(247, 249, 250, 0.7); /* matches --gty-admin-header-bg-color with alpha */
 	backdrop-filter: blur(2px);
 }
 
 @media (max-width: 782px) {
-	.gty-admin-menu {
+	.gty-admin-header {
 		top: 46px;
 	}
 }
-.gty-admin-menu__container {
+
+.gty-admin-header__container {
 	max-width: 80rem;
 	margin: 0 auto;
 	padding-left: var(--gty-space-8);
 	padding-right: var(--gty-space-8);
 }
-.gty-admin-menu__row {
+
+.gty-admin-header__row {
 	display: flex;
 	align-items: center;
 	gap: var(--gty-space-8);
@@ -91,14 +93,14 @@
 	justify-content: flex-start;
 }
 
-.gty-admin-menu__right {
+.gty-admin-header__right {
 	margin-left: auto;
 	display: flex;
 	align-items: center;
     gap: var(--gty-space-4);
 }
 
-.gty-admin-menu__icon {
+.gty-admin-header__icon {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -109,27 +111,27 @@
 	transition: background 0.2s;
 }
 
-.gty-admin-menu__icon-svg {
+.gty-admin-header__icon-svg {
 	fill: none;
 	stroke: var(--gty-admin-primary-color);
 }
-.gty-admin-menu__brand {
+.gty-admin-header__brand {
 	display: flex;
 	align-items: center;
 }
-.gty-admin-menu__title {
+.gty-admin-header__title {
 	font-family: var(--font-lexend);
 	font-size: 1.25rem;
 	font-weight: 800;
 	color: var(--gty-admin-primary-color);
 	letter-spacing: 0.05em;
 }
-.gty-admin-menu__links {
+.gty-admin-header__links {
 	display: flex;
 	gap: var(--gty-space-4);
 	margin-left: 0;
 }
-.gty-admin-menu__link {
+.gty-admin-header__link {
 	display: inline-flex;
 	align-items: center;
 	font-size: 0.925rem;
@@ -139,7 +141,7 @@
 	transition: color 0.2s, border-color 0.2s;
 }
 
-.gty-admin-menu__link--active {
+.gty-admin-header__link--active {
 	color: var(--gty-admin-primary-color);
 }
 
@@ -443,3 +445,4 @@
     margin-top: 2rem;
   }
 }
+

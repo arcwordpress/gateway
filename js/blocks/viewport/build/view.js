@@ -1,0 +1,1 @@
+import{getContext as e,getElement as t,store as r}from"@wordpress/interactivity";r("gateway/viewport",{state:{get inViewport(){return e().inViewport||!1}},callbacks:{initViewport:()=>{const{ref:r}=t(),i=e(),n=new IntersectionObserver(e=>{e.forEach(e=>{i.inViewport=e.isIntersecting})},{threshold:0,rootMargin:"0px"});return n.observe(r),()=>{n.disconnect()}}}});

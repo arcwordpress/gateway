@@ -1,10 +1,11 @@
+// INTERNAL USE ONLY: These API helpers are not exported from the main package API.
+// Consumers should use the Gateway Data Package (@arcwp/gateway-data) directly for data access.
 import { collectionApi, getApiClient } from '@arcwp/gateway-data';
 
 /**
  * Get all collections
  */
 export const getCollections = async (options = {}) => {
-  console.log('[Gateway API] getCollections options:', options);
   const config = {};
   if (options.auth) {
     config.auth = options.auth;
@@ -16,7 +17,6 @@ export const getCollections = async (options = {}) => {
  * Get a single collection by key
  */
 export const getCollection = async (key, options = {}) => {
-  console.log('[Gateway API] getCollection options:', options);
   const config = {};
   if (options.auth) {
     config.auth = options.auth;
@@ -28,7 +28,6 @@ export const getCollection = async (key, options = {}) => {
  * Get a single record by ID
  */
 export const getRecord = async (endpoint, id, options = {}) => {
-  console.log('[Gateway API] getRecord options:', options);
   const client = getApiClient();
   const config = {};
   if (options.auth) {
@@ -42,7 +41,6 @@ export const getRecord = async (endpoint, id, options = {}) => {
  * Create a new record using the collection endpoint
  */
 export const createRecord = async (endpoint, data, options = {}) => {
-  console.log('[Gateway API] createRecord options:', options);
   const client = getApiClient();
   const config = {};
   if (options.auth) {
@@ -56,7 +54,6 @@ export const createRecord = async (endpoint, data, options = {}) => {
  * Update an existing record
  */
 export const updateRecord = async (endpoint, id, data, options = {}) => {
-  console.log('[Gateway API] updateRecord options:', options);
   const client = getApiClient();
   const config = {};
   if (options.auth) {

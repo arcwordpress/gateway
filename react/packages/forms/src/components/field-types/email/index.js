@@ -1,17 +1,18 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './email-style.css';
 
-// Input Component (for forms)
-const EmailFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const EmailControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
+
   const name = config.name;
   if (!name) {
     console.warn('EmailFieldInput: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -22,17 +23,8 @@ const EmailFieldTypeInput = ({ config = {} }) => {
     default: defaultValue = ''
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="email-field">
-      <label
-        htmlFor={name}
-        className="email-field__label"
-      >
-        {labelText}
-        {required && <span className="email-field__required">*</span>}
-      </label>
       <input
         type="email"
         id={name}
@@ -41,23 +33,20 @@ const EmailFieldTypeInput = ({ config = {} }) => {
         placeholder={placeholder}
         className={`email-field__input ${fieldError ? 'email-field__input--error' : ''}`}
       />
-      {help && (
-        <p className="email-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="email-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const EmailFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<EmailControl config={config} />} />
+    );
+};
+
 export const EmailFieldTypeDisplay = ({ value, config }) => {
-  // Handle null/undefined/empty values
   if (value === null || value === undefined || value === '') {
     return <span className="email-field__display email-field__display--empty">-</span>;
   }
-
   return (
     <a href={`mailto:${value}`} className="email-field__display email-field__display--link">
       {String(value)}
@@ -65,7 +54,6 @@ export const EmailFieldTypeDisplay = ({ value, config }) => {
   );
 };
 
-// Field Definition for registry
 export const emailFieldType = {
   type: 'email',
   Input: EmailFieldTypeInput,
@@ -75,7 +63,6 @@ export const emailFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useEmailField = (config) => {
   return useMemo(() => ({
     Input: (props) => <EmailFieldTypeInput {...props} config={config} />,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getCollection, createRecord, getRecord, updateRecord } from '../../services/api';
@@ -16,7 +16,6 @@ const FieldRenderer = React.memo(({ fieldConfig }) => {
     console.error('[Form] Field config missing type:', fieldConfig);
   } else {
     // Optionally, log all field configs for extra debugging
-    // console.log('[Form] Rendering field:', fieldConfig.name, 'type:', fieldConfig.type);
   }
   let Input;
   try {
@@ -30,7 +29,6 @@ const FieldRenderer = React.memo(({ fieldConfig }) => {
   return <Input config={fieldConfig} error={error} />;
 });
 
-// Change from FormBuilder to Form
 const Form = ({ collectionKey, recordId, apiAuth }) => {
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +67,6 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
       setLoading(true);
       setError(null);
       const response = await getCollection(collectionKey, { auth: apiAuth });
-      console.log('Collection response:', response);
       setCollection(response);
     } catch (err) {
       const errorMessage = err.response?.status === 404
@@ -90,7 +87,6 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
         throw new Error('No endpoint available for this collection');
       }
       const response = await getRecord(endpoint, recordId, { auth: apiAuth });
-      console.log('Record loaded:', response);
 
       // Populate form with existing data
       if (response.data) {
@@ -129,7 +125,6 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
         reset(); // Clear form only on create
       }
 
-      console.log('Save response:', response);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to save record');
       console.error('Submit error:', err);

@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import { getApiClient } from '@arcwp/gateway-data';
-import './style.css';
+import './post-object-style.css';
 
-const PostObjectFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const PostObjectControl = ({ config = {} }) => {
+
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -12,7 +14,6 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -39,7 +40,6 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -161,19 +161,8 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
     inputClasses.push('post-object-field__input--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   return (
     <div className="post-object-field">
-      <label htmlFor={name} className="post-object-field__label">
-        {labelText}
-        {required && <span className="post-object-field__required">*</span>}
-      </label>
-
-      {help && (
-        <p className="post-object-field__help">{help}</p>
-      )}
-
       <div className="post-object-field__wrapper" ref={dropdownRef}>
         {selectedPost ? (
           <div className={selectedClasses.join(' ')}>
@@ -284,12 +273,14 @@ const PostObjectFieldTypeInput = ({ config = {} }) => {
           </div>
         )}
       </div>
-
-      {fieldError && (
-        <p className="post-object-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const PostObjectFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<PostObjectControl config={config} />} />
+    );
 };
 
 const PostObjectFieldTypeDisplay = ({ value, config }) => {

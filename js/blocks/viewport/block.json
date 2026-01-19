@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/viewport",
+  "version": "1.0.0",
+  "title": "GT Viewport",
+  "category": "design",
+  "icon": "visibility",
+  "description": "A container block that detects when it enters the viewport and provides context to child blocks for animation triggers.",
+  "attributes": {
+    "inViewport": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "style": "file:./build/style-index.css",
+  "viewScriptModule": "file:./build/view.js",
+  "textdomain": "gateway"
+}

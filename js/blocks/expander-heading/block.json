@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/expander-heading",
+  "title": "Expander Heading",
+  "parent": ["gateway/expander"],
+  "category": "design",
+  "icon": "heading",
+  "description": "The clickable heading section of an expander block.",
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "textdomain": "gateway"
+}

@@ -1,0 +1,13 @@
+.gateway-field-list__grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 20px;
+}
+
+.gateway-field-list__blocks {
+  padding: 10px;
+}
+
+.gateway-field-list__form {
+  padding: 10px;
+}

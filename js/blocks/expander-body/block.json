@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/expander-body",
+  "title": "Expander Body",
+  "parent": ["gateway/expander"],
+  "category": "design",
+  "icon": "list-view",
+  "description": "The expandable body section of an expander block.",
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "textdomain": "gateway"
+}

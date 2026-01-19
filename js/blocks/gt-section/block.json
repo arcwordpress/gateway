@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/gt-section",
+  "title": "GT Section",
+  "category": "design",
+  "icon": "layout",
+  "description": "A simple wrapping container with background color control.",
+  "attributes": {
+    "backgroundColor": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css",
+  "textdomain": "gateway"
+}

@@ -1,29 +1,13 @@
-import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useEffect, useMemo } from '@wordpress/element';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import './style.css';
 
-// Input Component (for forms)
-const ButtonGroupFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
-  const name = config.name;
-  if (!name) {
-    console.warn('ButtonGroupFieldTypeInput: No "name" provided in config');
-    return null;
-  }
+// Button Group Control Component (for button rendering)
+const ButtonGroupControl = ({ config = {} }) => {
+  const { register, watch, setValue } = useGatewayForm();
+  const { name, options = [] } = config;
 
-  // Get error directly from context
-  const fieldError = formState.errors[name];
-
-  const {
-    label,
-    required = false,
-    options = [],
-    help,
-    helpText,
-    default: defaultValue
-  } = config;
-
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const currentValue = watch(name);
 
   // Normalize options to {label, value} format
@@ -34,27 +18,14 @@ const ButtonGroupFieldTypeInput = ({ config = {} }) => {
     return option;
   });
 
-  // Set default value only once on mount if undefined
-  useEffect(() => {
-    if (defaultValue && currentValue === undefined) {
-      setValue(name, defaultValue);
-    }
-  }, []);
-
   const handleClick = (value) => {
     setValue(name, value, { shouldValidate: true });
   };
 
   return (
-    <div className="button-group-field">
-      <label className="button-group-field__label">
-        {labelText}
-        {required && <span className="button-group-field__required">*</span>}
-      </label>
-
+    <>
       {/* Hidden input for form registration */}
       <input type="hidden" {...register(name)} />
-
       <div className="button-group-field__buttons" role="group">
         {normalizedOptions.map((option, index) => {
           const isFirst = index === 0;
@@ -81,14 +52,32 @@ const ButtonGroupFieldTypeInput = ({ config = {} }) => {
           );
         })}
       </div>
+    </>
+  );
+};
 
-      {(help || helpText) && (
-        <p className="button-group-field__help">{help || helpText}</p>
-      )}
-      {fieldError && (
-        <p className="button-group-field__error">{fieldError.message}</p>
-      )}
-    </div>
+// Input Component (for forms)
+const ButtonGroupFieldTypeInput = ({ config = {} }) => {
+  const { watch, setValue } = useGatewayForm();
+  const name = config.name;
+
+  if (!name) {
+    console.warn('ButtonGroupFieldTypeInput: No "name" provided in config');
+    return null;
+  }
+
+  const { default: defaultValue } = config;
+  const currentValue = watch(name);
+
+  // Set default value only once on mount if undefined
+  useEffect(() => {
+    if (defaultValue !== undefined && currentValue === undefined) {
+      setValue(name, defaultValue);
+    }
+  }, []);
+
+  return (
+    <Field config={config} fieldControl={<ButtonGroupControl config={config} />} />
   );
 };
 

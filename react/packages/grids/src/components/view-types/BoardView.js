@@ -71,7 +71,6 @@ const BoardView = ({
   // Infer lanes from data if not provided in config
   const lanes = useMemo(() => {
     if (configLanes && configLanes.length > 0) {
-      console.log('BoardView: Using configured lanes:', configLanes);
       return configLanes;
     }
 
@@ -79,8 +78,6 @@ const BoardView = ({
       console.warn('BoardView: No lanes configured and no data available to infer lanes from');
       return [];
     }
-
-    console.log('BoardView: No lanes configured, inferring from data...');
 
     // Extract unique IDs and titles from data
     const uniqueLanes = new Map();
@@ -100,8 +97,6 @@ const BoardView = ({
       id: id,
       title: title
     }));
-
-    console.log('BoardView: Inferred lanes from data:', inferredLanes);
 
     return inferredLanes;
   }, [configLanes, data, groupByField]);
@@ -145,12 +140,6 @@ const BoardView = ({
       return acc;
     }, {});
 
-    console.log('BoardView - Grouped data:', {
-      groupByField,
-      groupKeys: Object.keys(grouped),
-      groupCounts: Object.entries(grouped).map(([key, items]) => ({ [key]: items.length })),
-    });
-
     // Build columns structure
     const boardColumns = lanes.map(lane => {
       if (!lane || !lane.id) {
@@ -160,10 +149,6 @@ const BoardView = ({
       
       const laneId = String(lane.id);
       const laneRecords = grouped[laneId] || [];
-      
-      console.log(`BoardView - Lane "${lane.title}" (id: ${laneId}):`, {
-        recordCount: laneRecords.length,
-      });
       
       return {
         id: laneId,
@@ -203,11 +188,6 @@ const BoardView = ({
       });
     }
 
-    console.log('BoardView - Final board model:', {
-      columnCount: boardColumns.length,
-      columns: boardColumns.map(col => ({ id: col.id, title: col.title, cardCount: col.cards.length })),
-    });
-
     return { columns: boardColumns };
   }, [data, groupByField, lanes, getCardFromRecord]);
 
@@ -234,7 +214,6 @@ const BoardView = ({
 
   // Handle card move between columns
   const handleCardMove = async (card, source, destination) => {
-    console.log('Card moved:', { card, source, destination });
 
     const namespace = gridContext.namespace;
     const route = gridContext.route;
@@ -250,7 +229,6 @@ const BoardView = ({
 
     // Only update if moved to different column
     if (sourceColumnId === destColumnId) {
-      console.log('Card moved within same column, no status update needed');
       return;
     }
 
@@ -262,11 +240,7 @@ const BoardView = ({
         [updateField]: destColumnId === UNCATEGORIZED_LANE_ID ? null : destColumnId,
       };
 
-      console.log(`Updating record ${card.id} ${updateField} to:`, updateData[updateField]);
-
       await collectionApi.updateRecord(namespace, route, card.id, updateData, { auth });
-
-      console.log(`Successfully updated record ${card.id}`);
 
       // Call onRefresh callback if provided in context
       if (gridContext.onRefresh) {

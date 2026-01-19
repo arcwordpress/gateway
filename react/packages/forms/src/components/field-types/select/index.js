@@ -1,9 +1,11 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import './style.css';
 
-const SelectFieldTypeInput = ({ config = {} }) => {
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
+const SelectControl = ({ config = {} }) => {
+
+  const { register, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +13,6 @@ const SelectFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   let options = config.options || [];
@@ -31,8 +32,6 @@ const SelectFieldTypeInput = ({ config = {} }) => {
     default: defaultValue = ''
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
   const selectClasses = ['select-field__select'];
   if (fieldError) {
     selectClasses.push('select-field__select--error');
@@ -40,10 +39,6 @@ const SelectFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="select-field">
-      <label htmlFor={name} className="select-field__label">
-        {labelText}
-        {required && <span className="select-field__required">*</span>}
-      </label>
       <select
         id={name}
         {...register(name)}
@@ -62,14 +57,14 @@ const SelectFieldTypeInput = ({ config = {} }) => {
           );
         })}
       </select>
-      {help && (
-        <p className="select-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="select-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const SelectFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<SelectControl config={config} />} />
+    );
 };
 
 const SelectFieldTypeDisplay = ({ value, config }) => {
@@ -104,7 +99,7 @@ export const selectFieldType = {
   Display: SelectFieldTypeDisplay,
   defaultConfig: {
     options: [],
-    placeholder: 'Select an option'
+    placeholder: 'Select an option' // @TODO is placeholder applicable to a select field type?
   },
 };
 

@@ -1,0 +1,34 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field__label {
+  font-weight: 500;
+  color: var(--color-text, #111);
+}
+
+.field__help-icon {
+  color: var(--color-muted, #666);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.field__instructions {
+  font-size: 0.875rem;
+  color: var(--color-muted, #666);
+}
+
+.field__control {
+
+}
+
+.field__control--textarea {
+  min-height: 6rem;
+  resize: vertical;
+}

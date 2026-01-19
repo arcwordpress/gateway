@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@100..900&family=Geist:wght@100..900&display=swap');
+
+@theme {
+  --font-family-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-family-lexend: 'Lexend Exa', system-ui, -apple-system, sans-serif;
+}
+
+.font-lexend {
+  font-family: var(--font-family-lexend);
+}

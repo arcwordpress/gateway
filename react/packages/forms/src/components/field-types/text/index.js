@@ -1,25 +1,28 @@
 import { useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import './style.css';
 
 // Input Component (for forms)
-const TextFieldTypeInput = ({ config = {} }) => {
+const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
 
-  const { register, formState } = useGatewayForm(); // Get RHF methods from context
-  const name = config.name;
-  if (!name) {
+  const { register, formState, refs } = useGatewayForm(); // Get RHF methods from context
+
+  if (!config.name) {
     console.warn('TextFieldTypeInput: No "name" provided in config');
     return null;
   }
 
   // Get error directly from context
-  const fieldError = formState.errors[name];
+  const fieldError = formState.errors[config.name];
 
   const {
+    name,
     label,
     placeholder = '',
     required = false,
     help = '',
+    instructions = '',
     default: defaultValue = ''
   } = config;
 
@@ -28,32 +31,22 @@ const TextFieldTypeInput = ({ config = {} }) => {
     inputClasses.push('text-field__input--error');
   }
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  // The actual input/control for the text field
+  const TextInputControl = () => (
+    <input
+      type="text"
+      name={name}
+      placeholder={placeholder}
+      defaultValue={defaultValue}
+      required={required}
+      className={inputClasses.join(' ')}
+      {...register(name)}
+      {...props}
+    />
+  );
 
   return (
-    <div className="text-field">
-      <label
-        htmlFor={name}
-        className="text-field__label"
-      >
-        {labelText}
-        {required && <span className="text-field__required">*</span>}
-      </label>
-      <input
-        type="text"
-        id={name}
-        {...register(name)}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        className={inputClasses.join(' ')}
-      />
-      {help && (
-        <p className="text-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="text-field__error">{fieldError.message}</p>
-      )}
-    </div>
+    <Field config={config} fieldControl={<TextInputControl />} />
   );
 };
 
@@ -72,9 +65,11 @@ export const textFieldType = {
   Input: TextFieldTypeInput,
   Display: TextFieldTypeDisplay,
   defaultConfig: {
+    name: '',
     label: '',
     placeholder: '',
     help: '',
+    instructions: '',
     required: false,
     default: ''
   }

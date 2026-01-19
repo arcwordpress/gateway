@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/grid",
+  "title": "Grid",
+  "category": "layout",
+  "icon": "grid-view",
+  "description": "A grid block with 4 equal columns",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "gateway"
+}

@@ -74,20 +74,6 @@ function EventForm() {
 
 ### Providers
 
-#### `<GatewayDataProvider>`
-
-Optional root provider for global API configuration. If not used, defaults to `window.wpApiSettings` or `window.gatewayAdminScript`.
-
-```jsx
-<GatewayDataProvider apiUrl="/wp-json/" auth={{ username: 'admin', password: 'pass' }}>
-  <App />
-</GatewayDataProvider>
-```
-
-**Props:**
-- `apiUrl` (string, optional): Base API URL
-- `auth` (object, optional): `{ username, password }` for Basic Auth
-
 #### `<CollectionProvider>`
 
 Main provider for a specific collection. Manages both collection metadata and records.
@@ -193,14 +179,6 @@ await remove();
 - `remove` (function): Delete this record
 - `refresh` (function): Refresh all records
 
-#### `useGatewayData()`
-
-Access global API configuration (rarely needed)
-
-```jsx
-const { apiUrl, auth } = useGatewayData();
-```
-
 ### Direct API Access
 
 You can also import API functions directly for use outside of React components:
@@ -227,22 +205,17 @@ await collectionApi.deleteRecord('gateway/v1', 'events', 123);
 
 The package supports multiple authentication methods with automatic fallback:
 
-1. **Provided auth** (highest priority)
-   ```jsx
-   <GatewayDataProvider auth={{ username: 'admin', password: 'pass' }}>
-   ```
-
-2. **window.gatewayAuth** (for headless environments)
+1. **window.gatewayAuth** (for headless environments)
    ```js
    window.gatewayAuth = { username: 'admin', password: 'pass' };
    ```
 
-3. **window.gatewayAdminScript.nonce** (WordPress nonce)
+2. **window.gatewayAdminScript.nonce** (WordPress nonce)
    ```php
    wp_localize_script('my-script', 'gatewayAdminScript', ['nonce' => wp_create_nonce('wp_rest')]);
    ```
 
-4. **window.wpApiSettings.nonce** (fallback WordPress nonce)
+3. **window.wpApiSettings.nonce** (fallback WordPress nonce)
 
 ## Advanced Usage
 
@@ -262,22 +235,6 @@ function App() {
     </>
   );
 }
-```
-
-### Nested Providers with Custom Auth
-
-```jsx
-<GatewayDataProvider apiUrl="https://api.example.com/wp-json/">
-  <CollectionProvider collectionKey="events">
-    <PublicEvents />
-  </CollectionProvider>
-
-  <GatewayDataProvider auth={{ username: 'admin', password: 'secret' }}>
-    <CollectionProvider collectionKey="private-events">
-      <AdminEvents />
-    </CollectionProvider>
-  </GatewayDataProvider>
-</GatewayDataProvider>
 ```
 
 ### Query Parameters

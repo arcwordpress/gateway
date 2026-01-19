@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './style.css';
+import './date-picker-style.css';
 
-// Input Component (for forms)
-const DatePickerFieldTypeInput = ({ config = {}, error }) => {
+const DatePickerControl = ({ config = {}, error }) => {
   const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
@@ -27,11 +27,9 @@ const DatePickerFieldTypeInput = ({ config = {}, error }) => {
     maxDate,
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const currentValue = watch(name);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Parse initial value
   useEffect(() => {
     if (currentValue) {
       const date = new Date(currentValue);
@@ -41,7 +39,6 @@ const DatePickerFieldTypeInput = ({ config = {}, error }) => {
     }
   }, [currentValue]);
 
-  // Set initial/default value only once on mount
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
       setValue(name, defaultValue);
@@ -49,9 +46,8 @@ const DatePickerFieldTypeInput = ({ config = {}, error }) => {
   }, []);
 
   const handleChange = (date) => {
-    setSelectedDate(date);
 
-    // Format date as YYYY-MM-DD for database storage
+    setSelectedDate(date);
     if (date) {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -64,14 +60,7 @@ const DatePickerFieldTypeInput = ({ config = {}, error }) => {
 
   return (
     <div className="date-picker-field">
-      {/* Hidden input for form registration */}
       <input type="hidden" {...register(name)} />
-
-      <label htmlFor={name} className="date-picker-field__label">
-        {labelText}
-        {required && <span className="date-picker-field__required">*</span>}
-      </label>
-
       <DatePicker
         selected={selectedDate}
         onChange={handleChange}
@@ -85,25 +74,22 @@ const DatePickerFieldTypeInput = ({ config = {}, error }) => {
         dropdownMode="select"
         className={`date-picker-field__input ${fieldError ? 'date-picker-field__input--error' : ''}`}
       />
-
-      {help && (
-        <p className="date-picker-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="date-picker-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
 };
 
-// Display Component (for grids and read-only views)
+const DatePickerFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<DatePickerControl config={config} />} />
+    );
+};
+
 const DatePickerFieldTypeDisplay = ({ value, config }) => {
-  // Handle null/undefined/empty values
+
   if (value === null || value === undefined || value === '') {
     return <span className="date-picker-field__display date-picker-field__display--empty">-</span>;
   }
 
-  // Parse and format the date
   const date = new Date(value);
   if (isNaN(date.getTime())) {
     return <span className="date-picker-field__display date-picker-field__display--invalid">Invalid date</span>;
@@ -118,7 +104,6 @@ const DatePickerFieldTypeDisplay = ({ value, config }) => {
   return <span className="date-picker-field__display">{formattedDate}</span>;
 };
 
-// Field Type Definition for registry
 export const datePickerFieldType = {
   type: 'date-picker',
   Input: DatePickerFieldTypeInput,
@@ -129,7 +114,6 @@ export const datePickerFieldType = {
   },
 };
 
-// Hook for easy usage
 export const useDatePickerField = (config) => {
   return useMemo(() => ({
     Input: (props) => <DatePickerFieldTypeInput {...props} config={config} />,

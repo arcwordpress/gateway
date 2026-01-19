@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { createFieldRegister, createMockFormState } from './fieldRegistration';
 
 /**
  * Utility to create a consistent GatewayFormContext value
@@ -9,6 +10,7 @@ import { createContext, useContext } from 'react';
  * @param {string} error - Error message
  * @param {object} fieldErrors - Field-specific errors (for auto-save)
  * @param {object} updatingFields - Fields currently updating (for auto-save)
+ * @param {Function} customRegister - Custom register function (for non-RHF contexts like Gutenberg)
  * @returns {object} Context value for GatewayFormContext.Provider
  */
 export const createGatewayFormContext = (
@@ -18,24 +20,57 @@ export const createGatewayFormContext = (
   loading,
   error,
   fieldErrors = {},
-  updatingFields = {}
-) => ({
-  // RHF methods
-  ...methods,
-  // Shared form data
-  collection,
-  recordId,
-  loading,
-  error,
-  fieldErrors,
-  updatingFields,
-  isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
-  getFieldError: (fieldName) => fieldErrors[fieldName] || null,
-  getFieldConfig: (fieldName) => {
-    if (!collection?.fields?.[fieldName]) return null;
-    return { name: fieldName, ...collection.fields[fieldName] };
-  },
-});
+  updatingFields = {},
+  customRegister = null
+) => {
+  const refs = {
+    fields: {}
+  };
+
+  // Use custom register if provided, otherwise use RHF register
+  const baseRegister = customRegister || methods?.register;
+  const register = createFieldRegister(baseRegister);
+
+  // Use RHF formState if available, otherwise create mock
+  const formState = methods?.formState || createMockFormState(fieldErrors);
+
+  return {
+    // Core registration method (abstracted to work with or without RHF)
+    register,
+    formState,
+    // Other RHF methods (may be undefined in non-RHF context)
+    setValue: methods?.setValue,
+    getValues: methods?.getValues,
+    watch: methods?.watch,
+    control: methods?.control,
+    handleSubmit: methods?.handleSubmit,
+    reset: methods?.reset,
+    trigger: methods?.trigger,
+    clearErrors: methods?.clearErrors,
+    setError: methods?.setError,
+    // Shared form data
+    collection,
+    recordId,
+    loading,
+    error,
+    fieldErrors,
+    updatingFields,
+    // Refs management
+    refs,
+    registerFieldRefs: (fieldName, fieldRefs) => {
+      refs.fields[fieldName] = fieldRefs;
+    },
+    unregisterFieldRefs: (fieldName) => {
+      delete refs.fields[fieldName];
+    },
+    isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
+    getFieldError: (fieldName) => fieldErrors[fieldName] || null,
+    getFieldConfig: (fieldName) => {
+      if (!collection?.fields?.[fieldName]) return null;
+      return { name: fieldName, ...collection.fields[fieldName] };
+    },
+  };
+};
 
 export const GatewayFormContext = createContext();
 

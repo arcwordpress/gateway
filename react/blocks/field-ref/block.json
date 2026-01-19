@@ -1,0 +1,32 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/field-ref",
+  "title": "Gateway Field Ref",
+  "category": "widgets",
+  "icon": "admin-generic",
+  "description": "A custom field ref block for Gateway.",
+  "keywords": ["gateway", "field", "ref", "custom"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "attributes": {
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "type": {
+      "type": "string",
+      "default": "text"
+    },
+    "label": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false
+  },
+  "ancestor": ["gateway/form2"],
+  "usesContext": ["gateway/collection-fields", "gateway/collection-key"],
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css"
+}

@@ -1,63 +1,66 @@
-# @gateway/forms
+# @arcwp/gateway-forms
 
-Gateway Forms is a React component library providing form field types, validation, and API integration for WordPress collections.
+Gateway Forms is a React component library providing form field types, validation, and API integration for Gateway collections.
 
 ## Installation
 
-This package is part of the Gateway workspace and uses npm workspaces.
+This package is part of the Gateway WordPress plugin.
+
 
 ## Usage
-
 ```javascript
-import { FormBuilder, fieldTypes } from '@gateway/forms';
+import { AppForm, useFieldType } from '@arcwp/gateway-forms';
 
-// Use FormBuilder component
-<FormBuilder collectionKey="my_collection" recordId={123} />
+// Example field definitions (could come from JSON or your API)
+const fields = [
+	{ name: 'first_name', type: 'text', label: 'First name', required: true },
+	{ name: 'email', type: 'email', label: 'Email', required: true },
+	{ name: 'bio', type: 'textarea', label: 'Bio', rows: 4 },
+];
 
-// Or use individual field components
-import { TextField, SelectField, DatePickerField } from '@gateway/forms';
-```
+// Per-field wrapper to safely call the hook
+function Field({ config }) {
+	const { Input } = useFieldType(config);
+	return <Input config={config} />;
+}
 
-## Components
+export function MyProfileForm() {
+	return (
+		<AppForm collection="users" recordId={123} autoSave onSuccess={(data) => console.log('Saved', data)}>
+			{fields.map((f) => (
+				<Field key={f.name} config={f} />
+			))}
+		</AppForm>
+	);
+}
 
-### FormBuilder
-Main form component that dynamically generates forms based on collection schema.
-
-### Field Types
-- TextField
-- TextareaField
-- SelectField
-- CheckboxField
-- RadioField
+### Field Types Reference
 - ButtonGroupField
-- NumberField
-- RangeField
-- EmailField
-- PasswordField
-- URLField
-- DatePickerField
-- TimePickerField
-- DateTimePickerField
+- CheckboxField
 - ColorPickerField
-- MarkdownField
-- WysiwygField
-- ImageField
+- DatePickerField
+- DateTimePickerField
+- EmailField
 - FileField
 - GalleryField
-- LinkField
-- OEmbedField
-- PostObjectField
-- UserField
-- RelationField
-- SortableChildrenField
-- ReadOnlyField
 - HiddenField
-
-## Services
-
-- API service for WordPress REST API integration
-- Collection service for fetching and managing collections
-
-## Utilities
-
-- Zod schema generator for form validation
+- ImageField
+- LinkField
+- MarkdownField
+- NumberField
+- OEmbedField
+- PasswordField
+- PostObjectField
+- RadioField
+- RangeField
+- ReadOnlyField
+- RelationField
+- SelectField
+- SlugField
+- SortableChildrenField
+- TextareaField
+- TextField
+- TimePickerField
+- URLField
+- UserField
+- WysiwygField

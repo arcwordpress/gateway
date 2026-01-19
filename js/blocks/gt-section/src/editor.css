@@ -1,0 +1,20 @@
+/**
+ * GT Section Block - Editor Styles
+ */
+
+.gt-section-block {
+	min-height: 50px;
+	padding: 20px;
+	border: 1px dashed #ccc;
+	transition: background-color 0.2s ease;
+}
+
+.gt-section-block:hover {
+	border-color: #999;
+}
+
+/* Show a placeholder when the section is empty */
+.gt-section-block.is-selected {
+	border-color: #007cba;
+	border-style: solid;
+}

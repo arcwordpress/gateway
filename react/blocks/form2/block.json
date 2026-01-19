@@ -1,0 +1,18 @@
+{
+  "apiVersion": 3,
+  "name": "gateway/form2",
+  "title": "Gateway Form 2",
+  "category": "widgets",
+  "icon": "admin-generic",
+  "description": "A custom form block for Gateway.",
+  "keywords": ["gateway", "form", "custom"],
+  "version": "1.0.0",
+  "textdomain": "gateway",
+  "supports": {
+    "html": false
+  },
+  "parent": ["gateway/form-list"],
+  "usesContext": ["gateway/collection-fields", "gateway/collection-key"],
+  "editorScript": "file:./build/index.js",
+  "editorStyle": "file:./build/index.css"
+}

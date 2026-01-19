@@ -1,0 +1,1 @@
+import{getContext as e,store as t}from"@wordpress/interactivity";t("gateway/expander",{state:{get isOpen(){return e().isOpen||!1}},actions:{toggle:()=>{const t=e();t.isOpen=!t.isOpen},handleKeydown:t=>{if(13===t.keyCode||32===t.keyCode){t.preventDefault();const n=e();n.isOpen=!n.isOpen}}}});

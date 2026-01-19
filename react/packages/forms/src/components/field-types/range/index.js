@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
-import { useGatewayForm } from '@arcwp/gateway-forms'; // Import the shared context hook
-import './style.css';
+import { useGatewayForm } from '@arcwp/gateway-forms';
+import Field from '../../field';
+import './range-style.css';
 
-const RangeFieldTypeInput = ({ config = {} }) => {
-  const { register, setValue, watch, formState } = useGatewayForm(); // Get RHF methods from context
+const RangeControl = ({ config = {} }) => {
+  const { register, setValue, watch, formState } = useGatewayForm();
   const name = config.name;
   
   if (!name) {
@@ -11,7 +12,6 @@ const RangeFieldTypeInput = ({ config = {} }) => {
     return null;
   }
 
-  // Get error directly from context
   const fieldError = formState.errors[name];
 
   const {
@@ -27,9 +27,7 @@ const RangeFieldTypeInput = ({ config = {} }) => {
     help = ''
   } = config;
 
-  const labelText = label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const initialValue = defaultValue ?? min;
-
   const [currentValue, setCurrentValue] = useState(initialValue);
   const watchedValue = watch(name);
 
@@ -37,7 +35,6 @@ const RangeFieldTypeInput = ({ config = {} }) => {
     register(name);
   }, [name, register]);
 
-  // Initialize value on mount
   useEffect(() => {
     if (watchedValue === undefined && defaultValue !== undefined) {
       setValue(name, defaultValue);
@@ -61,11 +58,6 @@ const RangeFieldTypeInput = ({ config = {} }) => {
 
   return (
     <div className="range-field">
-      <label htmlFor={name} className="range-field__label">
-        {labelText}
-        {required && <span className="range-field__required">*</span>}
-      </label>
-
       <div className="range-field__wrapper">
         <div className="range-field__slider-container">
           <div className="range-field__slider-wrapper">
@@ -112,15 +104,14 @@ const RangeFieldTypeInput = ({ config = {} }) => {
           </div>
         </div>
       </div>
-
-      {help && (
-        <p className="range-field__help">{help}</p>
-      )}
-      {fieldError && (
-        <p className="range-field__error">{fieldError.message}</p>
-      )}
     </div>
   );
+};
+
+const RangeFieldTypeInput = ({ config = {} }) => {
+    return ( 
+        <Field config={config} fieldControl={<RangeControl config={config} />} />
+    );
 };
 
 const RangeFieldTypeDisplay = ({ value, config }) => {

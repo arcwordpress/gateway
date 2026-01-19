@@ -1,9 +1,26 @@
-export { AppForm } from './components/form-types/AppForm';
+// Note: API functions in './services/api' are for internal use only and are not exported from the main package API.
+
+// Form type component exports.
 export { Form } from './components/form-types/Form';
-export { useGatewayForm, useGatewayFormField, createGatewayFormContext, GatewayFormContext } from './utils/gatewayFormContext';
-export * from './services/api';
-export * from './utils/zodSchemaGenerator';
-export * from './fieldTypeRegistry';
+export { AppForm } from './components/form-types/AppForm';
+
+// Context and services exports.
+export {
+  useGatewayForm,
+  useGatewayFormField,
+  createGatewayFormContext,
+  GatewayFormContext
+} from './utils/gatewayFormContext';
+
+// Field registration abstraction exports.
+export {
+  createFieldRegister,
+  createMockFormState,
+  createGutenbergRegister
+} from './utils/fieldRegistration';
+
+// @TODO: Refactor to remove getFieldLabel from zodSchemaGenerator and move to a more appropriate utility module.
+export { generateZodSchema, getFieldLabel } from './utils/zodSchemaGenerator';
 
 // Field Registry System
 export {
@@ -15,6 +32,15 @@ export {
   getFieldTypeDisplay,
   getFieldTypeInput,
 } from './fieldTypeRegistry';
+
+// Gutenberg Block Adapter
+export {
+  GutenbergFieldProvider,
+  GutenbergField,
+  GutenbergFieldGroup,
+  useGutenbergField,
+  useGutenbergFieldWithContext
+} from './adapters/gutenbergFieldAdapter';
 
 // Field type exports.
 export { useRelationField } from './components/field-types/relation';
@@ -39,16 +65,12 @@ export { useRadioField } from './components/field-types/radio';
 export { useRangeField } from './components/field-types/range';
 export { useReadOnlyField } from './components/field-types/readonly';
 export { useSelectField } from './components/field-types/select';
-export { useSortableChildrenField } from './components/field-types/sortable-children';
 export { useTextareaField } from './components/field-types/textarea';
 export { useTimePickerField } from './components/field-types/time-picker';
 export { useUrlField } from './components/field-types/url';
 export { useUserField } from './components/field-types/user';
 export { useWysiwygField } from './components/field-types/wysiwyg';
 
-// Re-export everything from fieldTypeRegistry (as in original)
-export * from './fieldTypeRegistry';
-
-// Initialize field types when the package is imported (as in original)
+// Initialize field types when the package is imported.
 import { initializeFieldTypes } from './registerInternalFieldTypes';
 initializeFieldTypes();

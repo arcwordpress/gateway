@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppForm } from '@arcwp/gateway-forms';
 import { useTextField, useEmailField, useTextareaField } from '@arcwp/gateway-fields';
 
