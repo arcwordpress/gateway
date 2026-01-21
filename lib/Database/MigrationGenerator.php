@@ -359,6 +359,189 @@ class MigrationGenerator
     }
 
     /**
+     * Generate migration code from raw collection data (JSON-based)
+     * Used for Builder (Exta) collections that aren't registered yet
+     *
+     * @param array $collectionData Collection data array with 'key', 'title', 'fields'
+     * @param string $namespace Plugin namespace (e.g., 'MyExtension')
+     * @return array ['code' => string, 'className' => string, 'notes' => array]
+     */
+    public static function generateFromData($collectionData, $namespace = null)
+    {
+        $key = $collectionData['key'] ?? null;
+        $title = $collectionData['title'] ?? null;
+        $fields = $collectionData['fields'] ?? [];
+
+        if (!$key) {
+            throw new \InvalidArgumentException('Collection key is required');
+        }
+
+        // Generate class name
+        $className = self::getClassNameFromKey($key);
+
+        // Generate table name from key
+        $tableName = $key;
+
+        // Track notes for the developer
+        $notes = [];
+        $columns = [];
+
+        // Always start with id
+        $columns[] = "id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY";
+
+        // Process fields
+        foreach ($fields as $field) {
+            $fieldName = $field['name'] ?? null;
+            if (!$fieldName) {
+                $notes[] = "Skipping field without name";
+                continue;
+            }
+
+            $columnDefinition = self::getColumnDefinitionFromField($field, $notes);
+            $columns[] = $columnDefinition;
+        }
+
+        // Add timestamp columns (always include for consistency)
+        $columns[] = "created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
+        $columns[] = "updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+
+        // Generate the PHP class code
+        $code = self::generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace);
+
+        return [
+            'code' => $code,
+            'className' => $className,
+            'tableName' => $tableName,
+            'notes' => $notes,
+        ];
+    }
+
+    /**
+     * Get class name from collection key
+     *
+     * @param string $key
+     * @return string
+     */
+    private static function getClassNameFromKey($key)
+    {
+        $className = str_replace(['-', '_'], ' ', $key);
+        $className = ucwords($className);
+        $className = str_replace(' ', '', $className);
+        return $className . 'Migration';
+    }
+
+    /**
+     * Get column definition from field data
+     *
+     * @param array $field
+     * @param array &$notes
+     * @return string
+     */
+    private static function getColumnDefinitionFromField($field, &$notes)
+    {
+        $fieldName = $field['name'];
+        $fieldType = $field['type'] ?? 'text';
+        $required = $field['required'] ?? false;
+        $default = $field['default'] ?? null;
+
+        // Determine database column type
+        $dbType = self::$fieldTypeMap[$fieldType] ?? 'VARCHAR(255)';
+
+        // Build the column definition
+        $definition = "{$fieldName} {$dbType}";
+
+        if ($required) {
+            $definition .= " NOT NULL";
+        } else {
+            $definition .= " NULL";
+        }
+
+        // Add default value if specified
+        if ($default !== null) {
+            if (is_string($default)) {
+                $definition .= " DEFAULT '" . esc_sql($default) . "'";
+            } elseif (is_bool($default)) {
+                $definition .= " DEFAULT " . ($default ? '1' : '0');
+            } else {
+                $definition .= " DEFAULT {$default}";
+            }
+        } elseif ($required && in_array($fieldType, ['text', 'textarea', 'wysiwyg', 'editor'])) {
+            // Text fields that are required should default to empty string
+            $definition .= " DEFAULT ''";
+        }
+
+        return $definition;
+    }
+
+    /**
+     * Generate class code with namespace support
+     *
+     * @param string $className
+     * @param string $tableName
+     * @param array $columns
+     * @param array $notes
+     * @param string|null $namespace
+     * @return string
+     */
+    private static function generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace = null)
+    {
+        // Format columns for the SQL statement
+        $columnsStr = implode(",\n            ", $columns);
+
+        // Generate notes section
+        $notesSection = '';
+        if (!empty($notes)) {
+            $notesSection = "\n    /**\n     * NOTES:\n";
+            foreach ($notes as $note) {
+                $notesSection .= "     * - {$note}\n";
+            }
+            $notesSection .= "     */\n";
+        }
+
+        // Build code
+        $code = "<?php\n\n";
+
+        if ($namespace) {
+            $code .= "namespace {$namespace}\\Database;\n\n";
+        }
+
+        $code .= "// Exit if accessed directly\n";
+        $code .= "if (!defined('ABSPATH')) {\n";
+        $code .= "    exit;\n";
+        $code .= "}\n\n";
+
+        $code .= "/**\n";
+        $code .= " * Database Migration: {$className}\n";
+        $code .= " *\n";
+        $code .= " * This class creates the database table for the collection.\n";
+        $code .= " * Auto-generated by Gateway Builder.\n";
+        $code .= " */\n";
+        $code .= "class {$className}\n";
+        $code .= "{\n";
+        $code .= $notesSection;
+        $code .= "    /**\n";
+        $code .= "     * Create or update the database table\n";
+        $code .= "     *\n";
+        $code .= "     * This method uses WordPress's dbDelta() function which safely\n";
+        $code .= "     * handles both table creation and updates.\n";
+        $code .= "     */\n";
+        $code .= "    public static function create()\n";
+        $code .= "    {\n";
+        $code .= "        global \$wpdb;\n\n";
+        $code .= "        \$table_name = \$wpdb->prefix . '{$tableName}';\n";
+        $code .= "        \$charset_collate = \$wpdb->get_charset_collate();\n\n";
+        $code .= "        \$sql = \"CREATE TABLE \$table_name (\n";
+        $code .= "            {$columnsStr}\n";
+        $code .= "        ) \$charset_collate;\";\n\n";
+        $code .= "        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');\n";
+        $code .= "        dbDelta(\$sql);\n";
+        $code .= "    }\n";
+        $code .= "}\n";
+
+        return $code;
+    }
+
+    /**
      * Get all extensions that have the standard directory structure
      *
      * @return array Array of Extension instances

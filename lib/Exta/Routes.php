@@ -143,6 +143,9 @@ class Routes
             error_log('[Gateway] Successfully generated collection class for: ' . $collection_key);
         }
 
+        // Generate and run database migration
+        $migration_result = $this->generateAndRunMigration($json_data, $extension_key);
+
         // Load extension data and merge all collections
         $extension_file = $extension_dir . '/extension.json';
         $extension_data = [];
@@ -178,11 +181,18 @@ class Routes
             'file_path' => $file_path,
             'collection' => $json_data,
             'extension' => $extension_data,
-            'class_generated' => $class_generated
+            'class_generated' => $class_generated,
+            'migration' => $migration_result
         ];
 
         if (!$class_generated) {
             $response_data['message'] .= ', but PHP class generation failed (check error logs)';
+        }
+
+        if ($migration_result['migration_ran']) {
+            $response_data['message'] .= '. Database table created/updated.';
+        } elseif (isset($migration_result['error'])) {
+            $response_data['message'] .= '. Migration failed: ' . $migration_result['error'];
         }
 
         return new \WP_REST_Response($response_data, 200);
@@ -283,6 +293,9 @@ class Routes
             error_log('[Gateway] Successfully regenerated collection class for: ' . $new_collection_key);
         }
 
+        // Generate and run database migration
+        $migration_result = $this->generateAndRunMigration($json_data, $extension_key);
+
         // If key changed, delete old JSON and old PHP class file
         if ($original_collection_key !== $new_collection_key) {
             unlink($old_file_path);
@@ -302,11 +315,18 @@ class Routes
             'key_changed' => $original_collection_key !== $new_collection_key,
             'old_key' => $original_collection_key,
             'new_key' => $new_collection_key,
-            'class_generated' => $class_generated
+            'class_generated' => $class_generated,
+            'migration' => $migration_result
         ];
 
         if (!$class_generated) {
             $response_data['message'] .= ', but PHP class regeneration failed (check error logs)';
+        }
+
+        if ($migration_result['migration_ran']) {
+            $response_data['message'] .= '. Database table updated.';
+        } elseif (isset($migration_result['error'])) {
+            $response_data['message'] .= '. Migration failed: ' . $migration_result['error'];
         }
 
         return new \WP_REST_Response($response_data, 200);
@@ -676,6 +696,103 @@ class Routes
             return [
                 'activated' => false,
                 'error' => 'Exception during plugin activation: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Generate and run database migration for a collection
+     *
+     * @param array $collectionData Collection data with 'key', 'title', 'fields'
+     * @param string $extension_key Extension key
+     * @return array Result with 'success', 'migration_generated', 'migration_ran', 'file_path', 'error'
+     */
+    private function generateAndRunMigration($collectionData, $extension_key)
+    {
+        try {
+            // Only generate migration if there are fields
+            if (empty($collectionData['fields'])) {
+                return [
+                    'success' => true,
+                    'migration_generated' => false,
+                    'migration_ran' => false,
+                    'message' => 'No fields defined, skipping migration',
+                    'file_path' => null,
+                ];
+            }
+
+            $plugin_slug = str_replace('_', '-', $extension_key);
+            $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+            // Generate migration code from collection data
+            $migration = \Gateway\Database\MigrationGenerator::generateFromData($collectionData, $namespace);
+
+            // Create Database directory if it doesn't exist
+            $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+            $database_dir = $plugin_dir . '/lib/Database';
+
+            if (!is_dir($database_dir)) {
+                if (!wp_mkdir_p($database_dir)) {
+                    return [
+                        'success' => false,
+                        'migration_generated' => false,
+                        'migration_ran' => false,
+                        'error' => 'Failed to create Database directory',
+                        'file_path' => null,
+                    ];
+                }
+            }
+
+            // Save migration file
+            $migration_file = $database_dir . '/' . $migration['className'] . '.php';
+            $result = file_put_contents($migration_file, $migration['code']);
+
+            if ($result === false) {
+                return [
+                    'success' => false,
+                    'migration_generated' => false,
+                    'migration_ran' => false,
+                    'error' => 'Failed to write migration file',
+                    'file_path' => null,
+                ];
+            }
+
+            error_log("[Gateway] Generated migration file: {$migration_file}");
+
+            // Run the migration by including the file and calling the create method
+            require_once $migration_file;
+
+            $full_class_name = $namespace . '\\Database\\' . $migration['className'];
+
+            if (class_exists($full_class_name) && method_exists($full_class_name, 'create')) {
+                $full_class_name::create();
+                error_log("[Gateway] Successfully ran migration for table: " . $collectionData['key']);
+
+                return [
+                    'success' => true,
+                    'migration_generated' => true,
+                    'migration_ran' => true,
+                    'file_path' => $migration_file,
+                    'table_name' => $collectionData['key'],
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'migration_generated' => true,
+                    'migration_ran' => false,
+                    'error' => "Migration class {$full_class_name} not found or missing create() method",
+                    'file_path' => $migration_file,
+                ];
+            }
+
+        } catch (\Exception $e) {
+            error_log("[Gateway] Migration error: " . $e->getMessage());
+            return [
+                'success' => false,
+                'migration_generated' => false,
+                'migration_ran' => false,
+                'error' => $e->getMessage(),
+                'file_path' => null,
             ];
         }
     }
