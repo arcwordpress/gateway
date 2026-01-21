@@ -128,6 +128,9 @@ class Routes
         $plugin_slug = str_replace('_', '-', $extension_key);
         $namespace = str_replace('_', '', ucwords($extension_key, '_'));
 
+        error_log("[Gateway] Generating collection class: extension_key={$extension_key}, plugin_slug={$plugin_slug}, namespace={$namespace}, collection_key={$collection_key}");
+        error_log("[Gateway] Collection data fields: " . json_encode($json_data['fields'] ?? []));
+
         $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
             $json_data,
             $plugin_slug,
@@ -136,6 +139,8 @@ class Routes
 
         if (!$class_generated) {
             error_log('[Gateway] Failed to generate collection class for: ' . $collection_key);
+        } else {
+            error_log('[Gateway] Successfully generated collection class for: ' . $collection_key);
         }
 
         // Load extension data and merge all collections
@@ -263,6 +268,9 @@ class Routes
         $plugin_slug = str_replace('_', '-', $extension_key);
         $namespace = str_replace('_', '', ucwords($extension_key, '_'));
 
+        error_log("[Gateway] Regenerating collection class: extension_key={$extension_key}, plugin_slug={$plugin_slug}, namespace={$namespace}, collection_key={$new_collection_key}");
+        error_log("[Gateway] Collection data fields: " . json_encode($json_data['fields'] ?? []));
+
         $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
             $json_data,
             $plugin_slug,
@@ -271,6 +279,8 @@ class Routes
 
         if (!$class_generated) {
             error_log('[Gateway] Failed to regenerate collection class for: ' . $new_collection_key);
+        } else {
+            error_log('[Gateway] Successfully regenerated collection class for: ' . $new_collection_key);
         }
 
         // If key changed, delete old JSON and old PHP class file

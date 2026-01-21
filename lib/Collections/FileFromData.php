@@ -78,15 +78,16 @@ class FileFromData
         // Save to lib/Collections directory
         $filePath = $collectionsDir . '/' . $className . '.php';
         $result = file_put_contents($filePath, $classContent);
-        
+
         if ($result === false) {
             error_log("[Gateway] Failed to write collection class to: {$filePath}");
             return false;
         }
-        
+
         chmod($filePath, 0644);
-        
-        error_log("[Gateway] Generated collection class: {$filePath}");
+
+        $fieldCount = isset($collectionData['fields']) ? count($collectionData['fields']) : 0;
+        error_log("[Gateway] Generated collection class: {$filePath} with {$fieldCount} fields");
         return true;
     }
     
@@ -116,27 +117,67 @@ class FileFromData
     
     /**
      * Convert PHP array to formatted string representation
-     * 
+     *
      * @param array $array Array to convert
      * @param int $indent Indentation level
      * @return string Formatted PHP array string
      */
     private static function arrayToPhp($array, $indent = 1)
     {
-        $indentStr = str_repeat('    ', $indent);
-        $lines = ["["];
-        
-        foreach ($array as $item) {
-            $itemLines = ["{$indentStr}["];
-            foreach ($item as $key => $value) {
-                $itemLines[] = "{$indentStr}    '{$key}' => '{$value}',";
-            }
-            $itemLines[] = "{$indentStr}],";
-            $lines = array_merge($lines, $itemLines);
+        if (empty($array)) {
+            return "[]";
         }
-        
+
+        $indentStr = str_repeat('    ', $indent);
+        $innerIndentStr = str_repeat('    ', $indent + 1);
+        $lines = ["["];
+
+        foreach ($array as $item) {
+            if (!is_array($item)) {
+                // Handle non-array items (shouldn't happen for fields, but just in case)
+                $lines[] = $indentStr . self::valueToPhp($item) . ",";
+                continue;
+            }
+
+            $lines[] = $indentStr . "[";
+            foreach ($item as $key => $value) {
+                $phpValue = self::valueToPhp($value);
+                $lines[] = $innerIndentStr . "'{$key}' => {$phpValue},";
+            }
+            $lines[] = $indentStr . "],";
+        }
+
         $lines[] = str_repeat('    ', $indent - 1) . "]";
-        
+
         return implode("\n", $lines);
+    }
+
+    /**
+     * Convert a PHP value to its string representation for code generation
+     *
+     * @param mixed $value Value to convert
+     * @return string PHP code representation
+     */
+    private static function valueToPhp($value)
+    {
+        if (is_null($value)) {
+            return 'null';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_numeric($value)) {
+            return $value;
+        }
+
+        if (is_array($value)) {
+            // Handle nested arrays
+            return str_replace("\n", "\n    ", var_export($value, true));
+        }
+
+        // String - escape single quotes
+        return "'" . str_replace("'", "\\'", $value) . "'";
     }
 }
