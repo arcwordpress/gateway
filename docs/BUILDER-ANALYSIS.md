@@ -1,111 +1,78 @@
 # Gateway Builder (Exta) - Technical Analysis
 
-## Critical Issue: Plugin Files Not Generated
+## Status: Plugin Files Now Auto-Generated ✅
 
-**Problem:** The Builder UI saves JSON files but does NOT generate actual WordPress plugin files.
+**Fixed:** The Builder now automatically generates WordPress plugin files when you create extensions and collections.
 
-### What Actually Happens
+### What Happens Now
 
 When you create an extension in the Builder:
 
 1. **User creates extension "My Extension"** via React UI
 2. **POST to** `/gateway/v1/extensions`
 3. **Routes.php:379-443** runs `createExtension()`
-4. **Creates only:**
+4. **Creates JSON files:**
    ```
    wp-content/gateway/extensions/my_extension/
    ├── extension.json          ← Created ✓
    └── collections/            ← Created ✓
    ```
 
-5. **Does NOT create:**
+5. **AND creates plugin files:**
    ```
-   wp-content/plugins/my-extension/         ← Missing!
-   ├── my-extension.php                     ← Missing!
-   ├── lib/Collections/MyCollection.php     ← Missing!
-   └── ...                                  ← Missing!
+   wp-content/plugins/my-extension/         ← Created ✓
+   ├── my-extension.php                     ← Created ✓
+   └── lib/Collections/                     ← Created ✓
    ```
 
-### Why Plugin Files Aren't Created
+6. **When you add a collection:**
+   - JSON saved to `wp-content/gateway/extensions/my_extension/collections/products.json`
+   - PHP class generated to `wp-content/plugins/my-extension/lib/Collections/Products.php`
 
-**Missing Code:** There is no endpoint or button to trigger plugin generation.
+### Implementation Details
 
-**What exists but isn't wired up:**
-- `FileFromData::generateCollectionClass()` - Can generate collection PHP files
-- `templates/scaffold/collection_class.php` - Template for collections
-- `templates/scaffold/plugin_main.php` - Template for main plugin file
-
-**What's missing:**
-- No "Generate Plugin" or "Export" button in Exta UI
-- No API endpoint like `POST /gateway/v1/extensions/{key}/generate`
-- No code to instantiate full plugin from JSON
-
-### The Architecture Gap
-
-```
-Current Flow (Incomplete):
-Builder UI → JSON files in wp-content/gateway/extensions/ → [NOTHING]
-
-Expected Flow:
-Builder UI → JSON files → Generate Plugin Code → wp-content/plugins/{plugin}/ → Working Plugin
-```
-
-### How to Fix This
-
-**Add new endpoint to `/lib/Exta/Routes.php`:**
-
+**Plugin Generation (Routes.php:448-558):**
 ```php
-register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[^/]+)/generate', [
-    'methods' => 'POST',
-    'callback' => [$this, 'generatePlugin'],
-    'permission_callback' => [$this, 'checkPermissions'],
-]);
-```
-
-**Implement `generatePlugin()` method:**
-
-```php
-public function generatePlugin($request) {
-    $extension_key = $request['extension_key'];
-    $extension_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key;
-
-    // 1. Read extension.json
-    $extension_json = json_decode(file_get_contents($extension_dir . '/extension.json'), true);
-
-    // 2. Create plugin directory
+private function generatePluginFiles($extension_key, $extension_data)
+{
+    // Convert extension_key to plugin slug (my_extension → my-extension)
     $plugin_slug = str_replace('_', '-', $extension_key);
+
+    // Generate namespace (my_extension → MyExtension)
+    $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+    // Create plugin directory
     $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
     wp_mkdir_p($plugin_dir . '/lib/Collections');
 
-    // 3. Generate main plugin file from template
+    // Generate main plugin file from template
     $template = file_get_contents(GATEWAY_PATH . 'templates/scaffold/plugin_main.php');
     $plugin_code = str_replace(
         ['{{PROJECT_NAME}}', '{{PROJECT_SLUG}}', '{{NAMESPACE}}', '{{CONSTANT_PREFIX}}'],
-        [$extension_json['title'], $plugin_slug, ucfirst($extension_key), strtoupper($extension_key)],
+        [$project_name, $plugin_slug, $namespace, strtoupper($extension_key)],
         $template
     );
     file_put_contents($plugin_dir . '/' . $plugin_slug . '.php', $plugin_code);
-
-    // 4. Generate collection classes from JSON
-    $collections = glob($extension_dir . '/collections/*.json');
-    foreach ($collections as $coll_file) {
-        $coll_data = json_decode(file_get_contents($coll_file), true);
-        \Gateway\Collections\FileFromData::generateCollectionClass(
-            $coll_data,
-            $plugin_slug,
-            ucfirst($extension_key)
-        );
-    }
-
-    return new \WP_REST_Response(['success' => true, 'plugin_path' => $plugin_dir], 200);
 }
 ```
 
-**Add button to React UI** in `ExtensionView.js`:
+**Collection Class Generation (Routes.php:127-134):**
+```php
+// In saveCollection() method
+$plugin_slug = str_replace('_', '-', $extension_key);
+$namespace = str_replace('_', '', ucwords($extension_key, '_'));
 
-```jsx
-<button onClick={() => generatePlugin()}>Generate Plugin</button>
+\Gateway\Collections\FileFromData::generateCollectionClass(
+    $json_data,
+    $plugin_slug,
+    $namespace
+);
 ```
+
+**Collection Update Handling (Routes.php:254-268):**
+- Regenerates collection PHP class when updated
+- Deletes old class file if collection key changed
+- Keeps plugin in sync with JSON definitions
 
 ## Current Builder Capabilities
 
@@ -251,20 +218,49 @@ Collections appear in admin, REST API works, forms/grids render
 - ✅ JSON storage working perfectly
 - ✅ All CRUD operations for extensions/collections work
 - ✅ Auto-save prevents data loss
-- ❌ **No plugin file generation - Extensions stay as JSON only**
+- ✅ **Plugin files auto-generated when creating extensions**
+- ✅ **Collection classes auto-generated when adding/updating collections**
 
-### To Make Extensions Work as Plugins
-1. Add "Generate Plugin" endpoint to `Routes.php`
-2. Implement logic to create plugin directory in `wp-content/plugins/`
-3. Generate main plugin file from template
-4. Generate collection class files for each JSON collection
-5. Add "Generate Plugin" button to ExtensionView.js
-6. Plugin will then appear in WordPress → Plugins to activate
+### How It Works Now
 
-### Estimated Work
-- Backend endpoint: 1-2 hours
-- React button/API call: 30 minutes
-- Testing: 1 hour
-- **Total: ~3 hours to make plugin generation work**
+**Create Extension:**
+1. User fills out form in Exta UI (title → key)
+2. POST to `/gateway/v1/extensions`
+3. Creates JSON in `wp-content/gateway/extensions/{key}/`
+4. Generates plugin in `wp-content/plugins/{key}/`
+5. Plugin appears in WordPress → Plugins
 
-The Builder is 90% complete - just needs the plugin generation step to turn JSON definitions into installable WordPress plugins.
+**Add Collection:**
+1. User creates collection with fields/filters/columns
+2. POST to `/gateway/v1/extensions/{key}/collections`
+3. Saves JSON to `extensions/{key}/collections/{name}.json`
+4. Generates PHP class to `plugins/{key}/lib/Collections/{Name}.php`
+5. Collection auto-registers when plugin activated
+
+**Update Collection:**
+1. User edits fields/filters/columns (auto-save 1.5s debounce)
+2. PUT to `/gateway/v1/extensions/{key}/collections/{name}`
+3. Updates JSON file
+4. Regenerates PHP class file
+5. If key changed, deletes old PHP class file
+
+### Generated Plugin Structure
+
+```
+wp-content/plugins/my-extension/
+├── my-extension.php                    # Main plugin file (from template)
+└── lib/
+    └── Collections/
+        ├── Products.php                # Generated from products.json
+        ├── Orders.php                  # Generated from orders.json
+        └── ...                         # One file per collection
+```
+
+### Activation Flow
+
+1. **Build** - User creates extension + collections in Builder
+2. **Activate** - Admin activates plugin in WordPress → Plugins
+3. **Register** - Plugin hooks into `gateway_loaded` and registers collections
+4. **Available** - Collections appear in Gateway admin, REST API works
+
+The Builder is now fully functional - extensions are immediately converted to working WordPress plugins.

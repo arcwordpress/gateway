@@ -124,6 +124,16 @@ class Routes
             ], 500);
         }
 
+        // Generate collection PHP class file in plugin
+        $plugin_slug = str_replace('_', '-', $extension_key);
+        $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+        $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
+            $json_data,
+            $plugin_slug,
+            $namespace
+        );
+
         // Load extension data and merge all collections
         $extension_file = $extension_dir . '/extension.json';
         $extension_data = [];
@@ -238,9 +248,26 @@ class Routes
             ], 500);
         }
 
-        // If key changed, delete old file
+        // Regenerate collection PHP class file
+        $plugin_slug = str_replace('_', '-', $extension_key);
+        $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+        \Gateway\Collections\FileFromData::generateCollectionClass(
+            $json_data,
+            $plugin_slug,
+            $namespace
+        );
+
+        // If key changed, delete old JSON and old PHP class file
         if ($original_collection_key !== $new_collection_key) {
             unlink($old_file_path);
+
+            // Delete old collection class file
+            $old_class_name = str_replace('_', '', ucwords($original_collection_key, '_'));
+            $old_class_file = WP_PLUGIN_DIR . '/' . $plugin_slug . '/lib/Collections/' . $old_class_name . '.php';
+            if (file_exists($old_class_file)) {
+                unlink($old_class_file);
+            }
         }
 
         return new \WP_REST_Response([
@@ -434,12 +461,114 @@ class Routes
             ], 500);
         }
 
+        // Generate WordPress plugin files
+        $plugin_generation = $this->generatePluginFiles($extension_key, $json_data);
+
+        if (!$plugin_generation['success']) {
+            // JSON was saved but plugin generation failed
+            return new \WP_REST_Response([
+                'success' => true,
+                'message' => 'Extension created successfully, but plugin generation failed: ' . $plugin_generation['error'],
+                'file_path' => $file_path,
+                'extension' => $json_data,
+                'plugin_error' => $plugin_generation['error']
+            ], 201);
+        }
+
         return new \WP_REST_Response([
             'success' => true,
-            'message' => 'Extension created successfully',
+            'message' => 'Extension and plugin created successfully',
             'file_path' => $file_path,
+            'plugin_path' => $plugin_generation['plugin_path'],
             'extension' => $json_data
         ], 201);
+    }
+
+    /**
+     * Generate WordPress plugin files from extension data
+     *
+     * @param string $extension_key Extension key (e.g., 'my_extension')
+     * @param array $extension_data Extension data with 'title' and 'key'
+     * @return array Result with 'success', 'plugin_path', and optional 'error'
+     */
+    private function generatePluginFiles($extension_key, $extension_data)
+    {
+        try {
+            // Convert extension_key to plugin slug (underscores to hyphens)
+            $plugin_slug = str_replace('_', '-', $extension_key);
+
+            // Create namespace from extension key (e.g., my_extension -> MyExtension)
+            $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+            // Create constant prefix (e.g., my_extension -> MY_EXTENSION)
+            $constant_prefix = strtoupper($extension_key);
+
+            // Get title or generate from key
+            $project_name = isset($extension_data['title']) ? $extension_data['title'] : ucwords(str_replace('_', ' ', $extension_key));
+
+            // Create plugin directory
+            $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+
+            if (is_dir($plugin_dir)) {
+                return [
+                    'success' => false,
+                    'error' => 'Plugin directory already exists: ' . $plugin_dir
+                ];
+            }
+
+            // Create plugin directory structure
+            if (!wp_mkdir_p($plugin_dir . '/lib/Collections')) {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to create plugin directory structure'
+                ];
+            }
+
+            // Load plugin template
+            $template_path = GATEWAY_PATH . 'templates/scaffold/plugin_main.php';
+            if (!file_exists($template_path)) {
+                return [
+                    'success' => false,
+                    'error' => 'Plugin template not found: ' . $template_path
+                ];
+            }
+
+            $template = file_get_contents($template_path);
+
+            // Replace template placeholders
+            $replacements = [
+                '{{PROJECT_NAME}}' => $project_name,
+                '{{PROJECT_SLUG}}' => $plugin_slug,
+                '{{NAMESPACE}}' => $namespace,
+                '{{CONSTANT_PREFIX}}' => $constant_prefix,
+            ];
+
+            $plugin_code = str_replace(array_keys($replacements), array_values($replacements), $template);
+
+            // Save main plugin file
+            $plugin_file_path = $plugin_dir . '/' . $plugin_slug . '.php';
+            $write_result = file_put_contents($plugin_file_path, $plugin_code);
+
+            if ($write_result === false) {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to write main plugin file'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'plugin_path' => $plugin_dir,
+                'plugin_file' => $plugin_file_path,
+                'plugin_slug' => $plugin_slug
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Exception during plugin generation: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
