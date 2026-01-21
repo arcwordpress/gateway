@@ -105,7 +105,7 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\Records::init();
-        // Admin\Builder::init(); // Removed Builder admin link
+        Admin\Builder::init(); // Restored Builder admin link
         Package\PackageMenus::init();
 
         // Initialize front-end forms
@@ -202,10 +202,33 @@ class Plugin
     }
 
     /**
+     * Detect if WordPress is using SQLite
+     *
+     * @return bool
+     */
+    public static function isSQLiteEnvironment()
+    {
+        return Database\DatabaseConnection::isSQLiteEnvironment();
+    }
+
+    /**
+     * Find SQLite database file path
+     *
+     * @return string Path to SQLite database
+     */
+    public static function findSQLiteDatabase()
+    {
+        return Database\DatabaseConnection::findSQLiteDatabase();
+    }
+
+    /**
      * Plugin activation
      */
     public function activate()
     {
+        // Auto-configure database driver on first activation
+        $this->autoConfigureDatabase();
+
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();
 
@@ -219,6 +242,30 @@ class Plugin
 
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Auto-configure database driver based on environment detection
+     */
+    private function autoConfigureDatabase()
+    {
+        $existing_config = get_option('gateway_db_config');
+
+        // Only auto-configure if not already set
+        if (empty($existing_config) || !isset($existing_config['driver'])) {
+            $is_sqlite = self::isSQLiteEnvironment();
+
+            $default_config = [
+                'driver' => $is_sqlite ? 'sqlite' : 'mysql',
+            ];
+
+            // Add SQLite-specific configuration
+            if ($is_sqlite) {
+                $default_config['database'] = self::findSQLiteDatabase();
+            }
+
+            update_option('gateway_db_config', $default_config);
+        }
     }
 
     /**
