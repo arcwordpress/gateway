@@ -17,11 +17,16 @@ class FileFromData
      */
     public static function generateCollectionClass($collectionData, $pluginSlug, $pluginNamespace)
     {
-        if (empty($collectionData['key']) || empty($collectionData['fields'])) {
-            error_log('[Gateway] Collection key or fields missing, cannot generate class');
+        if (empty($collectionData['key'])) {
+            error_log('[Gateway] Collection key missing, cannot generate class');
             return false;
         }
-        
+
+        // Fields can be empty for new collections - they'll be added later
+        if (!isset($collectionData['fields'])) {
+            $collectionData['fields'] = [];
+        }
+
         $pluginDir = WP_PLUGIN_DIR . '/' . $pluginSlug;
         
         // Ensure plugin directory exists
@@ -50,10 +55,12 @@ class FileFromData
         
         // Generate class name from collection key (e.g., social_post -> SocialPost)
         $className = self::keyToClassName($collectionData['key']);
-        
-        // Generate title from key (e.g., social_post -> Social Post)
-        $title = self::keyToTitle($collectionData['key']);
-        
+
+        // Use provided title or generate from key (e.g., social_post -> Social Post)
+        $title = isset($collectionData['title']) && !empty($collectionData['title'])
+            ? $collectionData['title']
+            : self::keyToTitle($collectionData['key']);
+
         // Convert fields array to formatted PHP array string
         $fieldsPhp = self::arrayToPhp($collectionData['fields']);
         
