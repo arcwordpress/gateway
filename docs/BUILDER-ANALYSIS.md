@@ -228,7 +228,10 @@ Collections appear in admin, REST API works, forms/grids render
 2. POST to `/gateway/v1/extensions`
 3. Creates JSON in `wp-content/gateway/extensions/{key}/`
 4. Generates plugin in `wp-content/plugins/{key}/`
-5. Plugin appears in WordPress → Plugins
+5. **Plugin automatically activated**
+6. **UI redirects to extension detail page** (not dashboard)
+7. User immediately sees their extension with option to add collections
+8. If activation fails, yellow warning shown with error details
 
 **Add Collection:**
 1. User creates collection with fields/filters/columns
@@ -258,9 +261,21 @@ wp-content/plugins/my-extension/
 
 ### Activation Flow
 
-1. **Build** - User creates extension + collections in Builder
-2. **Activate** - Admin activates plugin in WordPress → Plugins
-3. **Register** - Plugin hooks into `gateway_loaded` and registers collections
-4. **Available** - Collections appear in Gateway admin, REST API works
+1. **Build** - User creates extension in Builder
+2. **Auto-Activate** - Plugin automatically activated (no manual step needed)
+3. **Redirect** - UI navigates to extension detail page
+4. **Add Collections** - User adds collections via Builder UI
+5. **Auto-Generate** - Collection PHP classes generated on save
+6. **Register** - Plugin hooks into `gateway_loaded` and registers collections
+7. **Available** - Collections appear in Gateway admin, REST API works
 
-The Builder is now fully functional - extensions are immediately converted to working WordPress plugins.
+### Error Handling
+
+**Plugin Activation Errors:**
+- Detected via `activate_plugin()` and `is_plugin_active()` checks
+- Reported in API response with `plugin_activated: false` and `activation_error` message
+- Displayed in yellow warning banner in UI
+- Extension still created (can fix code and manually activate later)
+- Common issues: syntax errors, missing dependencies, namespace conflicts
+
+The Builder is now fully functional - extensions are immediately converted to working, activated WordPress plugins.
