@@ -475,13 +475,29 @@ class Routes
             ], 201);
         }
 
-        return new \WP_REST_Response([
+        // Activate the plugin
+        $activation_result = $this->activatePlugin($plugin_generation['plugin_slug']);
+
+        $response_data = [
             'success' => true,
             'message' => 'Extension and plugin created successfully',
             'file_path' => $file_path,
             'plugin_path' => $plugin_generation['plugin_path'],
+            'plugin_slug' => $plugin_generation['plugin_slug'],
             'extension' => $json_data
-        ], 201);
+        ];
+
+        // Add activation status to response
+        if ($activation_result['activated']) {
+            $response_data['plugin_activated'] = true;
+            $response_data['message'] .= ' and activated';
+        } else {
+            $response_data['plugin_activated'] = false;
+            $response_data['activation_error'] = $activation_result['error'];
+            $response_data['message'] .= ', but activation failed: ' . $activation_result['error'];
+        }
+
+        return new \WP_REST_Response($response_data, 201);
     }
 
     /**
@@ -567,6 +583,67 @@ class Routes
             return [
                 'success' => false,
                 'error' => 'Exception during plugin generation: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Activate a plugin
+     *
+     * @param string $plugin_slug Plugin slug (e.g., 'my-extension')
+     * @return array Result with 'activated' boolean and optional 'error'
+     */
+    private function activatePlugin($plugin_slug)
+    {
+        try {
+            // Build plugin file path relative to plugins directory
+            $plugin_file = $plugin_slug . '/' . $plugin_slug . '.php';
+
+            // Check if plugin file exists
+            $plugin_path = WP_PLUGIN_DIR . '/' . $plugin_file;
+            if (!file_exists($plugin_path)) {
+                return [
+                    'activated' => false,
+                    'error' => 'Plugin file not found: ' . $plugin_file
+                ];
+            }
+
+            // Check if already active
+            if (is_plugin_active($plugin_file)) {
+                return [
+                    'activated' => true,
+                    'error' => null,
+                    'already_active' => true
+                ];
+            }
+
+            // Activate the plugin
+            $result = activate_plugin($plugin_file);
+
+            if (is_wp_error($result)) {
+                return [
+                    'activated' => false,
+                    'error' => $result->get_error_message()
+                ];
+            }
+
+            // Check if activation was successful
+            if (!is_plugin_active($plugin_file)) {
+                return [
+                    'activated' => false,
+                    'error' => 'Plugin activation failed silently - check plugin code for errors'
+                ];
+            }
+
+            return [
+                'activated' => true,
+                'error' => null
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'activated' => false,
+                'error' => 'Exception during plugin activation: ' . $e->getMessage()
             ];
         }
     }
