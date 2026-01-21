@@ -1,552 +1,270 @@
-# Gateway Builder (Exta) - Current State Analysis
+# Gateway Builder (Exta) - Technical Analysis
 
-**Date:** January 21, 2026
-**Location:** `/react/apps/exta`
-**Status:** Removed from admin menu, fully functional
+## Critical Issue: Plugin Files Not Generated
 
-## Executive Summary
+**Problem:** The Builder UI saves JSON files but does NOT generate actual WordPress plugin files.
 
-The Gateway Builder (codenamed "Exta") is a React-based extension builder that allows users to create WordPress plugins with Gateway dependencies. The builder provides a visual interface for creating extensions, defining collections, and configuring fields, filters, and columns. The builder was removed from the admin menu (commented out in `Plugin.php:108`) but remains fully functional with complete API support.
+### What Actually Happens
 
-## Overview
+When you create an extension in the Builder:
 
-### Purpose
-The Builder enables users to:
-- Create extensions (WP Plugins) that depend on Gateway
-- Define collections within extensions
-- Configure fields for data entry forms
-- Set up filters for data querying
-- Define columns for data grid display
+1. **User creates extension "My Extension"** via React UI
+2. **POST to** `/gateway/v1/extensions`
+3. **Routes.php:379-443** runs `createExtension()`
+4. **Creates only:**
+   ```
+   wp-content/gateway/extensions/my_extension/
+   ├── extension.json          ← Created ✓
+   └── collections/            ← Created ✓
+   ```
 
-### File Structure
+5. **Does NOT create:**
+   ```
+   wp-content/plugins/my-extension/         ← Missing!
+   ├── my-extension.php                     ← Missing!
+   ├── lib/Collections/MyCollection.php     ← Missing!
+   └── ...                                  ← Missing!
+   ```
+
+### Why Plugin Files Aren't Created
+
+**Missing Code:** There is no endpoint or button to trigger plugin generation.
+
+**What exists but isn't wired up:**
+- `FileFromData::generateCollectionClass()` - Can generate collection PHP files
+- `templates/scaffold/collection_class.php` - Template for collections
+- `templates/scaffold/plugin_main.php` - Template for main plugin file
+
+**What's missing:**
+- No "Generate Plugin" or "Export" button in Exta UI
+- No API endpoint like `POST /gateway/v1/extensions/{key}/generate`
+- No code to instantiate full plugin from JSON
+
+### The Architecture Gap
+
 ```
-react/apps/exta/
-├── src/
-│   ├── App.js                          # Main app router
-│   ├── index.js                        # Entry point
-│   ├── components/
-│   │   ├── ExtensionCreateForm.js      # Extension creation form
-│   │   ├── ExtensionSelector.js        # Extension dropdown selector
-│   │   ├── CollectionCreateForm.js     # Collection creation form
-│   │   ├── FieldEditor.js              # Field configuration editor
-│   │   ├── FilterEditor.js             # Filter configuration editor
-│   │   ├── ColumnEditor.js             # Column configuration editor
-│   │   ├── ProjectCreateForm.js        # (Legacy/unused?)
-│   ├── pages/
-│   │   ├── ExtensionCreate.js          # Extension creation page
-│   │   ├── ExtensionView.js            # Extension detail view
-│   │   ├── CollectionCreate.js         # Collection creation page
-│   │   ├── CollectionEditor.js         # Collection editing interface
-│   ├── context/
-│   │   ├── ExtensionListContext.js     # Extensions state management
-│   │   ├── ActiveExtensionContext.js   # Active extension state
-│   └── index.css                       # Styles
-├── build/                              # Compiled assets
-├── package.json
-└── postcss.config.js
+Current Flow (Incomplete):
+Builder UI → JSON files in wp-content/gateway/extensions/ → [NOTHING]
+
+Expected Flow:
+Builder UI → JSON files → Generate Plugin Code → wp-content/plugins/{plugin}/ → Working Plugin
 ```
 
-## Features & Functionality
+### How to Fix This
 
-### 1. Extension Management
-
-#### Create Extension
-- **Route:** `/extension/create`
-- **Form Fields:**
-  - Title (text input)
-  - Key (auto-generated from title, read-only)
-- **API Endpoint:** `POST /gateway/v1/extensions`
-- **File Location:** `/react/apps/exta/src/pages/ExtensionCreate.js:18-27`
-
-#### View Extension
-- **Route:** `/extension/:key`
-- **Features:**
-  - Display extension details (title, key)
-  - List all collections in extension
-  - Link to create new collection
-  - View raw extension JSON data
-- **API Endpoint:** `GET /gateway/v1/extensions/:extensionKey/collections`
-- **File Location:** `/react/apps/exta/src/pages/ExtensionView.js`
-
-#### Extension Selector
-- Dropdown component for switching between extensions
-- Integrated into app header
-- **File Location:** `/react/apps/exta/src/components/ExtensionSelector.js`
-
-### 2. Collection Management
-
-#### Create Collection
-- **Route:** `/extension/:key/collection/create`
-- **Form Fields:**
-  - Title (text input)
-  - Key (auto-generated from title, read-only)
-- **API Endpoint:** `POST /gateway/v1/extensions/:extensionKey/collections`
-- **File Location:** `/react/apps/exta/src/pages/CollectionCreate.js:19-28`
-
-#### Edit Collection
-- **Route:** `/extension/:key/:collectionKey`
-- **Features:**
-  - Edit collection title and key
-  - Manage fields (add, edit, remove, reorder)
-  - Manage filters (add, edit, remove, reorder)
-  - Manage columns (add, edit, remove, reorder)
-  - Auto-save with 1.5-second debounce
-  - Visual save status indicator
-  - Key change warning and redirect
-- **API Endpoint:** `PUT /gateway/v1/extensions/:extensionKey/collections/:collectionKey`
-- **File Location:** `/react/apps/exta/src/pages/CollectionEditor.js:56-92`
-
-### 3. Field Editor
-
-**Supported Field Types:**
-- Text
-- Textarea
-- Number
-- Email
-- URL
-- Date
-- Checkbox
-- Select
-
-**Field Configuration:**
-- Type (dropdown selection)
-- Label (display name)
-- Name (internal identifier)
-
-**Field Management:**
-- Add new fields
-- Remove existing fields
-- Reorder fields (move up/down)
-- Auto-save changes
-
-**File Location:** `/react/apps/exta/src/components/FieldEditor.js:26-39`
-
-### 4. Filter Editor
-
-**Supported Filter Types:**
-- Text
-- Select
-- Number
-- Date
-- Date Range
-- Checkbox
-
-**Filter Configuration:**
-- Type (dropdown selection)
-- Field (field name to filter)
-- Label (display name)
-
-**Filter Management:**
-- Add new filters
-- Remove existing filters
-- Reorder filters (move up/down)
-- Auto-save changes
-
-**File Location:** `/react/apps/exta/src/components/FilterEditor.js:26-36`
-
-### 5. Column Editor
-
-**Column Configuration:**
-- Field (field name to display)
-- Label (column header)
-- Sortable (checkbox to enable sorting)
-
-**Column Management:**
-- Add new columns
-- Remove existing columns
-- Reorder columns (move up/down)
-- Auto-save changes
-
-**File Location:** `/react/apps/exta/src/components/ColumnEditor.js`
-
-## API Support Analysis
-
-### Implemented Endpoints
-
-All required REST API endpoints are fully implemented in `/lib/Exta/Routes.php`:
-
-#### 1. Get Extensions
-- **Method:** `GET`
-- **Endpoint:** `/gateway/v1/extensions`
-- **Handler:** `getExtensions()`
-- **Returns:** Array of extensions from `wp-content/gateway/extensions/*/extension.json`
-- **Status:** ✅ Complete
-
-#### 2. Create Extension
-- **Method:** `POST`
-- **Endpoint:** `/gateway/v1/extensions`
-- **Handler:** `createExtension()`
-- **Functionality:**
-  - Validates extension key
-  - Creates extension directory structure
-  - Creates `extension.json` file
-  - Creates `collections/` subdirectory
-- **Status:** ✅ Complete
-- **File Location:** `/lib/Exta/Routes.php:379-443`
-
-#### 3. Get Collections
-- **Method:** `GET`
-- **Endpoint:** `/gateway/v1/extensions/:extension_key/collections`
-- **Handler:** `getCollections()`
-- **Returns:** Array of collection JSON files from extension's collections directory
-- **Status:** ✅ Complete
-- **File Location:** `/lib/Exta/Routes.php:262-315`
-
-#### 4. Create Collection
-- **Method:** `POST`
-- **Endpoint:** `/gateway/v1/extensions/:extension_key/collections`
-- **Handler:** `saveCollection()`
-- **Functionality:**
-  - Validates collection key
-  - Creates collection JSON file
-  - Returns merged extension data with collections
-- **Status:** ✅ Complete
-- **File Location:** `/lib/Exta/Routes.php:61-163`
-
-#### 5. Update Collection
-- **Method:** `PUT/PATCH`
-- **Endpoint:** `/gateway/v1/extensions/:extension_key/collections/:collection_key`
-- **Handler:** `updateCollection()`
-- **Functionality:**
-  - Updates collection JSON file
-  - Handles key changes (renames file)
-  - Validates new key doesn't conflict
-  - Deletes old file if key changed
-- **Status:** ✅ Complete
-- **File Location:** `/lib/Exta/Routes.php:171-254`
-
-### Missing Endpoints
-
-#### 1. Delete Extension
-- **Status:** ❌ Not Implemented
-- **Would Need:** `DELETE /gateway/v1/extensions/:extension_key`
-- **Functionality:** Remove extension directory and all collections
-- **Priority:** Medium
-- **Note:** Currently no UI for deleting extensions
-
-#### 2. Delete Collection
-- **Status:** ❌ Not Implemented
-- **Would Need:** `DELETE /gateway/v1/extensions/:extension_key/collections/:collection_key`
-- **Functionality:** Remove collection JSON file
-- **Priority:** Medium
-- **Note:** Currently no UI for deleting collections
-
-#### 3. Export Extension
-- **Status:** ❌ Not Implemented
-- **Would Need:** `GET /gateway/v1/extensions/:extension_key/export`
-- **Functionality:** Package extension as installable WP plugin
-- **Priority:** High
-- **Note:** This is the core value proposition - creating installable plugins
-
-#### 4. Validate Extension
-- **Status:** ❌ Not Implemented
-- **Would Need:** `POST /gateway/v1/extensions/:extension_key/validate`
-- **Functionality:** Check extension configuration for errors
-- **Priority:** Low
-- **Note:** Would improve UX by catching errors early
-
-## Frontend Integration
-
-### Admin Page Registration
-
-The builder is registered but disabled in `/Plugin.php`:
+**Add new endpoint to `/lib/Exta/Routes.php`:**
 
 ```php
-// Line 108
-// Admin\Builder::init(); // Removed Builder admin link
+register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[^/]+)/generate', [
+    'methods' => 'POST',
+    'callback' => [$this, 'generatePlugin'],
+    'permission_callback' => [$this, 'checkPermissions'],
+]);
 ```
 
-The `Builder` class is fully implemented in `/lib/Admin/Builder.php` and includes:
-- Menu registration under Gateway parent menu
-- React app enqueuing on builder page
-- Nonce and API URL localization
+**Implement `generatePlugin()` method:**
 
-**File Location:** `/lib/Admin/Builder.php:19-35`
+```php
+public function generatePlugin($request) {
+    $extension_key = $request['extension_key'];
+    $extension_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key;
 
-### Dependencies
+    // 1. Read extension.json
+    $extension_json = json_decode(file_get_contents($extension_dir . '/extension.json'), true);
 
-The builder uses:
-- React 18.2.0
-- React Router DOM 6.22.0
-- Axios 1.12.2
-- React Hook Form 7.53.2
-- @dnd-kit (drag and drop libraries)
-- Tailwind CSS 4.0.0
-- WordPress scripts 27.0.0
+    // 2. Create plugin directory
+    $plugin_slug = str_replace('_', '-', $extension_key);
+    $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+    wp_mkdir_p($plugin_dir . '/lib/Collections');
 
-**File Location:** `/react/apps/exta/package.json:12-26`
+    // 3. Generate main plugin file from template
+    $template = file_get_contents(GATEWAY_PATH . 'templates/scaffold/plugin_main.php');
+    $plugin_code = str_replace(
+        ['{{PROJECT_NAME}}', '{{PROJECT_SLUG}}', '{{NAMESPACE}}', '{{CONSTANT_PREFIX}}'],
+        [$extension_json['title'], $plugin_slug, ucfirst($extension_key), strtoupper($extension_key)],
+        $template
+    );
+    file_put_contents($plugin_dir . '/' . $plugin_slug . '.php', $plugin_code);
 
-## Data Storage
+    // 4. Generate collection classes from JSON
+    $collections = glob($extension_dir . '/collections/*.json');
+    foreach ($collections as $coll_file) {
+        $coll_data = json_decode(file_get_contents($coll_file), true);
+        \Gateway\Collections\FileFromData::generateCollectionClass(
+            $coll_data,
+            $plugin_slug,
+            ucfirst($extension_key)
+        );
+    }
 
-### File System Structure
-
-Extensions are stored as file-based JSON in:
-```
-wp-content/
-└── gateway/
-    └── extensions/
-        └── {extension_key}/
-            ├── extension.json          # Extension metadata
-            └── collections/
-                ├── {collection_key1}.json
-                └── {collection_key2}.json
-```
-
-### Extension JSON Format
-```json
-{
-  "title": "Extension Title",
-  "key": "extension_key"
+    return new \WP_REST_Response(['success' => true, 'plugin_path' => $plugin_dir], 200);
 }
 ```
 
-### Collection JSON Format
+**Add button to React UI** in `ExtensionView.js`:
+
+```jsx
+<button onClick={() => generatePlugin()}>Generate Plugin</button>
+```
+
+## Current Builder Capabilities
+
+### What Works Now
+
+**Extension Management (JSON only):**
+- Create extension → `wp-content/gateway/extensions/{key}/extension.json`
+- Read extensions → GET `/gateway/v1/extensions`
+- File structure: `/lib/Exta/Routes.php:379-443`
+
+**Collection Management (JSON only):**
+- Create collection → `wp-content/gateway/extensions/{key}/collections/{name}.json`
+- Update collection → PUT `/gateway/v1/extensions/{key}/collections/{name}`
+- Auto-save with 1.5s debounce
+- File structure: `/lib/Exta/Routes.php:61-254`
+
+**Field Configuration:**
+- Types: text, textarea, number, email, url, date, checkbox, select
+- Reorderable with up/down arrows
+- Component: `/react/apps/exta/src/components/FieldEditor.js`
+
+**Filter Configuration:**
+- Types: text, select, number, date, date_range, checkbox
+- Linked to field names
+- Component: `/react/apps/exta/src/components/FilterEditor.js`
+
+**Column Configuration:**
+- Display configuration for data grids
+- Sortable toggle per column
+- Component: `/react/apps/exta/src/components/ColumnEditor.js`
+
+### Data Storage Format
+
+**Extension JSON** (`wp-content/gateway/extensions/{key}/extension.json`):
 ```json
 {
-  "title": "Collection Title",
-  "key": "collection_key",
+  "title": "My Extension",
+  "key": "my_extension"
+}
+```
+
+**Collection JSON** (`wp-content/gateway/extensions/{key}/collections/{name}.json`):
+```json
+{
+  "title": "Products",
+  "key": "products",
   "fields": [
-    {
-      "type": "text",
-      "label": "Field Label",
-      "name": "field_name"
-    }
+    {"type": "text", "label": "Product Name", "name": "product_name"},
+    {"type": "number", "label": "Price", "name": "price"}
   ],
   "filters": [
-    {
-      "type": "text",
-      "field": "field_name",
-      "label": "Filter Label"
-    }
+    {"type": "text", "field": "product_name", "label": "Search Products"}
   ],
   "columns": [
-    {
-      "field": "field_name",
-      "label": "Column Label",
-      "sortable": true
-    }
+    {"field": "product_name", "label": "Name", "sortable": true},
+    {"field": "price", "label": "Price", "sortable": true}
   ]
 }
 ```
 
-## What's Needed to Restore Builder to Menu
+## How Extensions Should Work (When Complete)
 
-### Minimal Requirements (Ready Now)
+### Step 1: Build in UI
+User creates extension and collections via Builder interface → JSON files saved
 
-1. **Uncomment line in Plugin.php**
-   - File: `/Plugin.php:108`
-   - Change: `// Admin\Builder::init();` → `Admin\Builder::init();`
-   - Impact: Builder menu item appears under Gateway menu
+### Step 2: Generate Plugin (Missing)
+Click "Generate Plugin" → Creates actual WordPress plugin in `wp-content/plugins/`
 
-2. **Build React app** (if not already built)
-   - Command: `cd react/apps/exta && npm install && npm run build`
-   - Verify: Check that `/react/apps/exta/build/index.js` exists
+### Step 3: Activate Plugin
+Plugin appears in WordPress Plugins page → Admin activates it
 
-That's it! The builder will be fully functional with these two steps.
+### Step 4: Plugin Registers Collections
+On `gateway_loaded` hook, plugin auto-registers its collections with Gateway
 
-### Recommended Before Public Release
+### Step 5: Collections Available
+Collections appear in admin, REST API works, forms/grids render
 
-#### 1. Plugin Export Functionality (HIGH PRIORITY)
-Without this, extensions can't be distributed or used outside the development environment.
+## Code Locations Reference
 
-**Implementation Needed:**
-- API endpoint to package extension as WordPress plugin
-- Generate plugin header file
-- Include collections as PHP code or JSON
-- Create installable ZIP file
-- **Estimated Complexity:** Medium
+### Backend (PHP)
 
-#### 2. Delete Operations (MEDIUM PRIORITY)
-Users need ability to clean up test/unwanted items.
+**API Routes:** `/lib/Exta/Routes.php`
+- Line 25-34: Collections GET/POST endpoint
+- Line 36-40: Collection PUT/PATCH endpoint
+- Line 42-46: Extensions GET endpoint
+- Line 48-52: Extensions POST endpoint
+- Line 61-163: `saveCollection()` - Creates collection JSON
+- Line 171-254: `updateCollection()` - Updates collection JSON, handles renames
+- Line 262-315: `getCollections()` - Lists all collections in extension
+- Line 323-371: `getExtensions()` - Lists all extensions
+- Line 379-443: `createExtension()` - Creates extension directory + JSON
 
-**Implementation Needed:**
-- Delete extension endpoint + UI button
-- Delete collection endpoint + UI button
-- Confirmation dialogs
-- **Estimated Complexity:** Low
+**Code Generator:** `/lib/Collections/FileFromData.php`
+- Line 18-84: `generateCollectionClass()` - Creates PHP collection class from JSON
+- Line 58: Converts fields array to PHP code
+- Line 72: Saves to `{plugin}/lib/Collections/{ClassName}.php`
 
-#### 3. Field Options for Select Fields (MEDIUM PRIORITY)
-Select field types need options to choose from.
+**Templates:**
+- `/templates/scaffold/collection_class.php` - Collection PHP class template
+- `/templates/scaffold/plugin_main.php` - Main plugin file template (lines 96-119 show collection auto-registration)
 
-**Implementation Needed:**
-- Add "options" field to FieldEditor for select type
-- UI to add/edit/remove options
-- Store options in collection JSON
-- **Estimated Complexity:** Low
+**Extension System:**
+- `/lib/Extension.php` - Base Extension class for plugin extensions
+- `/lib/Extensions/ExtensionRegistry.php` - Registry for PHP extensions (not used by JSON extensions)
 
-#### 4. Validation & Error Handling (MEDIUM PRIORITY)
-Better UX with validation feedback.
+**Admin Menu:** `/lib/Admin/Builder.php`
+- Line 19-35: Registers "Builder" submenu under Gateway
+- Line 24-65: Enqueues React app on builder page
+- Line 56-64: Localizes API URL and nonce for React
 
-**Implementation Needed:**
-- Field name uniqueness check
-- Reserved keyword validation
-- Field type-specific validation
-- Better error messages
-- **Estimated Complexity:** Low-Medium
+### Frontend (React)
 
-#### 5. Documentation (HIGH PRIORITY)
-Users need guidance on using the builder.
+**Entry Point:** `/react/apps/exta/src/index.js`
+**Router:** `/react/apps/exta/src/App.js`
 
-**Needed:**
-- User guide for creating extensions
-- Field type reference
-- Collection configuration best practices
-- Example workflows
-- **Estimated Complexity:** Low
+**Pages:**
+- `pages/ExtensionCreate.js` - Create new extension form
+- `pages/ExtensionView.js` - View extension + collections list
+- `pages/CollectionCreate.js` - Create new collection in extension
+- `pages/CollectionEditor.js` - Edit collection (fields/filters/columns), auto-save
 
-#### 6. Testing (HIGH PRIORITY)
-Ensure reliability before release.
+**Components:**
+- `components/ExtensionCreateForm.js` - Extension form (title → key)
+- `components/ExtensionSelector.js` - Dropdown to switch extensions
+- `components/CollectionCreateForm.js` - Collection form (title → key)
+- `components/FieldEditor.js` - Field row editor (type, label, name)
+- `components/FilterEditor.js` - Filter row editor (type, field, label)
+- `components/ColumnEditor.js` - Column row editor (field, label, sortable)
 
-**Needed:**
-- Test extension creation flow
-- Test collection CRUD operations
-- Test field/filter/column editors
-- Test auto-save functionality
-- Test with various field types
-- **Estimated Complexity:** Low-Medium
+**State Management:**
+- `context/ExtensionListContext.js` - All extensions list
+- `context/ActiveExtensionContext.js` - Currently selected extension + its collections
 
-## Gaps & Limitations
-
-### Current Limitations
-
-1. **No Plugin Export**
-   - Extensions remain in database only
-   - Can't create distributable plugins
-   - Main value proposition not delivered
-
-2. **No Delete Operations**
-   - Can't remove extensions or collections
-   - No cleanup mechanism for tests
-
-3. **Limited Field Configuration**
-   - Select fields have no options UI
-   - No validation rules
-   - No default values
-   - No placeholder text
-   - No help text
-
-4. **No Relationship Fields**
-   - Can't define relationships between collections
-   - No foreign key support
-   - No collection references
-
-5. **No Advanced Field Types**
-   - No file upload
-   - No image upload
-   - No WYSIWYG editor
-   - No repeater fields
-   - No group fields
-
-6. **No Permission Management**
-   - All extensions accessible to all admins
-   - No granular permissions
-
-7. **No Version Control**
-   - No extension versioning
-   - No migration system for schema changes
-   - No changelog
-
-8. **No Testing Features**
-   - Can't test collection CRUD from builder
-   - No sample data generation
-   - No preview mode
-
-### Technical Debt
-
-1. **ProjectCreateForm Component**
-   - File exists but unclear purpose: `/react/apps/exta/src/components/ProjectCreateForm.js`
-   - May be unused legacy code
-
-2. **No TypeScript**
-   - Would improve maintainability
-   - Would catch errors earlier
-
-3. **Limited Error Handling**
-   - Network errors could be handled better
-   - Validation errors need improvement
-
-4. **No Unit Tests**
-   - React components untested
-   - API endpoints untested
-
-## Comparison: Required vs Available Functions
-
-### Extension Management
-| Function | Required | Available | Status | Notes |
-|----------|----------|-----------|--------|-------|
-| List extensions | ✅ | ✅ | Complete | GET /gateway/v1/extensions |
-| Create extension | ✅ | ✅ | Complete | POST /gateway/v1/extensions |
-| View extension | ✅ | ✅ | Complete | UI + API |
-| Update extension | ⚠️ | ❌ | Missing | May need for metadata updates |
-| Delete extension | ⚠️ | ❌ | Missing | Cleanup functionality |
-| Export extension | ✅ | ❌ | Missing | Core feature for distribution |
-
-### Collection Management
-| Function | Required | Available | Status | Notes |
-|----------|----------|-----------|--------|-------|
-| List collections | ✅ | ✅ | Complete | GET /gateway/v1/extensions/:key/collections |
-| Create collection | ✅ | ✅ | Complete | POST /gateway/v1/extensions/:key/collections |
-| View collection | ✅ | ✅ | Complete | UI shows all details |
-| Update collection | ✅ | ✅ | Complete | PUT with auto-save |
-| Delete collection | ⚠️ | ❌ | Missing | Cleanup functionality |
-| Duplicate collection | ⚠️ | ❌ | Missing | Would be useful |
-
-### Field Management
-| Function | Required | Available | Status | Notes |
-|----------|----------|-----------|--------|-------|
-| Add field | ✅ | ✅ | Complete | Inline editor |
-| Edit field | ✅ | ✅ | Complete | Type, label, name |
-| Remove field | ✅ | ✅ | Complete | Delete button |
-| Reorder fields | ✅ | ✅ | Complete | Up/down arrows |
-| Field validation | ⚠️ | ❌ | Missing | Would improve UX |
-| Field options (select) | ✅ | ❌ | Missing | Select fields incomplete |
-| Advanced config | ⚠️ | ❌ | Missing | Defaults, placeholders, help text |
-
-### Filter Management
-| Function | Required | Available | Status | Notes |
-|----------|----------|-----------|--------|-------|
-| Add filter | ✅ | ✅ | Complete | Inline editor |
-| Edit filter | ✅ | ✅ | Complete | Type, field, label |
-| Remove filter | ✅ | ✅ | Complete | Delete button |
-| Reorder filters | ✅ | ✅ | Complete | Up/down arrows |
-| Filter options | ⚠️ | ❌ | Missing | Select filters need options |
-
-### Column Management
-| Function | Required | Available | Status | Notes |
-|----------|----------|-----------|--------|-------|
-| Add column | ✅ | ✅ | Complete | Inline editor |
-| Edit column | ✅ | ✅ | Complete | Field, label, sortable |
-| Remove column | ✅ | ✅ | Complete | Delete button |
-| Reorder columns | ✅ | ✅ | Complete | Up/down arrows |
-| Column formatting | ⚠️ | ❌ | Missing | Date format, number format, etc. |
+**Build Output:** `/react/apps/exta/build/`
+- `index.js` - Compiled React app
+- `index.css` - Compiled styles
+- `index.asset.php` - WordPress dependencies
 
 ## Summary
 
-### Strengths
-- ✅ Core functionality is complete and working
-- ✅ API layer is robust and well-designed
-- ✅ UI is clean and intuitive
+### Current State
+- ✅ Builder UI fully functional
+- ✅ JSON storage working perfectly
+- ✅ All CRUD operations for extensions/collections work
 - ✅ Auto-save prevents data loss
-- ✅ File-based storage is simple and portable
-- ✅ Integration with Gateway ecosystem
+- ❌ **No plugin file generation - Extensions stay as JSON only**
 
-### Gaps for MVP
-- ❌ Can't export extensions as plugins (CRITICAL)
-- ❌ No delete operations (IMPORTANT)
-- ❌ Select fields can't have options (IMPORTANT)
-- ❌ No documentation (IMPORTANT)
+### To Make Extensions Work as Plugins
+1. Add "Generate Plugin" endpoint to `Routes.php`
+2. Implement logic to create plugin directory in `wp-content/plugins/`
+3. Generate main plugin file from template
+4. Generate collection class files for each JSON collection
+5. Add "Generate Plugin" button to ExtensionView.js
+6. Plugin will then appear in WordPress → Plugins to activate
 
-### Recommendation
+### Estimated Work
+- Backend endpoint: 1-2 hours
+- React button/API call: 30 minutes
+- Testing: 1 hour
+- **Total: ~3 hours to make plugin generation work**
 
-**For Internal Development Use:** Ready now - just uncomment line 108 in Plugin.php
-
-**For Public Release:** Need to implement:
-1. Plugin export functionality (required)
-2. Delete operations (strongly recommended)
-3. Select field options (strongly recommended)
-4. User documentation (required)
-5. Basic testing (required)
-
-**Estimated Work:** 2-3 weeks for MVP public release
-
-The builder has a solid foundation and is ~80% feature-complete. The remaining 20% is critical for delivering value (plugin export) and ensuring good UX (documentation, delete operations, field options).
+The Builder is 90% complete - just needs the plugin generation step to turn JSON definitions into installable WordPress plugins.
