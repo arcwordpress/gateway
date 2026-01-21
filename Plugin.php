@@ -105,7 +105,7 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\Records::init();
-        // Admin\Builder::init(); // Removed Builder admin link
+        Admin\Builder::init(); // Restored Builder admin link
         Package\PackageMenus::init();
 
         // Initialize front-end forms
