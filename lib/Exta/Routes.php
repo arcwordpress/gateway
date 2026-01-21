@@ -134,6 +134,10 @@ class Routes
             $namespace
         );
 
+        if (!$class_generated) {
+            error_log('[Gateway] Failed to generate collection class for: ' . $collection_key);
+        }
+
         // Load extension data and merge all collections
         $extension_file = $extension_dir . '/extension.json';
         $extension_data = [];
@@ -163,13 +167,20 @@ class Routes
         // Merge collections into extension data
         $extension_data['collections'] = $all_collections;
 
-        return new \WP_REST_Response([
+        $response_data = [
             'success' => true,
             'message' => 'Collection saved successfully',
             'file_path' => $file_path,
             'collection' => $json_data,
-            'extension' => $extension_data
-        ], 200);
+            'extension' => $extension_data,
+            'class_generated' => $class_generated
+        ];
+
+        if (!$class_generated) {
+            $response_data['message'] .= ', but PHP class generation failed (check error logs)';
+        }
+
+        return new \WP_REST_Response($response_data, 200);
     }
 
     /**
@@ -252,11 +263,15 @@ class Routes
         $plugin_slug = str_replace('_', '-', $extension_key);
         $namespace = str_replace('_', '', ucwords($extension_key, '_'));
 
-        \Gateway\Collections\FileFromData::generateCollectionClass(
+        $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
             $json_data,
             $plugin_slug,
             $namespace
         );
+
+        if (!$class_generated) {
+            error_log('[Gateway] Failed to regenerate collection class for: ' . $new_collection_key);
+        }
 
         // If key changed, delete old JSON and old PHP class file
         if ($original_collection_key !== $new_collection_key) {
@@ -270,14 +285,21 @@ class Routes
             }
         }
 
-        return new \WP_REST_Response([
+        $response_data = [
             'success' => true,
             'message' => 'Collection updated successfully',
             'file_path' => $new_file_path,
             'key_changed' => $original_collection_key !== $new_collection_key,
             'old_key' => $original_collection_key,
-            'new_key' => $new_collection_key
-        ], 200);
+            'new_key' => $new_collection_key,
+            'class_generated' => $class_generated
+        ];
+
+        if (!$class_generated) {
+            $response_data['message'] .= ', but PHP class regeneration failed (check error logs)';
+        }
+
+        return new \WP_REST_Response($response_data, 200);
     }
 
     /**
