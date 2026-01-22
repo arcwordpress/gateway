@@ -21,21 +21,21 @@
 
 /* High specificity to override WordPress admin styles */
 .app-bg aside .extension-heading {
-  @apply text-slate-500 !important;
+  @apply !text-slate-500;
 }
 
 .app-bg aside nav a.extension-link {
-  @apply text-slate-500 no-underline outline-none shadow-none !important;
+  @apply !text-slate-500 !no-underline !outline-none !shadow-none;
 }
 
 .app-bg aside nav a.extension-link:hover {
-  @apply text-slate-200 bg-slate-700 outline-none shadow-none !important;
+  @apply !text-slate-200 !bg-slate-700 !outline-none !shadow-none;
 }
 
 .app-bg aside nav a.extension-link:focus {
-  @apply outline-none shadow-none !important;
+  @apply !outline-none !shadow-none;
 }
 
 .app-bg aside nav a.extension-link.active {
-  @apply text-slate-200 bg-slate-600 outline-none shadow-none !important;
+  @apply !text-slate-200 !bg-slate-600 !outline-none !shadow-none;
 }
