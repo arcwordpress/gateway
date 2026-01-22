@@ -23,9 +23,9 @@ const LeftSidebar = () => {
   if (loading) {
     return (
       <aside className="w-64 p-4 border-r border-slate-600">
-        <div className="mb-6">
+        <Link to="/" className="block mb-6">
           <Logo />
-        </div>
+        </Link>
         <div className="text-gray-500">Loading...</div>
       </aside>
     );
@@ -33,9 +33,9 @@ const LeftSidebar = () => {
 
   return (
     <aside className="w-64 p-4 border-r border-slate-600">
-      <div className="mb-6">
+      <Link to="/" className="block mb-6">
         <Logo />
-      </div>
+      </Link>
       <h2 className="extension-heading text-lg font-semibold mb-4">
         Extensions ({extensions.length})
       </h2>
