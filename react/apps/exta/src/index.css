@@ -5,6 +5,7 @@
   --font-family-sans: 'Geist', system-ui, -apple-system, sans-serif;
   --font-family-lexend: 'Lexend Exa', system-ui, -apple-system, sans-serif;
   --color-main: #1D2327;
+  --color-sidebar-text: #BFBFBF;
 }
 
 .font-lexend {
@@ -17,4 +18,22 @@
 
 .app-main-margin-fix {
   margin-left: -20px;
+}
+
+/* High specificity to override WordPress admin styles */
+.app-bg aside .extension-heading {
+  color: var(--color-sidebar-text) !important;
+}
+
+.app-bg aside nav a.extension-link {
+  color: var(--color-sidebar-text) !important;
+  text-decoration: none !important;
+}
+
+.app-bg aside nav a.extension-link:hover {
+  color: var(--color-sidebar-text) !important;
+}
+
+.app-bg aside nav a.extension-link.active {
+  color: #FFFFFF !important;
 }

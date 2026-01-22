@@ -36,7 +36,7 @@ const LeftSidebar = () => {
       <div className="mb-6">
         <Logo />
       </div>
-      <h2 className="text-lg font-semibold mb-4">
+      <h2 className="extension-heading text-lg font-semibold mb-4">
         Extensions ({extensions.length})
       </h2>
 
@@ -50,10 +50,10 @@ const LeftSidebar = () => {
               <Link
                 key={extension.key}
                 to={`/extension/${extension.key}`}
-                className={`block px-3 py-2 rounded-lg transition-colors ${
+                className={`extension-link block px-3 py-2 rounded-lg transition-colors ${
                   isActive
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'active bg-gray-900'
+                    : 'hover:bg-gray-100'
                 }`}
               >
                 {extension.title || extension.key}
