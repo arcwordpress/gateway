@@ -8,14 +8,6 @@ import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
 import CollectionEditor from './pages/CollectionEditor';
 
-const Logo = () => {
-  return (
-    <div className="font-lexend text-[3rem] font-black">
-      GATEWAY
-    </div>
-  );
-};
-
 const MaximizeIcon = () => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,7 +26,6 @@ const App = () => {
             <div className="flex-1 flex flex-col">
               <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-6">
-                  <Logo />
                   <ExtensionSelector />
                   <Link
                   to="/extension/create"
