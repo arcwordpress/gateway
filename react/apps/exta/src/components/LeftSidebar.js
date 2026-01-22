@@ -22,7 +22,7 @@ const LeftSidebar = () => {
 
   if (loading) {
     return (
-      <aside className="w-64 border-r border-gray-200 p-4">
+      <aside className="w-64 p-4" style={{borderRight: 'solid 1px var(--color-border)'}}>
         <div className="mb-6">
           <Logo />
         </div>
@@ -32,7 +32,7 @@ const LeftSidebar = () => {
   }
 
   return (
-    <aside className="w-64 border-r border-gray-200 p-4">
+    <aside className="w-64 p-4" style={{borderRight: 'solid 1px var(--color-border)'}}>
       <div className="mb-6">
         <Logo />
       </div>
