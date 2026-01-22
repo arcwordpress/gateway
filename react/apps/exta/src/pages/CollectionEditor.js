@@ -7,6 +7,16 @@ import FilterEditor from '../components/FilterEditor';
 import ColumnEditor from '../components/ColumnEditor';
 import axios from 'axios';
 
+const ThreeDotsIcon = () => {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-500">
+      <circle cx="8" cy="2" r="1.5" fill="currentColor"/>
+      <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+      <circle cx="8" cy="14" r="1.5" fill="currentColor"/>
+    </svg>
+  );
+};
+
 const CollectionEditor = () => {
   const { key: extensionKey, collectionKey } = useParams();
   const navigate = useNavigate();
@@ -18,6 +28,7 @@ const CollectionEditor = () => {
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
   const [error, setError] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Set active extension based on URL param (handles page refresh)
   useEffect(() => {
@@ -101,6 +112,18 @@ const CollectionEditor = () => {
 
     return () => clearTimeout(timeoutId);
   }, [formData, hasUnsavedChanges]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuOpen && !event.target.closest('.relative')) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -246,9 +269,11 @@ const CollectionEditor = () => {
 
   return (
     <div>
-      <div className="mb-6">
+      <header className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-medium !text-slate-500">Edit Collection</h1>
+          <h1 className="text-lg font-medium !text-slate-500">
+            {formData.title} ({formData.key})
+          </h1>
           {saveStatus === 'saving' && (
             <span className="text-sm !text-slate-500">Saving...</span>
           )}
@@ -259,7 +284,48 @@ const CollectionEditor = () => {
             <span className="text-sm !text-red-500">✕ Error saving</span>
           )}
         </div>
-      </div>
+
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
+          >
+            <ThreeDotsIcon />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-slate-600 rounded-lg shadow-lg overflow-hidden z-10">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  // TODO: Implement rename
+                }}
+                className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
+              >
+                Rename
+              </button>
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  // TODO: Implement change key
+                }}
+                className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
+              >
+                Change Key
+              </button>
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  // TODO: Implement delete
+                }}
+                className="w-full px-4 py-2 text-left !text-red-400 hover:bg-neutral-800 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
 
       {error && (
         <div className="mb-4 p-4 bg-neutral-900 border border-red-500 rounded-lg !text-red-500">
@@ -268,49 +334,6 @@ const CollectionEditor = () => {
       )}
 
       <div className="space-y-6">
-        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
-          <h2 className="text-base font-medium !text-slate-500 mb-4">Collection Details</h2>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium !text-slate-400 mb-1">
-                Title
-              </label>
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={formData.title}
-                onChange={handleChange}
-                onBlur={() => hasUnsavedChanges && saveChanges()}
-                required
-                className="w-full px-4 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                placeholder="Enter collection title"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="key" className="block text-sm font-medium !text-slate-400 mb-1">
-                Key
-              </label>
-              <input
-                id="key"
-                name="key"
-                type="text"
-                value={formData.key}
-                onChange={handleChange}
-                onBlur={() => hasUnsavedChanges && saveChanges()}
-                required
-                className="w-full px-4 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                placeholder="collection_key"
-              />
-              {formData.key !== collectionKey && (
-                <p className="mt-1 text-sm !text-amber-500">
-                  Warning: Changing the key will rename the collection file
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
 
         <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
