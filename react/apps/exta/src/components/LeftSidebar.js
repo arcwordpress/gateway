@@ -22,7 +22,7 @@ const LeftSidebar = () => {
 
   if (loading) {
     return (
-      <aside className="w-64 p-4" style={{borderRight: 'solid 1px var(--color-border)'}}>
+      <aside className="w-64 p-4 border-r border-slate-600">
         <div className="mb-6">
           <Logo />
         </div>
@@ -32,7 +32,7 @@ const LeftSidebar = () => {
   }
 
   return (
-    <aside className="w-64 p-4" style={{borderRight: 'solid 1px var(--color-border)'}}>
+    <aside className="w-64 p-4 border-r border-slate-600">
       <div className="mb-6">
         <Logo />
       </div>
@@ -51,9 +51,7 @@ const LeftSidebar = () => {
                 key={extension.key}
                 to={`/extension/${extension.key}`}
                 className={`extension-link block px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'active bg-gray-900'
-                    : 'hover:bg-gray-100'
+                  isActive ? 'active' : ''
                 }`}
               >
                 {extension.title || extension.key}
