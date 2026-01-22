@@ -19,23 +19,34 @@
   margin-left: -20px;
 }
 
+/* Global anchor tag styles to override WordPress admin */
+#gateway-exta-app a {
+  outline: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+#gateway-exta-app a:focus,
+#gateway-exta-app a:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* High specificity to override WordPress admin styles */
 .app-bg aside .extension-heading {
   @apply !text-slate-500;
 }
 
 .app-bg aside nav a.extension-link {
-  @apply !text-slate-500 !no-underline !outline-none !shadow-none;
+  color: rgb(100 116 139) !important; /* slate-500 */
 }
 
 .app-bg aside nav a.extension-link:hover {
-  @apply !text-slate-200 !bg-neutral-800 !outline-none !shadow-none;
-}
-
-.app-bg aside nav a.extension-link:focus {
-  @apply !outline-none !shadow-none;
+  color: rgb(226 232 240) !important; /* slate-200 */
+  background-color: rgb(38 38 38) !important; /* neutral-800 */
 }
 
 .app-bg aside nav a.extension-link.active {
-  @apply !text-slate-200 !bg-neutral-700 !outline-none !shadow-none;
+  color: rgb(226 232 240) !important; /* slate-200 */
+  background-color: rgb(64 64 64) !important; /* neutral-700 */
 }
