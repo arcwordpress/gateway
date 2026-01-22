@@ -383,6 +383,7 @@
     --font-family-sans: 'Geist', system-ui, -apple-system, sans-serif;
     --font-family-lexend: 'Lexend Exa', system-ui, -apple-system, sans-serif;
     --color-main: #1D2327;
+    --color-sidebar-text: #BFBFBF;
   }
 }
 @layer base {
@@ -615,6 +616,9 @@
   .w-4 {
     width: calc(var(--spacing) * 4);
   }
+  .w-64 {
+    width: calc(var(--spacing) * 64);
+  }
   .w-full {
     width: 100%;
   }
@@ -663,6 +667,13 @@
   .gap-6 {
     gap: calc(var(--spacing) * 6);
   }
+  .space-y-1 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 1) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--tw-space-y-reverse)));
+    }
+  }
   .space-y-3 {
     :where(& > :not(:last-child)) {
       --tw-space-y-reverse: 0;
@@ -697,6 +708,10 @@
     border-style: var(--tw-border-style);
     border-width: 1px;
   }
+  .border-r {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 1px;
+  }
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
@@ -727,6 +742,9 @@
   }
   .bg-gray-200 {
     background-color: var(--color-gray-200);
+  }
+  .bg-gray-900 {
+    background-color: var(--color-gray-900);
   }
   .bg-green-600 {
     background-color: var(--color-green-600);
@@ -780,6 +798,10 @@
     font-size: var(--text-2xl);
     line-height: var(--tw-leading, var(--text-2xl--line-height));
   }
+  .text-lg {
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
+  }
   .text-sm {
     font-size: var(--text-sm);
     line-height: var(--tw-leading, var(--text-sm--line-height));
@@ -791,13 +813,6 @@
   .text-xs {
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
-  }
-  .text-\[3rem\] {
-    font-size: 3rem;
-  }
-  .font-black {
-    --tw-font-weight: var(--font-weight-black);
-    font-weight: var(--font-weight-black);
   }
   .font-bold {
     --tw-font-weight: var(--font-weight-bold);
@@ -886,6 +901,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-gray-50);
+      }
+    }
+  }
+  .hover\:bg-gray-100 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-gray-100);
       }
     }
   }
@@ -992,6 +1014,19 @@
 }
 .app-main-margin-fix {
   margin-right: -20px;
+}
+.app-bg aside .extension-heading {
+  color: var(--color-sidebar-text) !important;
+}
+.app-bg aside nav a.extension-link {
+  color: var(--color-sidebar-text) !important;
+  text-decoration: none !important;
+}
+.app-bg aside nav a.extension-link:hover {
+  color: var(--color-sidebar-text) !important;
+}
+.app-bg aside nav a.extension-link.active {
+  color: #FFFFFF !important;
 }
 @property --tw-rotate-x {
   syntax: "*";
