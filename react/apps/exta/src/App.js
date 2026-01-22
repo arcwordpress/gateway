@@ -49,7 +49,7 @@ const App = () => {
                   <SettingsIcon />
                 </div>
               </header>
-            <main className="p-6 flex-1">
+            <main className="px-8 py-6 flex-1">
               <Routes>
                 <Route path="/extension/create" element={<ExtensionCreate />} />
                 <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
