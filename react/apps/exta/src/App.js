@@ -3,6 +3,7 @@ import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import LeftSidebar from './components/LeftSidebar';
 import Breadcrumbs from './components/Breadcrumbs';
+import Dashboard from './pages/Dashboard';
 import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
@@ -53,7 +54,7 @@ const App = () => {
                 <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
                 <Route path="/extension/:key/:collectionKey" element={<CollectionEditor />} />
                 <Route path="/extension/:key" element={<ExtensionView />} />
-                <Route path="/" element={<div>Home</div>} />
+                <Route path="/" element={<Dashboard />} />
               </Routes>
             </main>
             </div>
