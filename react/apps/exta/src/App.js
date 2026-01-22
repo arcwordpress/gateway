@@ -1,10 +1,11 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import LeftSidebar from './components/LeftSidebar';
 import Breadcrumbs from './components/Breadcrumbs';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
@@ -46,15 +47,18 @@ const App = () => {
                 <Breadcrumbs />
                 <div className="flex items-center gap-4">
                   <MaximizeIcon />
-                  <SettingsIcon />
+                  <Link to="/settings">
+                    <SettingsIcon />
+                  </Link>
                 </div>
               </header>
-            <main className="p-6 flex-1">
+            <main className="px-8 py-6 flex-1">
               <Routes>
                 <Route path="/extension/create" element={<ExtensionCreate />} />
                 <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
                 <Route path="/extension/:key/:collectionKey" element={<CollectionEditor />} />
                 <Route path="/extension/:key" element={<ExtensionView />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/" element={<Dashboard />} />
               </Routes>
             </main>
