@@ -29,6 +29,7 @@ const CollectionEditor = () => {
   const [error, setError] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [jsonModalOpen, setJsonModalOpen] = useState(false);
 
   // Set active extension based on URL param (handles page refresh)
   useEffect(() => {
@@ -271,7 +272,7 @@ const CollectionEditor = () => {
     <div>
       <header className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-medium !text-slate-500">
+          <h1 className="!text-lg font-medium !text-slate-500">
             {formData.title} ({formData.key})
           </h1>
           {saveStatus === 'saving' && (
@@ -285,45 +286,54 @@ const CollectionEditor = () => {
           )}
         </div>
 
-        <div className="relative">
+        <div className="flex items-center gap-4">
           <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
+            onClick={() => setJsonModalOpen(true)}
+            className="px-4 py-2 bg-neutral-800 !text-slate-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm"
           >
-            <ThreeDotsIcon />
+            JSON
           </button>
 
-          {menuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-slate-600 rounded-lg shadow-lg overflow-hidden z-10">
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: Implement rename
-                }}
-                className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
-              >
-                Rename
-              </button>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: Implement change key
-                }}
-                className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
-              >
-                Change Key
-              </button>
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: Implement delete
-                }}
-                className="w-full px-4 py-2 text-left !text-red-400 hover:bg-neutral-800 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          )}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
+            >
+              <ThreeDotsIcon />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-slate-600 rounded-lg shadow-lg overflow-hidden z-10">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    // TODO: Implement rename
+                  }}
+                  className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
+                >
+                  Rename
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    // TODO: Implement change key
+                  }}
+                  className="w-full px-4 py-2 text-left !text-slate-300 hover:bg-neutral-800 transition-colors"
+                >
+                  Change Key
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    // TODO: Implement delete
+                  }}
+                  className="w-full px-4 py-2 text-left !text-red-400 hover:bg-neutral-800 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -335,9 +345,9 @@ const CollectionEditor = () => {
 
       <div className="space-y-6">
 
-        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
+        <div className="bg-neutral-900 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-medium !text-slate-500">Fields</h2>
+            <h2 className="!text-base font-medium !text-slate-500">Fields</h2>
             <button
               type="button"
               onClick={addField}
@@ -368,79 +378,99 @@ const CollectionEditor = () => {
           )}
         </div>
 
-        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-medium !text-slate-500">Filters</h2>
-            <button
-              type="button"
-              onClick={addFilter}
-              className="px-4 py-2 bg-purple-600 !text-white rounded-lg hover:bg-purple-700 text-sm"
-            >
-              + Add Filter
-            </button>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="bg-neutral-900 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="!text-base font-medium !text-slate-500">Filters</h2>
+              <button
+                type="button"
+                onClick={addFilter}
+                className="px-4 py-2 bg-purple-600 !text-white rounded-lg hover:bg-purple-700 text-sm"
+              >
+                + Add Filter
+              </button>
+            </div>
+
+            {formData.filters.length === 0 ? (
+              <p className="!text-slate-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
+            ) : (
+              <div className="space-y-3">
+                {formData.filters.map((filter, index) => (
+                  <FilterEditor
+                    key={index}
+                    filter={filter}
+                    index={index}
+                    onUpdate={updateFilter}
+                    onMove={moveFilter}
+                    onRemove={removeFilter}
+                    isFirst={index === 0}
+                    isLast={index === formData.filters.length - 1}
+                    onBlur={() => hasUnsavedChanges && saveChanges()}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {formData.filters.length === 0 ? (
-            <p className="!text-slate-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.filters.map((filter, index) => (
-                <FilterEditor
-                  key={index}
-                  filter={filter}
-                  index={index}
-                  onUpdate={updateFilter}
-                  onMove={moveFilter}
-                  onRemove={removeFilter}
-                  isFirst={index === 0}
-                  isLast={index === formData.filters.length - 1}
-                  onBlur={() => hasUnsavedChanges && saveChanges()}
-                />
-              ))}
+          <div className="bg-neutral-900 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="!text-base font-medium !text-slate-500">Columns</h2>
+              <button
+                type="button"
+                onClick={addColumn}
+                className="px-4 py-2 bg-blue-600 !text-white rounded-lg hover:bg-blue-700 text-sm"
+              >
+                + Add Column
+              </button>
             </div>
-          )}
-        </div>
 
-        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-medium !text-slate-500">Columns</h2>
-            <button
-              type="button"
-              onClick={addColumn}
-              className="px-4 py-2 bg-blue-600 !text-white rounded-lg hover:bg-blue-700 text-sm"
-            >
-              + Add Column
-            </button>
+            {formData.columns.length === 0 ? (
+              <p className="!text-slate-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
+            ) : (
+              <div className="space-y-3">
+                {formData.columns.map((column, index) => (
+                  <ColumnEditor
+                    key={index}
+                    column={column}
+                    index={index}
+                    onUpdate={updateColumn}
+                    onMove={moveColumn}
+                    onRemove={removeColumn}
+                    isFirst={index === 0}
+                    isLast={index === formData.columns.length - 1}
+                    onBlur={() => hasUnsavedChanges && saveChanges()}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-
-          {formData.columns.length === 0 ? (
-            <p className="!text-slate-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.columns.map((column, index) => (
-                <ColumnEditor
-                  key={index}
-                  column={column}
-                  index={index}
-                  onUpdate={updateColumn}
-                  onMove={moveColumn}
-                  onRemove={removeColumn}
-                  isFirst={index === 0}
-                  isLast={index === formData.columns.length - 1}
-                  onBlur={() => hasUnsavedChanges && saveChanges()}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h2 className="text-base font-medium !text-slate-500 mb-4">Collection Data</h2>
-          <pre className="p-4 bg-neutral-900 !text-slate-300 rounded-lg overflow-auto">
-            {JSON.stringify(collection, null, 2)}
-          </pre>
         </div>
       </div>
+
+      {jsonModalOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={() => setJsonModalOpen(false)}
+        >
+          <div
+            className="bg-neutral-900 rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="!text-lg font-medium !text-slate-200">Collection Data</h2>
+              <button
+                onClick={() => setJsonModalOpen(false)}
+                className="p-2 !text-slate-400 hover:!text-slate-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <pre className="p-4 bg-neutral-800 !text-slate-300 rounded-lg overflow-auto">
+              {JSON.stringify(collection, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
