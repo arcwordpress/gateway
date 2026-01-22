@@ -31,7 +31,7 @@ const Dashboard = () => {
         <Link
           key={extension.key}
           to={`/extension/${extension.key}`}
-          className="group grid grid-cols-[1fr_auto] items-center gap-4 p-4 bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+          className="group grid grid-cols-[1fr_auto] items-center gap-4 p-4 bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors"
         >
           <h2 className="!text-slate-200 text-lg font-medium">
             {extension.title || extension.key}

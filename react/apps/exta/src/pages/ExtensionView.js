@@ -52,7 +52,7 @@ const ExtensionView = () => {
                 <Link
                   key={collection.key}
                   to={`/extension/${activeExtension.key}/${collection.key}`}
-                  className="block p-4 border border-slate-600 rounded-lg hover:border-slate-500 hover:bg-slate-700 transition-colors"
+                  className="block p-4 bg-neutral-900 border border-slate-600 rounded-lg hover:border-slate-500 hover:bg-neutral-800 transition-colors"
                 >
                   <h3 className="font-medium !text-slate-200">{collection.title || collection.key}</h3>
                   {collection.description && (
@@ -66,7 +66,7 @@ const ExtensionView = () => {
 
         <div>
           <h2 className="text-xl font-semibold mb-4 !text-slate-200">Extension Data</h2>
-          <pre className="p-4 bg-slate-700 !text-slate-300 rounded-lg overflow-auto">
+          <pre className="p-4 bg-neutral-900 !text-slate-300 rounded-lg overflow-auto">
             {JSON.stringify(activeExtension, null, 2)}
           </pre>
         </div>

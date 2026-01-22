@@ -3,6 +3,7 @@ import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import LeftSidebar from './components/LeftSidebar';
 import Breadcrumbs from './components/Breadcrumbs';
+import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
@@ -48,7 +49,7 @@ const App = () => {
                   <SettingsIcon />
                 </div>
               </header>
-            <main className="p-6">
+            <main className="p-6 flex-1">
               <Routes>
                 <Route path="/extension/create" element={<ExtensionCreate />} />
                 <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
@@ -57,6 +58,7 @@ const App = () => {
                 <Route path="/" element={<Dashboard />} />
               </Routes>
             </main>
+              <Footer />
             </div>
           </div>
         </HashRouter>

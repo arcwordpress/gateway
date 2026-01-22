@@ -29,7 +29,7 @@
 }
 
 .app-bg aside nav a.extension-link:hover {
-  @apply !text-slate-200 !bg-slate-700 !outline-none !shadow-none;
+  @apply !text-slate-200 !bg-neutral-800 !outline-none !shadow-none;
 }
 
 .app-bg aside nav a.extension-link:focus {
@@ -37,5 +37,5 @@
 }
 
 .app-bg aside nav a.extension-link.active {
-  @apply !text-slate-200 !bg-slate-600 !outline-none !shadow-none;
+  @apply !text-slate-200 !bg-neutral-700 !outline-none !shadow-none;
 }
