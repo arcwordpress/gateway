@@ -233,19 +233,13 @@ const CollectionEditor = () => {
   };
 
   if (collectionsLoading) {
-    return <div>Loading collection...</div>;
+    return <div className="!text-slate-500">Loading collection...</div>;
   }
 
   if (!collection) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-4">Collection not found</h1>
-        <button
-          onClick={() => navigate(`/extension/${extensionKey}`)}
-          className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-        >
-          Back to Extension
-        </button>
+        <h1 className="text-lg font-medium !text-slate-500 mb-4">Collection not found</h1>
       </div>
     );
   }
@@ -253,38 +247,32 @@ const CollectionEditor = () => {
   return (
     <div>
       <div className="mb-6">
-        <button
-          onClick={() => navigate(`/extension/${extensionKey}`)}
-          className="text-gray-600 hover:text-gray-800 mb-2"
-        >
-          ← Back to {activeExtension?.title || 'Extension'}
-        </button>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">Edit Collection</h1>
+          <h1 className="text-lg font-medium !text-slate-500">Edit Collection</h1>
           {saveStatus === 'saving' && (
-            <span className="text-sm text-gray-500">Saving...</span>
+            <span className="text-sm !text-slate-500">Saving...</span>
           )}
           {saveStatus === 'saved' && (
-            <span className="text-sm text-green-600">✓ Saved</span>
+            <span className="text-sm !text-green-500">✓ Saved</span>
           )}
           {saveStatus === 'error' && (
-            <span className="text-sm text-red-600">✕ Error saving</span>
+            <span className="text-sm !text-red-500">✕ Error saving</span>
           )}
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+        <div className="mb-4 p-4 bg-neutral-900 border border-red-500 rounded-lg !text-red-500">
           {error}
         </div>
       )}
 
       <div className="space-y-6">
-        <div className="bg-white border rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Collection Details</h2>
+        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
+          <h2 className="text-base font-medium !text-slate-500 mb-4">Collection Details</h2>
           <div className="space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium !text-slate-400 mb-1">
                 Title
               </label>
               <input
@@ -295,13 +283,13 @@ const CollectionEditor = () => {
                 onChange={handleChange}
                 onBlur={() => hasUnsavedChanges && saveChanges()}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                 placeholder="Enter collection title"
               />
             </div>
 
             <div>
-              <label htmlFor="key" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="key" className="block text-sm font-medium !text-slate-400 mb-1">
                 Key
               </label>
               <input
@@ -312,11 +300,11 @@ const CollectionEditor = () => {
                 onChange={handleChange}
                 onBlur={() => hasUnsavedChanges && saveChanges()}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                 placeholder="collection_key"
               />
               {formData.key !== collectionKey && (
-                <p className="mt-1 text-sm text-amber-600">
+                <p className="mt-1 text-sm !text-amber-500">
                   Warning: Changing the key will rename the collection file
                 </p>
               )}
@@ -324,20 +312,20 @@ const CollectionEditor = () => {
           </div>
         </div>
 
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Fields</h2>
+            <h2 className="text-base font-medium !text-slate-500">Fields</h2>
             <button
               type="button"
               onClick={addField}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+              className="px-4 py-2 bg-green-600 !text-white rounded-lg hover:bg-green-700 text-sm"
             >
               + Add Field
             </button>
           </div>
 
           {formData.fields.length === 0 ? (
-            <p className="text-gray-500 text-sm">No fields yet. Click "Add Field" to create one.</p>
+            <p className="!text-slate-500 text-sm">No fields yet. Click "Add Field" to create one.</p>
           ) : (
             <div className="space-y-3">
               {formData.fields.map((field, index) => (
@@ -357,20 +345,20 @@ const CollectionEditor = () => {
           )}
         </div>
 
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Filters</h2>
+            <h2 className="text-base font-medium !text-slate-500">Filters</h2>
             <button
               type="button"
               onClick={addFilter}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
+              className="px-4 py-2 bg-purple-600 !text-white rounded-lg hover:bg-purple-700 text-sm"
             >
               + Add Filter
             </button>
           </div>
 
           {formData.filters.length === 0 ? (
-            <p className="text-gray-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
+            <p className="!text-slate-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
           ) : (
             <div className="space-y-3">
               {formData.filters.map((filter, index) => (
@@ -390,20 +378,20 @@ const CollectionEditor = () => {
           )}
         </div>
 
-        <div className="bg-white border rounded-lg p-6">
+        <div className="bg-neutral-900 border border-slate-600 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Columns</h2>
+            <h2 className="text-base font-medium !text-slate-500">Columns</h2>
             <button
               type="button"
               onClick={addColumn}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+              className="px-4 py-2 bg-blue-600 !text-white rounded-lg hover:bg-blue-700 text-sm"
             >
               + Add Column
             </button>
           </div>
 
           {formData.columns.length === 0 ? (
-            <p className="text-gray-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
+            <p className="!text-slate-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
           ) : (
             <div className="space-y-3">
               {formData.columns.map((column, index) => (
@@ -424,8 +412,8 @@ const CollectionEditor = () => {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Collection Data</h2>
-          <pre className="p-4 bg-gray-50 rounded-lg overflow-auto">
+          <h2 className="text-base font-medium !text-slate-500 mb-4">Collection Data</h2>
+          <pre className="p-4 bg-neutral-900 !text-slate-300 rounded-lg overflow-auto">
             {JSON.stringify(collection, null, 2)}
           </pre>
         </div>
