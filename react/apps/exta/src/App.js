@@ -11,7 +11,23 @@ import CollectionEditor from './pages/CollectionEditor';
 const MaximizeIcon = () => {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22.2572 2.95556V8.66557H24V0H15.3344V1.74276H21.0444L1.74276 21.0444V15.3344H0V24H8.66557V22.2572H2.95556L22.2572 2.95556Z" fill="black"/>
+      <path d="M22.2572 2.95556V8.66557H24V0H15.3344V1.74276H21.0444L1.74276 21.0444V15.3344H0V24H8.66557V22.2572H2.95556L22.2572 2.95556Z" fill="white"/>
+    </svg>
+  );
+};
+
+const SettingsIcon = () => {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.66667 14V9.33331" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.66667 6.66667V2" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 14V8" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 5.33333V2" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 14V10.6667" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 8V2" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M0.666672 9.33331H4.66667" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6 5.33331H10" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M11.3333 10.6667H15.3333" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 };
@@ -34,7 +50,10 @@ const App = () => {
                   + Extension
                 </Link>
               </div>
-              <MaximizeIcon />
+              <div className="flex items-center gap-4">
+                <MaximizeIcon />
+                <SettingsIcon />
+              </div>
             </header>
             <main className="p-6">
               <Routes>
