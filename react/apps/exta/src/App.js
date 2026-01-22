@@ -28,7 +28,7 @@ const App = () => {
     <ExtensionListProvider>
       <ActiveExtensionProvider>
         <HashRouter>
-          <div className="min-h-screen bg-white">
+          <div className="app-bg app-main-margin-fix min-h-screen" style={{borderLeft: 'solid 1px rgb(255,255,255,0.25)'}}>
             <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <Logo />

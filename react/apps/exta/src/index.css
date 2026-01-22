@@ -4,8 +4,17 @@
 @theme {
   --font-family-sans: 'Geist', system-ui, -apple-system, sans-serif;
   --font-family-lexend: 'Lexend Exa', system-ui, -apple-system, sans-serif;
+  --color-main: #1D2327;
 }
 
 .font-lexend {
   font-family: var(--font-family-lexend);
+}
+
+.app-bg {
+  background-color: var(--color-main);
+}
+
+.app-main-margin-fix {
+  margin-left: -20px;
 }
