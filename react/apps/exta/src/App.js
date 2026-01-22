@@ -39,7 +39,7 @@ const App = () => {
     <ExtensionListProvider>
       <ActiveExtensionProvider>
         <HashRouter>
-          <div className="app-bg app-main-margin-fix min-h-screen flex border-l border-slate-600">
+          <div id="gateway-exta-app" className="app-bg app-main-margin-fix min-h-screen flex border-l border-slate-600">
             <LeftSidebar />
             <div className="flex-1 flex flex-col">
               <header className="px-8 py-4 flex items-center justify-between border-b border-slate-600">
