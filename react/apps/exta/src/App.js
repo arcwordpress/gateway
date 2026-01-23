@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
 import LeftSidebar from './components/LeftSidebar';
@@ -15,6 +15,22 @@ import FormsEditor from './pages/FormsEditor';
 import GridsEditor from './pages/GridsEditor';
 import RelationshipsEditor from './pages/RelationshipsEditor';
 
+const SettingsIcon = () => {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-500">
+      <path d="M2.66667 14V9.33331" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.66667 6.66667V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 14V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 5.33333V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 14V10.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 8V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M0.666672 9.33331H4.66667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6 5.33331H10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M11.3333 10.6667H15.3333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+};
+
 const App = () => {
   return (
     <ExtensionListProvider>
@@ -23,8 +39,11 @@ const App = () => {
           <div id="gateway-exta-app" className="app-bg app-main-margin-fix min-h-screen flex border-l border-slate-600">
             <LeftSidebar />
             <div className="flex-1 flex flex-col">
-              <header className="px-8 py-4 border-b border-slate-600">
+              <header className="px-8 py-4 flex items-center justify-between border-b border-slate-600">
                 <Breadcrumbs />
+                <Link to="/settings">
+                  <SettingsIcon />
+                </Link>
               </header>
             <main className="px-8 py-6 flex-1">
               <Routes>
