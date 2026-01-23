@@ -51,7 +51,7 @@ const ExtensionView = () => {
               {collections.map((collection) => (
                 <Link
                   key={collection.key}
-                  to={`/extension/${activeExtension.key}/${collection.key}`}
+                  to={`/extension/${activeExtension.key}/collection/${collection.key}`}
                   className="block p-4 bg-neutral-900 border border-slate-600 rounded-lg hover:border-slate-500 hover:bg-neutral-800 transition-colors"
                 >
                   <h3 className="font-medium !text-slate-200">{collection.title || collection.key}</h3>

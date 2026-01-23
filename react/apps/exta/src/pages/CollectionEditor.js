@@ -5,6 +5,7 @@ import { useExtensionList } from '../context/ExtensionListContext';
 import FieldEditor from '../components/FieldEditor';
 import FilterEditor from '../components/FilterEditor';
 import ColumnEditor from '../components/ColumnEditor';
+import CollectionNav from '../components/CollectionNav';
 import axios from 'axios';
 
 const ThreeDotsIcon = () => {
@@ -88,7 +89,7 @@ const CollectionEditor = () => {
         // If key changed, navigate to new URL
         if (response.data.key_changed) {
           setTimeout(() => {
-            navigate(`/extension/${extensionKey}/${response.data.new_key}`);
+            navigate(`/extension/${extensionKey}/collection/${response.data.new_key}`);
           }, 1000);
         }
       } else {
@@ -336,6 +337,8 @@ const CollectionEditor = () => {
           </div>
         </div>
       </header>
+
+      <CollectionNav extensionKey={extensionKey} collectionKey={collectionKey} />
 
       {error && (
         <div className="mb-4 p-4 bg-neutral-900 border border-red-500 rounded-lg !text-red-500">
