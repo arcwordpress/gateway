@@ -10,6 +10,10 @@ import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
 import CollectionEditor from './pages/CollectionEditor';
+import FieldsEditor from './pages/FieldsEditor';
+import FormsEditor from './pages/FormsEditor';
+import GridsEditor from './pages/GridsEditor';
+import RelationshipsEditor from './pages/RelationshipsEditor';
 
 const MaximizeIcon = () => {
   return (
@@ -56,7 +60,11 @@ const App = () => {
               <Routes>
                 <Route path="/extension/create" element={<ExtensionCreate />} />
                 <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
-                <Route path="/extension/:key/:collectionKey" element={<CollectionEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/fields" element={<FieldsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/forms" element={<FormsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/grids" element={<GridsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/relationships" element={<RelationshipsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey" element={<CollectionEditor />} />
                 <Route path="/extension/:key" element={<ExtensionView />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/" element={<Dashboard />} />
