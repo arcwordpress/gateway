@@ -15,6 +15,11 @@ export const useBreadcrumbs = () => {
     const segments = [];
     const path = location.pathname;
 
+    console.log('useBreadcrumbs - path:', path);
+    console.log('useBreadcrumbs - params:', params);
+    console.log('useBreadcrumbs - activeExtension:', activeExtension);
+    console.log('useBreadcrumbs - collections:', collections);
+
     // Always start with Dashboard
     segments.push({ label: 'Dashboard', path: '/' });
 
