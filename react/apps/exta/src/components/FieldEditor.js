@@ -1,4 +1,16 @@
+import { getRegisteredFieldTypes } from '@arcwp/gateway-forms';
+
+// Helper to format field type labels (e.g., "date-picker" → "Date Picker")
+const formatFieldTypeLabel = (type) => {
+  return type
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast, onBlur }) => {
+  const fieldTypes = getRegisteredFieldTypes();
+
   return (
     <div className="flex gap-3 items-start p-3 bg-neutral-800 rounded-lg">
       <div className="flex flex-col gap-1">
@@ -28,14 +40,11 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
             onChange={(e) => onUpdate(index, 'type', e.target.value)}
             className="w-full px-3 py-2 text-sm bg-neutral-900 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
           >
-            <option value="text">Text</option>
-            <option value="textarea">Textarea</option>
-            <option value="number">Number</option>
-            <option value="email">Email</option>
-            <option value="url">URL</option>
-            <option value="date">Date</option>
-            <option value="checkbox">Checkbox</option>
-            <option value="select">Select</option>
+            {fieldTypes.map(type => (
+              <option key={type} value={type}>
+                {formatFieldTypeLabel(type)}
+              </option>
+            ))}
           </select>
         </div>
 
