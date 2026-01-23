@@ -1,5 +1,5 @@
 import { useMemo } from '@wordpress/element';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 
 /**
@@ -8,15 +8,20 @@ import { useActiveExtension } from '../context/ActiveExtensionContext';
  */
 export const useBreadcrumbs = () => {
   const location = useLocation();
-  const params = useParams();
   const { activeExtension, collections } = useActiveExtension();
 
   return useMemo(() => {
     const segments = [];
     const path = location.pathname;
 
+    // Parse route parameters from pathname since Breadcrumbs is outside <Routes>
+    const pathMatch = path.match(/\/extension\/([^/]+)(?:\/collection\/([^/]+)(?:\/([^/]+))?)?/);
+    const extensionKey = pathMatch?.[1];
+    const collectionKey = pathMatch?.[2];
+    const section = pathMatch?.[3]; // fields, forms, grids, relationships
+
     console.log('useBreadcrumbs - path:', path);
-    console.log('useBreadcrumbs - params:', params);
+    console.log('useBreadcrumbs - parsed:', { extensionKey, collectionKey, section });
     console.log('useBreadcrumbs - activeExtension:', activeExtension);
     console.log('useBreadcrumbs - collections:', collections);
 
@@ -36,7 +41,7 @@ export const useBreadcrumbs = () => {
         });
 
         // Check if we're on a collection route
-        if (params.collectionKey) {
+        if (collectionKey) {
           // Add Collections segment
           segments.push({
             label: 'Collections',
@@ -44,51 +49,35 @@ export const useBreadcrumbs = () => {
           });
 
           // Find collection title
-          const collection = collections?.find(c => c.key === params.collectionKey);
-          const collectionLabel = collection?.title || params.collectionKey;
+          const collection = collections?.find(c => c.key === collectionKey);
+          const collectionLabel = collection?.title || collectionKey;
 
-          // Determine which section we're in
-          if (path.includes('/fields')) {
-            segments.push({
-              label: collectionLabel,
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}`
-            });
+          // Add collection name segment
+          segments.push({
+            label: collectionLabel,
+            path: `/extension/${activeExtension.key}/collection/${collectionKey}`
+          });
+
+          // Add section segment if present
+          if (section === 'fields') {
             segments.push({
               label: 'Fields',
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}/fields`
+              path: `/extension/${activeExtension.key}/collection/${collectionKey}/fields`
             });
-          } else if (path.includes('/forms')) {
-            segments.push({
-              label: collectionLabel,
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}`
-            });
+          } else if (section === 'forms') {
             segments.push({
               label: 'Forms',
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}/forms`
+              path: `/extension/${activeExtension.key}/collection/${collectionKey}/forms`
             });
-          } else if (path.includes('/grids')) {
-            segments.push({
-              label: collectionLabel,
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}`
-            });
+          } else if (section === 'grids') {
             segments.push({
               label: 'Grids',
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}/grids`
+              path: `/extension/${activeExtension.key}/collection/${collectionKey}/grids`
             });
-          } else if (path.includes('/relationships')) {
-            segments.push({
-              label: collectionLabel,
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}`
-            });
+          } else if (section === 'relationships') {
             segments.push({
               label: 'Relationships',
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}/relationships`
-            });
-          } else if (path.includes('/collection/')) {
-            // Just collection overview
-            segments.push({
-              label: collectionLabel,
-              path: `/extension/${activeExtension.key}/collection/${params.collectionKey}`
+              path: `/extension/${activeExtension.key}/collection/${collectionKey}/relationships`
             });
           }
         } else if (path.includes('/collection/create')) {
@@ -112,5 +101,5 @@ export const useBreadcrumbs = () => {
     }
 
     return segments;
-  }, [location.pathname, params, activeExtension, collections]);
+  }, [location.pathname, activeExtension, collections]);
 };
