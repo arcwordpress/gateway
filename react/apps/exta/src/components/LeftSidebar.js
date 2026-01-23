@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useExtensionList } from '../context/ExtensionListContext';
+import CollectionMenu from './CollectionMenu';
 
 const Logo = () => {
   return (
@@ -22,44 +23,72 @@ const LeftSidebar = () => {
 
   if (loading) {
     return (
-      <aside className="w-64 p-4 border-r border-slate-600">
-        <Link to="/" className="block mb-6">
-          <Logo />
-        </Link>
-        <div className="text-gray-500">Loading...</div>
+      <aside className="w-64 p-4 border-r border-slate-600 flex flex-col h-screen">
+        <div className="flex-1">
+          <Link to="/" className="block mb-6">
+            <Logo />
+          </Link>
+          <div className="text-gray-500">Loading...</div>
+        </div>
+        <div className="pt-4 border-t border-slate-600">
+          <Link
+            to="/settings"
+            className="block px-3 py-2 rounded-lg transition-colors hover:bg-neutral-800 !text-slate-400"
+          >
+            Settings
+          </Link>
+        </div>
       </aside>
     );
   }
 
   return (
-    <aside className="w-64 p-4 border-r border-slate-600">
-      <Link to="/" className="block mb-6">
-        <Logo />
-      </Link>
-      <h2 className="extension-heading text-lg font-semibold mb-4">
-        Extensions ({extensions.length})
-      </h2>
+    <aside className="w-64 p-4 border-r border-slate-600 flex flex-col h-screen">
+      <div className="flex-1">
+        <Link to="/" className="block mb-6">
+          <Logo />
+        </Link>
 
-      {extensions.length === 0 ? (
-        <div className="text-gray-500">—</div>
-      ) : (
-        <nav className="space-y-1">
-          {extensions.map((extension) => {
-            const isActive = location.pathname.startsWith(`/extension/${extension.key}`);
-            return (
-              <Link
-                key={extension.key}
-                to={`/extension/${extension.key}`}
-                className={`extension-link block px-3 py-2 rounded-lg transition-colors ${
-                  isActive ? 'active' : ''
-                }`}
-              >
-                {extension.title || extension.key}
-              </Link>
-            );
-          })}
-        </nav>
-      )}
+        <CollectionMenu />
+
+        <h2 className="extension-heading text-lg font-semibold mb-4">
+          Extensions ({extensions.length})
+        </h2>
+
+        {extensions.length === 0 ? (
+          <div className="text-gray-500">—</div>
+        ) : (
+          <nav className="space-y-1">
+            {extensions.map((extension) => {
+              const isActive = location.pathname.startsWith(`/extension/${extension.key}`);
+              return (
+                <Link
+                  key={extension.key}
+                  to={`/extension/${extension.key}`}
+                  className={`extension-link block px-3 py-2 rounded-lg transition-colors ${
+                    isActive ? 'active' : ''
+                  }`}
+                >
+                  {extension.title || extension.key}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+      </div>
+
+      <div className="pt-4 border-t border-slate-600">
+        <Link
+          to="/settings"
+          className={`block px-3 py-2 rounded-lg transition-colors ${
+            location.pathname === '/settings'
+              ? 'bg-neutral-800 !text-slate-200'
+              : 'hover:bg-neutral-800 !text-slate-400'
+          }`}
+        >
+          Settings
+        </Link>
+      </div>
     </aside>
   );
 };
