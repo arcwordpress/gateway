@@ -13,6 +13,7 @@ export const useBreadcrumbs = () => {
 
   return useMemo(() => {
     const segments = [];
+    const path = location.pathname;
 
     // Always start with Dashboard
     segments.push({ label: 'Dashboard', path: '/' });
@@ -42,8 +43,6 @@ export const useBreadcrumbs = () => {
           const collectionLabel = collection?.title || params.collectionKey;
 
           // Determine which section we're in
-          const path = location.pathname;
-
           if (path.includes('/fields')) {
             segments.push({
               label: collectionLabel,
