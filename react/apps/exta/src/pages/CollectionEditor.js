@@ -2,7 +2,6 @@ import { useState, useEffect } from '@wordpress/element';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 import { useExtensionList } from '../context/ExtensionListContext';
-import FieldEditor from '../components/FieldEditor';
 import FilterEditor from '../components/FilterEditor';
 import ColumnEditor from '../components/ColumnEditor';
 import CollectionNav from '../components/CollectionNav';
@@ -140,44 +139,6 @@ const CollectionEditor = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    setHasUnsavedChanges(true);
-  };
-
-  const addField = () => {
-    setFormData(prev => ({
-      ...prev,
-      fields: [...prev.fields, { type: 'text', label: '', name: '' }]
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const removeField = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      fields: prev.fields.filter((_, i) => i !== index)
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const updateField = (index, fieldName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      fields: prev.fields.map((field, i) => 
-        i === index ? { ...field, [fieldName]: value } : field
-      )
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const moveField = (index, direction) => {
-    const newFields = [...formData.fields];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (newIndex < 0 || newIndex >= newFields.length) return;
-    
-    [newFields[index], newFields[newIndex]] = [newFields[newIndex], newFields[index]];
-    
-    setFormData(prev => ({ ...prev, fields: newFields }));
     setHasUnsavedChanges(true);
   };
 
@@ -347,40 +308,6 @@ const CollectionEditor = () => {
       )}
 
       <div className="space-y-6">
-
-        <div className="bg-neutral-900 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="!text-base font-medium !text-slate-500">Fields</h2>
-            <button
-              type="button"
-              onClick={addField}
-              className="px-4 py-2 bg-green-600 !text-white rounded-lg hover:bg-green-700 text-sm"
-            >
-              + Add Field
-            </button>
-          </div>
-
-          {formData.fields.length === 0 ? (
-            <p className="!text-slate-500 text-sm">No fields yet. Click "Add Field" to create one.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.fields.map((field, index) => (
-                <FieldEditor
-                  key={index}
-                  field={field}
-                  index={index}
-                  onUpdate={updateField}
-                  onMove={moveField}
-                  onRemove={removeField}
-                  isFirst={index === 0}
-                  isLast={index === formData.fields.length - 1}
-                  onBlur={() => hasUnsavedChanges && saveChanges()}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-neutral-900 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
@@ -388,7 +315,7 @@ const CollectionEditor = () => {
               <button
                 type="button"
                 onClick={addFilter}
-                className="px-4 py-2 bg-purple-600 !text-white rounded-lg hover:bg-purple-700 text-sm"
+                className="px-4 py-2 bg-slate-700 !text-slate-200 rounded-lg hover:bg-slate-600 text-sm transition-colors"
               >
                 + Add Filter
               </button>
@@ -421,7 +348,7 @@ const CollectionEditor = () => {
               <button
                 type="button"
                 onClick={addColumn}
-                className="px-4 py-2 bg-blue-600 !text-white rounded-lg hover:bg-blue-700 text-sm"
+                className="px-4 py-2 bg-slate-700 !text-slate-200 rounded-lg hover:bg-slate-600 text-sm transition-colors"
               >
                 + Add Column
               </button>
