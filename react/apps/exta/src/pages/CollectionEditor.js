@@ -238,7 +238,7 @@ const CollectionEditor = () => {
               type="text"
               name="title"
               value={formData.title}
-              onChange={handleInputChange}
+              onChange={handleChange}
               className="w-full px-3 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
               placeholder="Collection Title"
             />
@@ -252,7 +252,7 @@ const CollectionEditor = () => {
               type="text"
               name="key"
               value={formData.key}
-              onChange={handleInputChange}
+              onChange={handleChange}
               className="w-full px-3 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
               placeholder="collection_key"
             />
