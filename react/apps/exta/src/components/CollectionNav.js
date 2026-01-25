@@ -9,8 +9,12 @@ const CollectionNav = ({ extensionKey, collectionKey }) => {
 
   const navItems = [
     {
-      label: 'Overview',
+      label: 'Config',
       path: `/extension/${extensionKey}/collection/${collectionKey}`
+    },
+    {
+      label: 'Relationships',
+      path: `/extension/${extensionKey}/collection/${collectionKey}/relationships`
     },
     {
       label: 'Fields',
@@ -23,10 +27,6 @@ const CollectionNav = ({ extensionKey, collectionKey }) => {
     {
       label: 'Grids',
       path: `/extension/${extensionKey}/collection/${collectionKey}/grids`
-    },
-    {
-      label: 'Relationships',
-      path: `/extension/${extensionKey}/collection/${collectionKey}/relationships`
     },
   ];
 

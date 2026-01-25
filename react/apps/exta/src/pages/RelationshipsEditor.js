@@ -30,6 +30,7 @@ const RelationshipsEditor = () => {
   const [relationships, setRelationships] = useState([]);
   const [nodePositions, setNodePositions] = useState({});
   const [editingRelationship, setEditingRelationship] = useState(null);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -350,6 +351,15 @@ const RelationshipsEditor = () => {
                 {relationships.length} relationship{relationships.length !== 1 ? 's' : ''} defined
               </span>
             )}
+            <button
+              onClick={() => setShowHelpModal(true)}
+              className="p-2 !text-slate-400 hover:!text-slate-200 hover:bg-neutral-800 rounded-lg transition-colors"
+              title="Help"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -413,7 +423,7 @@ const RelationshipsEditor = () => {
           {/* SVG Layer for connection lines */}
           <svg
             className="absolute inset-0 pointer-events-none overflow-visible"
-            style={{ zIndex: 1 }}
+            style={{ zIndex: 10 }}
             width="100%"
             height="100%"
           >
@@ -552,16 +562,6 @@ const RelationshipsEditor = () => {
           )}
         </div>
 
-        {/* Instructions */}
-        <div className="mt-4 p-4 bg-neutral-800 rounded-lg border border-slate-700">
-          <h3 className="text-sm font-medium !text-slate-300 mb-2">How to use:</h3>
-          <ul className="text-sm !text-slate-400 space-y-1">
-            <li>• Click and drag from the current collection to create a relationship</li>
-            <li>• Configure the relationship type (belongsTo, hasMany) in the dialog</li>
-            <li>• Relationships are automatically saved to the collection JSON</li>
-            <li>• These will generate Eloquent relationship methods in your PHP collection class</li>
-          </ul>
-        </div>
       </div>
 
       {/* Relationship Editor Modal */}
@@ -710,6 +710,53 @@ const RelationshipsEditor = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={() => setShowHelpModal(false)}
+        >
+          <div
+            className="bg-neutral-900 rounded-lg p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="!text-lg font-medium !text-slate-200">How to use</h2>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="p-2 !text-slate-400 hover:!text-slate-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <ul className="text-sm !text-slate-400 space-y-3">
+              <li className="flex gap-2">
+                <span className="!text-blue-400">•</span>
+                Click and drag from the current collection circle to create a relationship
+              </li>
+              <li className="flex gap-2">
+                <span className="!text-blue-400">•</span>
+                Configure the relationship type (belongsTo, hasMany) in the dialog
+              </li>
+              <li className="flex gap-2">
+                <span className="!text-blue-400">•</span>
+                Relationships are automatically saved to the collection JSON
+              </li>
+              <li className="flex gap-2">
+                <span className="!text-blue-400">•</span>
+                These will generate Eloquent relationship methods in your PHP collection class
+              </li>
+            </ul>
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-6 w-full px-4 py-2 bg-neutral-700 !text-slate-300 rounded-lg hover:bg-neutral-600 transition-colors"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}
