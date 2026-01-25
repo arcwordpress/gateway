@@ -63,7 +63,13 @@ class FileFromData
 
         // Convert fields array to formatted PHP array string
         $fieldsPhp = self::arrayToPhp($collectionData['fields']);
-        
+
+        // Generate relationship methods
+        $relationshipMethods = '';
+        if (!empty($collectionData['relationships'])) {
+            $relationshipMethods = self::generateRelationshipMethods($collectionData['relationships'], $pluginNamespace);
+        }
+
         // Replace placeholders
         $replacements = [
             '{{NAMESPACE}}' => $pluginNamespace,
@@ -71,6 +77,7 @@ class FileFromData
             '{{COLLECTION_KEY}}' => $collectionData['key'],
             '{{COLLECTION_TITLE}}' => $title,
             '{{FIELDS_JSON}}' => $fieldsPhp,
+            '{{RELATIONSHIP_METHODS}}' => $relationshipMethods,
         ];
         
         $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);
@@ -87,7 +94,8 @@ class FileFromData
         chmod($filePath, 0644);
 
         $fieldCount = isset($collectionData['fields']) ? count($collectionData['fields']) : 0;
-        error_log("[Gateway] Generated collection class: {$filePath} with {$fieldCount} fields");
+        $relationshipCount = isset($collectionData['relationships']) ? count($collectionData['relationships']) : 0;
+        error_log("[Gateway] Generated collection class: {$filePath} with {$fieldCount} fields and {$relationshipCount} relationships");
         return true;
     }
     
@@ -179,5 +187,73 @@ class FileFromData
 
         // String - escape single quotes
         return "'" . str_replace("'", "\\'", $value) . "'";
+    }
+
+    /**
+     * Generate Eloquent relationship methods from relationships array
+     *
+     * @param array $relationships Relationships array from JSON
+     * @param string $namespace Plugin namespace for class references
+     * @return string Generated PHP methods
+     */
+    private static function generateRelationshipMethods($relationships, $namespace)
+    {
+        if (empty($relationships)) {
+            return '';
+        }
+
+        $methods = [];
+
+        foreach ($relationships as $rel) {
+            if (empty($rel['methodName']) || empty($rel['type']) || empty($rel['target'])) {
+                continue;
+            }
+
+            $methodName = $rel['methodName'];
+            $type = $rel['type'];
+            $targetKey = $rel['target'];
+            $foreignKey = $rel['foreignKey'] ?? null;
+            $ownerKey = $rel['ownerKey'] ?? 'id';
+
+            // Convert target key to class name (e.g., ticket_status -> TicketStatus)
+            $targetClassName = self::keyToClassName($targetKey);
+
+            // Determine return type based on relationship type
+            $returnType = match ($type) {
+                'belongsTo' => 'BelongsTo',
+                'hasMany' => 'HasMany',
+                'hasOne' => 'HasOne',
+                'belongsToMany' => 'BelongsToMany',
+                default => 'BelongsTo',
+            };
+
+            // Build the method
+            $method = "\n    /**\n";
+            $method .= "     * {$returnType} relationship to {$targetClassName}\n";
+            $method .= "     *\n";
+            $method .= "     * @return \\Illuminate\\Database\\Eloquent\\Relations\\{$returnType}\n";
+            $method .= "     */\n";
+            $method .= "    public function {$methodName}(): \\Illuminate\\Database\\Eloquent\\Relations\\{$returnType}\n";
+            $method .= "    {\n";
+
+            // Build the relationship call with appropriate parameters
+            if ($foreignKey && $ownerKey) {
+                $method .= "        return \$this->{$type}({$targetClassName}::class, '{$foreignKey}', '{$ownerKey}');\n";
+            } elseif ($foreignKey) {
+                $method .= "        return \$this->{$type}({$targetClassName}::class, '{$foreignKey}');\n";
+            } else {
+                $method .= "        return \$this->{$type}({$targetClassName}::class);\n";
+            }
+
+            $method .= "    }";
+
+            $methods[] = $method;
+        }
+
+        if (empty($methods)) {
+            return '';
+        }
+
+        return "\n" . implode("\n", $methods) . "\n";
     }
 }
