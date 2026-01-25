@@ -1,9 +1,10 @@
 import { useState } from '@wordpress/element';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 
 const CollectionMenu = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams();
   const { activeExtension, collections, collectionsLoading } = useActiveExtension();
   const [expandedCollection, setExpandedCollection] = useState(params.collectionKey || null);
@@ -12,14 +13,18 @@ const CollectionMenu = () => {
     return null;
   }
 
-  const toggleCollection = (collectionKey) => {
-    setExpandedCollection(expandedCollection === collectionKey ? null : collectionKey);
+  const handleCollectionClick = (collectionKey) => {
+    // Toggle expansion
+    const willExpand = expandedCollection !== collectionKey;
+    setExpandedCollection(willExpand ? collectionKey : null);
+
+    // Always navigate to the collection
+    navigate(`/extension/${activeExtension.key}/collection/${collectionKey}`);
   };
 
   const sections = [
     { key: 'fields', label: 'Fields' },
-    { key: 'forms', label: 'Forms' },
-    { key: 'grids', label: 'Grids' },
+    { key: 'grids', label: 'Grid' },
     { key: 'relationships', label: 'Relationships' },
   ];
 
@@ -40,7 +45,7 @@ const CollectionMenu = () => {
             return (
               <div key={collection.key}>
                 <button
-                  onClick={() => toggleCollection(collection.key)}
+                  onClick={() => handleCollectionClick(collection.key)}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
                     isCollectionActive
                       ? 'bg-neutral-800 !text-slate-200'
@@ -48,9 +53,6 @@ const CollectionMenu = () => {
                   }`}
                 >
                   <span>{collection.title || collection.key}</span>
-                  <span className="text-xs">
-                    {isExpanded ? '▼' : '▶'}
-                  </span>
                 </button>
 
                 {isExpanded && (

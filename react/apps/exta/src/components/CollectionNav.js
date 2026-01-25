@@ -21,11 +21,7 @@ const CollectionNav = ({ extensionKey, collectionKey }) => {
       path: `/extension/${extensionKey}/collection/${collectionKey}/fields`
     },
     {
-      label: 'Forms',
-      path: `/extension/${extensionKey}/collection/${collectionKey}/forms`
-    },
-    {
-      label: 'Grids',
+      label: 'Grid',
       path: `/extension/${extensionKey}/collection/${collectionKey}/grids`
     },
   ];

@@ -2,6 +2,22 @@ import { Link, useLocation } from 'react-router-dom';
 import { useExtensionList } from '../context/ExtensionListContext';
 import CollectionMenu from './CollectionMenu';
 
+const SettingsIcon = () => {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-current">
+      <path d="M2.66667 14V9.33331" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.66667 6.66667V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 14V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 5.33333V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 14V10.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 8V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M0.666672 9.33331H4.66667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6 5.33331H10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M11.3333 10.6667H15.3333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+};
+
 const Logo = () => {
   return (
     <svg width="142" height="28" viewBox="0 0 71 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,11 +46,12 @@ const LeftSidebar = () => {
           </Link>
           <div className="text-gray-500">Loading...</div>
         </div>
-        <div className="pt-4 border-t border-slate-600">
+        <div className="pt-4">
           <Link
             to="/settings"
-            className="block px-3 py-2 rounded-lg transition-colors hover:bg-neutral-800 !text-slate-400"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-neutral-800 !text-slate-400"
           >
+            <SettingsIcon />
             Settings
           </Link>
         </div>
@@ -77,15 +94,16 @@ const LeftSidebar = () => {
         )}
       </div>
 
-      <div className="pt-4 border-t border-slate-600">
+      <div className="pt-4">
         <Link
           to="/settings"
-          className={`block px-3 py-2 rounded-lg transition-colors ${
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
             location.pathname === '/settings'
               ? 'bg-neutral-800 !text-slate-200'
               : 'hover:bg-neutral-800 !text-slate-400'
           }`}
         >
+          <SettingsIcon />
           Settings
         </Link>
       </div>
