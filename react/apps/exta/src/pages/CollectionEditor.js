@@ -2,8 +2,6 @@ import { useState, useEffect } from '@wordpress/element';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useActiveExtension } from '../context/ActiveExtensionContext';
 import { useExtensionList } from '../context/ExtensionListContext';
-import FilterEditor from '../components/FilterEditor';
-import ColumnEditor from '../components/ColumnEditor';
 import CollectionNav from '../components/CollectionNav';
 import axios from 'axios';
 
@@ -23,7 +21,7 @@ const CollectionEditor = () => {
   const { activeExtension, setActiveExtension, collections, collectionsLoading, refetchCollections } = useActiveExtension();
   const { extensions } = useExtensionList();
   const [collection, setCollection] = useState(null);
-  const [formData, setFormData] = useState({ title: '', key: '', fields: [], filters: [], columns: [] });
+  const [formData, setFormData] = useState({ title: '', key: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
   const [error, setError] = useState(null);
@@ -49,9 +47,6 @@ const CollectionEditor = () => {
         setFormData({
           title: found.title || '',
           key: found.key || '',
-          fields: found.fields || [],
-          filters: found.filters || [],
-          columns: found.columns || [],
         });
       } else {
         setCollection(null);
@@ -139,82 +134,6 @@ const CollectionEditor = () => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    setHasUnsavedChanges(true);
-  };
-
-  const addFilter = () => {
-    setFormData(prev => ({
-      ...prev,
-      filters: [...prev.filters, { type: 'text', field: '', label: '' }]
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const removeFilter = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      filters: prev.filters.filter((_, i) => i !== index)
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const updateFilter = (index, filterName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      filters: prev.filters.map((filter, i) => 
-        i === index ? { ...filter, [filterName]: value } : filter
-      )
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const moveFilter = (index, direction) => {
-    const newFilters = [...formData.filters];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (newIndex < 0 || newIndex >= newFilters.length) return;
-    
-    [newFilters[index], newFilters[newIndex]] = [newFilters[newIndex], newFilters[index]];
-    
-    setFormData(prev => ({ ...prev, filters: newFilters }));
-    setHasUnsavedChanges(true);
-  };
-
-  const addColumn = () => {
-    setFormData(prev => ({
-      ...prev,
-      columns: [...prev.columns, { field: '', label: '', sortable: true }]
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const removeColumn = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      columns: prev.columns.filter((_, i) => i !== index)
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const updateColumn = (index, columnName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      columns: prev.columns.map((column, i) => 
-        i === index ? { ...column, [columnName]: value } : column
-      )
-    }));
-    setHasUnsavedChanges(true);
-  };
-
-  const moveColumn = (index, direction) => {
-    const newColumns = [...formData.columns];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (newIndex < 0 || newIndex >= newColumns.length) return;
-    
-    [newColumns[index], newColumns[newIndex]] = [newColumns[newIndex], newColumns[index]];
-    
-    setFormData(prev => ({ ...prev, columns: newColumns }));
     setHasUnsavedChanges(true);
   };
 
@@ -307,72 +226,39 @@ const CollectionEditor = () => {
         </div>
       )}
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-neutral-900 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="!text-base font-medium !text-slate-500">Filters</h2>
-              <button
-                type="button"
-                onClick={addFilter}
-                className="px-4 py-2 bg-slate-700 !text-slate-200 rounded-lg hover:bg-slate-600 text-sm transition-colors"
-              >
-                + Add Filter
-              </button>
-            </div>
+      <div className="bg-neutral-900 rounded-lg p-6 max-w-2xl">
+        <h2 className="!text-base font-medium !text-slate-400 mb-6">Collection Settings</h2>
 
-            {formData.filters.length === 0 ? (
-              <p className="!text-slate-500 text-sm">No filters yet. Click "Add Filter" to create one.</p>
-            ) : (
-              <div className="space-y-3">
-                {formData.filters.map((filter, index) => (
-                  <FilterEditor
-                    key={index}
-                    filter={filter}
-                    index={index}
-                    onUpdate={updateFilter}
-                    onMove={moveFilter}
-                    onRemove={removeFilter}
-                    isFirst={index === 0}
-                    isLast={index === formData.filters.length - 1}
-                    onBlur={() => hasUnsavedChanges && saveChanges()}
-                  />
-                ))}
-              </div>
-            )}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium !text-slate-400 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
+              placeholder="Collection Title"
+            />
           </div>
 
-          <div className="bg-neutral-900 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="!text-base font-medium !text-slate-500">Columns</h2>
-              <button
-                type="button"
-                onClick={addColumn}
-                className="px-4 py-2 bg-slate-700 !text-slate-200 rounded-lg hover:bg-slate-600 text-sm transition-colors"
-              >
-                + Add Column
-              </button>
-            </div>
-
-            {formData.columns.length === 0 ? (
-              <p className="!text-slate-500 text-sm">No columns yet. Click "Add Column" to create one.</p>
-            ) : (
-              <div className="space-y-3">
-                {formData.columns.map((column, index) => (
-                  <ColumnEditor
-                    key={index}
-                    column={column}
-                    index={index}
-                    onUpdate={updateColumn}
-                    onMove={moveColumn}
-                    onRemove={removeColumn}
-                    isFirst={index === 0}
-                    isLast={index === formData.columns.length - 1}
-                    onBlur={() => hasUnsavedChanges && saveChanges()}
-                  />
-                ))}
-              </div>
-            )}
+          <div>
+            <label className="block text-sm font-medium !text-slate-400 mb-2">
+              Key
+            </label>
+            <input
+              type="text"
+              name="key"
+              value={formData.key}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 bg-neutral-800 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
+              placeholder="collection_key"
+            />
+            <p className="mt-1 text-xs !text-slate-500">
+              Auto-generated from title. Use lowercase letters, numbers, and underscores only.
+            </p>
           </div>
         </div>
       </div>
