@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/project-list",
   "title": "Project List",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "list-view",
   "description": "Displays a list of Gateway projects (title and slug).",
   "supports": {

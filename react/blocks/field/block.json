@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/field",
   "title": "Gateway Field",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom field block for Gateway.",
   "keywords": ["gateway", "field", "custom"],

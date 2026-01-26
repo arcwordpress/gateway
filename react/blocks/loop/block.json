@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/loop",
   "title": "Gateway Loop",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "update",
   "description": "Loop through posts and render child blocks for each item.",
   "keywords": ["gateway", "loop", "query", "posts"],

@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/field-list",
   "title": "Gateway Field List",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "list-view",
   "description": "A custom field list block for Gateway.",
   "keywords": ["gateway", "field", "list", "custom"],

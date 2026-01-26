@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/gt-section",
   "title": "GT Section",
-  "category": "design",
+  "category": "gateway",
   "icon": "layout",
   "description": "A simple wrapping container with background color control.",
   "attributes": {

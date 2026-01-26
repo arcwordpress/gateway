@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "gateway/click-control",
 	"title": "GT Click Control",
-	"category": "widgets",
+	"category": "gateway",
 	"icon": "button",
 	"description": "An interactive button or link that triggers actions in the WordPress Interactivity API context.",
 	"keywords": ["button", "click", "interactive", "action", "interactivity"],

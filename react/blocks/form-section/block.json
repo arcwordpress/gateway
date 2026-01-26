@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/form-section",
   "title": "Gateway Form Section",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "admin-generic",
   "description": "Form section block for Gateway.",
   "keywords": ["gateway", "forms"],
