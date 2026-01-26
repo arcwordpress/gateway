@@ -1,0 +1,20 @@
+{
+	"name": "@gateway/collection-records",
+	"version": "0.1.0",
+	"description": "Collection Records loop block for Gateway block bindings",
+	"scripts": {
+		"build": "wp-scripts build",
+		"dev": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^28.0.0"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^14.0.0",
+		"@wordpress/blocks": "^13.0.0",
+		"@wordpress/components": "^28.0.0",
+		"@wordpress/data": "^10.0.0",
+		"@wordpress/element": "^6.0.0",
+		"@wordpress/i18n": "^5.0.0"
+	}
+}
