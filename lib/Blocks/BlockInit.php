@@ -29,14 +29,14 @@ class BlockInit
     public static function registerBlockCategories($categories, $context)
     {
         return array_merge(
-            $categories,
             [
                 [
-                    'slug'  => 'interactive',
-                    'title' => __('Interactive', 'gateway'),
-                    'icon'  => null,
+                    'slug'  => 'gateway',
+                    'title' => __('Gateway', 'gateway'),
+                    'icon'  => 'database',
                 ],
-            ]
+            ],
+            $categories
         );
     }
 

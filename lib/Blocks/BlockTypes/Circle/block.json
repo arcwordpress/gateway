@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/circle",
   "title": "Circle",
-  "category": "layout",
+  "category": "gateway",
   "icon": "marker",
   "description": "A circle block",
   "supports": {

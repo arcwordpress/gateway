@@ -4,7 +4,7 @@
   "name": "gateway/viewport",
   "version": "1.0.0",
   "title": "GT Viewport",
-  "category": "design",
+  "category": "gateway",
   "icon": "visibility",
   "description": "A container block that detects when it enters the viewport and provides context to child blocks for animation triggers.",
   "attributes": {

@@ -4,7 +4,7 @@
   "name": "gateway/spa",
   "version": "1.0.0",
   "title": "GT SPA",
-  "category": "interactive",
+  "category": "gateway",
   "description": "Experimental block demonstrating Interactivity Router with navigable slots",
   "supports": {
     "html": false,

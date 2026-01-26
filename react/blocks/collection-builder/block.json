@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/collection-builder",
   "title": "Gateway Collection Builder",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom collection builder block for Gateway.",
   "keywords": ["gateway", "collection", "builder", "custom"],
