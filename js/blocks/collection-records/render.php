@@ -11,6 +11,7 @@
  */
 
 use Gateway\Plugin;
+use Gateway\Blocks\BlockBindings;
 
 // Get block attributes
 $collection_key = $attributes['collection'] ?? '';
@@ -82,7 +83,9 @@ if ($records->isEmpty()) {
     echo '<p class="wp-block-gateway-collection-records__empty">No records found.</p>';
 } else {
     // The binding source context key for this collection
-    $context_key = "gateway/{$collection_key}/id";
+    // Must use sanitized key (dashes not underscores) to match registered source
+    $sanitized_key = BlockBindings::sanitizeSourceKey($collection_key);
+    $context_key = "gateway/{$sanitized_key}/id";
 
     // Loop over records
     foreach ($records as $record) {
