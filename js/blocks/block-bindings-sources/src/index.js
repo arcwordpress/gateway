@@ -12,6 +12,23 @@ import { registerBlockBindingsSource } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Normalize fields to array format
+ * Fields can come as array or object from different sources
+ */
+function normalizeFields(fields) {
+	if (!fields) {
+		return [];
+	}
+	if (Array.isArray(fields)) {
+		return fields;
+	}
+	if (typeof fields === 'object') {
+		return Object.keys(fields);
+	}
+	return [];
+}
+
+/**
  * Initialize and register all Gateway binding sources
  */
 function registerGatewayBindingSources() {
@@ -20,12 +37,20 @@ function registerGatewayBindingSources() {
 
 	if (Object.keys(sources).length === 0) {
 		// No sources available - Gateway may not have collections registered yet
+		console.info('Gateway: No binding sources available yet.');
 		return;
 	}
 
+	console.info(
+		'Gateway: Registering',
+		Object.keys(sources).length,
+		'binding sources'
+	);
+
 	// Register each collection as a binding source
 	Object.entries(sources).forEach(([sourceName, config]) => {
-		const { label, collection_key, fields } = config;
+		const { label, collection_key, fields: rawFields } = config;
+		const fields = normalizeFields(rawFields);
 
 		try {
 			registerBlockBindingsSource({
@@ -42,18 +67,20 @@ function registerGatewayBindingSources() {
 				/**
 				 * Get values for editor display
 				 *
-				 * Note: Full value fetching would require REST API calls.
-				 * For now, we return placeholder values to indicate bindings are active.
-				 * The actual values are resolved server-side during render.
+				 * Returns placeholder values indicating bindings are active.
+				 * Actual values are resolved server-side during render.
 				 */
-				getValues({ bindings }) {
+				getValues({ bindings, context }) {
 					const values = {};
 
 					for (const [attributeName, binding] of Object.entries(
 						bindings
 					)) {
 						const field = binding.args?.field || attributeName;
-						const id = binding.args?.id;
+						const id =
+							binding.args?.id ||
+							context?.[`gateway/${collection_key}/id`] ||
+							context?.postId;
 
 						// Show a placeholder indicating the binding is active
 						if (id) {
@@ -70,19 +97,18 @@ function registerGatewayBindingSources() {
 				 * Determine if user can edit values
 				 *
 				 * Gateway bindings are read-only - data comes from database.
-				 * Editing would require implementing setValues with REST API.
 				 */
 				canUserEditValue() {
 					return false;
 				},
 
 				/**
-				 * Get list of available fields for this source
+				 * Get list of available fields for this source (WP 6.9+)
 				 *
-				 * This enables the field picker UI in WordPress 6.9+
+				 * Returns field list for the binding field picker UI.
 				 */
 				getFieldsList() {
-					if (!fields || fields.length === 0) {
+					if (fields.length === 0) {
 						return [];
 					}
 
@@ -94,9 +120,10 @@ function registerGatewayBindingSources() {
 					}));
 				},
 			});
+
+			console.info(`Gateway: Registered binding source "${sourceName}"`);
 		} catch (error) {
 			// Source may already be registered or API not available
-			// eslint-disable-next-line no-console
 			console.warn(
 				`Gateway: Could not register binding source "${sourceName}":`,
 				error.message

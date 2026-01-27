@@ -1,0 +1,66 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/bound-string",
+	"version": "0.1.0",
+	"title": "Bound String",
+	"category": "gateway",
+	"icon": "editor-textcolor",
+	"description": "A text block designed for use with block bindings. Displays bound data from Gateway collections.",
+	"keywords": ["text", "binding", "data", "collection", "dynamic"],
+	"textdomain": "gateway",
+	"attributes": {
+		"content": {
+			"type": "string",
+			"default": "",
+			"source": "html",
+			"selector": "span"
+		},
+		"tagName": {
+			"type": "string",
+			"default": "span"
+		},
+		"placeholder": {
+			"type": "string",
+			"default": "Bound content..."
+		}
+	},
+	"usesContext": [
+		"gateway/collection-records/collection",
+		"gateway/collection-records/recordId",
+		"postId",
+		"postType"
+	],
+	"selectors": {
+		"root": ".wp-block-gateway-bound-string"
+	},
+	"supports": {
+		"html": false,
+		"className": true,
+		"color": {
+			"text": true,
+			"background": true
+		},
+		"typography": {
+			"fontSize": true,
+			"fontFamily": true,
+			"fontWeight": true,
+			"fontStyle": true,
+			"textTransform": true,
+			"letterSpacing": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"__experimentalBorder": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		}
+	},
+	"editorScript": "file:./build/index.js",
+	"editorStyle": "file:./build/index.css",
+	"render": "file:./render.php"
+}
