@@ -16,7 +16,6 @@ class Page
     {
         add_action('admin_menu', [__CLASS__, 'add_admin_menu']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_app']);
-        add_action('admin_head', [__CLASS__, 'admin_menu_icon_css']);
     }
 
     /**
@@ -70,6 +69,10 @@ class Page
      */
     public static function add_admin_menu()
     {
+        // Custom SVG icon - base64 encoded with currentColor for WordPress admin color scheme
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMCAxNC42ODc1VjE3LjcxOTZMMTQuNTQwMiAyMy4zNDE4TDI5LjA4MDMgMTcuNzE5NlYxNC42ODc1TDE0LjU0MDIgMjAuMzAxOUwwIDE0LjY4NzVaIi8+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTQuNTQwMiAxNC4yNjFMMCA4LjY0NjU1VjExLjY2MzFMMTQuNTQwMiAxNy4yODUzTDI5LjA4MDMgMTEuNjYzMVY4LjYzMTA0TDE0LjU0MDIgMTQuMjYxWiIvPjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTI5LjA4MDMgNS42MTQ0NEwxNC41NDAyIDBMMCA1LjYxNDQ0TDE0LjU0MDIgMTEuMjM2NkwyOS4wODAzIDUuNjE0NDRaIi8+PC9zdmc+';
+
         // Main Gateway menu - temporarily kept for submenu structure
         // TODO: Remove when Gateway admin page is ready
         add_menu_page(
@@ -78,7 +81,7 @@ class Page
             'manage_options',
             'gateway',
             [__CLASS__, 'render_page'],
-            'none',
+            $icon,
             30
         );
 
@@ -100,34 +103,6 @@ class Page
     {
         ?>
             <div id="gateway-admin-root"></div>
-        <?php
-    }
-
-    /**
-     * Output custom CSS for the Gateway admin menu icon
-     */
-    public static function admin_menu_icon_css()
-    {
-        // SVG icon encoded as base64 for use with CSS mask
-        // phpcs:ignore Generic.Files.LineLength.TooLong
-        $svg = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAzMCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgMTQuNjg3NVYxNy43MTk2TDE0LjU0MDIgMjMuMzQxOEwyOS4wODAzIDE3LjcxOTZWMTQuNjg3NUwxNC41NDAyIDIwLjMwMTlMMCAxNC42ODc1WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTE0LjU0MDIgMTQuMjYxTDAgOC42NDY1NVYxMS42NjMxTDE0LjU0MDIgMTcuMjg1M0wyOS4wODAzIDExLjY2MzFWOC42MzEwNEwxNC41NDAyIDE0LjI2MVoiIGZpbGw9ImJsYWNrIi8+CjxwYXRoIGQ9Ik0yOS4wODAzIDUuNjE0NDRMMTQuNTQwMiAwTDAgNS42MTQ0NEwxNC41NDAyIDExLjIzNjZMMjkuMDgwMyA1LjYxNDQ0WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+';
-        ?>
-        <style>
-            #adminmenu .menu-icon-gateway div.wp-menu-image {
-                background-color: currentColor;
-                -webkit-mask-image: url('<?php echo $svg; ?>');
-                mask-image: url('<?php echo $svg; ?>');
-                -webkit-mask-size: 20px 16px;
-                mask-size: 20px 16px;
-                -webkit-mask-repeat: no-repeat;
-                mask-repeat: no-repeat;
-                -webkit-mask-position: center;
-                mask-position: center;
-            }
-            #adminmenu .menu-icon-gateway div.wp-menu-image::before {
-                content: '';
-            }
-        </style>
         <?php
     }
 }
