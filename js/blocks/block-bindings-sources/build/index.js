@@ -7,7 +7,20 @@
 (function() {
 	'use strict';
 
-	const { registerBlockBindingsSource } = wp.blocks;
+	// Check if wp.blocks exists and has registerBlockBindingsSource (WordPress 6.7+)
+	if (!wp || !wp.blocks) {
+		console.warn('Gateway: wp.blocks not available');
+		return;
+	}
+
+	const { registerBlockBindingsSource, getBlockBindingsSources } = wp.blocks;
+
+	// registerBlockBindingsSource was added in WordPress 6.7
+	if (typeof registerBlockBindingsSource !== 'function') {
+		console.info('Gateway: Block bindings JS API not available (requires WordPress 6.7+). Server-side bindings still work.');
+		return;
+	}
+
 	const sources = window.gatewayBindingSources || {};
 
 	// Normalize fields to array format
@@ -23,7 +36,7 @@
 		return;
 	}
 
-	console.info('Gateway: Registering', Object.keys(sources).length, 'binding sources');
+	console.info('Gateway: Registering', Object.keys(sources).length, 'binding sources for editor UI');
 
 	Object.entries(sources).forEach(function([sourceName, config]) {
 		const { label, collection_key, fields: rawFields } = config;
@@ -75,4 +88,12 @@
 			console.warn('Gateway: Could not register binding source "' + sourceName + '":', error.message);
 		}
 	});
+
+	// Debug: List all registered sources
+	if (typeof getBlockBindingsSources === 'function') {
+		setTimeout(function() {
+			const allSources = getBlockBindingsSources();
+			console.info('Gateway: All registered binding sources:', Object.keys(allSources));
+		}, 100);
+	}
 })();
