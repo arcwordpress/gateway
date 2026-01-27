@@ -74,8 +74,17 @@ function Edit({ attributes, setAttributes, clientId }) {
 				(c) => c.key === collection
 			);
 			if (selectedCollection && selectedCollection.fields) {
-				setFields(selectedCollection.fields);
+				// Normalize fields to array - could be object or array
+				const rawFields = selectedCollection.fields;
+				const normalizedFields = Array.isArray(rawFields)
+					? rawFields
+					: Object.keys(rawFields);
+				setFields(normalizedFields);
+			} else {
+				setFields([]);
 			}
+		} else {
+			setFields([]);
 		}
 	}, [collection, collections]);
 
@@ -92,12 +101,13 @@ function Edit({ attributes, setAttributes, clientId }) {
 		})),
 	];
 
-	// Order by options
+	// Order by options - ensure fields is an array before filtering
+	const safeFields = Array.isArray(fields) ? fields : [];
 	const orderByOptions = [
 		{ label: __('ID', 'gateway'), value: 'id' },
 		{ label: __('Created Date', 'gateway'), value: 'created_at' },
 		{ label: __('Updated Date', 'gateway'), value: 'updated_at' },
-		...fields
+		...safeFields
 			.filter((f) => !['id', 'created_at', 'updated_at'].includes(f))
 			.map((f) => ({
 				label: f.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
