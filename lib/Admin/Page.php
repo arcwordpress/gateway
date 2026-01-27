@@ -82,7 +82,7 @@ class Page
             'gateway',
             [__CLASS__, 'render_page'],
             $icon,
-            30
+            76  // Position between Tools (75) and Settings (80)
         );
 
         // Rename the first submenu item from "Gateway" to "Dashboard"
