@@ -55,8 +55,17 @@
 					return c.key === collection;
 				});
 				if (selectedCollection && selectedCollection.fields) {
-					setFields(selectedCollection.fields);
+					// Normalize fields to array - could be object or array
+					const rawFields = selectedCollection.fields;
+					const normalizedFields = Array.isArray(rawFields)
+						? rawFields
+						: Object.keys(rawFields);
+					setFields(normalizedFields);
+				} else {
+					setFields([]);
 				}
+			} else {
+				setFields([]);
 			}
 		}, [collection, collections]);
 
@@ -73,11 +82,13 @@
 			};
 		}));
 
+		// Ensure fields is an array before filtering
+		const safeFields = Array.isArray(fields) ? fields : [];
 		const orderByOptions = [
 			{ label: __('ID', 'gateway'), value: 'id' },
 			{ label: __('Created Date', 'gateway'), value: 'created_at' },
 			{ label: __('Updated Date', 'gateway'), value: 'updated_at' },
-		].concat(fields.filter(function(f) {
+		].concat(safeFields.filter(function(f) {
 			return !['id', 'created_at', 'updated_at'].includes(f);
 		}).map(function(f) {
 			return {
