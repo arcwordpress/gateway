@@ -19,6 +19,51 @@ class BlockBindings
     {
         // Register block binding sources on init
         add_action('init', [self::class, 'registerBindingSources']);
+
+        // Add support for binding content attribute on gateway/bound-string block
+        add_filter('block_bindings_supported_attributes_gateway/bound-string', [self::class, 'addBoundStringAttributes']);
+
+        // Register block category for Gateway blocks
+        add_filter('block_categories_all', [self::class, 'registerBlockCategory'], 10, 2);
+    }
+
+    /**
+     * Register Gateway block category
+     */
+    public static function registerBlockCategory($categories, $post)
+    {
+        // Check if category already exists
+        foreach ($categories as $category) {
+            if ($category['slug'] === 'gateway') {
+                return $categories;
+            }
+        }
+
+        return array_merge(
+            $categories,
+            [
+                [
+                    'slug' => 'gateway',
+                    'title' => __('Gateway', 'gateway'),
+                    'icon' => 'database',
+                ],
+            ]
+        );
+    }
+
+    /**
+     * Add supported attributes for gateway/bound-string block
+     *
+     * @param array $supported_attributes Default supported attributes
+     * @return array Extended supported attributes
+     */
+    public static function addBoundStringAttributes($supported_attributes)
+    {
+        // Add content attribute as bindable
+        if (!in_array('content', $supported_attributes, true)) {
+            $supported_attributes[] = 'content';
+        }
+        return $supported_attributes;
     }
 
     /**
