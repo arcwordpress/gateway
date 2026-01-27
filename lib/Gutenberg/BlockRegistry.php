@@ -65,5 +65,10 @@ class BlockRegistry
                 }
             }
         }
+
+        // Add bindable attributes support for gateway/bound-string
+        add_filter('block_bindings_supported_attributes_gateway/bound-string', function($attributes) {
+            return array_merge($attributes, ['content']);
+        });
     }
 }
