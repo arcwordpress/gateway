@@ -123,24 +123,26 @@ class BlockInit
      */
     protected static function enqueueBlockBindingsSources()
     {
-        $bindings_asset_file = GATEWAY_PATH . 'js/blocks/block-bindings-sources/build/index.asset.php';
+        $bindings_asset_file = GATEWAY_PATH . 'js/block-bindings-sources/build/index.asset.php';
 
         if (!file_exists($bindings_asset_file)) {
+            error_log('Gateway: block-bindings-sources asset file not found at ' . $bindings_asset_file);
             return;
         }
 
         $bindings_asset = require $bindings_asset_file;
 
+        // Pass binding sources data to JavaScript BEFORE enqueuing
+        $sources = BlockBindings::getAvailableSources();
+
         wp_enqueue_script(
             'gateway-block-bindings-sources',
-            GATEWAY_URL . 'js/blocks/block-bindings-sources/build/index.js',
+            GATEWAY_URL . 'js/block-bindings-sources/build/index.js',
             $bindings_asset['dependencies'],
             $bindings_asset['version'],
             false
         );
 
-        // Pass binding sources data to JavaScript
-        $sources = BlockBindings::getAvailableSources();
         wp_localize_script('gateway-block-bindings-sources', 'gatewayBindingSources', $sources);
     }
 
