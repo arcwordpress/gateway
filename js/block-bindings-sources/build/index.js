@@ -78,7 +78,10 @@
 							label: fieldName
 								.replace(/_/g, ' ')
 								.replace(/\b\w/g, function(c) { return c.toUpperCase(); }),
-							value: fieldName,
+							type: 'string',
+							args: {
+								field: fieldName,
+							},
 						};
 					});
 				},

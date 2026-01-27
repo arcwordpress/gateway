@@ -106,6 +106,10 @@ function registerGatewayBindingSources() {
 				 * Get list of available fields for this source (WP 6.9+)
 				 *
 				 * Returns field list for the binding field picker UI.
+				 * Each field object must have:
+				 * - label: Display name in the dropdown
+				 * - type: Must match the attribute type being bound to (e.g., "string")
+				 * - args: Object with binding arguments (e.g., { field: "field_name" })
 				 */
 				getFieldsList() {
 					if (fields.length === 0) {
@@ -116,7 +120,10 @@ function registerGatewayBindingSources() {
 						label: fieldName
 							.replace(/_/g, ' ')
 							.replace(/\b\w/g, (c) => c.toUpperCase()),
-						value: fieldName,
+						type: 'string', // All Gateway fields are treated as strings
+						args: {
+							field: fieldName,
+						},
 					}));
 				},
 			});
