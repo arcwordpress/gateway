@@ -3,7 +3,7 @@
  */
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, TextControl } from '@wordpress/components';
+import { PanelBody, TextControl, SelectControl, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,65 +12,126 @@ import { __ } from '@wordpress/i18n';
 import metadata from '../block.json';
 
 registerBlockType(metadata.name, {
-	edit: ({ attributes, setAttributes }) => {
-		const { contextNamespace, propertyPath, fallbackText } = attributes;
+	edit: ({ attributes, setAttributes, context }) => {
+		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText } = attributes;
 		const blockProps = useBlockProps();
 
-		// Construct the binding expression
-		const bindingExpression = propertyPath
-			? `context.${propertyPath}`
-			: '';
+		// Get context from parent blocks
+		const itemName = context['gateway/itemName'] || 'item';
+		const inLoop = context['gateway/inLoop'] || false;
+		const availableFields = context['gateway/availableFields'] || [];
+		const previewItems = context['gateway/previewItems'] || [];
+
+		// Construct the binding expression based on mode
+		let bindingExpression = '';
+		if (useAdvancedPath && propertyPath) {
+			bindingExpression = `context.${propertyPath}`;
+		} else if (fieldKey) {
+			// Simple mode: auto-prefix with item name when in a loop
+			bindingExpression = inLoop
+				? `context.${itemName}.${fieldKey}`
+				: `context.${fieldKey}`;
+		}
+
+		// Get preview value from first item if available
+		let previewValue = null;
+		if (fieldKey && previewItems.length > 0) {
+			previewValue = previewItems[0][fieldKey];
+		}
+
+		// Build field options for dropdown
+		const fieldOptions = [
+			{ value: '', label: __('— Select a field —', 'gateway') },
+			...availableFields.map(field => ({
+				value: field,
+				label: field
+			}))
+		];
 
 		return (
 			<>
 				<InspectorControls>
-					<PanelBody title={__('Binding Settings', 'gateway')}>
-						<TextControl
-							label={__('Context Namespace (optional)', 'gateway')}
-							help={__('The interactivity namespace (e.g., "gateway/expander"). Leave empty to use parent context.', 'gateway')}
-							value={contextNamespace}
-							onChange={(value) => setAttributes({ contextNamespace: value })}
-							placeholder="gateway/data-source"
-						/>
-						<TextControl
-							label={__('Property Path', 'gateway')}
-							help={__('The property path in the context (e.g., "title", "records[0].name")', 'gateway')}
-							value={propertyPath}
-							onChange={(value) => setAttributes({ propertyPath: value })}
-							placeholder="title"
-						/>
+					<PanelBody title={__('Field Settings', 'gateway')}>
+						{availableFields.length > 0 ? (
+							<SelectControl
+								label={__('Field Key', 'gateway')}
+								help={inLoop
+									? __(`Select the field to display. Will access: ${itemName}.fieldname`, 'gateway')
+									: __('Select the field to display from the data context', 'gateway')
+								}
+								value={fieldKey}
+								options={fieldOptions}
+								onChange={(value) => setAttributes({ fieldKey: value })}
+							/>
+						) : (
+							<TextControl
+								label={__('Field Key', 'gateway')}
+								help={inLoop
+									? __(`Enter the field name (e.g., "title"). Will access: ${itemName}.fieldname`, 'gateway')
+									: __('Enter the field name to display from the data context', 'gateway')
+								}
+								value={fieldKey}
+								onChange={(value) => setAttributes({ fieldKey: value })}
+								placeholder="title"
+							/>
+						)}
 						<TextControl
 							label={__('Fallback Text', 'gateway')}
-							help={__('Text to display when binding is not available', 'gateway')}
+							help={__('Text to display when data is not yet loaded', 'gateway')}
 							value={fallbackText}
 							onChange={(value) => setAttributes({ fallbackText: value })}
-							placeholder="Loading..."
+							placeholder={__('Loading...', 'gateway')}
 						/>
+						<ToggleControl
+							label={__('Use Advanced Property Path', 'gateway')}
+							help={__('Enable to manually specify the full property path', 'gateway')}
+							checked={useAdvancedPath}
+							onChange={(value) => setAttributes({ useAdvancedPath: value })}
+						/>
+						{useAdvancedPath && (
+							<>
+								<TextControl
+									label={__('Property Path', 'gateway')}
+									help={__('Full property path in context (e.g., "item.title", "items[0].name")', 'gateway')}
+									value={propertyPath}
+									onChange={(value) => setAttributes({ propertyPath: value })}
+									placeholder="item.title"
+								/>
+								<TextControl
+									label={__('Context Namespace (optional)', 'gateway')}
+									help={__('Override the interactivity namespace. Leave empty to use parent context.', 'gateway')}
+									value={contextNamespace}
+									onChange={(value) => setAttributes({ contextNamespace: value })}
+									placeholder="gateway/data-source"
+								/>
+							</>
+						)}
 					</PanelBody>
 				</InspectorControls>
 				<div {...blockProps}>
 					<span style={{
 						display: 'inline-block',
 						padding: '4px 8px',
-						background: '#f0f0f0',
-						border: '1px dashed #999',
+						background: previewValue ? '#e7f5e7' : '#f0f0f0',
+						border: `1px dashed ${previewValue ? '#4caf50' : '#999'}`,
 						borderRadius: '3px',
 						fontSize: '13px',
 						fontFamily: 'monospace'
 					}}>
-						{bindingExpression || fallbackText || __('[Dynamic String]', 'gateway')}
+						{previewValue || fallbackText || (fieldKey ? `{${fieldKey}}` : __('[Dynamic String]', 'gateway'))}
 					</span>
 					{bindingExpression && (
 						<div style={{
-							marginTop: '8px',
-							padding: '8px',
+							marginTop: '4px',
+							padding: '4px 8px',
 							background: '#f9f9f9',
 							border: '1px solid #ddd',
 							borderRadius: '3px',
-							fontSize: '11px',
-							fontFamily: 'monospace'
+							fontSize: '10px',
+							fontFamily: 'monospace',
+							color: '#666'
 						}}>
-							<strong>Binding:</strong> {bindingExpression}
+							{bindingExpression}
 						</div>
 					)}
 				</div>
@@ -79,13 +140,19 @@ registerBlockType(metadata.name, {
 	},
 
 	save: ({ attributes }) => {
-		const { contextNamespace, propertyPath, fallbackText } = attributes;
+		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText } = attributes;
 		const blockProps = useBlockProps.save();
 
 		// Construct the binding expression
-		const bindingExpression = propertyPath
-			? `context.${propertyPath}`
-			: '';
+		// Note: In save, we don't have access to context, so we use the default 'item' prefix
+		// The actual item name is determined at render time by the loop
+		let bindingExpression = '';
+		if (useAdvancedPath && propertyPath) {
+			bindingExpression = `context.${propertyPath}`;
+		} else if (fieldKey) {
+			// Default to item.fieldKey - the actual item name comes from the loop's data-wp-each
+			bindingExpression = `context.item.${fieldKey}`;
+		}
 
 		// If no binding is set, just output the fallback text
 		if (!bindingExpression) {

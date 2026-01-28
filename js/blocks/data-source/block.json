@@ -18,7 +18,20 @@
     "namespace": {
       "type": "string",
       "default": "gateway/data-source"
+    },
+    "previewItems": {
+      "type": "array",
+      "default": []
+    },
+    "availableFields": {
+      "type": "array",
+      "default": []
     }
+  },
+  "providesContext": {
+    "gateway/collectionSlug": "collectionSlug",
+    "gateway/previewItems": "previewItems",
+    "gateway/availableFields": "availableFields"
   },
   "supports": {
     "html": false,

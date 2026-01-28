@@ -12,6 +12,15 @@
 		"html": false,
 		"interactivity": true
 	},
+	"usesContext": [
+		"gateway/collectionSlug",
+		"gateway/previewItems",
+		"gateway/availableFields"
+	],
+	"providesContext": {
+		"gateway/itemName": "itemName",
+		"gateway/inLoop": "inLoop"
+	},
 	"textdomain": "gateway",
 	"editorScript": "file:./build/index.js",
 	"editorStyle": "file:./build/index.css",
@@ -28,6 +37,10 @@
 		"itemName": {
 			"type": "string",
 			"default": "item"
+		},
+		"inLoop": {
+			"type": "boolean",
+			"default": true
 		}
 	}
 }
