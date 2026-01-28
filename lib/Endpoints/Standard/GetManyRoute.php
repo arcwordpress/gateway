@@ -28,7 +28,7 @@ class GetManyRoute extends BaseEndpoint
 
     public function getDefaultRoutePermission()
     {
-        return 'public_secured';
+        return 'public';
     }
 
     public function handle(WP_REST_Request $request)
