@@ -57,9 +57,10 @@ registerBlockType('gateway/data-source', {
 		const { collectionSlug, namespace } = attributes;
 
 		// Create the context object with all necessary data
+		// Use 'items' to align with WordPress Interactivity API conventions
 		const context = JSON.stringify({
 			collectionSlug,
-			records: [],
+			items: [],
 			loading: false,
 			error: null,
 			searchQuery: '',

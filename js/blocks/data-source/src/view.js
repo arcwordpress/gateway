@@ -46,15 +46,15 @@ async function getCollectionInfo(collectionSlug) {
  * Usage:
  * - Set data-wp-interactive="gateway/data-source" (or custom namespace)
  * - Set data-wp-init="callbacks.init" to initialize data fetching
- * - Access state.records for the fetched data
+ * - Access context.items for the fetched data (aligns with Interactivity API conventions)
  * - Use state.loading, state.error for status
  * - Use actions for filtering, sorting, pagination
  */
 store('gateway/data-source', {
 	state: {
-		get records() {
+		get items() {
 			const context = getContext();
-			return context.records || [];
+			return context.items || [];
 		},
 		get loading() {
 			const context = getContext();
@@ -64,47 +64,47 @@ store('gateway/data-source', {
 			const context = getContext();
 			return context.error || null;
 		},
-		get hasRecords() {
+		get hasItems() {
 			const context = getContext();
-			return context.records && context.records.length > 0;
+			return context.items && context.items.length > 0;
 		},
-		get filteredRecords() {
+		get filteredItems() {
 			const context = getContext();
-			const records = context.records || [];
+			const items = context.items || [];
 			const searchQuery = context.searchQuery || '';
 			const searchFields = context.searchFields || ['title', 'slug'];
 
 			if (!searchQuery) {
-				return records;
+				return items;
 			}
 
 			const query = searchQuery.toLowerCase();
-			return records.filter(record => {
+			return items.filter(item => {
 				return searchFields.some(field => {
-					const value = record[field];
+					const value = item[field];
 					return value && String(value).toLowerCase().includes(query);
 				});
 			});
 		},
-		get totalRecords() {
+		get totalItems() {
 			const context = getContext();
-			return (context.records || []).length;
+			return (context.items || []).length;
 		},
 		get filteredCount() {
 			const context = getContext();
-			const records = context.records || [];
+			const items = context.items || [];
 			const searchQuery = context.searchQuery || '';
 
 			if (!searchQuery) {
-				return records.length;
+				return items.length;
 			}
 
 			const searchFields = context.searchFields || ['title', 'slug'];
 			const query = searchQuery.toLowerCase();
 
-			return records.filter(record => {
+			return items.filter(item => {
 				return searchFields.some(field => {
-					const value = record[field];
+					const value = item[field];
 					return value && String(value).toLowerCase().includes(query);
 				});
 			}).length;
@@ -155,22 +155,22 @@ store('gateway/data-source', {
 				const response = await fetch(endpoint);
 
 				if (!response.ok) {
-					throw new Error(`Failed to fetch records: ${response.statusText}`);
+					throw new Error(`Failed to fetch items: ${response.statusText}`);
 				}
 
 				const result = await response.json();
 				// Handle Gateway API response format: { success: true, data: { items: [...], pagination: {...} } }
-				context.records = result.data?.items || result.items || result || [];
+				context.items = result.data?.items || result.items || result || [];
 				context.loading = false;
 			} catch (err) {
-				console.error('GT Data Source: Error fetching records', err);
+				console.error('GT Data Source: Error fetching items', err);
 				context.error = err.message;
 				context.loading = false;
 			}
 		},
 
 		/**
-		 * Sort records by field
+		 * Sort items by field
 		 */
 		sortBy: (event) => {
 			const context = getContext();
@@ -179,8 +179,8 @@ store('gateway/data-source', {
 
 			if (!field) return;
 
-			const records = [...(context.records || [])];
-			records.sort((a, b) => {
+			const items = [...(context.items || [])];
+			items.sort((a, b) => {
 				const aVal = a[field];
 				const bVal = b[field];
 
@@ -189,7 +189,7 @@ store('gateway/data-source', {
 				return 0;
 			});
 
-			context.records = records;
+			context.items = items;
 		},
 
 		/**
@@ -224,13 +224,19 @@ store('gateway/data-source', {
 			const context = getContext();
 			const collectionSlug = context.collectionSlug;
 
+			// DEBUG: Log initialization
+			console.log('[GT Data Source DEBUG] init() called');
+			console.log('[GT Data Source DEBUG] Initial context:', JSON.stringify(context, null, 2));
+
 			if (!collectionSlug) {
 				console.warn('GT Data Source: No collection slug specified. Set collectionSlug in block attributes.');
 				return;
 			}
 
-			// Initialize state
-			context.records = context.records || [];
+			console.log('[GT Data Source DEBUG] Collection slug:', collectionSlug);
+
+			// Initialize state (using 'items' to align with Interactivity API conventions)
+			context.items = context.items || [];
 			context.loading = context.loading !== undefined ? context.loading : true;
 			context.error = null;
 			context.searchQuery = context.searchQuery || '';
@@ -239,25 +245,38 @@ store('gateway/data-source', {
 			// Fetch initial data
 			try {
 				// Fetch collection info to get the correct endpoint
+				console.log('[GT Data Source DEBUG] Fetching collection info...');
 				const collectionInfo = await getCollectionInfo(collectionSlug);
+				console.log('[GT Data Source DEBUG] Collection info received:', JSON.stringify(collectionInfo, null, 2));
+
 				const endpoint = collectionInfo.routes?.endpoint;
+				console.log('[GT Data Source DEBUG] Endpoint:', endpoint);
 
 				if (!endpoint) {
 					throw new Error('Collection endpoint not found in collection info');
 				}
 
+				console.log('[GT Data Source DEBUG] Fetching items from endpoint...');
 				const response = await fetch(endpoint);
+				console.log('[GT Data Source DEBUG] Response status:', response.status, response.statusText);
 
 				if (!response.ok) {
-					throw new Error(`Failed to fetch records: ${response.statusText}`);
+					throw new Error(`Failed to fetch items: ${response.statusText}`);
 				}
 
 				const result = await response.json();
+				console.log('[GT Data Source DEBUG] Raw API result:', JSON.stringify(result, null, 2));
+
 				// Handle Gateway API response format: { success: true, data: { items: [...], pagination: {...} } }
-				context.records = result.data?.items || result.items || result || [];
+				context.items = result.data?.items || result.items || result || [];
+				console.log('[GT Data Source DEBUG] Items extracted:', context.items.length, 'items');
+				console.log('[GT Data Source DEBUG] First item sample:', context.items[0] ? JSON.stringify(context.items[0], null, 2) : 'No items');
+				console.log('[GT Data Source DEBUG] Context after update:', JSON.stringify(context, null, 2));
+
 				context.loading = false;
 			} catch (err) {
-				console.error('GT Data Source: Error fetching records', err);
+				console.error('GT Data Source: Error fetching items', err);
+				console.error('[GT Data Source DEBUG] Full error:', err);
 				context.error = err.message;
 				context.loading = false;
 			}
