@@ -48,6 +48,13 @@ class SettingsRoute
                     'type' => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
+                'disabled_collections' => [
+                    'required' => false,
+                    'type' => 'array',
+                    'items' => [
+                        'type' => 'string',
+                    ],
+                ],
             ],
         ]);
     }
@@ -65,6 +72,10 @@ class SettingsRoute
         // Check if we're in a SQLite environment (WordPress Playground detection)
         $is_sqlite_env = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
 
+        // Get core collections configuration
+        $core_collections = Plugin::getCoreCollections();
+        $disabled_collections = Plugin::getDisabledCollections();
+
         return rest_ensure_response([
             'port' => get_option('gateway_connection_port', ''),
             'anthropic_api_key' => '', // Never send the actual key to frontend
@@ -72,6 +83,8 @@ class SettingsRoute
             'db_driver' => $driver,
             'sqlite_path' => $sqlite_path,
             'is_sqlite_environment' => $is_sqlite_env,
+            'core_collections' => array_keys($core_collections),
+            'disabled_collections' => $disabled_collections,
         ]);
     }
 
@@ -135,6 +148,20 @@ class SettingsRoute
                 update_option('gateway_db_config', $db_config);
                 $clear_cache = true; // Path change affects connection
             }
+        }
+
+        // Save disabled collections configuration
+        if ($request->has_param('disabled_collections')) {
+            $disabledCollections = $request->get_param('disabled_collections');
+
+            // Validate against known core collections
+            $validCollections = array_keys(Plugin::getCoreCollections());
+            $disabledCollections = array_values(array_filter(
+                $disabledCollections,
+                fn($key) => in_array($key, $validCollections, true)
+            ));
+
+            update_option('gateway_disabled_collections', $disabledCollections);
         }
 
         // Clear connection cache if any database settings changed
