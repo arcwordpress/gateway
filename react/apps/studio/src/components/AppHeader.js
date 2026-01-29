@@ -1,7 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import Header from '@arcwp/gateway-admin';
+import NavOverflowMenu from './NavOverflowMenu';
+
+const MAX_VISIBLE_ITEMS = 5;
 
 function AppHeader({ collections }) {
+  const visibleCollections = collections.slice(0, MAX_VISIBLE_ITEMS);
+  const overflowCollections = collections.slice(MAX_VISIBLE_ITEMS);
+
   return (
     <Header>
       <Header.Logo>
@@ -19,7 +25,7 @@ function AppHeader({ collections }) {
         </NavLink>
       </Header.Logo>
       <Header.Menu>
-        {collections.map((collection) => (
+        {visibleCollections.map((collection) => (
           <NavLink
             key={collection.key}
             to={`/collection/${collection.key}`}
@@ -34,6 +40,9 @@ function AppHeader({ collections }) {
             {collection.titlePlural || collection.title || collection.key}
           </NavLink>
         ))}
+        {overflowCollections.length > 0 && (
+          <NavOverflowMenu collections={overflowCollections} />
+        )}
       </Header.Menu>
       <Header.Buttons>
         <NavLink
