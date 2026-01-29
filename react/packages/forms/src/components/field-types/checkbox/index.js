@@ -1,7 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
-import './checkbox-style.css';
+import './style.css';
 
 const CheckboxControl = ({ config = {}, error }) => {
 
