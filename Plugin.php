@@ -44,8 +44,6 @@ spl_autoload_register(function ($class) {
     }
 });
 
-use Gateway\Collections\GatewayProject;
-
 class Plugin
 {
     private static $instance = null;
@@ -144,24 +142,50 @@ class Plugin
         register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
     }
 
+    /**
+     * Get list of core collections that can be disabled
+     *
+     * @return array Associative array of collection key => class name
+     */
+    public static function getCoreCollections()
+    {
+        return [
+            'wp_post' => Collections\WP\Post::class,
+            'wp_user' => Collections\WP\User::class,
+            'wp_comment' => Collections\WP\Comment::class,
+            'wp_option' => Collections\WP\Option::class,
+            'wp_postmeta' => Collections\WP\PostMeta::class,
+            'wp_usermeta' => Collections\WP\UserMeta::class,
+            'wp_commentmeta' => Collections\WP\CommentMeta::class,
+            'wp_term' => Collections\WP\Term::class,
+            'wp_term_taxonomy' => Collections\WP\TermTaxonomy::class,
+            'wp_term_relationship' => Collections\WP\TermRelationship::class,
+            'wp_termmeta' => Collections\WP\TermMeta::class,
+            'wp_link' => Collections\WP\Link::class,
+        ];
+    }
+
+    /**
+     * Get list of disabled collection keys
+     *
+     * @return array Array of disabled collection keys
+     */
+    public static function getDisabledCollections()
+    {
+        return get_option('gateway_disabled_collections', []);
+    }
+
     public function registerCollections()
     {
-        // Gateway collections
-        Collections\GatewayProject::register();
+        $disabledCollections = self::getDisabledCollections();
+        $coreCollections = self::getCoreCollections();
 
-        // WordPress core table collections
-        Collections\WP\Post::register();
-        Collections\WP\User::register();
-        Collections\WP\Comment::register();
-        Collections\WP\Option::register();
-        Collections\WP\PostMeta::register();
-        Collections\WP\UserMeta::register();
-        Collections\WP\CommentMeta::register();
-        Collections\WP\Term::register();
-        Collections\WP\TermTaxonomy::register();
-        Collections\WP\TermRelationship::register();
-        Collections\WP\TermMeta::register();
-        Collections\WP\Link::register();
+        // Register WordPress core table collections (if not disabled)
+        foreach ($coreCollections as $key => $class) {
+            if (!in_array($key, $disabledCollections, true)) {
+                $class::register();
+            }
+        }
     }
 
     /**
