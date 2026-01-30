@@ -124,6 +124,28 @@ class Routes
             ], 500);
         }
 
+        // Generate collection PHP class file in plugin
+        $plugin_slug = str_replace('_', '-', $extension_key);
+        $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+        error_log("[Gateway] Generating collection class: extension_key={$extension_key}, plugin_slug={$plugin_slug}, namespace={$namespace}, collection_key={$collection_key}");
+        error_log("[Gateway] Collection data fields: " . json_encode($json_data['fields'] ?? []));
+
+        $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
+            $json_data,
+            $plugin_slug,
+            $namespace
+        );
+
+        if (!$class_generated) {
+            error_log('[Gateway] Failed to generate collection class for: ' . $collection_key);
+        } else {
+            error_log('[Gateway] Successfully generated collection class for: ' . $collection_key);
+        }
+
+        // Generate and run database migration
+        $migration_result = $this->generateAndRunMigration($json_data, $extension_key);
+
         // Load extension data and merge all collections
         $extension_file = $extension_dir . '/extension.json';
         $extension_data = [];
@@ -153,13 +175,27 @@ class Routes
         // Merge collections into extension data
         $extension_data['collections'] = $all_collections;
 
-        return new \WP_REST_Response([
+        $response_data = [
             'success' => true,
             'message' => 'Collection saved successfully',
             'file_path' => $file_path,
             'collection' => $json_data,
-            'extension' => $extension_data
-        ], 200);
+            'extension' => $extension_data,
+            'class_generated' => $class_generated,
+            'migration' => $migration_result
+        ];
+
+        if (!$class_generated) {
+            $response_data['message'] .= ', but PHP class generation failed (check error logs)';
+        }
+
+        if ($migration_result['migration_ran']) {
+            $response_data['message'] .= '. Database table created/updated.';
+        } elseif (isset($migration_result['error'])) {
+            $response_data['message'] .= '. Migration failed: ' . $migration_result['error'];
+        }
+
+        return new \WP_REST_Response($response_data, 200);
     }
 
     /**
@@ -238,19 +274,62 @@ class Routes
             ], 500);
         }
 
-        // If key changed, delete old file
-        if ($original_collection_key !== $new_collection_key) {
-            unlink($old_file_path);
+        // Regenerate collection PHP class file
+        $plugin_slug = str_replace('_', '-', $extension_key);
+        $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+        error_log("[Gateway] Regenerating collection class: extension_key={$extension_key}, plugin_slug={$plugin_slug}, namespace={$namespace}, collection_key={$new_collection_key}");
+        error_log("[Gateway] Collection data fields: " . json_encode($json_data['fields'] ?? []));
+
+        $class_generated = \Gateway\Collections\FileFromData::generateCollectionClass(
+            $json_data,
+            $plugin_slug,
+            $namespace
+        );
+
+        if (!$class_generated) {
+            error_log('[Gateway] Failed to regenerate collection class for: ' . $new_collection_key);
+        } else {
+            error_log('[Gateway] Successfully regenerated collection class for: ' . $new_collection_key);
         }
 
-        return new \WP_REST_Response([
+        // Generate and run database migration
+        $migration_result = $this->generateAndRunMigration($json_data, $extension_key);
+
+        // If key changed, delete old JSON and old PHP class file
+        if ($original_collection_key !== $new_collection_key) {
+            unlink($old_file_path);
+
+            // Delete old collection class file
+            $old_class_name = str_replace('_', '', ucwords($original_collection_key, '_'));
+            $old_class_file = WP_PLUGIN_DIR . '/' . $plugin_slug . '/lib/Collections/' . $old_class_name . '.php';
+            if (file_exists($old_class_file)) {
+                unlink($old_class_file);
+            }
+        }
+
+        $response_data = [
             'success' => true,
             'message' => 'Collection updated successfully',
             'file_path' => $new_file_path,
             'key_changed' => $original_collection_key !== $new_collection_key,
             'old_key' => $original_collection_key,
-            'new_key' => $new_collection_key
-        ], 200);
+            'new_key' => $new_collection_key,
+            'class_generated' => $class_generated,
+            'migration' => $migration_result
+        ];
+
+        if (!$class_generated) {
+            $response_data['message'] .= ', but PHP class regeneration failed (check error logs)';
+        }
+
+        if ($migration_result['migration_ran']) {
+            $response_data['message'] .= '. Database table updated.';
+        } elseif (isset($migration_result['error'])) {
+            $response_data['message'] .= '. Migration failed: ' . $migration_result['error'];
+        }
+
+        return new \WP_REST_Response($response_data, 200);
     }
 
     /**
@@ -434,12 +513,288 @@ class Routes
             ], 500);
         }
 
-        return new \WP_REST_Response([
+        // Generate WordPress plugin files
+        $plugin_generation = $this->generatePluginFiles($extension_key, $json_data);
+
+        if (!$plugin_generation['success']) {
+            // JSON was saved but plugin generation failed
+            return new \WP_REST_Response([
+                'success' => true,
+                'message' => 'Extension created successfully, but plugin generation failed: ' . $plugin_generation['error'],
+                'file_path' => $file_path,
+                'extension' => $json_data,
+                'plugin_error' => $plugin_generation['error']
+            ], 201);
+        }
+
+        // Activate the plugin
+        $activation_result = $this->activatePlugin($plugin_generation['plugin_slug']);
+
+        $response_data = [
             'success' => true,
-            'message' => 'Extension created successfully',
+            'message' => 'Extension and plugin created successfully',
             'file_path' => $file_path,
+            'plugin_path' => $plugin_generation['plugin_path'],
+            'plugin_slug' => $plugin_generation['plugin_slug'],
             'extension' => $json_data
-        ], 201);
+        ];
+
+        // Add activation status to response
+        if ($activation_result['activated']) {
+            $response_data['plugin_activated'] = true;
+            $response_data['message'] .= ' and activated';
+        } else {
+            $response_data['plugin_activated'] = false;
+            $response_data['activation_error'] = $activation_result['error'];
+            $response_data['message'] .= ', but activation failed: ' . $activation_result['error'];
+        }
+
+        return new \WP_REST_Response($response_data, 201);
+    }
+
+    /**
+     * Generate WordPress plugin files from extension data
+     *
+     * @param string $extension_key Extension key (e.g., 'my_extension')
+     * @param array $extension_data Extension data with 'title' and 'key'
+     * @return array Result with 'success', 'plugin_path', and optional 'error'
+     */
+    private function generatePluginFiles($extension_key, $extension_data)
+    {
+        try {
+            // Convert extension_key to plugin slug (underscores to hyphens)
+            $plugin_slug = str_replace('_', '-', $extension_key);
+
+            // Create namespace from extension key (e.g., my_extension -> MyExtension)
+            $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+            // Create constant prefix (e.g., my_extension -> MY_EXTENSION)
+            $constant_prefix = strtoupper($extension_key);
+
+            // Get title or generate from key
+            $project_name = isset($extension_data['title']) ? $extension_data['title'] : ucwords(str_replace('_', ' ', $extension_key));
+
+            // Create plugin directory
+            $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+
+            if (is_dir($plugin_dir)) {
+                return [
+                    'success' => false,
+                    'error' => 'Plugin directory already exists: ' . $plugin_dir
+                ];
+            }
+
+            // Create plugin directory structure
+            if (!wp_mkdir_p($plugin_dir . '/lib/Collections')) {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to create plugin directory structure'
+                ];
+            }
+
+            // Load plugin template
+            $template_path = GATEWAY_PATH . 'templates/scaffold/plugin_main.php';
+            if (!file_exists($template_path)) {
+                return [
+                    'success' => false,
+                    'error' => 'Plugin template not found: ' . $template_path
+                ];
+            }
+
+            $template = file_get_contents($template_path);
+
+            // Replace template placeholders
+            $replacements = [
+                '{{PROJECT_NAME}}' => $project_name,
+                '{{PROJECT_SLUG}}' => $plugin_slug,
+                '{{NAMESPACE}}' => $namespace,
+                '{{CONSTANT_PREFIX}}' => $constant_prefix,
+            ];
+
+            $plugin_code = str_replace(array_keys($replacements), array_values($replacements), $template);
+
+            // Save main plugin file
+            $plugin_file_path = $plugin_dir . '/' . $plugin_slug . '.php';
+            $write_result = file_put_contents($plugin_file_path, $plugin_code);
+
+            if ($write_result === false) {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to write main plugin file'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'plugin_path' => $plugin_dir,
+                'plugin_file' => $plugin_file_path,
+                'plugin_slug' => $plugin_slug
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Exception during plugin generation: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Activate a plugin
+     *
+     * @param string $plugin_slug Plugin slug (e.g., 'my-extension')
+     * @return array Result with 'activated' boolean and optional 'error'
+     */
+    private function activatePlugin($plugin_slug)
+    {
+        try {
+            // Build plugin file path relative to plugins directory
+            $plugin_file = $plugin_slug . '/' . $plugin_slug . '.php';
+
+            // Check if plugin file exists
+            $plugin_path = WP_PLUGIN_DIR . '/' . $plugin_file;
+            if (!file_exists($plugin_path)) {
+                return [
+                    'activated' => false,
+                    'error' => 'Plugin file not found: ' . $plugin_file
+                ];
+            }
+
+            // Check if already active
+            if (is_plugin_active($plugin_file)) {
+                return [
+                    'activated' => true,
+                    'error' => null,
+                    'already_active' => true
+                ];
+            }
+
+            // Activate the plugin
+            $result = activate_plugin($plugin_file);
+
+            if (is_wp_error($result)) {
+                return [
+                    'activated' => false,
+                    'error' => $result->get_error_message()
+                ];
+            }
+
+            // Check if activation was successful
+            if (!is_plugin_active($plugin_file)) {
+                return [
+                    'activated' => false,
+                    'error' => 'Plugin activation failed silently - check plugin code for errors'
+                ];
+            }
+
+            return [
+                'activated' => true,
+                'error' => null
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'activated' => false,
+                'error' => 'Exception during plugin activation: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Generate and run database migration for a collection
+     *
+     * @param array $collectionData Collection data with 'key', 'title', 'fields'
+     * @param string $extension_key Extension key
+     * @return array Result with 'success', 'migration_generated', 'migration_ran', 'file_path', 'error'
+     */
+    private function generateAndRunMigration($collectionData, $extension_key)
+    {
+        try {
+            // Only generate migration if there are fields
+            if (empty($collectionData['fields'])) {
+                return [
+                    'success' => true,
+                    'migration_generated' => false,
+                    'migration_ran' => false,
+                    'message' => 'No fields defined, skipping migration',
+                    'file_path' => null,
+                ];
+            }
+
+            $plugin_slug = str_replace('_', '-', $extension_key);
+            $namespace = str_replace('_', '', ucwords($extension_key, '_'));
+
+            // Generate migration code from collection data
+            $migration = \Gateway\Database\MigrationGenerator::generateFromData($collectionData, $namespace);
+
+            // Create Database directory if it doesn't exist
+            $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+            $database_dir = $plugin_dir . '/lib/Database';
+
+            if (!is_dir($database_dir)) {
+                if (!wp_mkdir_p($database_dir)) {
+                    return [
+                        'success' => false,
+                        'migration_generated' => false,
+                        'migration_ran' => false,
+                        'error' => 'Failed to create Database directory',
+                        'file_path' => null,
+                    ];
+                }
+            }
+
+            // Save migration file
+            $migration_file = $database_dir . '/' . $migration['className'] . '.php';
+            $result = file_put_contents($migration_file, $migration['code']);
+
+            if ($result === false) {
+                return [
+                    'success' => false,
+                    'migration_generated' => false,
+                    'migration_ran' => false,
+                    'error' => 'Failed to write migration file',
+                    'file_path' => null,
+                ];
+            }
+
+            error_log("[Gateway] Generated migration file: {$migration_file}");
+
+            // Run the migration by including the file and calling the create method
+            require_once $migration_file;
+
+            $full_class_name = $namespace . '\\Database\\' . $migration['className'];
+
+            if (class_exists($full_class_name) && method_exists($full_class_name, 'create')) {
+                $full_class_name::create();
+                error_log("[Gateway] Successfully ran migration for table: " . $collectionData['key']);
+
+                return [
+                    'success' => true,
+                    'migration_generated' => true,
+                    'migration_ran' => true,
+                    'file_path' => $migration_file,
+                    'table_name' => $collectionData['key'],
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'migration_generated' => true,
+                    'migration_ran' => false,
+                    'error' => "Migration class {$full_class_name} not found or missing create() method",
+                    'file_path' => $migration_file,
+                ];
+            }
+
+        } catch (\Exception $e) {
+            error_log("[Gateway] Migration error: " . $e->getMessage());
+            return [
+                'success' => false,
+                'migration_generated' => false,
+                'migration_ran' => false,
+                'error' => $e->getMessage(),
+                'file_path' => null,
+            ];
+        }
     }
 
     /**

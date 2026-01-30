@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         testdox="true">
+    <testsuites>
+        <testsuite name="Gateway Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">lib</directory>
+        </include>
+        <exclude>
+            <directory>lib/Migrations</directory>
+            <directory>vendor</directory>
+        </exclude>
+    </source>
+    <php>
+        <const name="WP_TESTS_DIR" value="/tmp/wordpress-tests-lib"/>
+        <const name="ABSPATH" value="/tmp/wordpress/"/>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="-1"/>
+    </php>
+</phpunit>

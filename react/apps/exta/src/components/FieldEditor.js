@@ -1,12 +1,24 @@
+import { getRegisteredFieldTypes } from '@arcwp/gateway-forms';
+
+// Helper to format field type labels (e.g., "date-picker" → "Date Picker")
+const formatFieldTypeLabel = (type) => {
+  return type
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast, onBlur }) => {
+  const fieldTypes = getRegisteredFieldTypes();
+
   return (
-    <div className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg">
+    <div className="flex gap-3 items-start p-3 bg-neutral-800 rounded-lg">
       <div className="flex flex-col gap-1">
         <button
           type="button"
           onClick={() => onMove(index, 'up')}
           disabled={isFirst}
-          className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+          className="p-1 !text-slate-400 hover:!text-slate-200 disabled:opacity-30"
         >
           ▲
         </button>
@@ -14,7 +26,7 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
           type="button"
           onClick={() => onMove(index, 'down')}
           disabled={isLast}
-          className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-30"
+          className="p-1 !text-slate-400 hover:!text-slate-200 disabled:opacity-30"
         >
           ▼
         </button>
@@ -22,43 +34,40 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
 
       <div className="flex-1 grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+          <label className="block text-xs font-medium !text-slate-400 mb-1">Type</label>
           <select
             value={field.type}
             onChange={(e) => onUpdate(index, 'type', e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm bg-neutral-900 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
           >
-            <option value="text">Text</option>
-            <option value="textarea">Textarea</option>
-            <option value="number">Number</option>
-            <option value="email">Email</option>
-            <option value="url">URL</option>
-            <option value="date">Date</option>
-            <option value="checkbox">Checkbox</option>
-            <option value="select">Select</option>
+            {fieldTypes.map(type => (
+              <option key={type} value={type}>
+                {formatFieldTypeLabel(type)}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Label</label>
+          <label className="block text-xs font-medium !text-slate-400 mb-1">Label</label>
           <input
             type="text"
             value={field.label}
             onChange={(e) => onUpdate(index, 'label', e.target.value)}
             onBlur={onBlur}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm bg-neutral-900 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
             placeholder="Field Label"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+          <label className="block text-xs font-medium !text-slate-400 mb-1">Name</label>
           <input
             type="text"
             value={field.name}
             onChange={(e) => onUpdate(index, 'name', e.target.value)}
             onBlur={onBlur}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm bg-neutral-900 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
             placeholder="field_name"
           />
         </div>
@@ -67,7 +76,7 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+        className="p-2 !text-red-400 hover:!text-red-300 hover:bg-neutral-700 rounded"
       >
         ✕
       </button>

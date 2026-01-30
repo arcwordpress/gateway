@@ -1,24 +1,32 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
-import ExtensionSelector from './components/ExtensionSelector';
+import LeftSidebar from './components/LeftSidebar';
+import Breadcrumbs from './components/Breadcrumbs';
+import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
+import Settings from './pages/Settings';
 import ExtensionCreate from './pages/ExtensionCreate';
 import ExtensionView from './pages/ExtensionView';
 import CollectionCreate from './pages/CollectionCreate';
 import CollectionEditor from './pages/CollectionEditor';
+import FieldsEditor from './pages/FieldsEditor';
+import FormsEditor from './pages/FormsEditor';
+import GridsEditor from './pages/GridsEditor';
+import RelationshipsEditor from './pages/RelationshipsEditor';
 
-const Logo = () => {
+const SettingsIcon = () => {
   return (
-    <div className="font-lexend text-[3rem] font-black">
-      GATEWAY
-    </div>
-  );
-};
-
-const MaximizeIcon = () => {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22.2572 2.95556V8.66557H24V0H15.3344V1.74276H21.0444L1.74276 21.0444V15.3344H0V24H8.66557V22.2572H2.95556L22.2572 2.95556Z" fill="black"/>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-slate-500">
+      <path d="M2.66667 14V9.33331" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.66667 6.66667V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 14V8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 5.33333V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 14V10.6667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.3333 8V2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M0.666672 9.33331H4.66667" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6 5.33331H10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M11.3333 10.6667H15.3333" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 };
@@ -28,31 +36,33 @@ const App = () => {
     <ExtensionListProvider>
       <ActiveExtensionProvider>
         <HashRouter>
-          <div className="min-h-screen bg-white">
-            <header className="border-b border-gray-200 px-8 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <Logo />
-                <ExtensionSelector />
-                <Link 
-                to="/extension/create"
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                + Extension
-              </Link>
+          <div id="gateway-exta-app" className="app-bg app-main-margin-fix min-h-screen flex border-l border-slate-600">
+            <LeftSidebar />
+            <div className="flex-1 flex flex-col">
+              <header className="px-8 py-4 flex items-center justify-between border-b border-slate-600">
+                <Breadcrumbs />
+                <Link to="/settings">
+                  <SettingsIcon />
+                </Link>
+              </header>
+            <main className="px-8 py-6 flex-1">
+              <Routes>
+                <Route path="/extension/create" element={<ExtensionCreate />} />
+                <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
+                <Route path="/extension/:key/collection/:collectionKey/fields" element={<FieldsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/forms" element={<FormsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/grids" element={<GridsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey/relationships" element={<RelationshipsEditor />} />
+                <Route path="/extension/:key/collection/:collectionKey" element={<CollectionEditor />} />
+                <Route path="/extension/:key" element={<ExtensionView />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/" element={<Dashboard />} />
+              </Routes>
+            </main>
+              <Footer />
             </div>
-            <MaximizeIcon />
-          </header>
-          <main className="p-6">
-            <Routes>
-              <Route path="/extension/create" element={<ExtensionCreate />} />
-              <Route path="/extension/:key/collection/create" element={<CollectionCreate />} />
-              <Route path="/extension/:key/:collectionKey" element={<CollectionEditor />} />
-              <Route path="/extension/:key" element={<ExtensionView />} />
-              <Route path="/" element={<div>Home</div>} />
-            </Routes>
-          </main>
-        </div>
-      </HashRouter>
+          </div>
+        </HashRouter>
       </ActiveExtensionProvider>
     </ExtensionListProvider>
   );
