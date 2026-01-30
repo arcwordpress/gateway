@@ -27,9 +27,52 @@ function gateway_registered_extensions_array() {
 }
 
 /**
+ * Check if Gateway has a working database connection
+ *
+ * This function tests the database connection with a fast timeout
+ * and caches the result to avoid repeated slow checks.
+ *
+ * @param bool $force_check Force a new connection test, bypassing cache
+ * @return bool True if connection is working, false otherwise
+ */
+function gateway_db_connection($force_check = false) {
+    // Check cache first unless forced
+    if (!$force_check) {
+        $cached = get_transient('gateway_db_connection_status');
+        if ($cached !== false) {
+            return $cached === 'connected';
+        }
+    }
+
+    // Test connection with timeout
+    $connection_ok = \Gateway\Database\DatabaseConnection::testConnectionWithTimeout(2);
+
+    // Cache result - successful connections cached longer than failures
+    // This allows quick recovery detection for failed connections
+    $cache_duration = $connection_ok ? 300 : 60; // 5 minutes vs 1 minute
+    set_transient(
+        'gateway_db_connection_status',
+        $connection_ok ? 'connected' : 'failed',
+        $cache_duration
+    );
+
+    return $connection_ok;
+}
+
+/**
+ * Clear the database connection status cache
+ *
+ * Call this after changing database configuration settings
+ * (e.g., after updating gateway_connection_port or gateway_db_config)
+ */
+function gateway_clear_connection_cache() {
+    delete_transient('gateway_db_connection_status');
+}
+
+/**
  * Check if current admin screen is for a specific post type
  * Can be called early on init before post type is fully available
- * 
+ *
  * @param string $post_type The post type to check for
  * @return bool True if current screen matches post type
  */

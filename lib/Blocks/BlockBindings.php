@@ -17,8 +17,55 @@ class BlockBindings
      */
     public static function init()
     {
-        // Register block binding sources on init
-        add_action('init', [self::class, 'registerBindingSources']);
+        // Register block binding sources after collections are registered
+        // The 'gateway_loaded' action fires after core and extension collections
+        // have been registered in the CollectionRegistry
+        add_action('gateway_loaded', [self::class, 'registerBindingSources'], 20);
+
+        // Add support for binding content attribute on gateway/bound-string block
+        add_filter('block_bindings_supported_attributes_gateway/bound-string', [self::class, 'addBoundStringAttributes']);
+
+        // Register block category for Gateway blocks
+        add_filter('block_categories_all', [self::class, 'registerBlockCategory'], 10, 2);
+    }
+
+    /**
+     * Register Gateway block category
+     */
+    public static function registerBlockCategory($categories, $post)
+    {
+        // Check if category already exists
+        foreach ($categories as $category) {
+            if ($category['slug'] === 'gateway') {
+                return $categories;
+            }
+        }
+
+        return array_merge(
+            $categories,
+            [
+                [
+                    'slug' => 'gateway',
+                    'title' => __('Gateway', 'gateway'),
+                    'icon' => 'database',
+                ],
+            ]
+        );
+    }
+
+    /**
+     * Add supported attributes for gateway/bound-string block
+     *
+     * @param array $supported_attributes Default supported attributes
+     * @return array Extended supported attributes
+     */
+    public static function addBoundStringAttributes($supported_attributes)
+    {
+        // Add content attribute as bindable
+        if (!in_array('content', $supported_attributes, true)) {
+            $supported_attributes[] = 'content';
+        }
+        return $supported_attributes;
     }
 
     /**
@@ -40,6 +87,20 @@ class BlockBindings
     }
 
     /**
+     * Sanitize a collection key for use in block binding source names
+     *
+     * Block binding source names must match /^[a-z0-9-]+\/[a-z0-9-]+$/
+     * Only lowercase alphanumeric and dashes allowed - no underscores.
+     *
+     * @param string $key Collection key (e.g., 'wp_post', 'wp_term_taxonomy')
+     * @return string Sanitized key (e.g., 'wp-post', 'wp-term-taxonomy')
+     */
+    public static function sanitizeSourceKey($key)
+    {
+        return str_replace('_', '-', strtolower($key));
+    }
+
+    /**
      * Register a block binding source for a specific collection
      *
      * @param string $key Collection key
@@ -47,13 +108,15 @@ class BlockBindings
      */
     protected static function registerCollectionBindingSource($key, $collection)
     {
-        $source_name = "gateway/{$key}";
+        // Sanitize key: underscores not allowed in binding source names
+        $sanitized_key = self::sanitizeSourceKey($key);
+        $source_name = "gateway/{$sanitized_key}";
         $title = $collection->getTitle();
 
         register_block_bindings_source($source_name, [
             'label' => sprintf(__('Gateway: %s', 'gateway'), $title),
-            'get_value_callback' => function ($source_args, $block_instance, $attribute_name) use ($collection, $key) {
-                return self::getBindingValue($collection, $key, $source_args, $block_instance, $attribute_name);
+            'get_value_callback' => function ($source_args, $block_instance, $attribute_name) use ($collection, $sanitized_key) {
+                return self::getBindingValue($collection, $sanitized_key, $source_args, $block_instance, $attribute_name);
             },
             'uses_context' => ["{$source_name}/id", 'postId', 'postType'],
         ]);
@@ -131,9 +194,11 @@ class BlockBindings
         $sources = [];
 
         foreach ($collections as $key => $collection) {
-            $sources["gateway/{$key}"] = [
+            // Sanitize key: underscores not allowed in binding source names
+            $sanitized_key = self::sanitizeSourceKey($key);
+            $sources["gateway/{$sanitized_key}"] = [
                 'label' => sprintf(__('Gateway: %s', 'gateway'), $collection->getTitle()),
-                'collection_key' => $key,
+                'collection_key' => $sanitized_key,
                 'collection_class' => get_class($collection),
                 'fields' => array_keys($collection->getFields()),
             ];

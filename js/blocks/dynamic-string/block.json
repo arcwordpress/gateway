@@ -12,12 +12,27 @@
 		"html": false,
 		"interactivity": true
 	},
+	"usesContext": [
+		"gateway/collectionSlug",
+		"gateway/previewItems",
+		"gateway/availableFields",
+		"gateway/itemName",
+		"gateway/inLoop"
+	],
 	"textdomain": "gateway",
 	"editorScript": "file:./build/index.js",
 	"attributes": {
 		"contextNamespace": {
 			"type": "string",
 			"default": ""
+		},
+		"fieldKey": {
+			"type": "string",
+			"default": ""
+		},
+		"useAdvancedPath": {
+			"type": "boolean",
+			"default": false
 		},
 		"propertyPath": {
 			"type": "string",

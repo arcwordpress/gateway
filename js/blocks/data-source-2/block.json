@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/data-source-2",
   "title": "GT Data Source 2",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "database-view",
   "description": "Data source block using @arcwp/gateway-data package with WordPress Interactivity API.",
   "attributes": {

@@ -69,6 +69,10 @@ class Page
      */
     public static function add_admin_menu()
     {
+        // Custom SVG icon - base64 encoded with currentColor for WordPress admin color scheme
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMCAxNC42ODc1VjE3LjcxOTZMMTQuNTQwMiAyMy4zNDE4TDI5LjA4MDMgMTcuNzE5NlYxNC42ODc1TDE0LjU0MDIgMjAuMzAxOUwwIDE0LjY4NzVaIi8+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTQuNTQwMiAxNC4yNjFMMCA4LjY0NjU1VjExLjY2MzFMMTQuNTQwMiAxNy4yODUzTDI5LjA4MDMgMTEuNjYzMVY4LjYzMTA0TDE0LjU0MDIgMTQuMjYxWiIvPjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0iTTI5LjA4MDMgNS42MTQ0NEwxNC41NDAyIDBMMCA1LjYxNDQ0TDE0LjU0MDIgMTEuMjM2NkwyOS4wODAzIDUuNjE0NDRaIi8+PC9zdmc+';
+
         // Main Gateway menu - temporarily kept for submenu structure
         // TODO: Remove when Gateway admin page is ready
         add_menu_page(
@@ -77,8 +81,8 @@ class Page
             'manage_options',
             'gateway',
             [__CLASS__, 'render_page'],
-            'dashicons-admin-generic',
-            30
+            $icon,
+            76  // Position between Tools (75) and Settings (80)
         );
 
         // Rename the first submenu item from "Gateway" to "Dashboard"

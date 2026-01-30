@@ -2,7 +2,7 @@
   "apiVersion": 3,
   "name": "gateway/form2",
   "title": "Gateway Form 2",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom form block for Gateway.",
   "keywords": ["gateway", "form", "custom"],

@@ -250,4 +250,55 @@ class DatabaseConnection
             return false;
         }
     }
+
+    /**
+     * Test database connection with timeout
+     *
+     * This method performs a quick connection test with a configurable timeout.
+     * Note: PDO timeout is set during connection initialization in boot(),
+     * so this test will respect that timeout setting.
+     *
+     * @param int $timeout Timeout in seconds (default: 2) - used for documentation/reference only
+     * @return bool True if connection successful within timeout
+     */
+    public static function testConnectionWithTimeout($timeout = 2)
+    {
+        try {
+            if (self::$capsule === null) {
+                return false;
+            }
+
+            $driver = self::getDriver();
+
+            // Get PDO connection and perform a simple query
+            $pdo = self::$capsule->getConnection()->getPdo();
+
+            // Quick test query appropriate for driver
+            if ($driver === 'mysql') {
+                $pdo->query('SELECT 1');
+            } else {
+                // SQLite - just getting PDO is usually enough
+                // But we can also test with a query
+                $pdo->query('SELECT 1');
+            }
+
+            return true;
+        } catch (\PDOException $e) {
+            // Log specific PDO errors with error codes
+            $code = $e->getCode();
+            $message = 'Gateway database connection test failed';
+
+            if ($code === 2002 || $code === 'HY000') {
+                $message .= ' (server unreachable)';
+            } elseif ($code === 1045) {
+                $message .= ' (authentication failed)';
+            }
+
+            error_log($message . ': ' . $e->getMessage());
+            return false;
+        } catch (\Exception $e) {
+            error_log('Gateway database connection test failed: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.1.10
+ * Version: 1.1.12-rc1
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('GATEWAY_VERSION', '1.1.10');
+define('GATEWAY_VERSION', '1.1.12-rc1');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -43,8 +43,6 @@ spl_autoload_register(function ($class) {
         require $file;
     }
 });
-
-use Gateway\Collections\GatewayProject;
 
 class Plugin
 {
@@ -144,24 +142,50 @@ class Plugin
         register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
     }
 
+    /**
+     * Get list of core collections that can be disabled
+     *
+     * @return array Associative array of collection key => class name
+     */
+    public static function getCoreCollections()
+    {
+        return [
+            'wp_post' => Collections\WP\Post::class,
+            'wp_user' => Collections\WP\User::class,
+            'wp_comment' => Collections\WP\Comment::class,
+            'wp_option' => Collections\WP\Option::class,
+            'wp_postmeta' => Collections\WP\PostMeta::class,
+            'wp_usermeta' => Collections\WP\UserMeta::class,
+            'wp_commentmeta' => Collections\WP\CommentMeta::class,
+            'wp_term' => Collections\WP\Term::class,
+            'wp_term_taxonomy' => Collections\WP\TermTaxonomy::class,
+            'wp_term_relationship' => Collections\WP\TermRelationship::class,
+            'wp_termmeta' => Collections\WP\TermMeta::class,
+            'wp_link' => Collections\WP\Link::class,
+        ];
+    }
+
+    /**
+     * Get list of disabled collection keys
+     *
+     * @return array Array of disabled collection keys
+     */
+    public static function getDisabledCollections()
+    {
+        return get_option('gateway_disabled_collections', []);
+    }
+
     public function registerCollections()
     {
-        // Gateway collections
-        Collections\GatewayProject::register();
+        $disabledCollections = self::getDisabledCollections();
+        $coreCollections = self::getCoreCollections();
 
-        // WordPress core table collections
-        Collections\WP\Post::register();
-        Collections\WP\User::register();
-        Collections\WP\Comment::register();
-        Collections\WP\Option::register();
-        Collections\WP\PostMeta::register();
-        Collections\WP\UserMeta::register();
-        Collections\WP\CommentMeta::register();
-        Collections\WP\Term::register();
-        Collections\WP\TermTaxonomy::register();
-        Collections\WP\TermRelationship::register();
-        Collections\WP\TermMeta::register();
-        Collections\WP\Link::register();
+        // Register WordPress core table collections (if not disabled)
+        foreach ($coreCollections as $key => $class) {
+            if (!in_array($key, $disabledCollections, true)) {
+                $class::register();
+            }
+        }
     }
 
     /**
@@ -228,6 +252,27 @@ class Plugin
     {
         // Auto-configure database driver on first activation
         $this->autoConfigureDatabase();
+
+        // Test database connection before attempting migrations
+        // Use testConnection() with the configured timeout from boot()
+        if (!Database\DatabaseConnection::testConnection()) {
+            $message = 'Gateway plugin activation failed: Unable to connect to database. ';
+            $message .= 'Please check your database configuration and try again.';
+
+            // For MySQL, provide additional guidance about port configuration
+            if (Database\DatabaseConnection::getDriver() === 'mysql') {
+                $message .= '<br><br>';
+                $message .= 'If you are using Local WP or another development tool with dynamic database ports, ';
+                $message .= 'you may need to configure the connection port in Gateway settings after activation. ';
+                $message .= 'Please ensure your database server is running and accessible.';
+            }
+
+            wp_die(
+                $message,
+                'Gateway Activation Error',
+                ['back_link' => true, 'response' => 500]
+            );
+        }
 
         // Run core migrations via action hook
         Database\MigrationHooks::runCoreMigrations();

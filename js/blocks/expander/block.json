@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/expander",
   "title": "GT Expander",
-  "category": "design",
+  "category": "gateway",
   "icon": "arrow-down-alt2",
   "description": "An expandable content block with heading and body sections.",
   "attributes": {

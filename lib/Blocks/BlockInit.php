@@ -29,14 +29,14 @@ class BlockInit
     public static function registerBlockCategories($categories, $context)
     {
         return array_merge(
-            $categories,
             [
                 [
-                    'slug'  => 'interactive',
-                    'title' => __('Interactive', 'gateway'),
-                    'icon'  => null,
+                    'slug'  => 'gateway',
+                    'title' => __('Gateway', 'gateway'),
+                    'icon'  => 'database',
                 ],
-            ]
+            ],
+            $categories
         );
     }
 
@@ -84,7 +84,7 @@ class BlockInit
         // Load asset file for dependencies and version
         $asset_file = GATEWAY_PATH . 'react/blocks/gt1/build/index.asset.php';
         $asset = file_exists($asset_file) ? require $asset_file : ['dependencies' => [], 'version' => GATEWAY_VERSION];
-        
+
         // Enqueue the main gt1 blocks script for the editor
         wp_enqueue_script(
             'gateway-gt1-blocks',
@@ -109,6 +109,41 @@ class BlockInit
                 $asset['version']
             );
         }
+
+        // Enqueue block bindings sources registration (WordPress 6.7+)
+        self::enqueueBlockBindingsSources();
+    }
+
+    /**
+     * Enqueue block bindings sources for editor UI
+     *
+     * This registers Gateway collection-based binding sources with the
+     * Block Editor, making them visible in the bindings UI panel.
+     * Requires WordPress 6.7+ for full JS registration support.
+     */
+    protected static function enqueueBlockBindingsSources()
+    {
+        $bindings_asset_file = GATEWAY_PATH . 'js/block-bindings-sources/build/index.asset.php';
+
+        if (!file_exists($bindings_asset_file)) {
+            error_log('Gateway: block-bindings-sources asset file not found at ' . $bindings_asset_file);
+            return;
+        }
+
+        $bindings_asset = require $bindings_asset_file;
+
+        // Pass binding sources data to JavaScript BEFORE enqueuing
+        $sources = BlockBindings::getAvailableSources();
+
+        wp_enqueue_script(
+            'gateway-block-bindings-sources',
+            GATEWAY_URL . 'js/block-bindings-sources/build/index.js',
+            $bindings_asset['dependencies'],
+            $bindings_asset['version'],
+            false
+        );
+
+        wp_localize_script('gateway-block-bindings-sources', 'gatewayBindingSources', $sources);
     }
 
     /**

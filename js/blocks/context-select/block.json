@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/context-select",
   "title": "GT Context Select",
-  "category": "widgets",
+  "category": "gateway",
   "icon": "list-view",
   "description": "A select box that displays options from a context data source.",
   "attributes": {
