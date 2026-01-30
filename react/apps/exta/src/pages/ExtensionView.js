@@ -19,44 +19,44 @@ const ExtensionView = () => {
   }, [key, extensions, activeExtension, setActiveExtension]);
 
   if (!activeExtension) {
-    return <div>Loading extension...</div>;
+    return <div className="!text-slate-500">Loading extension...</div>;
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{activeExtension.title}</h1>
+        <h1 className="text-2xl font-bold !text-slate-200">{activeExtension.title}</h1>
         <Link
           to={`/extension/${activeExtension.key}/collection/create`}
-          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          className="px-4 py-2 bg-black !text-white rounded-lg hover:bg-gray-800 transition-colors"
         >
           + Collection
         </Link>
       </div>
       
       <div className="space-y-6">
-        <div>
+        <div className="!text-slate-500">
           <span className="font-medium">Key:</span> {activeExtension.key}
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Collections</h2>
-          {collectionsLoading && <div>Loading collections...</div>}
-          {collectionsError && <div className="text-red-600">{collectionsError}</div>}
+          <h2 className="text-xl font-semibold mb-4 !text-slate-200">Collections</h2>
+          {collectionsLoading && <div className="!text-slate-500">Loading collections...</div>}
+          {collectionsError && <div className="!text-red-500">{collectionsError}</div>}
           {!collectionsLoading && !collectionsError && collections.length === 0 && (
-            <div className="text-gray-500">No collections yet</div>
+            <div className="!text-slate-500">No collections yet</div>
           )}
           {!collectionsLoading && collections.length > 0 && (
             <div className="grid gap-4">
               {collections.map((collection) => (
                 <Link
                   key={collection.key}
-                  to={`/extension/${activeExtension.key}/${collection.key}`}
-                  className="block p-4 border rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                  to={`/extension/${activeExtension.key}/collection/${collection.key}`}
+                  className="block p-4 bg-neutral-900 border border-slate-600 rounded-lg hover:border-slate-500 hover:bg-neutral-800 transition-colors"
                 >
-                  <h3 className="font-medium">{collection.title || collection.key}</h3>
+                  <h3 className="font-medium !text-slate-200">{collection.title || collection.key}</h3>
                   {collection.description && (
-                    <p className="text-gray-600 text-sm mt-1">{collection.description}</p>
+                    <p className="!text-slate-500 text-sm mt-1">{collection.description}</p>
                   )}
                 </Link>
               ))}
@@ -65,8 +65,8 @@ const ExtensionView = () => {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold mb-4">Extension Data</h2>
-          <pre className="p-4 bg-gray-50 rounded-lg overflow-auto">
+          <h2 className="text-xl font-semibold mb-4 !text-slate-200">Extension Data</h2>
+          <pre className="p-4 bg-neutral-900 !text-slate-300 rounded-lg overflow-auto">
             {JSON.stringify(activeExtension, null, 2)}
           </pre>
         </div>
