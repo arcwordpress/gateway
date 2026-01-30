@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/field-ref",
-  "title": "Gateway Field Ref",
+  "title": "GTY Field Ref",
   "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom field ref block for Gateway.",

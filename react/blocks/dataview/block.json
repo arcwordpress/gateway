@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/dataview",
-  "title": "Gateway Data View",
+  "title": "GTS Data View",
   "category": "gateway",
   "icon": "admin-generic",
   "description": "A data view block for Gateway.",

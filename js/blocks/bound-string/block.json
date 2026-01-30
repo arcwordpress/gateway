@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "gateway/bound-string",
 	"version": "0.1.0",
-	"title": "Bound String",
+	"title": "GTS Bound String",
 	"category": "gateway",
 	"icon": "editor-textcolor",
 	"description": "A text block designed for use with block bindings. Displays bound data from Gateway collections.",

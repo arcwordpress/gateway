@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/field",
-  "title": "Gateway Field",
+  "title": "GTY Field",
   "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom field block for Gateway.",

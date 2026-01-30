@@ -1,7 +1,7 @@
 {
     "apiVersion": 3,
     "name": "gateway/question",
-    "title": "Question",
+    "title": "GTY Question",
     "category": "gateway",
     "icon": "editor-help",
     "description": "A block for displaying a question.",

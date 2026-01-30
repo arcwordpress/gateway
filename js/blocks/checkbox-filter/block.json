@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "gateway/checkbox-filter",
 	"version": "0.1.0",
-	"title": "GT Checkbox Filter",
+	"title": "GTX Checkbox Filter",
 	"category": "gateway",
 	"icon": "filter",
 	"description": "A checkbox group filter that works with the Interactivity API to filter data by multiple selections.",

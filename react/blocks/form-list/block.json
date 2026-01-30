@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/form-list",
-  "title": "Gateway Form List",
+  "title": "GTY Form List",
   "category": "gateway",
   "icon": "list-view",
   "description": "A custom form list block for Gateway.",

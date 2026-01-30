@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/form2",
-  "title": "Gateway Form 2",
+  "title": "GTY Form 2",
   "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom form block for Gateway.",

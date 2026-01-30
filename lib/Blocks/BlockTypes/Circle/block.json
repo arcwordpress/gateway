@@ -2,7 +2,7 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "gateway/circle",
-  "title": "Circle",
+  "title": "GTY Circle",
   "category": "gateway",
   "icon": "marker",
   "description": "A circle block",

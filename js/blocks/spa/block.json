@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/spa",
   "version": "1.0.0",
-  "title": "GT SPA",
+  "title": "GTX SPA",
   "category": "gateway",
   "description": "Experimental block demonstrating Interactivity Router with navigable slots",
   "supports": {

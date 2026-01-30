@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "gateway/field-list",
-  "title": "Gateway Field List",
+  "title": "GTY Field List",
   "category": "gateway",
   "icon": "list-view",
   "description": "A custom field list block for Gateway.",
