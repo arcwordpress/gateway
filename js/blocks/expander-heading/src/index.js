@@ -2,8 +2,9 @@ import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
+import metadata from '../block.json';
 
-registerBlockType('gateway/expander-heading', {
+registerBlockType(metadata.name, {
 	edit: () => {
 		const blockProps = useBlockProps({
 			className: 'gateway-expander-heading',

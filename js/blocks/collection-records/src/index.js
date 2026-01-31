@@ -22,6 +22,7 @@ import { useSelect } from '@wordpress/data';
 import { useState, useEffect } from '@wordpress/element';
 
 import './index.css';
+import metadata from '../block.json';
 
 /**
  * Edit component for the Collection Records block
@@ -286,7 +287,7 @@ function Save() {
 }
 
 // Register the block
-registerBlockType('gateway/collection-records', {
+registerBlockType(metadata.name, {
 	edit: Edit,
 	save: Save,
 });

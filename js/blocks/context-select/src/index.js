@@ -3,8 +3,9 @@ import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { PanelBody, TextControl, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
+import metadata from '../block.json';
 
-registerBlockType('gateway/context-select', {
+registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes }) => {
 		const {
 			contextName,
