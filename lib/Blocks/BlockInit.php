@@ -60,9 +60,6 @@ class BlockInit
 
         $registry = BlockRegistry::instance();
 
-        // Register Box block
-        BlockTypes\Box\Box::register();
-
         // Register Grid block
         BlockTypes\Grid\Grid::register();
 
