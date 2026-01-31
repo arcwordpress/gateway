@@ -12,17 +12,22 @@ import {
     PanelBody,
     SelectControl,
     RangeControl,
-    Spinner
+    Spinner,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useState, useMemo, memo } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import metadata from '../block.json';
 import './index.css';
 
 // Component that renders the actual editable InnerBlocks for the active loop item
 function LoopItemInnerBlocks() {
-    const innerBlocksProps = useInnerBlocksProps(
-        { className: 'gateway-loop-item' }
-    );
+    const innerBlocksProps = useInnerBlocksProps({
+        className: 'gateway-loop-item',
+    });
     return <div {...innerBlocksProps} />;
 }
 
@@ -76,7 +81,7 @@ function EditComponent(props) {
             const { getBlocks } = select('core/block-editor');
 
             const types = getPostTypes({ per_page: -1 });
-            const filteredTypes = types?.filter(type => type.viewable) || [];
+            const filteredTypes = types?.filter((type) => type.viewable) || [];
 
             const fetchedPosts = getEntityRecords('postType', postType, {
                 per_page: postsPerPage,
@@ -104,7 +109,7 @@ function EditComponent(props) {
 
     // Post type options
     const postTypeOptions = useMemo(() => {
-        return postTypes.map(type => ({
+        return postTypes.map((type) => ({
             label: type.labels.singular_name,
             value: type.slug,
         }));
@@ -155,6 +160,7 @@ function EditComponent(props) {
                     />
                 </PanelBody>
             </InspectorControls>
+
             <div {...blockProps}>
                 <div className="gateway-loop-header">
                     <span className="gateway-loop-title">
@@ -204,13 +210,9 @@ function SaveComponent() {
     return <InnerBlocks.Content />;
 }
 
-registerBlockType('gateway/loop', {
-    title: __('Gateway Loop', 'gateway'),
-    icon: 'update',
-    category: 'widgets',
-    supports: {
-        html: false,
-    },
+// Register the block using metadata from block.json
+registerBlockType(metadata.name, {
+    ...metadata,               // Pulls title, icon, category, description, keywords, attributes, supports, etc.
     edit: EditComponent,
     save: SaveComponent,
 });
