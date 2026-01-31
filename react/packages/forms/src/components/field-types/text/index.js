@@ -3,26 +3,21 @@ import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
 import './style.css';
 
-// Input Component (for forms)
-const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
+const TextInputControl = ({ config = {} }) => {
 
-  const { register, formState, refs } = useGatewayForm(); // Get RHF methods from context
+  const { register, formState } = useGatewayForm();
 
-  if (!config.name) {
-    console.warn('TextFieldTypeInput: No "name" provided in config');
+  const name = config.name;
+  if (!name) {
+    console.warn('TextInputControl: No "name" provided in config');
     return null;
   }
 
-  // Get error directly from context
-  const fieldError = formState.errors[config.name];
+  const fieldError = formState.errors[name];
 
   const {
-    name,
-    label,
     placeholder = '',
     required = false,
-    help = '',
-    instructions = '',
     default: defaultValue = ''
   } = config;
 
@@ -31,8 +26,7 @@ const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
     inputClasses.push('text-field__input--error');
   }
 
-  // The actual input/control for the text field
-  const TextInputControl = () => (
+  return (
     <input
       type="text"
       name={name}
@@ -41,12 +35,14 @@ const TextFieldTypeInput = ({ config = {}, children, ...props }) => {
       required={required}
       className={inputClasses.join(' ')}
       {...register(name)}
-      {...props}
     />
   );
+};
 
+// Input Component (for forms)
+const TextFieldTypeInput = ({ config = {} }) => {
   return (
-    <Field config={config} fieldControl={<TextInputControl />} />
+    <Field config={config} fieldControl={<TextInputControl config={config} />} />
   );
 };
 
