@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "gateway/click-control",
-	"title": "GT Click Control",
+	"name": "gateway/gtx-click-control",
+	"title": "GTX Click Control",
 	"category": "gateway",
 	"icon": "button",
 	"description": "An interactive button or link that triggers actions in the WordPress Interactivity API context.",

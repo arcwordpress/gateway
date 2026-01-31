@@ -1,9 +1,9 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "gateway/collection-records",
+	"name": "gateway/gts-collection-records",
 	"version": "0.1.0",
-	"title": "Collection Records",
+	"title": "GTS Collection Records",
 	"category": "gateway",
 	"icon": "database",
 	"description": "Loop over collection records and provide context for block bindings. Each iteration sets the record ID in context for child blocks to use.",

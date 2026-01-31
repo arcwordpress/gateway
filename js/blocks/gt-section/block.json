@@ -1,8 +1,8 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/gt-section",
-  "title": "GT Section",
+  "name": "gateway/gty-section",
+  "title": "GTY Section",
   "category": "gateway",
   "icon": "layout",
   "description": "A simple wrapping container with background color control.",

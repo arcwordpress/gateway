@@ -1,9 +1,9 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "gateway/dynamic-string",
+	"name": "gateway/gts-dynamic-string",
 	"version": "0.1.0",
-	"title": "GT Dynamic String",
+	"title": "GTS Dynamic String",
 	"category": "gateway",
 	"icon": "text",
 	"description": "A dynamic string block that binds to interactive data using wp-text.",
@@ -16,6 +16,7 @@
 		"gateway/collectionSlug",
 		"gateway/previewItems",
 		"gateway/availableFields",
+		"gateway/fieldDefinitions",
 		"gateway/itemName",
 		"gateway/inLoop"
 	],

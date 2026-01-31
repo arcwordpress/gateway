@@ -1,9 +1,9 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "gateway/data-loop",
+	"name": "gateway/gts-data-loop",
 	"version": "0.1.0",
-	"title": "GT Data Loop",
+	"title": "GTS Data Loop",
 	"category": "gateway",
 	"icon": "update",
 	"description": "A loop block that iterates over data using wp-each directive with InnerBlocks support.",

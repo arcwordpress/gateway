@@ -1,9 +1,9 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/viewport",
+  "name": "gateway/gtx-viewport",
   "version": "1.0.0",
-  "title": "GT Viewport",
+  "title": "GTX Viewport",
   "category": "gateway",
   "icon": "visibility",
   "description": "A container block that detects when it enters the viewport and provides context to child blocks for animation triggers.",

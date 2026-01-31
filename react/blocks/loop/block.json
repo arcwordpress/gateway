@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
-  "name": "gateway/loop",
-  "title": "Gateway Loop",
+  "name": "gateway/gts-loop",
+  "title": "GTS Loop",
   "category": "gateway",
   "icon": "update",
   "description": "Loop through posts and render child blocks for each item.",

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/expander",
-  "title": "GT Expander",
+  "name": "gateway/gtx-expander",
+  "title": "GTX Expander",
   "category": "gateway",
   "icon": "arrow-down-alt2",
   "description": "An expandable content block with heading and body sections.",

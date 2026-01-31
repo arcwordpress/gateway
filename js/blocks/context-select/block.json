@@ -1,8 +1,8 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/context-select",
-  "title": "GT Context Select",
+  "name": "gateway/gtx-context-select",
+  "title": "GTX Context Select",
   "category": "gateway",
   "icon": "list-view",
   "description": "A select box that displays options from a context data source.",

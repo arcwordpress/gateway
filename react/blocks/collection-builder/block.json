@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
-  "name": "gateway/collection-builder",
-  "title": "Gateway Collection Builder",
+  "name": "gateway/gts-collection-builder",
+  "title": "GTS Collection Builder",
   "category": "gateway",
   "icon": "admin-generic",
   "description": "A custom collection builder block for Gateway.",

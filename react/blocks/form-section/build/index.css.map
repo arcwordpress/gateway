@@ -1,1 +1,0 @@
-{"version":3,"file":"form-section/build/index.css","mappings":";;;AAAA;EACE,sBAAsB;EACtB,aAAa;EACb,cAAc;AAChB,C","sources":["webpack://gateway-blocks/./blocks/form-section/src/index.css"],"sourcesContent":[".gateway-form-section {\r\n  border: 1px solid #ddd;\r\n  padding: 10px;\r\n  margin: 10px 0;\r\n}"],"names":[],"ignoreList":[],"sourceRoot":""}

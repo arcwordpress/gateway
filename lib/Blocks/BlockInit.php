@@ -60,20 +60,11 @@ class BlockInit
 
         $registry = BlockRegistry::instance();
 
-        // Register Box block
-        BlockTypes\Box\Box::register();
-
-        // Register Circle block
-        BlockTypes\Circle\Circle::register();
-
         // Register Grid block
         BlockTypes\Grid\Grid::register();
 
         // Register GridItem block (used inside Grid)
         BlockTypes\GridItem\GridItem::register();
-
-        // Register ProjectList block (shows gateway projects and prepares interactivity store)
-        BlockTypes\ProjectList\ProjectList::register();
     }
 
     /**
