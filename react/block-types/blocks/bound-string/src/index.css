@@ -1,0 +1,40 @@
+/**
+ * Bound String Block - Editor Styles
+ */
+
+.wp-block-gateway-bound-string {
+	display: inline-block;
+	min-width: 50px;
+	min-height: 1.2em;
+}
+
+.wp-block-gateway-bound-string__indicator {
+	display: inline-block;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	padding: 4px 10px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-family: monospace;
+	font-weight: 500;
+}
+
+/* When block is selected, show binding controls hint */
+.wp-block-gateway-bound-string:focus-within {
+	outline: 2px solid #667eea;
+	outline-offset: 2px;
+}
+
+/* RichText placeholder styling */
+.wp-block-gateway-bound-string [data-rich-text-placeholder]::after {
+	color: #888;
+	font-style: italic;
+}
+
+/* Style different tag variants */
+.wp-block-gateway-bound-string h1,
+.wp-block-gateway-bound-string h2,
+.wp-block-gateway-bound-string h3,
+.wp-block-gateway-bound-string h4 {
+	margin: 0;
+}

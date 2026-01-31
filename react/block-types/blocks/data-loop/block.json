@@ -1,0 +1,46 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/gts-data-loop",
+	"version": "0.1.0",
+	"title": "GTS Data Loop",
+	"category": "gateway",
+	"icon": "update",
+	"description": "A loop block that iterates over data using wp-each directive with InnerBlocks support.",
+	"example": {},
+	"supports": {
+		"html": false,
+		"interactivity": true
+	},
+	"usesContext": [
+		"gateway/collectionSlug",
+		"gateway/previewItems",
+		"gateway/availableFields"
+	],
+	"providesContext": {
+		"gateway/itemName": "itemName",
+		"gateway/inLoop": "inLoop"
+	},
+	"textdomain": "gateway",
+	"editorScript": "file:./build/index.js",
+	"editorStyle": "file:./build/index.css",
+	"style": "file:./build/style-index.css",
+	"attributes": {
+		"contextNamespace": {
+			"type": "string",
+			"default": ""
+		},
+		"arrayProperty": {
+			"type": "string",
+			"default": "items"
+		},
+		"itemName": {
+			"type": "string",
+			"default": "item"
+		},
+		"inLoop": {
+			"type": "boolean",
+			"default": true
+		}
+	}
+}
