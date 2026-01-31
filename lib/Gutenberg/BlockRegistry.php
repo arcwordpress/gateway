@@ -91,11 +91,6 @@ class BlockRegistry
             $block_dirs = glob($react_blocks_dir . '/*', GLOB_ONLYDIR);
 
             foreach ($block_dirs as $block_path) {
-                // Skip gt1 - it's for consumer block experiments, not core blocks
-                if (basename($block_path) === 'gt1') {
-                    continue;
-                }
-
                 // Standard block registration
                 if (file_exists($block_path . '/block.json')) {
                     register_block_type($block_path);

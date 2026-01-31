@@ -74,13 +74,13 @@ class BlockInit
     public static function enqueueBlockEditorAssets()
     {
         // Load asset file for dependencies and version
-        $asset_file = GATEWAY_PATH . 'react/blocks/gt1/build/index.asset.php';
+        $asset_file = GATEWAY_PATH . 'js/php-block-scripts/build/index.asset.php';
         $asset = file_exists($asset_file) ? require $asset_file : ['dependencies' => [], 'version' => GATEWAY_VERSION];
 
-        // Enqueue the main gt1 blocks script for the editor
+        // Enqueue the main php-block-scripts for the editor
         wp_enqueue_script(
-            'gateway-gt1-blocks',
-            GATEWAY_URL . 'react/blocks/gt1/build/index.js',
+            'gateway-php-block-scripts',
+            GATEWAY_URL . 'js/php-block-scripts/build/index.js',
             $asset['dependencies'],
             $asset['version'],
             false
@@ -89,14 +89,14 @@ class BlockInit
         // Pass blocks metadata directly to the script to avoid timing issues
         $registry = BlockRegistry::instance();
         $blocks_data = array_values($registry->getMetadata());
-        wp_localize_script('gateway-gt1-blocks', 'gatewayBlocks', $blocks_data);
+        wp_localize_script('gateway-php-block-scripts', 'gatewayBlocks', $blocks_data);
 
         // Optional: Enqueue block editor styles if they exist
-        $editor_css = GATEWAY_PATH . 'react/blocks/gt1/build/index.css';
+        $editor_css = GATEWAY_PATH . 'js/php-block-scripts/build/index.css';
         if (file_exists($editor_css)) {
             wp_enqueue_style(
-                'gateway-gt1-blocks-editor',
-                GATEWAY_URL . 'react/blocks/gt1/build/index.css',
+                'gateway-php-block-scripts',
+                GATEWAY_URL . 'js/php-block-scripts/build/index.css',
                 [],
                 $asset['version']
             );
@@ -168,7 +168,7 @@ class BlockInit
                     if (is_array($json_data)) {
                         // Merge in central render callback (handles <InnerBlocks> replacement)
                         $json_data['render_callback'] = [$block, 'renderCallback'];
-                        $json_data['editor_script_handles'] = ['gateway-gt1-blocks'];
+                        $json_data['editor_script_handles'] = ['gateway-php-block-scripts'];
                         register_block_type($name, $json_data);
                     } else {
                         error_log("Gateway Block - Invalid JSON in block.json for {$name}");
@@ -182,7 +182,7 @@ class BlockInit
                 // Use central render callback so templates don't need to manually
                 // inject inner block content.
                 $args['render_callback'] = [$block, 'renderCallback'];
-                $args['editor_script_handles'] = ['gateway-gt1-blocks'];
+                $args['editor_script_handles'] = ['gateway-php-block-scripts'];
                 register_block_type($name, $args);
             } else {
                 throw new \Exception(

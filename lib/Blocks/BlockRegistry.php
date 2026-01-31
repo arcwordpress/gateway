@@ -37,7 +37,7 @@ class BlockRegistry
         $this->blocks[$name] = $block;
 
         // Note: Actual WordPress block registration is handled by BlockInit::registerBlocks()
-        // which is called on the 'init' hook and uses the gt1 script globally
+        // which is called on the 'init' hook and uses the gateway-php-block-scripts globally
         
         do_action('gateway_block_registered', get_class($block), $block);
 
