@@ -3,9 +3,10 @@ import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
 import './style.css';
+import metadata from '../block.json';
 
 // Register the main expander block
-registerBlockType('gateway/expander', {
+registerBlockType(metadata.name, {
 	edit: () => {
 		const blockProps = useBlockProps({
 			className: 'gateway-expander',
@@ -13,8 +14,8 @@ registerBlockType('gateway/expander', {
 
 		// Template for the expander: includes heading and body blocks
 		const TEMPLATE = [
-			['gateway/expander-heading', {}],
-			['gateway/expander-body', {}],
+			['gateway/gtx-expander-heading', {}],
+			['gateway/gtx-expander-body', {}],
 		];
 
 		return (
@@ -22,7 +23,7 @@ registerBlockType('gateway/expander', {
 				<InnerBlocks
 					template={TEMPLATE}
 					templateLock="all"
-					allowedBlocks={['gateway/expander-heading', 'gateway/expander-body']}
+					allowedBlocks={['gateway/gtx-expander-heading', 'gateway/gtx-expander-body']}
 				/>
 			</div>
 		);

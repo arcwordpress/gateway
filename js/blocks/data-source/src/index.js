@@ -7,6 +7,11 @@ import apiFetch from '@wordpress/api-fetch';
 import './editor.css';
 
 /**
+ * Internal dependencies
+ */
+import metadata from '../block.json';
+
+/**
  * Extract field keys from an object (for discovering available fields)
  */
 function extractFieldKeys(obj) {
@@ -16,7 +21,7 @@ function extractFieldKeys(obj) {
 	);
 }
 
-registerBlockType('gateway/gts-data-source', {
+registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes }) => {
 		const { collectionSlug, namespace, previewItems, availableFields, fieldDefinitions } = attributes;
 		const [loading, setLoading] = useState(false);

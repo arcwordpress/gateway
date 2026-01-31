@@ -4,8 +4,9 @@ import { PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { GutenbergFieldProvider, GutenbergField } from '@arcwp/gateway-forms';
 import './editor.css';
+import metadata from '../block.json';
 
-registerBlockType('gateway/gt-section', {
+registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes }) => {
 		const { backgroundColor } = attributes;
 

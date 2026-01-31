@@ -24,6 +24,7 @@ import { useSelect } from '@wordpress/data';
 import { heading, paragraph } from '@wordpress/icons';
 
 import './index.css';
+import metadata from '../block.json';
 
 /**
  * Tag name options for the block
@@ -183,7 +184,7 @@ function Save({ attributes }) {
 }
 
 // Register the block
-registerBlockType('gateway/bound-string', {
+registerBlockType(metadata.name, {
 	edit: Edit,
 	save: Save,
 });
