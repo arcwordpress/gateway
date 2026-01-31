@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/collection-builder",
+  "name": "gateway/gts-collection-builder",
   "title": "GTS Collection Builder",
   "category": "gateway",
   "icon": "admin-generic",

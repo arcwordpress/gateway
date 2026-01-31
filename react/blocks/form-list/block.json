@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/form-list",
+  "name": "gateway/gty-form-list",
   "title": "GTY Form List",
   "category": "gateway",
   "icon": "list-view",

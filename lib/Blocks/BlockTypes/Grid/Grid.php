@@ -4,14 +4,14 @@ namespace Gateway\Blocks\BlockTypes\Grid;
 
 class Grid extends \Gateway\Block
 {
-    protected static string $title = 'Grid';
+    protected static string $title = 'GTY Grid';
 
     /**
      * Get the block name
      */
     public static function getName(): string
     {
-        return 'gateway/grid';
+        return 'gateway/gty-grid';
     }
 
     /**

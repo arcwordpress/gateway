@@ -4,14 +4,14 @@ namespace Gateway\Blocks\BlockTypes\Box;
 
 class Box extends \Gateway\Block
 {
-    protected static string $title = 'Box';
+    protected static string $title = 'GTY Box';
 
     /**
      * Get the block name
      */
     public static function getName(): string
     {
-        return 'gateway/box';
+        return 'gateway/gty-box';
     }
 
     /**
@@ -29,8 +29,8 @@ class Box extends \Gateway\Block
     {
         return [
             'api_version' => 3,
-            'title' => 'Box',
-            'category' => 'layout',
+            'title' => 'GTY Box',
+            'category' => 'gateway',
             'supports' => [
                 'html' => false,
             ],

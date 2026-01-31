@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/form-section",
+  "name": "gateway/gty-form-section",
   "title": "GTY Form Section",
   "category": "gateway",
   "icon": "admin-generic",

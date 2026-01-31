@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/dataview",
+  "name": "gateway/gts-dataview",
   "title": "GTS Data View",
   "category": "gateway",
   "icon": "admin-generic",

@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/field",
+  "name": "gateway/gty-field",
   "title": "GTY Field",
   "category": "gateway",
   "icon": "admin-generic",

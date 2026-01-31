@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/field-list",
+  "name": "gateway/gty-field-list",
   "title": "GTY Field List",
   "category": "gateway",
   "icon": "list-view",

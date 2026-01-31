@@ -1,9 +1,9 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/expander-heading",
+  "name": "gateway/gtx-expander-heading",
   "title": "GTX Expander Heading",
-  "parent": ["gateway/expander"],
+  "parent": ["gateway/gtx-expander"],
   "category": "gateway",
   "icon": "heading",
   "description": "The clickable heading section of an expander block.",

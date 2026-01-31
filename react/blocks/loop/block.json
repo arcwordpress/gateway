@@ -1,6 +1,6 @@
 {
   "apiVersion": 3,
-  "name": "gateway/loop",
+  "name": "gateway/gts-loop",
   "title": "GTS Loop",
   "category": "gateway",
   "icon": "update",
