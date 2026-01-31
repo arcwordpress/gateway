@@ -26,12 +26,17 @@
     "availableFields": {
       "type": "array",
       "default": []
+    },
+    "fieldDefinitions": {
+      "type": "object",
+      "default": {}
     }
   },
   "providesContext": {
     "gateway/collectionSlug": "collectionSlug",
     "gateway/previewItems": "previewItems",
-    "gateway/availableFields": "availableFields"
+    "gateway/availableFields": "availableFields",
+    "gateway/fieldDefinitions": "fieldDefinitions"
   },
   "supports": {
     "html": false,

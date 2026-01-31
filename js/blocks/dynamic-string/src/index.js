@@ -20,6 +20,7 @@ registerBlockType(metadata.name, {
 		const itemName = context['gateway/itemName'] || 'item';
 		const inLoop = context['gateway/inLoop'] || false;
 		const availableFields = context['gateway/availableFields'] || [];
+		const fieldDefinitions = context['gateway/fieldDefinitions'] || {};
 		const previewItems = context['gateway/previewItems'] || [];
 
 		// Construct the binding expression based on mode
@@ -39,13 +40,20 @@ registerBlockType(metadata.name, {
 			previewValue = previewItems[0][fieldKey];
 		}
 
-		// Build field options for dropdown
+		// Build field options for dropdown with rich labels from field definitions
 		const fieldOptions = [
 			{ value: '', label: __('— Select a field —', 'gateway') },
-			...availableFields.map(field => ({
-				value: field,
-				label: field
-			}))
+			...availableFields.map(field => {
+				const def = fieldDefinitions[field];
+				let label = field;
+				if (def) {
+					// Show label and type if available
+					const fieldLabel = def.label || field;
+					const fieldType = def.type ? ` (${def.type})` : '';
+					label = fieldLabel !== field ? `${fieldLabel}${fieldType} — ${field}` : `${field}${fieldType}`;
+				}
+				return { value: field, label };
+			})
 		];
 
 		return (

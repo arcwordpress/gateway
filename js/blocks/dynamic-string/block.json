@@ -16,6 +16,7 @@
 		"gateway/collectionSlug",
 		"gateway/previewItems",
 		"gateway/availableFields",
+		"gateway/fieldDefinitions",
 		"gateway/itemName",
 		"gateway/inLoop"
 	],

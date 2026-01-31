@@ -16,9 +16,9 @@ function extractFieldKeys(obj) {
 	);
 }
 
-registerBlockType('gateway/data-source', {
+registerBlockType('gateway/gts-data-source', {
 	edit: ({ attributes, setAttributes }) => {
-		const { collectionSlug, namespace, previewItems, availableFields } = attributes;
+		const { collectionSlug, namespace, previewItems, availableFields, fieldDefinitions } = attributes;
 		const [loading, setLoading] = useState(false);
 		const [error, setError] = useState(null);
 
@@ -29,7 +29,7 @@ registerBlockType('gateway/data-source', {
 		// Fetch preview data when collection slug changes
 		useEffect(() => {
 			if (!collectionSlug) {
-				setAttributes({ previewItems: [], availableFields: [] });
+				setAttributes({ previewItems: [], availableFields: [], fieldDefinitions: {} });
 				return;
 			}
 
@@ -38,7 +38,7 @@ registerBlockType('gateway/data-source', {
 				setError(null);
 
 				try {
-					// First fetch collection info to get the endpoint
+					// First fetch collection info to get the endpoint and field definitions
 					const collectionInfo = await apiFetch({
 						path: `/gateway/v1/collections/${collectionSlug}`,
 					});
@@ -48,7 +48,11 @@ registerBlockType('gateway/data-source', {
 						throw new Error('Collection endpoint not found');
 					}
 
-					// Fetch actual data from the collection endpoint
+					// Get field definitions from collection (authoritative source)
+					const collectionFields = collectionInfo.fields || {};
+					const definedFieldKeys = Object.keys(collectionFields);
+
+					// Fetch actual data from the collection endpoint for preview
 					const response = await apiFetch({
 						path: endpoint.replace('/wp-json', ''),
 					});
@@ -59,17 +63,21 @@ registerBlockType('gateway/data-source', {
 					// Get first 3 items for preview
 					const preview = items.slice(0, 3);
 
-					// Extract available fields from first item
-					const fields = items.length > 0 ? extractFieldKeys(items[0]) : [];
+					// Use collection-defined fields as primary source
+					// Fall back to extracting from data if no fields defined in collection
+					const fields = definedFieldKeys.length > 0
+						? definedFieldKeys
+						: (items.length > 0 ? extractFieldKeys(items[0]) : []);
 
 					setAttributes({
 						previewItems: preview,
-						availableFields: fields
+						availableFields: fields,
+						fieldDefinitions: collectionFields
 					});
 				} catch (err) {
-					console.error('GT Data Source: Error fetching preview data', err);
+					console.error('GTS Data Source: Error fetching preview data', err);
 					setError(err.message);
-					setAttributes({ previewItems: [], availableFields: [] });
+					setAttributes({ previewItems: [], availableFields: [], fieldDefinitions: {} });
 				} finally {
 					setLoading(false);
 				}
@@ -98,12 +106,25 @@ registerBlockType('gateway/data-source', {
 					{availableFields.length > 0 && (
 						<PanelBody title={__('Available Fields', 'gateway')} initialOpen={false}>
 							<p className="components-base-control__help">
-								{__('Fields discovered from collection data:', 'gateway')}
+								{Object.keys(fieldDefinitions || {}).length > 0
+									? __('Fields from collection definition:', 'gateway')
+									: __('Fields discovered from collection data:', 'gateway')}
 							</p>
 							<ul style={{ margin: 0, paddingLeft: '20px' }}>
-								{availableFields.map((field) => (
-									<li key={field}><code>{field}</code></li>
-								))}
+								{availableFields.map((field) => {
+									const def = fieldDefinitions?.[field];
+									const label = def?.label || field;
+									const type = def?.type;
+									return (
+										<li key={field}>
+											<code>{field}</code>
+											{type && <span style={{ color: '#666', marginLeft: '4px' }}>({type})</span>}
+											{def?.label && def.label !== field && (
+												<span style={{ color: '#888', marginLeft: '4px' }}>— {def.label}</span>
+											)}
+										</li>
+									);
+								})}
 							</ul>
 						</PanelBody>
 					)}
@@ -112,7 +133,7 @@ registerBlockType('gateway/data-source', {
 				<div {...blockProps}>
 					<div className="gateway-data-source-editor">
 						<div className="gateway-data-source-header">
-							<h3>{__('GT Data Source', 'gateway')}</h3>
+							<h3>{__('GTS Data Source', 'gateway')}</h3>
 							{collectionSlug ? (
 								<>
 									<p>
