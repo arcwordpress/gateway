@@ -7,9 +7,9 @@
     "start": "wp-scripts start"
   },
   "dependencies": {
-    "@arcwp/gateway-data": "file:./packages/data",
-    "@arcwp/gateway-grids": "file:./packages/grids",
-    "@arcwp/gateway-forms": "file:./packages/forms",
+    "@arcwp/gateway-data": "file:../packages/data",
+    "@arcwp/gateway-grids": "file:../packages/grids",
+    "@arcwp/gateway-forms": "file:../packages/forms",
     "@wordpress/block-editor": "^12.0.0",
     "@wordpress/blocks": "^12.0.0",
     "@wordpress/components": "^25.0.0",

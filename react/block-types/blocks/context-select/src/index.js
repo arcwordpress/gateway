@@ -1,6 +1,6 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, TextControl, SelectControl } from '@wordpress/components';
+import { PanelBody, TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
 import metadata from '../block.json';
@@ -13,7 +13,6 @@ registerBlockType(metadata.name, {
 			valueProperty,
 			labelProperty,
 			placeholder,
-			selectedValue
 		} = attributes;
 
 		const blockProps = useBlockProps({

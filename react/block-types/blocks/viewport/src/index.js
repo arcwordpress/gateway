@@ -1,15 +1,8 @@
-/**
- * WordPress dependencies
- */
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import './editor.css';
 import './style.css';
-
-/**
- * Internal dependencies
- */
 import metadata from '../block.json';
 
 registerBlockType(metadata.name, {
@@ -22,7 +15,7 @@ registerBlockType(metadata.name, {
 			<div {...blockProps}>
 				<div className="gateway-viewport-editor">
 					<div className="gateway-viewport-header">
-						<strong>👁️ GT Viewport</strong>
+						<strong>GT Viewport</strong>
 						<div className="gateway-viewport-info">
 							<small>
 								Detects when this block enters the viewport.

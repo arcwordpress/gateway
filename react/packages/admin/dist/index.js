@@ -10,6 +10,6 @@ Object.defineProperty(exports, "Header", {
   }
 });
 exports["default"] = void 0;
-var _Header = _interopRequireDefault(require("./Header/Header"));
+var _Header = _interopRequireDefault(require("./components/Header/Header"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 var _default = exports["default"] = _Header["default"];
