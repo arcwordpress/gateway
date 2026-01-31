@@ -30,22 +30,10 @@ class GridItem extends \Gateway\Block
         return [
             'api_version' => 3,
             'title' => 'GTY Grid Item',
-            'category' => 'gateway',
+            'category' => 'gateway-gtx',
             'supports' => [
                 'html' => false,
             ],
-        ];
-    }
-
-    /**
-     * Provide metadata for JS registration (editor uses this)
-     */
-    public static function getMetadata(): array
-    {
-        return [
-            'name' => static::getName(),
-            'title' => static::getTitle(),
-            'hasInnerBlocks' => true,
         ];
     }
 

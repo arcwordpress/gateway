@@ -28,16 +28,29 @@ class BlockInit
      */
     public static function registerBlockCategories($categories, $context)
     {
-        return array_merge(
+
+        // Build your custom categories in desired order
+        $custom_cats = [
             [
-                [
-                    'slug'  => 'gateway',
-                    'title' => __('Gateway', 'gateway'),
-                    'icon'  => 'database',
-                ],
+                'slug'  => 'gateway',
+                'title' => __( 'Gateway Standard (GTY)', 'gateway' ),
+                'icon'  => 'database',
             ],
-            $categories
-        );
+            [
+                'slug'  => 'gateway-gtx',
+                'title' => __( 'Gateway Interactive (GTX)', 'gateway' ),
+                'icon'  => 'database',
+            ],
+            [
+                'slug'  => 'gateway-gts',
+                'title' => __( 'Gateway Dynamic (GTS)', 'gateway' ),
+                'icon'  => 'database',
+            ],
+        ];
+
+        // Merge customs at the beginning (top of inserter)
+        return array_merge( $custom_cats, $categories );
+        
     }
 
     /**

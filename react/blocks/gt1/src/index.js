@@ -11,7 +11,7 @@ const registerBlocks = (blocks) => {
 
         registerBlockType(block.name, {
             title: block.title,
-            category: 'layout',
+            category: block.category,
             edit: (props) => hasInnerBlocks ? (
                 <TemplateBlock
                     blockName={block.name}

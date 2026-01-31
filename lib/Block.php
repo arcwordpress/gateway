@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Gateway;
 
@@ -18,6 +18,26 @@ abstract class Block {
     public static function getTitle(): string
     {
         return static::$title;
+    }
+    
+    /**
+     * Get the block category slug
+     */
+    public static function getCategory(): ?string
+    {
+        $registration_type = static::getRegistrationType();
+
+        if ($registration_type === 'code') {
+            $args = static::getBlockArgs();
+            return $args['category'] ?? null;
+        } elseif ($registration_type === 'json') {
+            $json_path = static::getBlockDir() . '/block.json';
+            if (file_exists($json_path)) {
+                $json_data = json_decode(file_get_contents($json_path), true);
+                return $json_data['category'] ?? null;
+            }
+        }
+        return null;
     }
     
     /**
@@ -60,11 +80,17 @@ abstract class Block {
      */
     public static function getMetadata(): array
     {
-        return [
+        $metadata = [
             'name' => static::getName(),
             'title' => static::getTitle(),
             'hasInnerBlocks' => static::hasInnerBlocks(),
         ];
+
+        if ($category = static::getCategory()) {
+            $metadata['category'] = $category;
+        }
+
+        return $metadata;
     }
 
     /**
