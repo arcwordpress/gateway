@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Builder;
  * This trait extracts field names from a collection's $fields configuration and makes them
  * available as filterable parameters in API requests.
  *
- * Usage in GetManyRoute:
- *   $filterableFields = CollectionFilterable::getFilterableFieldNames($collection);
- *   CollectionFilterable::applyFieldFilters($query, $requestParams, $filterableFields);
+ * Usage in a class that uses this trait:
+ *   $filterableFields = self::getFilterableFieldNames($collection);
+ *   self::applyFieldFilters($query, $requestParams, $filterableFields);
  */
 trait CollectionFilterable
 {
