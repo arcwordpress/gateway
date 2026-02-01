@@ -53,13 +53,13 @@ class GetManyRoute extends BaseEndpoint
             }
 
             // Get filterable fields from collection's $fields property
-            $fieldNames = CollectionFilterable::getFilterableFieldNames($this->collection);
+            $fieldNames = self::getFilterableFieldNames($this->collection);
 
             // Get custom filters from collection's $filters property
             $filterConfig = $this->collection->getFilters() ?: [];
 
             // Merge field names with custom filters to get all allowed filter fields
-            $allowedFilterFields = CollectionFilterable::mergeFilterableFields($fieldNames, $filterConfig);
+            $allowedFilterFields = self::mergeFilterableFields($fieldNames, $filterConfig);
 
             $parsedParams = [
                 'page' => $page,
@@ -108,7 +108,7 @@ class GetManyRoute extends BaseEndpoint
             $query = $this->collection->query();
 
             // Apply filters from request params using the trait
-            $filterResult = CollectionFilterable::applyFieldFilters(
+            $filterResult = self::applyFieldFilters(
                 $query,
                 $request->get_params(),
                 $allowedFilterFields
