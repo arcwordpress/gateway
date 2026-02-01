@@ -54,22 +54,4 @@ class RecordMigration
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
     }
-
-    /**
-     * Drop the database table
-     *
-     * Use with caution - this permanently deletes all data.
-     * Typically called during plugin uninstall (not deactivation).
-     *
-     * @return void
-     */
-    public static function drop()
-    {
-        global $wpdb;
-
-        $table_name = $wpdb->prefix . 'extension_records';
-
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $wpdb->query("DROP TABLE IF EXISTS $table_name");
-    }
 }
