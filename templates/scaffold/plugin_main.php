@@ -127,5 +127,23 @@ class Plugin {
     }
 }
 
-// Self-initialize the plugin
-Plugin::instance();
+/**
+ * Initialize the plugin with timing-safe Gateway dependency check.
+ *
+ * We use plugins_loaded (priority 0) to ensure Gateway has had a chance to load first,
+ * regardless of plugin loading order. This is more reliable than checking class_exists
+ * at the top of the file, which can fail if this extension loads before Gateway.
+ *
+ * Hooks available for extensions:
+ * - 'gateway_plugin_loaded': Fires right after Gateway's plugin file loads (earliest)
+ * - 'gateway_loaded': Fires on WordPress 'init' (use for collection registration)
+ */
+add_action('plugins_loaded', function() {
+    // Safety check: ensure Gateway is active
+    if (!class_exists('\Gateway\Plugin')) {
+        return;
+    }
+
+    // Initialize the extension
+    Plugin::instance();
+}, 0); // Priority 0 to run as early as possible within plugins_loaded
