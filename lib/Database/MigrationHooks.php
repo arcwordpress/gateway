@@ -103,10 +103,8 @@ class MigrationHooks
      */
     public static function runCoreMigrations()
     {
-        // Run migration for gateway_project (core collection)
-        do_action('gateway/collection/migrations', 'gateway_project', [
-            'autoGenerate' => false,
-            'saveToFile' => false,
-        ]);
+        // No core collections require migration on activation
+        // Extension plugins can hook into 'gateway/collection/migrations'
+        // to run their own migrations when needed
     }
 }
