@@ -324,3 +324,30 @@ class Plugin
 
 // Initialize plugin
 Plugin::getInstance();
+
+/**
+ * Action: gateway_plugin_loaded
+ *
+ * Fires immediately after the Gateway plugin has fully loaded.
+ * This is the EARLIEST hook available for extensions that need to run
+ * setup before WordPress 'init'.
+ *
+ * Extensions should use this hook with plugins_loaded for timing-safe initialization:
+ *
+ *     add_action('plugins_loaded', function() {
+ *         if (!class_exists('\Gateway\Plugin')) {
+ *             return;
+ *         }
+ *         // Your early initialization here
+ *     }, 0);
+ *
+ * Or hook directly into gateway_plugin_loaded for post-Gateway setup:
+ *
+ *     add_action('gateway_plugin_loaded', function() {
+ *         // Gateway is guaranteed to be loaded here
+ *     });
+ *
+ * For collection registration, use the later 'gateway_loaded' hook instead,
+ * which fires on WordPress 'init'.
+ */
+do_action('gateway_plugin_loaded');
