@@ -18,8 +18,11 @@ class RequestLog
 
         $dir = defined('GATEWAY_REQUEST_LOG_DIR') ? GATEWAY_REQUEST_LOG_DIR : (WP_CONTENT_DIR . '/gateway/requests/logs');
         if (!is_dir($dir)) {
-            error_log("Gateway: RequestLog error: Log directory does not exist: $dir");
-            return;
+            // Attempt to create the directory if it doesn't exist
+            if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+                error_log("Gateway: RequestLog error: Log directory does not exist and could not be created: $dir");
+                return;
+            }
         }
 
         $file = $dir . '/' . date('Y-m-d') . '.log';

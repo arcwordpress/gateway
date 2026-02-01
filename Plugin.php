@@ -94,6 +94,10 @@ class Plugin
      */
     private function init()
     {
+        // Register activation and deactivation hooks early (must be during plugin load)
+        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
+        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
+
         // Boot Eloquent on plugins_loaded
         $this->bootEloquent();
 
@@ -136,10 +140,6 @@ class Plugin
     public function onInit()
     {
         do_action('gateway_loaded');
-
-        // Register activation and deactivation hooks
-        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
-        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
     }
 
     /**
