@@ -68,9 +68,17 @@ const LeftSidebar = () => {
 
         <CollectionMenu />
 
-        <h2 className="extension-heading text-lg font-semibold mb-4">
-          Extensions ({extensions.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="extension-heading text-lg font-semibold">
+            Extensions ({extensions.length})
+          </h2>
+          <Link
+            to="/extension/create"
+            className="px-3 py-1 text-sm bg-black !text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            + New
+          </Link>
+        </div>
 
         {extensions.length === 0 ? (
           <div className="text-gray-500">—</div>
