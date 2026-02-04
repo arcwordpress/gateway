@@ -26,10 +26,10 @@ const entries = blocks.reduce((acc, block) => {
     return acc;
 }, {});
 
-// Add HOC entry point
+// Add HOC entry point - output to parent directory (block-types/hoc/build/)
 const hocPath = path.join(__dirname, 'hoc/index.js');
 if (fs.existsSync(hocPath)) {
-    entries['hoc/build/index'] = hocPath;
+    entries['../hoc/build/index'] = hocPath;
 }
 
 module.exports = {
