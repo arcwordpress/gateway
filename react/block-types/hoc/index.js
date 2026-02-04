@@ -3,6 +3,10 @@
  *
  * This applies the HOC to all blocks in the editor.
  * Individual blocks can opt-in by configuring their block.json supports.
+ *
+ * Blocks call useGTSStyles() hook to receive HOC-injected styles.
+ * The HOC provides inspector controls, and blocks apply the styles
+ * via the hook without needing to know what specific styles are injected.
  */
 
 import { addFilter } from '@wordpress/hooks';
@@ -10,9 +14,7 @@ import withInspectorControls from './with-inspector-controls';
 
 /**
  * Apply the HOC to all block Edit components
- *
- * Uses the editor.BlockEdit filter which is called when rendering
- * the Edit component of any block in the editor.
+ * Adds the inspector controls UI
  */
 addFilter(
 	'editor.BlockEdit',
