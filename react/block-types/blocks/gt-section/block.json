@@ -24,7 +24,8 @@
       "padding": true
     },
     "gtsInspectorControls": {
-      "gap": true
+      "gap": true,
+      "display": true
     }
   },
   "editorScript": "file:./build/index.js",

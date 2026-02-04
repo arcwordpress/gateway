@@ -27,6 +27,11 @@ const hasGapSupport = (blockName) => {
 	return settings?.supports?.gtsInspectorControls?.gap === true;
 };
 
+const hasDisplaySupport = (blockName) => {
+	const settings = wp.blocks.getBlockType(blockName);
+	return settings?.supports?.gtsInspectorControls?.display === true;
+};
+
 /**
  * Get HOC-injected styles for a block
  *
@@ -49,6 +54,18 @@ export const useGTSStyles = (blockName, attributes) => {
 		console.log('[GTS useGTSStyles] Gap value:', gap);
 		if (gap) {
 			styles.gap = gap;
+		}
+	}
+
+	// Add display if block supports it
+	const supportsDisplay = hasDisplaySupport(blockName);
+	console.log('[GTS useGTSStyles] Supports display:', supportsDisplay);
+
+	if (supportsDisplay) {
+		const display = attributes?.style?.display;
+		console.log('[GTS useGTSStyles] Display value:', display);
+		if (display) {
+			styles.display = display;
 		}
 	}
 
