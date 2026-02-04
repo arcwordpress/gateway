@@ -65,6 +65,7 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 		const currentSpacing = currentStyle.spacing || {};
 		const currentGap = currentSpacing.blockGap || '';
 		const currentDisplay = currentStyle.display || '';
+		const currentPadding = currentSpacing.padding || {};
 
 		/**
 		 * Update the gap value in the style attribute
@@ -111,6 +112,43 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 		};
 
 		/**
+		 * Update individual padding values in the style attribute
+		 */
+		const setPadding = (side, value) => {
+			const newPadding = {
+				...currentPadding,
+				[side]: value > 0 ? `${value}px` : undefined
+			};
+
+			// Clean up empty padding values
+			Object.keys(newPadding).forEach(key => {
+				if (!newPadding[key]) {
+					delete newPadding[key];
+				}
+			});
+
+			const newStyle = {
+				...currentStyle,
+				spacing: {
+					...currentSpacing,
+					padding: Object.keys(newPadding).length > 0 ? newPadding : undefined
+				}
+			};
+
+			// Clean up empty objects
+			if (!newStyle.spacing.padding) {
+				delete newStyle.spacing.padding;
+			}
+			if (Object.keys(newStyle.spacing || {}).length === 0) {
+				delete newStyle.spacing;
+			}
+
+			setAttributes({
+				style: Object.keys(newStyle).length > 0 ? newStyle : undefined
+			});
+		};
+
+		/**
 		 * Parse gap value to number (assumes px unit)
 		 */
 		const parseGapValue = (gap) => {
@@ -126,7 +164,20 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 			return num > 0 ? `${num}px` : '';
 		};
 
+		/**
+		 * Parse padding value to number (assumes px unit)
+		 */
+		const parsePaddingValue = (padding) => {
+			if (!padding) return 0;
+			const match = padding.match(/^(\d+)px$/);
+			return match ? parseInt(match[1], 10) : 0;
+		};
+
 		const gapValue = parseGapValue(currentGap);
+		const paddingTop = parsePaddingValue(currentPadding.top);
+		const paddingRight = parsePaddingValue(currentPadding.right);
+		const paddingBottom = parsePaddingValue(currentPadding.bottom);
+		const paddingLeft = parsePaddingValue(currentPadding.left);
 
 		return (
 			<>
@@ -189,6 +240,55 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 									{__('Current value:', 'gateway')} <code>{currentDisplay}</code>
 								</div>
 							)}
+						</PanelBody>
+					</InspectorControls>
+				)}
+				{config.padding && (
+					<InspectorControls>
+						<PanelBody
+							title={__('GTS Padding Controls', 'gateway')}
+							initialOpen={false}
+						>
+							<RangeControl
+								label={__('Padding Top', 'gateway')}
+								value={paddingTop}
+								onChange={(value) => setPadding('top', value)}
+								min={0}
+								max={200}
+								step={1}
+								allowReset
+								resetFallbackValue={0}
+							/>
+							<RangeControl
+								label={__('Padding Right', 'gateway')}
+								value={paddingRight}
+								onChange={(value) => setPadding('right', value)}
+								min={0}
+								max={200}
+								step={1}
+								allowReset
+								resetFallbackValue={0}
+							/>
+							<RangeControl
+								label={__('Padding Bottom', 'gateway')}
+								value={paddingBottom}
+								onChange={(value) => setPadding('bottom', value)}
+								min={0}
+								max={200}
+								step={1}
+								allowReset
+								resetFallbackValue={0}
+							/>
+							<RangeControl
+								label={__('Padding Left', 'gateway')}
+								value={paddingLeft}
+								onChange={(value) => setPadding('left', value)}
+								min={0}
+								max={200}
+								step={1}
+								allowReset
+								resetFallbackValue={0}
+							/>
 						</PanelBody>
 					</InspectorControls>
 				)}

@@ -32,6 +32,11 @@ const hasDisplaySupport = (blockName) => {
 	return settings?.supports?.gtsInspectorControls?.display === true;
 };
 
+const hasPaddingSupport = (blockName) => {
+	const settings = wp.blocks.getBlockType(blockName);
+	return settings?.supports?.gtsInspectorControls?.padding === true;
+};
+
 /**
  * Get HOC-injected styles for a block
  *
@@ -69,10 +74,25 @@ export const useGTSStyles = (blockName, attributes) => {
 		}
 	}
 
+	// Add padding if block supports it
+	const supportsPadding = hasPaddingSupport(blockName);
+	console.log('[GTS useGTSStyles] Supports padding:', supportsPadding);
+
+	if (supportsPadding) {
+		const padding = attributes?.style?.spacing?.padding;
+		console.log('[GTS useGTSStyles] Padding value:', padding);
+		if (padding) {
+			if (padding.top) styles.paddingTop = padding.top;
+			if (padding.right) styles.paddingRight = padding.right;
+			if (padding.bottom) styles.paddingBottom = padding.bottom;
+			if (padding.left) styles.paddingLeft = padding.left;
+		}
+	}
+
 	console.log('[GTS useGTSStyles] Returning styles:', styles);
 
 	// Future: Add more HOC-injected styles here
-	// e.g., padding, margin, other layout properties
+	// e.g., margin, other layout properties
 
 	return styles;
 };
