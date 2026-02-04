@@ -12,6 +12,9 @@
 import { addFilter } from '@wordpress/hooks';
 import withInspectorControls from './with-inspector-controls';
 
+console.log('[GTS HOC] Registering inspector controls HOC');
+console.log('[GTS HOC] withInspectorControls:', withInspectorControls);
+
 /**
  * Apply the HOC to all block Edit components
  * Adds the inspector controls UI
@@ -22,3 +25,5 @@ addFilter(
 	withInspectorControls,
 	10
 );
+
+console.log('[GTS HOC] Filter registered successfully');

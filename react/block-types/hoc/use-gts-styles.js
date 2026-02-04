@@ -35,15 +35,24 @@ const hasGapSupport = (blockName) => {
  * @returns {Object} - Style object to spread into block wrapper
  */
 export const useGTSStyles = (blockName, attributes) => {
+	console.log('[GTS useGTSStyles] Called for:', blockName);
+	console.log('[GTS useGTSStyles] Attributes:', attributes);
+
 	const styles = {};
 
 	// Add gap if block supports it
-	if (hasGapSupport(blockName)) {
+	const supportsGap = hasGapSupport(blockName);
+	console.log('[GTS useGTSStyles] Supports gap:', supportsGap);
+
+	if (supportsGap) {
 		const gap = attributes?.style?.spacing?.blockGap;
+		console.log('[GTS useGTSStyles] Gap value:', gap);
 		if (gap) {
 			styles.gap = gap;
 		}
 	}
+
+	console.log('[GTS useGTSStyles] Returning styles:', styles);
 
 	// Future: Add more HOC-injected styles here
 	// e.g., padding, margin, other layout properties

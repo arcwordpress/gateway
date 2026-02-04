@@ -25,9 +25,17 @@ import { createHigherOrderComponent } from '@wordpress/compose';
  */
 const getInspectorControlsConfig = (blockName) => {
 	const settings = wp.blocks.getBlockType(blockName);
+	console.log('[GTS HOC] Checking block:', blockName);
+	console.log('[GTS HOC] Block settings:', settings);
+	console.log('[GTS HOC] Supports:', settings?.supports);
+	console.log('[GTS HOC] gtsInspectorControls:', settings?.supports?.gtsInspectorControls);
+
 	if (!settings?.supports?.gtsInspectorControls) {
+		console.log('[GTS HOC] Block did not opt-in, skipping');
 		return null;
 	}
+
+	console.log('[GTS HOC] Block opted in! Config:', settings.supports.gtsInspectorControls);
 	return settings.supports.gtsInspectorControls;
 };
 
@@ -38,12 +46,19 @@ const getInspectorControlsConfig = (blockName) => {
 const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 	return (props) => {
 		const { name: blockName, attributes, setAttributes } = props;
+		console.log('[GTS HOC] withInspectorControls called for:', blockName);
+		console.log('[GTS HOC] Props:', props);
+
 		const config = getInspectorControlsConfig(blockName);
 
 		// If block hasn't opted in, return original component
 		if (!config) {
+			console.log('[GTS HOC] No config, returning original BlockEdit');
 			return <BlockEdit {...props} />;
 		}
+
+		console.log('[GTS HOC] Config found! Will add controls');
+		console.log('[GTS HOC] Gap support:', config.gap);
 
 		// Get current style attribute or initialize empty object
 		const currentStyle = attributes.style || {};
