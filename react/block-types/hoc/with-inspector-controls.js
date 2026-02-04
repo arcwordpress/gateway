@@ -13,7 +13,7 @@
  */
 
 import { InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, RangeControl } from '@wordpress/components';
+import { PanelBody, RangeControl, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 
@@ -64,6 +64,7 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 		const currentStyle = attributes.style || {};
 		const currentSpacing = currentStyle.spacing || {};
 		const currentGap = currentSpacing.blockGap || '';
+		const currentDisplay = currentStyle.display || '';
 
 		/**
 		 * Update the gap value in the style attribute
@@ -83,6 +84,25 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 			}
 			if (Object.keys(newStyle.spacing || {}).length === 0) {
 				delete newStyle.spacing;
+			}
+
+			setAttributes({
+				style: Object.keys(newStyle).length > 0 ? newStyle : undefined
+			});
+		};
+
+		/**
+		 * Update the display value in the style attribute
+		 */
+		const setDisplay = (value) => {
+			const newStyle = {
+				...currentStyle,
+				display: value
+			};
+
+			// Clean up if empty
+			if (!newStyle.display) {
+				delete newStyle.display;
 			}
 
 			setAttributes({
@@ -131,6 +151,42 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 							{gapValue > 0 && (
 								<div style={{ marginTop: '8px', fontSize: '12px', color: '#757575' }}>
 									{__('Current value:', 'gateway')} <code>{currentGap}</code>
+								</div>
+							)}
+						</PanelBody>
+					</InspectorControls>
+				)}
+				{config.display && (
+					<InspectorControls>
+						<PanelBody
+							title={__('GTS Display Controls', 'gateway')}
+							initialOpen={false}
+						>
+							<SelectControl
+								label={__('Display', 'gateway')}
+								help={__('Set the CSS display property', 'gateway')}
+								value={currentDisplay}
+								onChange={setDisplay}
+								options={[
+									{ label: __('Default', 'gateway'), value: '' },
+									{ label: 'block', value: 'block' },
+									{ label: 'inline', value: 'inline' },
+									{ label: 'inline-block', value: 'inline-block' },
+									{ label: 'flex', value: 'flex' },
+									{ label: 'inline-flex', value: 'inline-flex' },
+									{ label: 'grid', value: 'grid' },
+									{ label: 'inline-grid', value: 'inline-grid' },
+									{ label: 'flow-root', value: 'flow-root' },
+									{ label: 'none', value: 'none' },
+									{ label: 'contents', value: 'contents' },
+									{ label: 'table', value: 'table' },
+									{ label: 'table-row', value: 'table-row' },
+									{ label: 'table-cell', value: 'table-cell' },
+								]}
+							/>
+							{currentDisplay && (
+								<div style={{ marginTop: '8px', fontSize: '12px', color: '#757575' }}>
+									{__('Current value:', 'gateway')} <code>{currentDisplay}</code>
 								</div>
 							)}
 						</PanelBody>
