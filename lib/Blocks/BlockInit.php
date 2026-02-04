@@ -104,6 +104,9 @@ class BlockInit
 
         // Enqueue block bindings sources registration (WordPress 6.7+)
         self::enqueueBlockBindingsSources();
+
+        // Enqueue HOC for inspector controls
+        self::enqueueInspectorControlsHOC();
     }
 
     /**
@@ -136,6 +139,32 @@ class BlockInit
         );
 
         wp_localize_script('gateway-block-bindings-sources', 'gatewayBindingSources', $sources);
+    }
+
+    /**
+     * Enqueue HOC for inspector controls
+     *
+     * This registers a Higher Order Component that adds inspector controls
+     * to blocks that opt-in via their block.json supports configuration.
+     */
+    protected static function enqueueInspectorControlsHOC()
+    {
+        $hoc_asset_file = GATEWAY_PATH . 'react/block-types/hoc/build/index.asset.php';
+
+        if (!file_exists($hoc_asset_file)) {
+            error_log('Gateway: inspector-controls HOC asset file not found at ' . $hoc_asset_file);
+            return;
+        }
+
+        $hoc_asset = require $hoc_asset_file;
+
+        wp_enqueue_script(
+            'gateway-inspector-controls-hoc',
+            GATEWAY_URL . 'react/block-types/hoc/build/index.js',
+            $hoc_asset['dependencies'],
+            $hoc_asset['version'],
+            false
+        );
     }
 
     /**

@@ -8,12 +8,16 @@ import metadata from '../block.json';
 
 registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes }) => {
-		const { backgroundColor } = attributes;
+		const { backgroundColor, style } = attributes;
+
+		// Extract gap from style attribute
+		const gap = style?.spacing?.blockGap;
 
 		const blockProps = useBlockProps({
 			className: 'gt-section-block',
 			style: {
 				backgroundColor: backgroundColor || 'transparent',
+				gap: gap || undefined,
 			},
 		});
 
@@ -46,12 +50,16 @@ registerBlockType(metadata.name, {
 	},
 
 	save: ({ attributes }) => {
-		const { backgroundColor } = attributes;
+		const { backgroundColor, style } = attributes;
+
+		// Extract gap from style attribute
+		const gap = style?.spacing?.blockGap;
 
 		const blockProps = useBlockProps.save({
 			className: 'gt-section-block',
 			style: {
 				backgroundColor: backgroundColor || 'transparent',
+				gap: gap || undefined,
 			},
 		});
 

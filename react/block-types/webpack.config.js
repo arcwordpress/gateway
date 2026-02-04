@@ -26,6 +26,12 @@ const entries = blocks.reduce((acc, block) => {
     return acc;
 }, {});
 
+// Add HOC entry point
+const hocPath = path.join(__dirname, 'hoc/index.js');
+if (fs.existsSync(hocPath)) {
+    entries['hoc/build/index'] = hocPath;
+}
+
 module.exports = {
     ...defaultConfig,
     entry: entries,

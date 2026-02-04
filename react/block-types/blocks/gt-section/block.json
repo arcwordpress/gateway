@@ -10,6 +10,10 @@
     "backgroundColor": {
       "type": "string",
       "default": ""
+    },
+    "style": {
+      "type": "object",
+      "default": {}
     }
   },
   "supports": {
@@ -18,6 +22,9 @@
     "spacing": {
       "margin": true,
       "padding": true
+    },
+    "gtsInspectorControls": {
+      "gap": true
     }
   },
   "editorScript": "file:./build/index.js",
