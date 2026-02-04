@@ -1,45 +1,36 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, useBlockProps, InnerBlocks } from '@wordpress/block-editor';
-import { PanelBody } from '@wordpress/components';
+import { PanelBody, ColorPicker } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { GutenbergFieldProvider, GutenbergField } from '@arcwp/gateway-forms';
+import { useGTSStyles } from '../../../hoc/use-gts-styles';
 import './editor.css';
 import metadata from '../block.json';
 
 registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes }) => {
-		const { backgroundColor, style } = attributes;
+		const { backgroundColor } = attributes;
 
-		// Extract gap from style attribute
-		const gap = style?.spacing?.blockGap;
+		// Get HOC-injected styles (e.g., gap)
+		const gtsStyles = useGTSStyles(metadata.name, attributes);
 
 		const blockProps = useBlockProps({
 			className: 'gt-section-block',
 			style: {
 				backgroundColor: backgroundColor || 'transparent',
-				gap: gap || undefined,
+				...gtsStyles,
 			},
 		});
-
-		// Field configuration for background color using Gateway's color-picker field
-		const backgroundColorConfig = {
-			name: 'backgroundColor',
-			type: 'color-picker',
-			label: __('Background Color', 'gateway'),
-			help: __('Choose a background color for this section', 'gateway'),
-		};
 
 		return (
 			<>
 				<InspectorControls>
-					<GutenbergFieldProvider attributes={attributes} setAttributes={setAttributes}>
-						<PanelBody title={__('Section Settings', 'gateway')} initialOpen={true}>
-							<GutenbergField
-								config={backgroundColorConfig}
-								attributes={attributes}
-							/>
-						</PanelBody>
-					</GutenbergFieldProvider>
+					<PanelBody title={__('Section Settings', 'gateway')} initialOpen={true}>
+						<ColorPicker
+							color={backgroundColor}
+							onChangeComplete={(color) => setAttributes({ backgroundColor: color.hex })}
+							disableAlpha
+						/>
+					</PanelBody>
 				</InspectorControls>
 
 				<div {...blockProps}>
@@ -50,16 +41,16 @@ registerBlockType(metadata.name, {
 	},
 
 	save: ({ attributes }) => {
-		const { backgroundColor, style } = attributes;
+		const { backgroundColor } = attributes;
 
-		// Extract gap from style attribute
-		const gap = style?.spacing?.blockGap;
+		// Get HOC-injected styles (e.g., gap)
+		const gtsStyles = useGTSStyles(metadata.name, attributes);
 
 		const blockProps = useBlockProps.save({
 			className: 'gt-section-block',
 			style: {
 				backgroundColor: backgroundColor || 'transparent',
-				gap: gap || undefined,
+				...gtsStyles,
 			},
 		});
 

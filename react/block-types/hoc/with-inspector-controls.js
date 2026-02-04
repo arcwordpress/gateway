@@ -7,10 +7,13 @@
  *     "gap": true
  *   }
  * }
+ *
+ * The HOC transparently adds the controls and applies styles without requiring
+ * any changes to the block implementation.
  */
 
 import { InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, Button } from '@wordpress/components';
+import { PanelBody, RangeControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createHigherOrderComponent } from '@wordpress/compose';
 
@@ -18,25 +21,24 @@ import { createHigherOrderComponent } from '@wordpress/compose';
  * Check if a block has opted into GTS inspector controls
  *
  * @param {string} blockName - The block name
- * @param {Object} settings - The block settings
  * @returns {Object|null} - The inspector controls config or null
  */
-const getInspectorControlsConfig = (blockName, settings) => {
+const getInspectorControlsConfig = (blockName) => {
+	const settings = wp.blocks.getBlockType(blockName);
 	if (!settings?.supports?.gtsInspectorControls) {
 		return null;
 	}
-
 	return settings.supports.gtsInspectorControls;
 };
 
 /**
  * Higher Order Component that adds inspector controls
+ * This only adds the UI controls - style application is handled by filters in index.js
  */
 const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 	return (props) => {
 		const { name: blockName, attributes, setAttributes } = props;
-		const settings = wp.blocks.getBlockType(blockName);
-		const config = getInspectorControlsConfig(blockName, settings);
+		const config = getInspectorControlsConfig(blockName);
 
 		// If block hasn't opted in, return original component
 		if (!config) {
@@ -50,8 +52,6 @@ const withInspectorControls = createHigherOrderComponent((BlockEdit) => {
 
 		/**
 		 * Update the gap value in the style attribute
-		 *
-		 * @param {string} value - The gap value (e.g., "20px")
 		 */
 		const setGap = (value) => {
 			const newStyle = {
