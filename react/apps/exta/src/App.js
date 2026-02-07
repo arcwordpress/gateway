@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { ExtensionListProvider } from './context/ExtensionListContext';
 import { ActiveExtensionProvider } from './context/ActiveExtensionContext';
+import { FieldTypesProvider } from './context/FieldTypesContext';
 import LeftSidebar from './components/LeftSidebar';
 import Breadcrumbs from './components/Breadcrumbs';
 import Footer from './components/Footer';
@@ -35,7 +36,8 @@ const App = () => {
   return (
     <ExtensionListProvider>
       <ActiveExtensionProvider>
-        <HashRouter>
+        <FieldTypesProvider>
+          <HashRouter>
           <div id="gateway-exta-app" className="app-bg app-main-margin-fix min-h-screen flex border-l border-slate-600">
             <LeftSidebar />
             <div className="flex-1 flex flex-col">
@@ -63,6 +65,7 @@ const App = () => {
             </div>
           </div>
         </HashRouter>
+        </FieldTypesProvider>
       </ActiveExtensionProvider>
     </ExtensionListProvider>
   );

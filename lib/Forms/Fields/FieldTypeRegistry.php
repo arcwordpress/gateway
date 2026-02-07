@@ -6,6 +6,54 @@ class FieldTypeRegistry
 {
     protected $fieldTypes = [];
 
+    public function __construct()
+    {
+        // Auto-discover and register field types from the FieldTypes folder
+        $this->discoverAndRegisterFieldTypes();
+    }
+
+    /**
+     * Auto-discover and register field types from the FieldTypes directory
+     */
+    private function discoverAndRegisterFieldTypes()
+    {
+        $fieldTypesDir = dirname(__FILE__) . '/FieldTypes';
+
+        if (!is_dir($fieldTypesDir)) {
+            return;
+        }
+
+        $files = glob($fieldTypesDir . '/*.php');
+
+        if (!$files) {
+            return;
+        }
+
+        foreach ($files as $file) {
+            $className = pathinfo($file, PATHINFO_FILENAME);
+            $fullyQualifiedClass = 'Gateway\\Forms\\Fields\\FieldTypes\\' . $className;
+
+            // Skip if class doesn't exist
+            if (!class_exists($fullyQualifiedClass)) {
+                continue;
+            }
+
+            // Use reflection to check if it extends Gateway\Field
+            $reflectionClass = new \ReflectionClass($fullyQualifiedClass);
+            if (!$reflectionClass->isSubclassOf('Gateway\\Field')) {
+                continue;
+            }
+
+            // Instantiate and register the field type
+            try {
+                $instance = new $fullyQualifiedClass();
+                $this->register($instance);
+            } catch (\Throwable $e) {
+                error_log('Failed to register field type ' . $fullyQualifiedClass . ': ' . $e->getMessage());
+            }
+        }
+    }
+
     /**
      * Register a field type instance
      *

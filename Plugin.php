@@ -83,7 +83,7 @@ class Plugin
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
         new Blocks\BlockRoutes();
-        new Forms\Fields\FieldTypeRoutes();
+        // Defer FieldTypeRoutes to onInit to avoid early initialization issues
         $this->patternRegistry = new Patterns\PatternRegistry();
 
         // Initialize migration hooks
@@ -142,6 +142,8 @@ class Plugin
 
     public function onInit()
     {
+        // Initialize FieldTypeRoutes here after full plugin initialization
+        new Forms\Fields\FieldTypeRoutes();
         do_action('gateway_loaded');
     }
 

@@ -119,7 +119,13 @@ class FieldTypeRoutes
      */
     public function checkPermission()
     {
-        // Allow anyone to read field types, but you can restrict this as needed
-        return current_user_can('manage_options');
+        // Verify user has admin capability
+        if (!current_user_can('manage_options')) {
+            return false;
+        }
+
+        // WordPress REST API automatically validates nonce from X-WP-Nonce header
+        // using the 'wp_rest' nonce action
+        return true;
     }
 }
