@@ -49,6 +49,7 @@ class Plugin
     private static $instance = null;
     private $registry;
     private $packageRegistry;
+    private $fieldTypeRegistry;
     private $standardRoutes;
     private $collectionRoutes;
     private $adminDataRoute;
@@ -71,6 +72,7 @@ class Plugin
     {
         $this->registry = new CollectionRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
+        $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
@@ -81,6 +83,7 @@ class Plugin
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
         new Blocks\BlockRoutes();
+        new Forms\Fields\FieldTypeRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
 
         // Initialize migration hooks
@@ -215,6 +218,11 @@ class Plugin
     public function getPatternRegistry()
     {
         return $this->patternRegistry;
+    }
+
+    public function getFieldTypeRegistry()
+    {
+        return $this->fieldTypeRegistry;
     }
 
     /**
