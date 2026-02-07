@@ -24,6 +24,40 @@ class BlockInit
     }
 
     /**
+     * Build WordPress block attribute definitions from a block's fields
+     *
+     * @param \Gateway\Block $block
+     * @return array Attribute definitions keyed by field name
+     */
+    protected static function buildFieldAttributes($block): array
+    {
+        $fields = $block::getFields();
+        if (empty($fields)) {
+            return [];
+        }
+
+        $attributes = [];
+        foreach ($fields as $name => $field) {
+            $type = match ($field['type'] ?? 'text') {
+                'number' => 'number',
+                default => 'string',
+            };
+
+            $attr = ['type' => $type];
+
+            if (array_key_exists('default', $field)) {
+                $attr['default'] = $field['default'];
+            } else {
+                $attr['default'] = $type === 'number' ? 0 : '';
+            }
+
+            $attributes[$name] = $attr;
+        }
+
+        return $attributes;
+    }
+
+    /**
      * Register custom block categories
      */
     public static function registerBlockCategories($categories, $context)
@@ -186,6 +220,9 @@ class BlockInit
             $block_dir = $block->getBlockDir();
             $registration_type = $block::getRegistrationType();
 
+            // Generate attributes from fields if the block defines any
+            $field_attributes = self::buildFieldAttributes($block);
+
             // Register based on the block's declared type
             if ($registration_type === 'json') {
                 // Parse block.json and register with full metadata
@@ -193,11 +230,14 @@ class BlockInit
                 if (file_exists($block_json_path)) {
                     $json_content = file_get_contents($block_json_path);
                     $json_data = json_decode($json_content, true);
-                    
+
                     if (is_array($json_data)) {
                         // Merge in central render callback (handles <InnerBlocks> replacement)
                         $json_data['render_callback'] = [$block, 'renderCallback'];
                         $json_data['editor_script_handles'] = ['gateway-php-block-scripts'];
+                        if (!empty($field_attributes)) {
+                            $json_data['attributes'] = array_merge($json_data['attributes'] ?? [], $field_attributes);
+                        }
                         register_block_type($name, $json_data);
                     } else {
                         error_log("Gateway Block - Invalid JSON in block.json for {$name}");
@@ -212,6 +252,9 @@ class BlockInit
                 // inject inner block content.
                 $args['render_callback'] = [$block, 'renderCallback'];
                 $args['editor_script_handles'] = ['gateway-php-block-scripts'];
+                if (!empty($field_attributes)) {
+                    $args['attributes'] = array_merge($args['attributes'] ?? [], $field_attributes);
+                }
                 register_block_type($name, $args);
             } else {
                 throw new \Exception(
