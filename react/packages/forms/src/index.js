@@ -3,6 +3,8 @@
 // Form type component exports.
 export { Form } from './components/form-types/Form';
 export { AppForm } from './components/form-types/AppForm';
+export { ControlledForm } from './components/form-types/ControlledForm';
+export { BlockForm } from './components/form-types/BlockForm';
 
 // Context and services exports.
 export {
@@ -16,11 +18,12 @@ export {
 export {
   createFieldRegister,
   createMockFormState,
-  createGutenbergRegister
+  createGutenbergRegister,
+  createControlledRegister
 } from './utils/fieldRegistration';
 
 // @TODO: Refactor to remove getFieldLabel from zodSchemaGenerator and move to a more appropriate utility module.
-export { generateZodSchema, getFieldLabel } from './utils/zodSchemaGenerator';
+export { generateZodSchema, generateZodSchemaFromFields, generateFieldSchema, getFieldLabel } from './utils/zodSchemaGenerator';
 
 // Field Registry System
 export {
