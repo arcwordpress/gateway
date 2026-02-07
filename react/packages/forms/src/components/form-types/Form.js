@@ -168,11 +168,11 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
     );
   }
 
-  if (!collection || !collection.fillable) {
+  if (!collection || !collection.fields) {
     return (
       <div className="gty-form__container">
         <div className="gty-form__alert gty-form__alert--warning">
-          Collection "{collectionKey}" loaded but has no fillable fields.
+          Collection "{collectionKey}" loaded but has no fields.
         </div>
       </div>
     );
@@ -196,8 +196,8 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
 
           <form onSubmit={methods.handleSubmit(onSubmit)} className="gty-form__fields">
             {Object.entries(collection.fields || {}).map(([fieldName, fieldDef]) => {
-              if (!collection.fillable.includes(fieldName)) {
-                console.error(`[Form] Field '${fieldName}' is defined in fields but not in fillable. Skipping.`);
+              // When fillable is present, honour it as a filter
+              if (collection.fillable && Array.isArray(collection.fillable) && !collection.fillable.includes(fieldName)) {
                 return null;
               }
               const fieldConfig = { name: fieldName, ...fieldDef };

@@ -144,3 +144,21 @@ export const createGutenbergRegister = (setAttributes) => {
     setAttributes({ [name]: value });
   };
 };
+
+/**
+ * Creates a generic controlled register function for non-RHF, non-Gutenberg
+ * contexts (Exta builder, option pages, etc.).
+ *
+ * @param {Function} onChange - Callback with signature (name, value) => void
+ * @returns {Function} Register function compatible with createFieldRegister
+ *
+ * @example
+ * const register = createControlledRegister((name, value) => {
+ *   setConfig(prev => ({ ...prev, [name]: value }));
+ * });
+ */
+export const createControlledRegister = (onChange) => {
+  return (name, value) => {
+    onChange(name, value);
+  };
+};
