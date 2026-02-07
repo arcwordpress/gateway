@@ -6,6 +6,7 @@ abstract class Block {
     
     protected static string $title = '';
     protected static ?string $blockDir = null;
+    protected static array $fields = [];
     
     /**
      * Get the block name (e.g., 'gateway/box')
@@ -76,6 +77,38 @@ abstract class Block {
     }
 
     /**
+     * Get block fields definition
+     * Supports the same field format as \Gateway\Collection:
+     * - Flat array of field arrays (each with 'name' and 'type')
+     * - Associative array keyed by field name
+     *
+     * @return array Associative array of field_name => field_config
+     */
+    public static function getFields(): array
+    {
+        $fields = static::$fields;
+
+        if (!is_array($fields) || empty($fields)) {
+            return [];
+        }
+
+        // Check if array is flat (numeric keys) and convert to associative
+        $firstKey = array_key_first($fields);
+        if (is_int($firstKey)) {
+            $assoc = [];
+            foreach ($fields as $field) {
+                if (!is_array($field) || empty($field['name']) || empty($field['type'])) {
+                    continue;
+                }
+                $assoc[$field['name']] = $field;
+            }
+            return $assoc;
+        }
+
+        return $fields;
+    }
+
+    /**
      * Get block metadata for API/JS consumption
      */
     public static function getMetadata(): array
@@ -88,6 +121,11 @@ abstract class Block {
 
         if ($category = static::getCategory()) {
             $metadata['category'] = $category;
+        }
+
+        $fields = static::getFields();
+        if (!empty($fields)) {
+            $metadata['fields'] = array_values($fields);
         }
 
         return $metadata;
