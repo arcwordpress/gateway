@@ -2,9 +2,9 @@
 
 namespace Gateway\Forms\Fields\FieldTypes;
 
-class TextField extends \Gateway\Field {
+class GalleryField extends \Gateway\Field {
 
-    protected $type   = 'text';
+    protected $type   = 'gallery';
     protected $fields = [];
 
 }

@@ -2,9 +2,9 @@
 
 namespace Gateway\Forms\Fields\FieldTypes;
 
-class TextField extends \Gateway\Field {
+class EmailField extends \Gateway\Field {
 
-    protected $type   = 'text';
+    protected $type   = 'email';
     protected $fields = [];
 
 }
