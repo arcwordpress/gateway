@@ -12,6 +12,9 @@ class BlockInit
         // Register internal/experimental blocks
         self::registerInternalBlocks();
 
+        // Register block styles
+        add_action('init', [self::class, 'registerBlockStyles'], 9);
+
         // Enqueue block editor assets (scripts and styles for block editing)
         add_action('enqueue_block_editor_assets', [self::class, 'enqueueBlockEditorAssets']);
 
@@ -100,6 +103,95 @@ class BlockInit
 
         // Register GridItem block (used inside Grid)
         BlockTypes\GridItem\GridItem::register();
+
+        // Register GTY App Layout blocks
+        BlockTypes\AppHeader\AppHeader::register();
+        BlockTypes\AppMain\AppMain::register();
+        BlockTypes\AppFooter\AppFooter::register();
+
+        // Register GTY UI blocks
+        BlockTypes\Button\Button::register();
+        BlockTypes\Dropdown\Dropdown::register();
+        BlockTypes\Flex\Flex::register();
+        BlockTypes\Nav\Nav::register();
+        BlockTypes\NavItem\NavItem::register();
+        BlockTypes\SVG\SVG::register();
+    }
+
+    /**
+     * Register block styles
+     */
+    public static function registerBlockStyles()
+    {
+        // Register GTY App Layout block styles
+        wp_register_style(
+            'gateway-app-header',
+            BlockTypes\AppHeader\AppHeader::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-app-main',
+            BlockTypes\AppMain\AppMain::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-app-footer',
+            BlockTypes\AppFooter\AppFooter::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+
+        // Register GTY UI block styles
+        wp_register_style(
+            'gateway-button',
+            BlockTypes\Button\Button::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-dropdown',
+            BlockTypes\Dropdown\Dropdown::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-flex',
+            BlockTypes\Flex\Flex::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-nav',
+            BlockTypes\Nav\Nav::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-nav-item',
+            BlockTypes\NavItem\NavItem::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-svg',
+            BlockTypes\SVG\SVG::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+
+        // Register Dropdown view script module
+        $script_asset_path = GATEWAY_PATH . 'build/blocks/dropdown/view.asset.php';
+        if (file_exists($script_asset_path)) {
+            $script_asset = require $script_asset_path;
+            wp_register_script_module(
+                'gateway-dropdown-view',
+                BlockTypes\Dropdown\Dropdown::get_view_script_url(),
+                $script_asset['dependencies'],
+                $script_asset['version']
+            );
+        }
     }
 
     /**

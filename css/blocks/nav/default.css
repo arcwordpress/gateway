@@ -1,0 +1,13 @@
+/* Nav Block Styles */
+.wp-block-gateway-gty-nav.gty-nav {
+	width: 100%;
+}
+
+.gty-nav-list {
+	display: flex;
+	flex-direction: row;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 1rem;
+}

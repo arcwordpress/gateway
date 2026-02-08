@@ -1,0 +1,10 @@
+.wp-block-gateway-gty-app-footer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.5rem;
+	background-color: black;
+    color: #FFF;
+}
