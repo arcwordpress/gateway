@@ -17,7 +17,7 @@ class SVG extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'common',
+			'category' => 'gateway',
 			'style' => 'gateway-svg',
 			'editor_style' => 'gateway-svg-editor',
 			'supports' => [

@@ -17,7 +17,7 @@ class Button extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'common',
+			'category' => 'gateway',
 			'style' => 'gateway-button',
 			'editor_style' => 'gateway-button-editor',
 			'supports' => [

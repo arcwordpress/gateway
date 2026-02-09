@@ -30,7 +30,7 @@ class GridItem extends \Gateway\Block
         return [
             'api_version' => 3,
             'title' => 'GTY Grid Item',
-            'category' => 'gateway-gtx',
+            'category' => 'gateway',
             'supports' => [
                 'html' => false,
             ],

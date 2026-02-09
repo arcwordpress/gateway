@@ -17,7 +17,7 @@ class Flex extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'layout',
+			'category' => 'gateway',
 			'style' => 'gateway-flex',
 			'editor_style' => 'gateway-flex-editor',
 			'supports' => [

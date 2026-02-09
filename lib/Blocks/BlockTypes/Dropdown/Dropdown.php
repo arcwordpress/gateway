@@ -17,7 +17,7 @@ class Dropdown extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'common',
+			'category' => 'gateway',
 			'style' => 'gateway-dropdown',
 			'editor_style' => 'gateway-dropdown-editor',
 			'view_script_module_ids' => [ 'gateway-dropdown-view' ],

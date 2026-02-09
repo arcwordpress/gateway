@@ -17,7 +17,7 @@ class NavItem extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'layout',
+			'category' => 'gateway',
 			'style' => 'gateway-nav-item',
 			'editor_style' => 'gateway-nav-item-editor',
 			'supports' => [

@@ -17,7 +17,7 @@ class AppHeader extends \Gateway\Block {
 	public static function getBlockArgs(): array {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
-			'category' => 'layout',
+			'category' => 'gateway',
 			'style' => 'gateway-app-header',
 			'editor_style' => 'gateway-app-header-editor',
 			'supports' => [
