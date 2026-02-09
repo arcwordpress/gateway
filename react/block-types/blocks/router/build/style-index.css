@@ -1,1 +1,1 @@
-.gateway-router{position:relative}
+.gateway-router{position:relative}.gateway-router [data-route-active=false]{display:none}.gateway-router [data-route-active=true]{display:block}

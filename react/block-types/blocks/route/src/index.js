@@ -58,17 +58,13 @@ registerBlockType(metadata.name, {
 	save: ({ attributes }) => {
 		const { path, label } = attributes;
 
-		const context = JSON.stringify({
-			route: path || '/',
-		});
-
 		return (
 			<div
 				{...useBlockProps.save({
 					className: 'gateway-route',
 				})}
-				data-wp-context={context}
 				data-router-path={path || '/'}
+				data-route-active="false"
 				{...(label ? { 'data-router-label': label } : {})}
 			>
 				<InnerBlocks.Content />

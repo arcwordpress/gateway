@@ -63,6 +63,8 @@ registerBlockType(metadata.name, {
 		const context = JSON.stringify({
 			route: defaultRoute || '/',
 			defaultRoute: defaultRoute || '/',
+			params: {},
+			matchedPattern: '',
 		});
 
 		return (
@@ -72,6 +74,7 @@ registerBlockType(metadata.name, {
 				})}
 				data-wp-interactive={namespace || 'gateway/router'}
 				data-wp-context={context}
+				data-wp-init="callbacks.init"
 			>
 				<InnerBlocks.Content />
 			</div>

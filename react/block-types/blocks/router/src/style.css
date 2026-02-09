@@ -1,7 +1,20 @@
 /**
  * Frontend styles for GTX Router block
+ *
+ * Routes are shown/hidden via the data-route-active attribute
+ * which is managed by the router's view.js script.
  */
 
 .gateway-router {
 	position: relative;
+}
+
+/* Hide inactive routes */
+.gateway-router [data-route-active="false"] {
+	display: none;
+}
+
+/* Show active route */
+.gateway-router [data-route-active="true"] {
+	display: block;
 }
