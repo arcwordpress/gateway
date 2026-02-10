@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/gtx-click-control",
+	"title": "GTX Click Control",
+	"category": "gateway",
+	"icon": "button",
+	"description": "An interactive button or link that triggers actions in the WordPress Interactivity API context.",
+	"keywords": ["button", "click", "interactive", "action", "interactivity"],
+	"attributes": {
+		"text": {
+			"type": "string",
+			"default": "Click me"
+		},
+		"elementType": {
+			"type": "string",
+			"default": "button",
+			"enum": ["button", "a"]
+		},
+		"namespace": {
+			"type": "string",
+			"default": ""
+		},
+		"action": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"html": false,
+		"interactivity": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"color": {
+			"background": true,
+			"text": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScriptModule": "file:./view.js",
+	"textdomain": "gateway"
+}

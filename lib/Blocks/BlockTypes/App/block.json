@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/app",
+  "title": "GTY App",
+  "category": "gateway",
+  "icon": "layout",
+  "description": "App container block that holds App Footer, App Header, and App Main blocks",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "gateway",
+  "allowedBlocks": [
+    "gateway/gty-app-footer",
+    "gateway/gty-app-header",
+    "gateway/gty-app-main"
+  ]
+}

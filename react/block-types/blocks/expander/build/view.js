@@ -1,1 +1,0 @@
-(()=>{"use strict";const e=window.wp.interactivity;(0,e.store)("gateway/expander",{state:{get isOpen(){return(0,e.getContext)().isOpen||!1}},actions:{toggle:()=>{const t=(0,e.getContext)();t.isOpen=!t.isOpen},handleKeydown:t=>{if(13===t.keyCode||32===t.keyCode){t.preventDefault();const n=(0,e.getContext)();n.isOpen=!n.isOpen}}}})})();

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Gateway block types built with @wordpress/scripts",
   "scripts": {
-    "build": "wp-scripts build",
-    "start": "wp-scripts start"
+    "build": "wp-scripts build --experimental-modules",
+    "start": "wp-scripts start --experimental-modules"
   },
   "dependencies": {
     "@arcwp/gateway-data": "file:../packages/data",

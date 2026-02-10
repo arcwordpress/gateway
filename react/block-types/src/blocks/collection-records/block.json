@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/gts-collection-records",
+	"version": "0.1.0",
+	"title": "GTS Collection Records",
+	"category": "gateway",
+	"icon": "database",
+	"description": "Loop over collection records and provide context for block bindings. Each iteration sets the record ID in context for child blocks to use.",
+	"keywords": ["collection", "loop", "records", "data", "bindings"],
+	"textdomain": "gateway",
+	"attributes": {
+		"collection": {
+			"type": "string",
+			"default": ""
+		},
+		"limit": {
+			"type": "number",
+			"default": 10
+		},
+		"orderBy": {
+			"type": "string",
+			"default": "id"
+		},
+		"order": {
+			"type": "string",
+			"default": "DESC",
+			"enum": ["ASC", "DESC"]
+		},
+		"filters": {
+			"type": "object",
+			"default": {}
+		}
+	},
+	"providesContext": {
+		"gateway/collection-records/collection": "collection",
+		"gateway/collection-records/recordId": "currentRecordId"
+	},
+	"supports": {
+		"html": false,
+		"align": ["wide", "full"],
+		"className": true,
+		"anchor": true
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/gtx-context-select",
+  "title": "GTX Context Select",
+  "category": "gateway",
+  "icon": "list-view",
+  "description": "A select box that displays options from a context data source.",
+  "attributes": {
+    "contextName": {
+      "type": "string",
+      "default": ""
+    },
+    "arrayProperty": {
+      "type": "string",
+      "default": ""
+    },
+    "valueProperty": {
+      "type": "string",
+      "default": ""
+    },
+    "labelProperty": {
+      "type": "string",
+      "default": ""
+    },
+    "placeholder": {
+      "type": "string",
+      "default": "Select an option..."
+    },
+    "selectedValue": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "viewScriptModule": "file:./view.js",
+  "textdomain": "gateway"
+}

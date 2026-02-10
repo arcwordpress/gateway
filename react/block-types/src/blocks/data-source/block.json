@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/gts-data-source",
+  "title": "GTS Data Source",
+  "category": "gateway",
+  "icon": "database",
+  "description": "Generic data source block that enables using Gateway collections with the WordPress Interactivity API.",
+  "attributes": {
+    "collectionSlug": {
+      "type": "string",
+      "default": ""
+    },
+    "query": {
+      "type": "object",
+      "default": {}
+    },
+    "namespace": {
+      "type": "string",
+      "default": "gateway/data-source"
+    },
+    "previewItems": {
+      "type": "array",
+      "default": []
+    },
+    "availableFields": {
+      "type": "array",
+      "default": []
+    },
+    "fieldDefinitions": {
+      "type": "object",
+      "default": {}
+    }
+  },
+  "providesContext": {
+    "gateway/collectionSlug": "collectionSlug",
+    "gateway/previewItems": "previewItems",
+    "gateway/availableFields": "availableFields",
+    "gateway/fieldDefinitions": "fieldDefinitions"
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "viewScriptModule": "file:./view.js"
+}

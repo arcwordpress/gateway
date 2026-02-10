@@ -39,17 +39,17 @@ class BlockRegistry
     public static function register_blocks()
     {
 
-        // Register blocks from new /react/block-types/blocks structure
-        $block_types_dir = GATEWAY_PATH . 'react/block-types/blocks';
+        // Register blocks from new /react/block-types/build/blocks structure
+        $block_types_dir = GATEWAY_PATH . 'react/block-types/build/blocks';
         if (is_dir($block_types_dir)) {
             $block_dirs = glob($block_types_dir . '/*', GLOB_ONLYDIR);
 
             foreach ($block_dirs as $block_path) {
                 $block_name = basename($block_path);
 
-                // Require both block.json and build/index.js to exist
+                // Require both block.json and index.js to exist
                 if (file_exists($block_path . '/block.json') &&
-                    file_exists($block_path . '/build/index.js')) {
+                    file_exists($block_path . '/index.js')) {
                     register_block_type($block_path);
                 }
             }

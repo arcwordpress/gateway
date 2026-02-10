@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Blocks\BlockTypes\AppMain;
+namespace Gateway\Blocks\BlockTypes\App;
 
-class AppMain extends \Gateway\Block {
+class App extends \Gateway\Block {
 
-	protected static string $title = 'GTY App Main';
+	protected static string $title = 'GTY App';
 
 	public static function getName(): string {
-		return 'gateway/gty-app-main';
+		return 'gateway/app';
 	}
 
 	public static function getRegistrationType(): string {
@@ -18,8 +18,8 @@ class AppMain extends \Gateway\Block {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
 			'category' => 'gateway',
-			'style' => 'gateway-app-main',
-			'editor_style' => 'gateway-app-main-editor',
+			'style' => 'gateway-app',
+			'editor_style' => 'gateway-app-editor',
 			'supports' => [
 				'align' => true,
 				'anchor' => true,
@@ -29,10 +29,10 @@ class AppMain extends \Gateway\Block {
 	}
 
 	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/app-main/default.css';
+		return GATEWAY_URL . 'css/blocks/app/default.css';
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<header ' . get_block_wrapper_attributes() . '><InnerBlocks /></header>';
+		return '<div ' . get_block_wrapper_attributes() . '><InnerBlocks /></div>';
 	}
 }

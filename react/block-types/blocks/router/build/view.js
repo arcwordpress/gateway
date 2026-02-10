@@ -1,1 +1,0 @@
-(()=>{"use strict";const t=window.wp.interactivity;(0,t.store)("gateway/router",{state:{get currentRoute(){return(0,t.getContext)().route||"/"}}})})();

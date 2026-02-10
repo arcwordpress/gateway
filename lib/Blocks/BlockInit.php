@@ -105,6 +105,7 @@ class BlockInit
         BlockTypes\GridItem\GridItem::register();
 
         // Register GTY App Layout blocks
+        BlockTypes\App\App::register();
         BlockTypes\AppHeader\AppHeader::register();
         BlockTypes\AppMain\AppMain::register();
         BlockTypes\AppFooter\AppFooter::register();
@@ -124,6 +125,12 @@ class BlockInit
     public static function registerBlockStyles()
     {
         // Register GTY App Layout block styles
+        wp_register_style(
+            'gateway-app',
+            BlockTypes\App\App::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
         wp_register_style(
             'gateway-app-header',
             BlockTypes\AppHeader\AppHeader::get_stylesheet_url(),
@@ -182,7 +189,7 @@ class BlockInit
         );
 
         // Register Dropdown view script module
-        $script_asset_path = GATEWAY_PATH . 'build/blocks/dropdown/view.asset.php';
+        $script_asset_path = GATEWAY_PATH . 'react/block-types/build/blocks/dropdown/view.asset.php';
         if (file_exists($script_asset_path)) {
             $script_asset = require $script_asset_path;
             wp_register_script_module(
