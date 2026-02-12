@@ -172,6 +172,8 @@ store('gateway/router', {
 		 *
 		 * Usage:
 		 * <button data-wp-on--click="actions.navigate" data-path="/about">
+		 *
+		 * Works from anywhere on the page - finds the router element automatically
 		 */
 		navigate: (event) => {
 			// Get path from event target's data-path attribute
@@ -182,11 +184,17 @@ store('gateway/router', {
 				return;
 			}
 
-			// Find the nearest router element
-			const routerElement = event.target.closest('[data-wp-interactive="gateway/router"]');
+			// Find the router element on the page (search the whole document)
+			// Look for parent first (if link is inside router), then search document
+			let routerElement = event.target.closest('[data-wp-interactive="gateway/router"]');
 
 			if (!routerElement) {
-				console.error('Router: navigate action called outside of router context');
+				// Not inside a router, search for one on the page
+				routerElement = document.querySelector('[data-wp-interactive="gateway/router"]');
+			}
+
+			if (!routerElement) {
+				console.error('Router: no router element found on page');
 				return;
 			}
 
