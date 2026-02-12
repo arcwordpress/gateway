@@ -84,6 +84,43 @@ function getCurrentPathname() {
 }
 
 /**
+ * Extract the route path from a full pathname
+ * Handles cases where the router is on a subpage
+ *
+ * Examples:
+ *   - Page at /routing, URL /routing -> returns /
+ *   - Page at /routing, URL /routing/test -> returns /test
+ *   - Page at /routing, URL /routing/products/123 -> returns /products/123
+ */
+function getRouteFromPathname(fullPathname, routePaths) {
+	// Try each route path to see if it matches when appended to various base paths
+	// We'll try removing path segments from the left until we find a match
+
+	// If the pathname exactly matches a route path, use it as-is
+	if (routePaths.includes(fullPathname)) {
+		return fullPathname;
+	}
+
+	// Split pathname into segments
+	const segments = fullPathname.split('/').filter(Boolean);
+
+	// Try progressively removing segments from the start
+	for (let i = 0; i < segments.length; i++) {
+		const potentialRoute = '/' + segments.slice(i).join('/');
+
+		// Check if this matches any route path pattern
+		for (const routePath of routePaths) {
+			if (matchPath(potentialRoute, routePath)) {
+				return potentialRoute;
+			}
+		}
+	}
+
+	// If nothing matched, assume we're at the root route
+	return '/';
+}
+
+/**
  * Gateway Router Store
  *
  * Handles client-side routing similar to React Router.
@@ -137,30 +174,56 @@ store('gateway/router', {
 		 * <button data-wp-on--click="actions.navigate" data-path="/about">
 		 */
 		navigate: (event) => {
-			const context = getContext();
-			const { ref } = getElement();
-
 			// Get path from event target's data-path attribute
-			const path = event.target.dataset.path || event.target.getAttribute('data-path');
+			const routePath = event.target.dataset.path || event.target.getAttribute('data-path');
 
-			if (!path) {
+			if (!routePath) {
 				console.warn('Router: navigate action called without data-path attribute');
 				return;
 			}
 
-			// Don't navigate if already on this path
-			if (context.route === path) {
+			// Find the nearest router element
+			const routerElement = event.target.closest('[data-wp-interactive="gateway/router"]');
+
+			if (!routerElement) {
+				console.error('Router: navigate action called outside of router context');
 				return;
 			}
 
+			// Get the router's context from its data attribute
+			const contextAttr = routerElement.getAttribute('data-wp-context');
+			if (!contextAttr) {
+				console.error('Router: router element missing context data');
+				return;
+			}
+
+			let routerContext;
+			try {
+				routerContext = JSON.parse(contextAttr);
+			} catch (e) {
+				console.error('Router: failed to parse router context', e);
+				return;
+			}
+
+			// Don't navigate if already on this path
+			if (routerContext.route === routePath) {
+				event.preventDefault();
+				return;
+			}
+
+			// Get base path and construct full URL
+			const basePath = routerElement.dataset.basePath || '';
+			const fullPath = basePath + routePath;
+
 			// Update context
-			context.route = path;
+			routerContext.route = routePath;
+			routerElement.setAttribute('data-wp-context', JSON.stringify(routerContext));
 
-			// Update browser history
-			window.history.pushState({ path }, '', path);
+			// Update browser history with full path
+			window.history.pushState({ path: fullPath }, '', fullPath);
 
-			// Update route visibility
-			updateRouteVisibility(ref, path);
+			// Update route visibility (use route path, not full path)
+			updateRouteVisibility(routerElement, routePath);
 
 			// Prevent default link behavior if this is a link
 			event.preventDefault();
@@ -174,17 +237,21 @@ store('gateway/router', {
 		 * const { actions } = store('gateway/router');
 		 * actions.navigateTo('/products/123');
 		 */
-		navigateTo: (path) => {
+		navigateTo: (routePath) => {
 			const context = getContext();
 			const { ref } = getElement();
 
-			if (!path || context.route === path) {
+			if (!routePath || context.route === routePath) {
 				return;
 			}
 
-			context.route = path;
-			window.history.pushState({ path }, '', path);
-			updateRouteVisibility(ref, path);
+			// Get base path and construct full URL
+			const basePath = ref.dataset.basePath || '';
+			const fullPath = basePath + routePath;
+
+			context.route = routePath;
+			window.history.pushState({ path: fullPath }, '', fullPath);
+			updateRouteVisibility(ref, routePath);
 		},
 	},
 
@@ -201,20 +268,38 @@ store('gateway/router', {
 			console.log('[Router] Element ref:', ref);
 			console.log('[Router] Initial context:', context);
 
+			// Get all route paths from child route elements
+			const routeElements = ref.querySelectorAll(':scope > [data-router-path]');
+			const routePaths = Array.from(routeElements).map(el =>
+				el.getAttribute('data-router-path')
+			);
+
+			console.log('[Router] Available route paths:', routePaths);
+
 			// Set initial route from current browser path
-			const currentPath = getCurrentPathname();
-			console.log('[Router] Current pathname:', currentPath);
-			context.route = currentPath;
+			const fullPathname = getCurrentPathname();
+			const routePath = getRouteFromPathname(fullPathname, routePaths);
+
+			console.log('[Router] Current pathname:', fullPathname);
+			console.log('[Router] Extracted route:', routePath);
+
+			// Store base path for future navigations
+			const basePath = fullPathname.substring(0, fullPathname.length - routePath.length) || '';
+			ref.dataset.basePath = basePath;
+			console.log('[Router] Base path:', basePath);
+
+			context.route = routePath;
 
 			// Update route visibility on init
 			console.log('[Router] Calling updateRouteVisibility');
-			updateRouteVisibility(ref, currentPath);
+			updateRouteVisibility(ref, routePath);
 
 			// Listen for browser back/forward navigation
 			const handlePopState = (event) => {
-				const newPath = getCurrentPathname();
-				context.route = newPath;
-				updateRouteVisibility(ref, newPath);
+				const fullPathname = getCurrentPathname();
+				const routePath = getRouteFromPathname(fullPathname, routePaths);
+				context.route = routePath;
+				updateRouteVisibility(ref, routePath);
 			};
 
 			window.addEventListener('popstate', handlePopState);
@@ -231,14 +316,16 @@ store('gateway/router', {
 				if (href.startsWith('/') || href.startsWith(window.location.origin)) {
 					event.preventDefault();
 
-					const path = href.startsWith('/')
+					const fullPath = href.startsWith('/')
 						? href
 						: new URL(href).pathname;
 
-					if (context.route !== path) {
-						context.route = path;
-						window.history.pushState({ path }, '', path);
-						updateRouteVisibility(ref, path);
+					const routePath = getRouteFromPathname(fullPath, routePaths);
+
+					if (context.route !== routePath) {
+						context.route = routePath;
+						window.history.pushState({ path: fullPath }, '', fullPath);
+						updateRouteVisibility(ref, routePath);
 					}
 				}
 			};
