@@ -194,14 +194,20 @@ store('gateway/router', {
 		 * Sets up history listener and initial route
 		 */
 		init: () => {
+			console.log('[Router] Init callback called');
 			const { ref } = getElement();
 			const context = getContext();
 
+			console.log('[Router] Element ref:', ref);
+			console.log('[Router] Initial context:', context);
+
 			// Set initial route from current browser path
 			const currentPath = getCurrentPathname();
+			console.log('[Router] Current pathname:', currentPath);
 			context.route = currentPath;
 
 			// Update route visibility on init
+			console.log('[Router] Calling updateRouteVisibility');
 			updateRouteVisibility(ref, currentPath);
 
 			// Listen for browser back/forward navigation
@@ -253,17 +259,23 @@ store('gateway/router', {
  * Shows the first matching route, hides all others
  */
 function updateRouteVisibility(routerElement, currentPath) {
+	console.log('[Router] updateRouteVisibility called', { routerElement, currentPath });
+
 	// Find all route blocks (direct children with data-router-path)
 	const routeElements = routerElement.querySelectorAll(':scope > [data-router-path]');
+	console.log('[Router] Found route elements:', routeElements.length, routeElements);
 
 	let foundMatch = false;
 
 	routeElements.forEach((routeElement) => {
 		const routePath = routeElement.getAttribute('data-router-path');
+		console.log('[Router] Checking route:', routePath, 'against current:', currentPath);
 		const matches = matchPath(currentPath, routePath);
+		console.log('[Router] Match result:', matches);
 
 		if (matches && !foundMatch) {
 			// Show this route (first match wins)
+			console.log('[Router] Showing route:', routePath);
 			routeElement.style.display = '';
 			foundMatch = true;
 
@@ -271,6 +283,7 @@ function updateRouteVisibility(routerElement, currentPath) {
 			routeElement.dataset.matchedParams = JSON.stringify(matches.params);
 		} else {
 			// Hide this route
+			console.log('[Router] Hiding route:', routePath);
 			routeElement.style.display = 'none';
 		}
 	});
