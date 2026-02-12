@@ -37,10 +37,6 @@ class NavItem extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/nav-item/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		$label = ! empty( $attributes['label'] ) ? esc_html( $attributes['label'] ) : 'Menu Item';
 		$href = ! empty( $attributes['href'] ) ? esc_url( $attributes['href'] ) : '#';

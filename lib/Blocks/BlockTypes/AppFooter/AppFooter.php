@@ -13,8 +13,4 @@ class AppFooter extends \Gateway\Block {
 	public function render( array $attributes, string $content, $block ): string {
 		return '<footer ' . get_block_wrapper_attributes( [ 'class' => 'app-footer' ] ) . '><InnerBlocks /></footer>';
 	}
-
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/app-footer/default.css';
-	}
 }

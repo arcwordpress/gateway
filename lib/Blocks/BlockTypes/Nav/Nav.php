@@ -28,10 +28,6 @@ class Nav extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/nav/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		return '<nav ' . get_block_wrapper_attributes( [ 'class' => 'gty-nav' ] ) . '><ul class="gty-nav-list"><InnerBlocks /></ul></nav>';
 	}

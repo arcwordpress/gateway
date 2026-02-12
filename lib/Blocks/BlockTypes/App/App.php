@@ -28,10 +28,6 @@ class App extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/app/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		return '<div ' . get_block_wrapper_attributes() . '><InnerBlocks /></div>';
 	}
