@@ -38,6 +38,7 @@ class Username extends \Gateway\Block {
 		return [
 			'render_callback' => [new static(), 'renderCallback'],
 			'category'        => 'gateway',
+			'style'           => 'gateway-username',
 			'attributes'      => [
 				'showFullName' => [
 					'type'    => 'boolean',
@@ -50,6 +51,15 @@ class Username extends \Gateway\Block {
 				'anchor' => true,
 			],
 		];
+	}
+
+	/**
+	 * Get the stylesheet URL.
+	 *
+	 * @return string URL to the block's stylesheet
+	 */
+	public static function get_stylesheet_url(): string {
+		return GATEWAY_URL . 'css/blocks/username/default.css';
 	}
 
 	/**
