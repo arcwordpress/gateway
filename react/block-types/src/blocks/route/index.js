@@ -66,6 +66,7 @@ registerBlockType(metadata.name, {
 			<div
 				{...useBlockProps.save({
 					className: 'gateway-route',
+					style: { display: 'none' }, // Hidden by default, router will show the active route
 				})}
 				data-wp-context={context}
 				data-router-path={path || '/'}
