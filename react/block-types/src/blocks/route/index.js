@@ -59,7 +59,7 @@ registerBlockType(metadata.name, {
 		const { path, label } = attributes;
 
 		const context = JSON.stringify({
-			route: path || '/',
+			routePath: path || '/',
 		});
 
 		return (
