@@ -3,41 +3,30 @@
 namespace Gateway;
 
 /**
- * App Template Handler
+ * Client-Side Routing Handler
  *
- * Handles the "Gateway App" page template and sets up rewrite rules
- * to support client-side routing for pages using this template.
+ * Automatically detects pages with gateway/router blocks and sets up
+ * rewrite rules to support client-side routing.
  */
 class AppTemplate
 {
     /**
-     * Template file name
+     * Router block name
      */
-    const TEMPLATE_FILE = 'app-template.php';
+    const ROUTER_BLOCK = 'gateway/router';
 
     /**
-     * Template slug/key
-     */
-    const TEMPLATE_SLUG = 'gateway-app-template';
-
-    /**
-     * Initialize the app template system
+     * Initialize the routing system
      */
     public static function init()
     {
-        // Register the page template
-        add_filter('theme_page_templates', [self::class, 'registerPageTemplate'], 10, 4);
-
-        // Load the template file when selected
-        add_filter('template_include', [self::class, 'loadTemplate']);
-
-        // Add rewrite rules for app pages
+        // Add rewrite rules for pages with router blocks
         add_action('init', [self::class, 'addRewriteRules']);
 
         // Add query vars for route matching
         add_filter('query_vars', [self::class, 'addQueryVars']);
 
-        // Flush rewrite rules on template assignment
+        // Flush rewrite rules when a page is saved/updated
         add_action('save_post', [self::class, 'maybeFlushRewrites'], 10, 3);
 
         // Register scheduled event for flushing rewrites
@@ -45,29 +34,17 @@ class AppTemplate
     }
 
     /**
-     * Register the Gateway App page template
+     * Check if a post/page contains the gateway/router block
      */
-    public static function registerPageTemplate($templates, $theme, $post, $post_type)
+    public static function hasRouterBlock($post_id)
     {
-        if ($post_type === 'page') {
-            $templates[self::TEMPLATE_SLUG] = __('Gateway App', 'gateway');
+        $post = get_post($post_id);
+        if (!$post) {
+            return false;
         }
-        return $templates;
-    }
 
-    /**
-     * Load the template file when a page uses the Gateway App template
-     */
-    public static function loadTemplate($template)
-    {
-        // Check if current page is using our template
-        if (is_page() && get_page_template_slug() === self::TEMPLATE_SLUG) {
-            $template_path = GATEWAY_PATH . 'templates/' . self::TEMPLATE_FILE;
-            if (file_exists($template_path)) {
-                return $template_path;
-            }
-        }
-        return $template;
+        // Use WordPress's has_block function to check for our router block
+        return has_block(self::ROUTER_BLOCK, $post);
     }
 
     /**

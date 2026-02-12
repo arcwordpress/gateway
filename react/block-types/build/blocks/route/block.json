@@ -1,9 +1,9 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/gtx-route",
-  "title": "GTX Route",
-  "parent": "gateway/gtx-router",
+  "name": "gateway/route",
+  "title": "Route",
+  "parent": "gateway/router",
   "category": "gateway",
   "icon": "welcome-widgets-menus",
   "description": "Defines a single route within a router. Content inside is displayed when this route is active.",
