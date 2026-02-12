@@ -1,0 +1,7 @@
+.gateway-username-block {
+	display: inline-block;
+}
+
+.gateway-username-block .username {
+	font-weight: 500;
+}

@@ -117,6 +117,7 @@ class BlockInit
         BlockTypes\Nav\Nav::register();
         BlockTypes\NavItem\NavItem::register();
         BlockTypes\SVG\SVG::register();
+        BlockTypes\Username\Username::register();
     }
 
     /**
@@ -184,6 +185,12 @@ class BlockInit
         wp_register_style(
             'gateway-svg',
             BlockTypes\SVG\SVG::get_stylesheet_url(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-username',
+            BlockTypes\Username\Username::get_stylesheet_url(),
             [],
             GATEWAY_VERSION
         );
