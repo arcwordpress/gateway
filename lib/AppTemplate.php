@@ -53,16 +53,20 @@ class AppTemplate
      */
     public static function addRewriteRules()
     {
-        // Get all pages using the app template
-        $app_pages = get_posts([
+        // Get all published pages
+        $pages = get_posts([
             'post_type' => 'page',
-            'meta_key' => '_wp_page_template',
-            'meta_value' => self::TEMPLATE_SLUG,
             'posts_per_page' => -1,
             'post_status' => 'publish',
         ]);
 
-        foreach ($app_pages as $page) {
+        // Find pages with router blocks
+        foreach ($pages as $page) {
+            // Check if this page contains a router block
+            if (!self::hasRouterBlock($page->ID)) {
+                continue;
+            }
+
             $page_slug = $page->post_name;
 
             // Add rewrite rule to catch all paths under this page
@@ -86,7 +90,7 @@ class AppTemplate
     }
 
     /**
-     * Flush rewrite rules when a page's template is changed to/from app template
+     * Flush rewrite rules when a page with router block is saved
      */
     public static function maybeFlushRewrites($post_id, $post, $update)
     {
@@ -95,20 +99,22 @@ class AppTemplate
             return;
         }
 
-        // Check if template was changed
-        $old_template = get_post_meta($post_id, '_wp_page_template_before_update', true);
-        $new_template = get_post_meta($post_id, '_wp_page_template', true);
+        // Check if this page has a router block now
+        $has_router = self::hasRouterBlock($post_id);
 
-        // If template changed to or from app template, flush rewrites
-        if ($old_template === self::TEMPLATE_SLUG || $new_template === self::TEMPLATE_SLUG) {
+        // Get previous state
+        $had_router = get_post_meta($post_id, '_gateway_has_router', true);
+
+        // If router block was added or removed, flush rewrites
+        if ($has_router !== $had_router) {
             // Schedule flush (don't do it directly to avoid issues)
             if (!wp_next_scheduled('gateway_flush_rewrites')) {
                 wp_schedule_single_event(time() + 5, 'gateway_flush_rewrites');
             }
         }
 
-        // Store current template for next comparison
-        update_post_meta($post_id, '_wp_page_template_before_update', $new_template);
+        // Store current state for next comparison
+        update_post_meta($post_id, '_gateway_has_router', $has_router);
     }
 
     /**
