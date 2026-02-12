@@ -7,7 +7,7 @@ class AppHeader extends \Gateway\Block {
 	protected static string $title = 'GTY App Header';
 
 	public static function getName(): string {
-		return 'gateway/gty-app-header';
+		return 'gateway/app-header';
 	}
 
 	public static function getRegistrationType(): string {
@@ -29,6 +29,6 @@ class AppHeader extends \Gateway\Block {
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<header ' . get_block_wrapper_attributes( [ 'class' => 'app-header' ] ) . '><InnerBlocks /></header>';
+		return '<header ' . get_block_wrapper_attributes() . '><InnerBlocks /></header>';
 	}
 }
