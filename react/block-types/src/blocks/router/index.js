@@ -14,7 +14,7 @@ registerBlockType(metadata.name, {
 		});
 
 		const TEMPLATE = [
-			['gateway/gtx-route', {}],
+			['gateway/route', {}],
 		];
 
 		return (
@@ -49,7 +49,7 @@ registerBlockType(metadata.name, {
 						<InnerBlocks
 							template={TEMPLATE}
 							templateLock={false}
-							allowedBlocks={['gateway/gtx-route']}
+							allowedBlocks={['gateway/route']}
 						/>
 					</div>
 				</div>
