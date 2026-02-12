@@ -54,15 +54,6 @@ class Username extends \Gateway\Block {
 	}
 
 	/**
-	 * Get the stylesheet URL.
-	 *
-	 * @return string URL to the block's stylesheet
-	 */
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/username/default.css';
-	}
-
-	/**
 	 * Render the block.
 	 *
 	 * @param array  $attributes Block attributes.

@@ -38,14 +38,6 @@ class Dropdown extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/dropdown/default.css';
-	}
-
-	public static function get_view_script_url(): string {
-		return GATEWAY_URL . 'build/blocks/dropdown/view.js';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		$label = ! empty( $attributes['label'] ) ? esc_html( $attributes['label'] ) : 'Dropdown Menu';
 

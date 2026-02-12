@@ -28,10 +28,6 @@ class SVG extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/svg/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
 			<circle cx="50" cy="50" r="40" fill="#007bff" />

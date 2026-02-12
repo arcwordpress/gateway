@@ -50,10 +50,6 @@ class Button extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/button/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		$button_type = $attributes['buttonType'] ?? 'a';
 		$href = $attributes['href'] ?? '#';

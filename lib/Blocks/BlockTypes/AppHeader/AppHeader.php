@@ -28,10 +28,6 @@ class AppHeader extends \Gateway\Block {
 		];
 	}
 
-	public static function get_stylesheet_url(): string {
-		return GATEWAY_URL . 'css/blocks/app-header/default.css';
-	}
-
 	public function render( array $attributes, string $content, $block ): string {
 		return '<header ' . get_block_wrapper_attributes( [ 'class' => 'app-header' ] ) . '><InnerBlocks /></header>';
 	}

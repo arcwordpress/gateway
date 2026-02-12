@@ -50,9 +50,39 @@ abstract class Block {
         if (static::$blockDir !== null) {
             return static::$blockDir;
         }
-        
+
         $reflection = new \ReflectionClass(static::class);
         return dirname($reflection->getFileName());
+    }
+
+    /**
+     * Get the stylesheet URL for this block
+     * Returns the URL to the block's default.css file in css/blocks/{blockname}/
+     */
+    public static function getStylesheetUrl(): string
+    {
+        $blockName = static::getName();
+        // Extract the block name after 'gateway/' prefix
+        $shortName = str_replace('gateway/', '', $blockName);
+        // Remove any prefix like 'gty-', 'gtx-', 'gts-'
+        $shortName = preg_replace('/^(gty|gtx|gts)-/', '', $shortName);
+
+        return GATEWAY_URL . 'css/blocks/' . $shortName . '/default.css';
+    }
+
+    /**
+     * Get the view script URL for this block
+     * Returns the URL to the block's view.js file in react/block-types/build/blocks/{blockname}/
+     */
+    public static function getViewScriptUrl(): string
+    {
+        $blockName = static::getName();
+        // Extract the block name after 'gateway/' prefix
+        $shortName = str_replace('gateway/', '', $blockName);
+        // Remove any prefix like 'gty-', 'gtx-', 'gts-'
+        $shortName = preg_replace('/^(gty|gtx|gts)-/', '', $shortName);
+
+        return GATEWAY_URL . 'react/block-types/build/blocks/' . $shortName . '/view.js';
     }
     
     /**

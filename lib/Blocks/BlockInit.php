@@ -128,25 +128,25 @@ class BlockInit
         // Register GTY App Layout block styles
         wp_register_style(
             'gateway-app',
-            BlockTypes\App\App::get_stylesheet_url(),
+            BlockTypes\App\App::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-app-header',
-            BlockTypes\AppHeader\AppHeader::get_stylesheet_url(),
+            BlockTypes\AppHeader\AppHeader::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-app-main',
-            BlockTypes\AppMain\AppMain::get_stylesheet_url(),
+            BlockTypes\AppMain\AppMain::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-app-footer',
-            BlockTypes\AppFooter\AppFooter::get_stylesheet_url(),
+            BlockTypes\AppFooter\AppFooter::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
@@ -154,43 +154,43 @@ class BlockInit
         // Register GTY UI block styles
         wp_register_style(
             'gateway-button',
-            BlockTypes\Button\Button::get_stylesheet_url(),
+            BlockTypes\Button\Button::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-dropdown',
-            BlockTypes\Dropdown\Dropdown::get_stylesheet_url(),
+            BlockTypes\Dropdown\Dropdown::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-flex',
-            BlockTypes\Flex\Flex::get_stylesheet_url(),
+            BlockTypes\Flex\Flex::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-nav',
-            BlockTypes\Nav\Nav::get_stylesheet_url(),
+            BlockTypes\Nav\Nav::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-nav-item',
-            BlockTypes\NavItem\NavItem::get_stylesheet_url(),
+            BlockTypes\NavItem\NavItem::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-svg',
-            BlockTypes\SVG\SVG::get_stylesheet_url(),
+            BlockTypes\SVG\SVG::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
         wp_register_style(
             'gateway-username',
-            BlockTypes\Username\Username::get_stylesheet_url(),
+            BlockTypes\Username\Username::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
@@ -201,7 +201,7 @@ class BlockInit
             $script_asset = require $script_asset_path;
             wp_register_script_module(
                 'gateway-dropdown-view',
-                BlockTypes\Dropdown\Dropdown::get_view_script_url(),
+                BlockTypes\Dropdown\Dropdown::getViewScriptUrl(),
                 $script_asset['dependencies'],
                 $script_asset['version']
             );
