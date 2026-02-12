@@ -135,7 +135,10 @@ class Plugin
         // Initialize block patterns
         $this->patternRegistry->init();
 
-        // Register core collections. 
+        // Initialize app page template and SPA routing
+        AppTemplate::init();
+
+        // Register core collections.
         add_action('gateway_loaded', [$this, 'registerCollections']);
 
     }
