@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\GridItem;
 
 class GridItem extends \Gateway\Block
 {
-    protected static string $title = 'GTY Grid Item';
+    protected static string $title = 'Grid Item';
 
     /**
      * Get the block name
@@ -29,7 +29,7 @@ class GridItem extends \Gateway\Block
     {
         return [
             'api_version' => 3,
-            'title' => 'GTY Grid Item',
+            'title' => 'Grid Item',
             'category' => 'gateway',
             'supports' => [
                 'html' => false,

@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\SVG;
 
 class Svg extends \Gateway\Block {
 
-	protected static string $title = 'GTY SVG';
+	protected static string $title = 'SVG';
 
 	public static function getName(): string {
 		return 'gateway/gty-svg';

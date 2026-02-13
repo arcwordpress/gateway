@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\App;
 
 class App extends \Gateway\Block {
 
-	protected static string $title = 'GTY App';
+	protected static string $title = 'App';
 
 	public static function getName(): string {
 		return 'gateway/app';

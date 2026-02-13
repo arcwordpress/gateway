@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\Dropdown;
 
 class Dropdown extends \Gateway\Block {
 
-	protected static string $title = 'GTY Dropdown';
+	protected static string $title = 'Dropdown';
 
 	public static function getName(): string {
 		return 'gateway/gty-dropdown';

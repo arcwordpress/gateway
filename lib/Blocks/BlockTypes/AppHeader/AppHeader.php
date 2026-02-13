@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\AppHeader;
 
 class AppHeader extends \Gateway\Block {
 
-	protected static string $title = 'GTY App Header';
+	protected static string $title = 'App Header';
 
 	public static function getName(): string {
 		return 'gateway/app-header';

@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\Nav;
 
 class Nav extends \Gateway\Block {
 
-	protected static string $title = 'GTY Nav';
+	protected static string $title = 'Nav';
 
 	public static function getName(): string {
 		return 'gateway/gty-nav';

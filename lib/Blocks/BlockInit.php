@@ -104,7 +104,7 @@ class BlockInit
         // Register GridItem block (used inside Grid)
         BlockTypes\GridItem\GridItem::register();
 
-        // Register GTY App Layout blocks
+        // Register App Layout blocks
         BlockTypes\App\App::register();
         BlockTypes\AppHeader\AppHeader::register();
         BlockTypes\AppMain\AppMain::register();
@@ -112,7 +112,7 @@ class BlockInit
         BlockTypes\AppSidebar\AppSidebar::register();
         BlockTypes\AppContent\AppContent::register();
 
-        // Register GTY UI blocks
+        // Register UI blocks
         BlockTypes\Button\Button::register();
         BlockTypes\Dropdown\Dropdown::register();
         BlockTypes\Flex\Flex::register();
@@ -127,7 +127,7 @@ class BlockInit
      */
     public static function registerBlockStyles()
     {
-        // Register GTY App Layout block styles
+        // Register App Layout block styles
         wp_register_style(
             'gateway-app',
             BlockTypes\App\App::getStylesheetUrl(),
@@ -165,7 +165,7 @@ class BlockInit
             GATEWAY_VERSION
         );
 
-        // Register GTY UI block styles
+        // Register UI block styles
         wp_register_style(
             'gateway-button',
             BlockTypes\Button\Button::getStylesheetUrl(),

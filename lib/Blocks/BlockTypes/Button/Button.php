@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\Button;
 
 class Button extends \Gateway\Block {
 
-	protected static string $title = 'GTY Button';
+	protected static string $title = 'Button';
 
 	public static function getName(): string {
 		return 'gateway/gty-button';

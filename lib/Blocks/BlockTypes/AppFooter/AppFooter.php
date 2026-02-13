@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\AppFooter;
 
 class AppFooter extends \Gateway\Block {
 
-	protected static string $title = 'GTY App Footer';
+	protected static string $title = 'App Footer';
 
 	public static function getName(): string {
 		return 'gateway/gty-app-footer';
