@@ -6,6 +6,14 @@ class Nav extends \Gateway\Block {
 
 	protected static string $title = 'Nav';
 
+	protected static array $fields = [
+		[
+			'name' => 'orientation',
+			'type' => 'text',
+			'default' => 'column',
+		],
+	];
+
 	public static function getName(): string {
 		return 'gateway/nav';
 	}
@@ -29,6 +37,8 @@ class Nav extends \Gateway\Block {
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<nav ' . get_block_wrapper_attributes( [ 'class' => 'nav' ] ) . '><ul class="nav-list"><InnerBlocks /></ul></nav>';
+		$orientation = ! empty( $attributes['orientation'] ) ? esc_attr( $attributes['orientation'] ) : 'column';
+		$classes = 'nav-list nav-list--' . $orientation;
+		return '<nav ' . get_block_wrapper_attributes( [ 'class' => 'nav' ] ) . '><ul class="' . $classes . '"><InnerBlocks /></ul></nav>';
 	}
 }
