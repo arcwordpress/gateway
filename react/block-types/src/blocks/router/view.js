@@ -146,7 +146,9 @@ function navigateToRoute(routePath) {
 	}
 
 	// Construct full URL
-	const fullPath = basePath + routePath;
+	// If route is "/", just use basePath (don't append)
+	// Otherwise, append the route path
+	const fullPath = routePath === '/' ? basePath : basePath + routePath;
 
 	// Update router state everywhere
 	routerInstance.currentRoute = routePath;
@@ -253,7 +255,16 @@ store('gateway/router', {
 			const routePath = getRouteFromPathname(fullPathname, routePaths);
 
 			// Calculate base path
-			const basePath = fullPathname.substring(0, fullPathname.length - routePath.length) || '';
+			// If route is "/", basePath is the full pathname
+			// Otherwise, basePath is pathname minus the route
+			let basePath;
+			if (routePath === '/') {
+				basePath = fullPathname;
+			} else {
+				basePath = fullPathname.substring(0, fullPathname.length - routePath.length);
+			}
+
+			console.log('[Router] Path calculation:', { fullPathname, routePath, basePath });
 
 			// Initialize global router instance
 			routerInstance = {
