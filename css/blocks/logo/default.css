@@ -1,6 +1,7 @@
 /* Logo Block Styles */
 .wp-block-gateway-logo.logo {
 	display: inline-block;
+	background: none;
 }
 
 .logo-link {
