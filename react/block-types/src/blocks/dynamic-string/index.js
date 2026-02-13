@@ -13,7 +13,7 @@ import metadata from './block.json';
 
 registerBlockType(metadata.name, {
 	edit: ({ attributes, setAttributes, context }) => {
-		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText } = attributes;
+		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText, wrapperElement } = attributes;
 		const blockProps = useBlockProps();
 
 		// Get context from parent blocks
@@ -90,6 +90,26 @@ registerBlockType(metadata.name, {
 							onChange={(value) => setAttributes({ fallbackText: value })}
 							placeholder={__('Loading...', 'gateway')}
 						/>
+						<SelectControl
+							label={__('Wrapper Element (optional)', 'gateway')}
+							help={__('Choose an HTML element to wrap the string. Leave empty for no wrapper.', 'gateway')}
+							value={wrapperElement}
+							options={[
+								{ value: '', label: __('None (span only)', 'gateway') },
+								{ value: 'div', label: 'div' },
+								{ value: 'p', label: 'p' },
+								{ value: 'h1', label: 'h1' },
+								{ value: 'h2', label: 'h2' },
+								{ value: 'h3', label: 'h3' },
+								{ value: 'h4', label: 'h4' },
+								{ value: 'h5', label: 'h5' },
+								{ value: 'h6', label: 'h6' },
+								{ value: 'strong', label: 'strong' },
+								{ value: 'em', label: 'em' },
+								{ value: 'li', label: 'li' },
+							]}
+							onChange={(value) => setAttributes({ wrapperElement: value })}
+						/>
 						<ToggleControl
 							label={__('Use Advanced Property Path', 'gateway')}
 							help={__('Enable to manually specify the full property path', 'gateway')}
@@ -117,38 +137,14 @@ registerBlockType(metadata.name, {
 					</PanelBody>
 				</InspectorControls>
 				<div {...blockProps}>
-					<span style={{
-						display: 'inline-block',
-						padding: '4px 8px',
-						background: previewValue ? '#e7f5e7' : '#f0f0f0',
-						border: `1px dashed ${previewValue ? '#4caf50' : '#999'}`,
-						borderRadius: '3px',
-						fontSize: '13px',
-						fontFamily: 'monospace'
-					}}>
-						{previewValue || fallbackText || (fieldKey ? `{${fieldKey}}` : __('[Dynamic String]', 'gateway'))}
-					</span>
-					{bindingExpression && (
-						<div style={{
-							marginTop: '4px',
-							padding: '4px 8px',
-							background: '#f9f9f9',
-							border: '1px solid #ddd',
-							borderRadius: '3px',
-							fontSize: '10px',
-							fontFamily: 'monospace',
-							color: '#666'
-						}}>
-							{bindingExpression}
-						</div>
-					)}
+					{previewValue || fallbackText || (fieldKey ? `{${fieldKey}}` : __('[Dynamic String]', 'gateway'))}
 				</div>
 			</>
 		);
 	},
 
 	save: ({ attributes }) => {
-		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText } = attributes;
+		const { contextNamespace, fieldKey, useAdvancedPath, propertyPath, fallbackText, wrapperElement } = attributes;
 		const blockProps = useBlockProps.save();
 
 		// Construct the binding expression
@@ -164,16 +160,16 @@ registerBlockType(metadata.name, {
 
 		// If no binding is set, just output the fallback text
 		if (!bindingExpression) {
+			const TextElement = wrapperElement || 'span';
 			return (
-				<span {...blockProps}>
+				<TextElement {...blockProps}>
 					{fallbackText}
-				</span>
+				</TextElement>
 			);
 		}
 
 		// Build the attributes for the span
 		const spanAttributes = {
-			...blockProps,
 			'data-wp-text': bindingExpression,
 		};
 
@@ -182,8 +178,21 @@ registerBlockType(metadata.name, {
 			spanAttributes['data-wp-interactive'] = contextNamespace;
 		}
 
+		const textContent = <span {...spanAttributes}>{fallbackText}</span>;
+
+		// If wrapper element is specified, wrap the span
+		if (wrapperElement) {
+			const WrapperElement = wrapperElement;
+			return (
+				<WrapperElement {...blockProps}>
+					{textContent}
+				</WrapperElement>
+			);
+		}
+
+		// Otherwise just return the span with block props
 		return (
-			<span {...spanAttributes}>
+			<span {...blockProps} {...spanAttributes}>
 				{fallbackText}
 			</span>
 		);
