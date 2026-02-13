@@ -5,9 +5,13 @@
 
 .nav-list {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 	gap: 1rem;
+}
+
+.nav-list--row {
+	flex-direction: row;
 }
