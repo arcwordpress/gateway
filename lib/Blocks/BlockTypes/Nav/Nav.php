@@ -7,7 +7,7 @@ class Nav extends \Gateway\Block {
 	protected static string $title = 'Nav';
 
 	public static function getName(): string {
-		return 'gateway/gty-nav';
+		return 'gateway/nav';
 	}
 
 	public static function getRegistrationType(): string {
@@ -29,6 +29,6 @@ class Nav extends \Gateway\Block {
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<nav ' . get_block_wrapper_attributes( [ 'class' => 'gty-nav' ] ) . '><ul class="gty-nav-list"><InnerBlocks /></ul></nav>';
+		return '<nav ' . get_block_wrapper_attributes( [ 'class' => 'nav' ] ) . '><ul class="nav-list"><InnerBlocks /></ul></nav>';
 	}
 }

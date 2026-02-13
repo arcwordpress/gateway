@@ -1,18 +1,23 @@
 /* Nav Item Block Styles */
-.wp-block-gateway-gty-nav-item.gty-nav-item {
+.wp-block-gateway-nav-item.nav-item {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-.gty-nav-item-link {
+.nav-item-link {
 	display: inline-block;
 	padding: 0.5rem 1rem;
 	text-decoration: none;
 	color: inherit;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: inherit;
 	transition: color 0.3s ease;
 }
 
-.gty-nav-item-link:hover {
+.nav-item-link:hover {
 	color: #0073aa;
 }
