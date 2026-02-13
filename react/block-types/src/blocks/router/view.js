@@ -127,6 +127,27 @@ function getRouteFromPathname(fullPathname, routePaths) {
 let routerInstance = null;
 
 /**
+ * Get all current route params (global helper)
+ * Can be imported and used from any block
+ *
+ * @returns {Object} Current route parameters (e.g., { courseSlug: "web-dev" })
+ */
+export function getRouteParams() {
+	return routerInstance?.currentParams || {};
+}
+
+/**
+ * Get a specific route param by key (global helper)
+ * Can be imported and used from any block
+ *
+ * @param {string} key - The param name (e.g., "courseSlug")
+ * @returns {string|undefined} The param value
+ */
+export function getRouteParam(key) {
+	return routerInstance?.currentParams?.[key];
+}
+
+/**
  * Central navigation function - the single source of truth for routing
  * Updates router state, manages history, controls visibility
  *
@@ -152,6 +173,9 @@ function navigateToRoute(routePath) {
 		? (basePath || '/')
 		: basePath + routePath;
 
+	// Clear old params before navigating
+	routerInstance.currentParams = {};
+
 	// Update router state everywhere
 	routerInstance.currentRoute = routePath;
 	element.dataset.currentRoute = routePath;
@@ -160,10 +184,15 @@ function navigateToRoute(routePath) {
 	// Update browser history
 	window.history.pushState({ path: fullPath }, '', fullPath);
 
-	// Update route visibility
+	// Update route visibility (this will set new params)
 	updateRouteVisibility(element, routePath);
 
 	console.log(`[Router] Navigated to ${routePath} (${fullPath})`);
+
+	// Log params if any were matched
+	if (routerInstance.currentParams && Object.keys(routerInstance.currentParams).length > 0) {
+		console.log(`[Router] 🎯 Route params:`, routerInstance.currentParams);
+	}
 }
 
 /**
@@ -196,18 +225,20 @@ store('gateway/router', {
 		},
 
 		/**
-		 * Get the matched params for the current route
-		 * Returns an object with dynamic segment values
-		 * Example: for route "/products/:id" and path "/products/123"
-		 *          returns { id: "123" }
+		 * Get the matched params for the current route (GLOBAL ACCESS)
+		 * Returns an object with dynamic segment values from the global router instance
+		 * This works from ANY block, even outside the router context
+		 *
+		 * Example: for route "/course/:courseSlug" and path "/course/web-dev"
+		 *          returns { courseSlug: "web-dev" }
+		 *
+		 * Usage from any block:
+		 *   const { state } = getStore('gateway/router');
+		 *   const slug = state.params?.courseSlug;
 		 */
 		get params() {
-			const context = getContext();
-			const currentPath = context.route || '/';
-			const routePath = context.routePath || '/';
-
-			const match = matchPath(currentPath, routePath);
-			return match ? match.params : {};
+			// Return global params - accessible from anywhere
+			return routerInstance?.currentParams || {};
 		},
 	},
 
@@ -278,14 +309,13 @@ store('gateway/router', {
 				basePath = basePath.slice(0, -1);
 			}
 
-			console.log('[Router] Path calculation:', { fullPathname, routePath, basePath });
-
 			// Initialize global router instance
 			routerInstance = {
 				element: ref,
 				context: context,
 				basePath: basePath,
 				currentRoute: routePath,
+				currentParams: {}, // Global param storage for access from any block
 				routePaths: routePaths,
 			};
 
@@ -310,11 +340,19 @@ store('gateway/router', {
 				const fullPathname = getCurrentPathname();
 				const routePath = getRouteFromPathname(fullPathname, routerInstance.routePaths);
 
+				// Clear params before updating route
+				routerInstance.currentParams = {};
+
 				routerInstance.currentRoute = routePath;
 				ref.dataset.currentRoute = routePath;
 				context.route = routePath;
 
 				updateRouteVisibility(ref, routePath);
+
+				// Log params if any were matched (for back/forward testing)
+				if (routerInstance.currentParams && Object.keys(routerInstance.currentParams).length > 0) {
+					console.log(`[Router] ⬅️ Back/forward navigation params:`, routerInstance.currentParams);
+				}
 			};
 
 			window.addEventListener('popstate', handlePopState);
@@ -351,33 +389,43 @@ store('gateway/router', {
 /**
  * Update the visibility of route blocks based on current path
  * Shows the first matching route, hides all others
+ * Stores matched params globally in routerInstance for access from any block
  */
 function updateRouteVisibility(routerElement, currentPath) {
-	console.log('[Router] updateRouteVisibility called', { routerElement, currentPath });
-
 	// Find all route blocks (direct children with data-router-path)
 	const routeElements = routerElement.querySelectorAll(':scope > [data-router-path]');
-	console.log('[Router] Found route elements:', routeElements.length, routeElements);
 
 	let foundMatch = false;
+	let matchedParams = {};
 
 	routeElements.forEach((routeElement) => {
 		const routePath = routeElement.getAttribute('data-router-path');
-		console.log('[Router] Checking route:', routePath, 'against current:', currentPath);
 		const matches = matchPath(currentPath, routePath);
-		console.log('[Router] Match result:', matches);
 
 		if (matches && !foundMatch) {
 			// Show this route (first match wins)
-			console.log('[Router] Showing route:', routePath);
 			routeElement.style.display = '';
 			foundMatch = true;
+			matchedParams = matches.params;
 
-			// Store matched params in a data attribute for potential use
+			// Store matched params in data attribute (legacy support)
 			routeElement.dataset.matchedParams = JSON.stringify(matches.params);
+
+			// 🆕 Store params globally for access from any block
+			if (routerInstance) {
+				routerInstance.currentParams = matches.params;
+			}
+
+			// Log dynamic route matches for testing
+			if (Object.keys(matches.params).length > 0) {
+				console.log(`[Router] 🎯 Dynamic route matched:`, {
+					pattern: routePath,
+					path: currentPath,
+					params: matches.params
+				});
+			}
 		} else {
 			// Hide this route
-			console.log('[Router] Hiding route:', routePath);
 			routeElement.style.display = 'none';
 		}
 	});
