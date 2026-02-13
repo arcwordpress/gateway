@@ -1,10 +1,18 @@
 <?php
 
-namespace Gateway\Blocks\BlockTypes\SVG;
+namespace Gateway\Blocks\BlockTypes\Svg;
 
 class Svg extends \Gateway\Block {
 
 	protected static string $title = 'SVG';
+
+	protected static array $fields = [
+		[
+			'name' => 'svgContent',
+			'type' => 'textarea',
+			'default' => '',
+		],
+	];
 
 	public static function getName(): string {
 		return 'gateway/gty-svg';
@@ -20,12 +28,6 @@ class Svg extends \Gateway\Block {
 			'category' => 'gateway',
 			'style' => 'gateway-svg',
 			'editor_style' => 'gateway-svg-editor',
-			'attributes' => [
-				'svgContent' => [
-					'type' => 'string',
-					'default' => '',
-				],
-			],
 			'supports' => [
 				'align' => true,
 				'anchor' => true,
