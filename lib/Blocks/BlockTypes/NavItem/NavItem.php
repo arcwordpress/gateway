@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\NavItem;
 
 class NavItem extends \Gateway\Block {
 
-	protected static string $title = 'GTY Nav Item';
+	protected static string $title = 'Nav Item';
 
 	public static function getName(): string {
 		return 'gateway/gty-nav-item';

@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\AppContent;
 
 class AppContent extends \Gateway\Block {
 
-	protected static string $title = 'GTY App Content';
+	protected static string $title = 'App Content';
 
 	public static function getName(): string {
 		return 'gateway/app-content';
@@ -18,6 +18,7 @@ class AppContent extends \Gateway\Block {
 		return [
 			'render_callback' => [ new static(), 'renderCallback' ],
 			'category' => 'gateway',
+			'parent' => [ 'gateway/app-main' ],
 			'style' => 'gateway-app-content',
 			'editor_style' => 'gateway-app-content-editor',
 			'supports' => [

@@ -4,7 +4,7 @@ namespace Gateway\Blocks\BlockTypes\Flex;
 
 class Flex extends \Gateway\Block {
 
-	protected static string $title = 'GTY Flex';
+	protected static string $title = 'Flex';
 
 	public static function getName(): string {
 		return 'gateway/gty-flex';
