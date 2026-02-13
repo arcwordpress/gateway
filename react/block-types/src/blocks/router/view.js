@@ -121,6 +121,48 @@ function getRouteFromPathname(fullPathname, routePaths) {
 }
 
 /**
+ * Global router instance - single source of truth
+ * Set during router initialization
+ */
+let routerInstance = null;
+
+/**
+ * Central navigation function - the single source of truth for routing
+ * Updates router state, manages history, controls visibility
+ *
+ * @param {string} routePath - The route path to navigate to (e.g., "/", "/about")
+ */
+function navigateToRoute(routePath) {
+	if (!routerInstance) {
+		console.error('Router: router not initialized yet');
+		return;
+	}
+
+	const { element, context, basePath, currentRoute } = routerInstance;
+
+	// Don't navigate if already on this route
+	if (currentRoute === routePath) {
+		return;
+	}
+
+	// Construct full URL
+	const fullPath = basePath + routePath;
+
+	// Update router state everywhere
+	routerInstance.currentRoute = routePath;
+	element.dataset.currentRoute = routePath;
+	context.route = routePath;
+
+	// Update browser history
+	window.history.pushState({ path: fullPath }, '', fullPath);
+
+	// Update route visibility
+	updateRouteVisibility(element, routePath);
+
+	console.log(`[Router] Navigated to ${routePath} (${fullPath})`);
+}
+
+/**
  * Gateway Router Store
  *
  * Handles client-side routing similar to React Router.
@@ -167,16 +209,14 @@ store('gateway/router', {
 
 	actions: {
 		/**
-		 * Navigate to a new path
-		 * Updates the router context and browser history
+		 * Navigate to a new route
+		 * This is the ONLY way to navigate - router manages everything
 		 *
-		 * Usage:
+		 * Usage from a link:
 		 * <button data-wp-on--click="actions.navigate" data-path="/about">
-		 *
-		 * Works from anywhere on the page - finds the router element automatically
 		 */
 		navigate: (event) => {
-			// Get path from event target's data-path attribute
+			// Get path from event target
 			const routePath = event.target.dataset.path || event.target.getAttribute('data-path');
 
 			if (!routePath) {
@@ -184,68 +224,11 @@ store('gateway/router', {
 				return;
 			}
 
-			// Find the router element on the page (search the whole document)
-			// Look for parent first (if link is inside router), then search document
-			let routerElement = event.target.closest('[data-wp-interactive="gateway/router"]');
-
-			if (!routerElement) {
-				// Not inside a router, search for one on the page
-				routerElement = document.querySelector('[data-wp-interactive="gateway/router"]');
-			}
-
-			if (!routerElement) {
-				console.error('Router: no router element found on page');
-				return;
-			}
-
-			// Check if already on this route
-			const currentRoute = routerElement.dataset.currentRoute;
-			if (currentRoute === routePath) {
-				event.preventDefault();
-				return;
-			}
-
-			// Get base path (set during router init) and construct full URL
-			const basePath = routerElement.dataset.basePath || '';
-			const fullPath = basePath + routePath;
-
-			// Update current route in data attribute
-			routerElement.dataset.currentRoute = routePath;
-
-			// Update browser history with full path
-			window.history.pushState({ path: fullPath }, '', fullPath);
-
-			// Update route visibility directly
-			updateRouteVisibility(routerElement, routePath);
-
-			// Prevent default link behavior
+			// Prevent default first
 			event.preventDefault();
-		},
 
-		/**
-		 * Navigate to a path programmatically
-		 * Can be called from other actions or external code
-		 *
-		 * Usage in another store:
-		 * const { actions } = store('gateway/router');
-		 * actions.navigateTo('/products/123');
-		 */
-		navigateTo: (routePath) => {
-			const context = getContext();
-			const { ref } = getElement();
-
-			if (!routePath || context.route === routePath) {
-				return;
-			}
-
-			// Get base path and construct full URL
-			const basePath = ref.dataset.basePath || '';
-			const fullPath = basePath + routePath;
-
-			context.route = routePath;
-			ref.dataset.currentRoute = routePath;
-			window.history.pushState({ path: fullPath }, '', fullPath);
-			updateRouteVisibility(ref, routePath);
+			// Call the internal navigation logic
+			navigateToRoute(routePath);
 		},
 	},
 
@@ -259,73 +242,73 @@ store('gateway/router', {
 			const { ref } = getElement();
 			const context = getContext();
 
-			console.log('[Router] Element ref:', ref);
-			console.log('[Router] Initial context:', context);
-
 			// Get all route paths from child route elements
 			const routeElements = ref.querySelectorAll(':scope > [data-router-path]');
 			const routePaths = Array.from(routeElements).map(el =>
 				el.getAttribute('data-router-path')
 			);
 
-			console.log('[Router] Available route paths:', routePaths);
-
 			// Set initial route from current browser path
 			const fullPathname = getCurrentPathname();
 			const routePath = getRouteFromPathname(fullPathname, routePaths);
 
-			console.log('[Router] Current pathname:', fullPathname);
-			console.log('[Router] Extracted route:', routePath);
-
-			// Store base path for future navigations
+			// Calculate base path
 			const basePath = fullPathname.substring(0, fullPathname.length - routePath.length) || '';
-			ref.dataset.basePath = basePath;
-			console.log('[Router] Base path:', basePath);
 
-			// Store current route both in context and as data attribute
-			// Data attribute allows external links to check current route
-			context.route = routePath;
+			// Initialize global router instance
+			routerInstance = {
+				element: ref,
+				context: context,
+				basePath: basePath,
+				currentRoute: routePath,
+				routePaths: routePaths,
+			};
+
+			// Store in data attributes
+			ref.dataset.basePath = basePath;
 			ref.dataset.currentRoute = routePath;
 
-			// Update route visibility on init
-			console.log('[Router] Calling updateRouteVisibility');
+			// Update context for interactivity API
+			context.route = routePath;
+
+			// Show initial route
 			updateRouteVisibility(ref, routePath);
+
+			console.log('[Router] Initialized', {
+				basePath,
+				currentRoute: routePath,
+				availableRoutes: routePaths,
+			});
 
 			// Listen for browser back/forward navigation
 			const handlePopState = (event) => {
 				const fullPathname = getCurrentPathname();
-				const routePath = getRouteFromPathname(fullPathname, routePaths);
-				context.route = routePath;
+				const routePath = getRouteFromPathname(fullPathname, routerInstance.routePaths);
+
+				routerInstance.currentRoute = routePath;
 				ref.dataset.currentRoute = routePath;
+				context.route = routePath;
+
 				updateRouteVisibility(ref, routePath);
 			};
 
 			window.addEventListener('popstate', handlePopState);
 
-			// Intercept clicks on links within the router to enable SPA navigation
+			// Intercept regular anchor links within the router
 			const handleLinkClick = (event) => {
 				const link = event.target.closest('a[href]');
-
 				if (!link) return;
 
 				const href = link.getAttribute('href');
 
-				// Only handle internal links (relative paths or same-origin)
+				// Only handle internal links
 				if (href.startsWith('/') || href.startsWith(window.location.origin)) {
 					event.preventDefault();
 
-					const fullPath = href.startsWith('/')
-						? href
-						: new URL(href).pathname;
+					const fullPath = href.startsWith('/') ? href : new URL(href).pathname;
+					const routePath = getRouteFromPathname(fullPath, routerInstance.routePaths);
 
-					const routePath = getRouteFromPathname(fullPath, routePaths);
-
-					if (context.route !== routePath) {
-						context.route = routePath;
-						ref.dataset.currentRoute = routePath;
-						window.history.pushState({ path: fullPath }, '', fullPath);
-						updateRouteVisibility(ref, routePath);
-					}
+					navigateToRoute(routePath);
 				}
 			};
 
