@@ -7,7 +7,7 @@ class NavItem extends \Gateway\Block {
 	protected static string $title = 'Nav Item';
 
 	public static function getName(): string {
-		return 'gateway/gty-nav-item';
+		return 'gateway/nav-item';
 	}
 
 	public static function getRegistrationType(): string {
@@ -29,9 +29,9 @@ class NavItem extends \Gateway\Block {
 					'type' => 'string',
 					'default' => 'Menu Item',
 				],
-				'href' => [
+				'path' => [
 					'type' => 'string',
-					'default' => '#',
+					'default' => '/',
 				],
 			],
 		];
@@ -39,7 +39,7 @@ class NavItem extends \Gateway\Block {
 
 	public function render( array $attributes, string $content, $block ): string {
 		$label = ! empty( $attributes['label'] ) ? esc_html( $attributes['label'] ) : 'Menu Item';
-		$href = ! empty( $attributes['href'] ) ? esc_url( $attributes['href'] ) : '#';
-		return '<li ' . get_block_wrapper_attributes( [ 'class' => 'gty-nav-item' ] ) . '><a href="' . $href . '" class="gty-nav-item-link">' . $label . '</a></li>';
+		$path = ! empty( $attributes['path'] ) ? esc_attr( $attributes['path'] ) : '/';
+		return '<li ' . get_block_wrapper_attributes( [ 'class' => 'nav-item' ] ) . '><button type="button" class="nav-item-link" data-wp-interactive="gateway/router" data-wp-on--click="actions.navigate" data-path="' . $path . '">' . $label . '</button></li>';
 	}
 }
