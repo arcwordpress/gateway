@@ -1,0 +1,106 @@
+/**
+ * Editor styles for gateway/record block
+ */
+
+.gateway-record {
+	border: 2px dashed #8b5cf6;
+	background: #f9fafb;
+	min-height: 100px;
+}
+
+.gateway-record-editor {
+	padding: 20px;
+}
+
+.gateway-record-header {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 16px;
+	margin-bottom: 16px;
+}
+
+.gateway-record-header h3 {
+	margin: 0 0 12px 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #111827;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.gateway-record-header p {
+	margin: 6px 0;
+	font-size: 13px;
+	color: #6b7280;
+}
+
+.gateway-record-header strong {
+	color: #111827;
+	font-weight: 600;
+}
+
+.gateway-record-header code {
+	background: #f3f4f6;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-family: 'Monaco', 'Courier New', monospace;
+	font-size: 12px;
+	color: #8b5cf6;
+}
+
+.gateway-record-dynamic {
+	color: #8b5cf6 !important;
+	font-weight: 500;
+}
+
+.gateway-record-notice {
+	color: #9ca3af;
+	font-style: italic;
+}
+
+.gateway-record-loading {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #6b7280;
+}
+
+.gateway-record-preview {
+	background: #f9fafb;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+	padding: 12px;
+	margin-top: 12px;
+}
+
+.gateway-record-preview-title {
+	margin: 0 0 6px 0;
+	font-size: 14px;
+	color: #111827;
+}
+
+.gateway-record-preview-meta {
+	margin: 0;
+	font-size: 12px;
+	color: #9ca3af;
+	font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.gateway-record-content {
+	min-height: 60px;
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+	padding: 16px;
+}
+
+.gateway-record-content:empty::before {
+	content: "Add blocks here to display record data...";
+	color: #9ca3af;
+	font-style: italic;
+	display: block;
+	text-align: center;
+	padding: 20px;
+}
