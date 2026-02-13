@@ -220,8 +220,10 @@ store('gateway/router', {
 		 * <button data-wp-on--click="actions.navigate" data-path="/about">
 		 */
 		navigate: (event) => {
-			// Get path from event target
-			const routePath = event.target.dataset.path || event.target.getAttribute('data-path');
+			// Get path from event target or traverse up to find element with data-path
+			// This handles clicks on nested elements (like SVG inside logo button)
+			const element = event.target.closest('[data-path]');
+			const routePath = element?.dataset.path || element?.getAttribute('data-path');
 
 			if (!routePath) {
 				console.warn('Router: navigate action called without data-path attribute');
