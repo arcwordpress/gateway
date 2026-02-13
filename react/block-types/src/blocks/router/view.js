@@ -270,6 +270,12 @@ store('gateway/router', {
 				basePath = fullPathname.substring(0, fullPathname.length - routePath.length);
 			}
 
+			// Strip trailing slash from basePath to prevent double slashes
+			// e.g., "/routing/" becomes "/routing"
+			if (basePath.endsWith('/') && basePath !== '/') {
+				basePath = basePath.slice(0, -1);
+			}
+
 			console.log('[Router] Path calculation:', { fullPathname, routePath, basePath });
 
 			// Initialize global router instance
