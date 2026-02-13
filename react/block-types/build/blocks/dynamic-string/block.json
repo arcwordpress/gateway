@@ -1,9 +1,9 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/gts-dynamic-string",
+  "name": "gateway/string",
   "version": "0.1.0",
-  "title": "GTS Dynamic String",
+  "title": "String",
   "category": "gateway",
   "icon": "text",
   "description": "A dynamic string block that binds to interactive data using wp-text.",
@@ -40,6 +40,10 @@
       "default": ""
     },
     "fallbackText": {
+      "type": "string",
+      "default": ""
+    },
+    "wrapperElement": {
       "type": "string",
       "default": ""
     }
