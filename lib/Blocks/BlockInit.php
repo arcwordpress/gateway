@@ -118,7 +118,8 @@ class BlockInit
         BlockTypes\Flex\Flex::register();
         BlockTypes\Nav\Nav::register();
         BlockTypes\NavItem\NavItem::register();
-        BlockTypes\SVG\Svg::register();
+        BlockTypes\Logo\Logo::register();
+        BlockTypes\Svg\Svg::register();
         BlockTypes\Username\Username::register();
     }
 

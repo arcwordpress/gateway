@@ -28,6 +28,6 @@ class Logo extends \Gateway\Block {
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<div ' . get_block_wrapper_attributes( [ 'class' => 'logo' ] ) . '><button type="button" class="logo-link" data-wp-interactive="gateway/router" data-wp-on--click="actions.navigate" data-path="/">{{INNER_BLOCKS}}</button></div>';
+		return '<div ' . get_block_wrapper_attributes( [ 'class' => 'logo' ] ) . '><button type="button" class="logo-link" data-wp-interactive="gateway/router" data-wp-on--click="actions.navigate" data-path="/"><InnerBlocks/></button></div>';
 	}
 }
