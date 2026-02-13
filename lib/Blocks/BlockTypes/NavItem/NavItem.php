@@ -6,6 +6,19 @@ class NavItem extends \Gateway\Block {
 
 	protected static string $title = 'Nav Item';
 
+	protected static array $fields = [
+		[
+			'name' => 'label',
+			'type' => 'text',
+			'default' => 'Menu Item',
+		],
+		[
+			'name' => 'path',
+			'type' => 'text',
+			'default' => '/',
+		],
+	];
+
 	public static function getName(): string {
 		return 'gateway/nav-item';
 	}
@@ -23,16 +36,6 @@ class NavItem extends \Gateway\Block {
 			'supports' => [
 				'anchor' => true,
 				'className' => true,
-			],
-			'attributes' => [
-				'label' => [
-					'type' => 'string',
-					'default' => 'Menu Item',
-				],
-				'path' => [
-					'type' => 'string',
-					'default' => '/',
-				],
 			],
 		];
 	}
