@@ -198,42 +198,27 @@ store('gateway/router', {
 				return;
 			}
 
-			// Get the router's context from its data attribute
-			const contextAttr = routerElement.getAttribute('data-wp-context');
-			if (!contextAttr) {
-				console.error('Router: router element missing context data');
-				return;
-			}
-
-			let routerContext;
-			try {
-				routerContext = JSON.parse(contextAttr);
-			} catch (e) {
-				console.error('Router: failed to parse router context', e);
-				return;
-			}
-
-			// Don't navigate if already on this path
-			if (routerContext.route === routePath) {
+			// Check if already on this route
+			const currentRoute = routerElement.dataset.currentRoute;
+			if (currentRoute === routePath) {
 				event.preventDefault();
 				return;
 			}
 
-			// Get base path and construct full URL
+			// Get base path (set during router init) and construct full URL
 			const basePath = routerElement.dataset.basePath || '';
 			const fullPath = basePath + routePath;
 
-			// Update context
-			routerContext.route = routePath;
-			routerElement.setAttribute('data-wp-context', JSON.stringify(routerContext));
+			// Update current route in data attribute
+			routerElement.dataset.currentRoute = routePath;
 
 			// Update browser history with full path
 			window.history.pushState({ path: fullPath }, '', fullPath);
 
-			// Update route visibility (use route path, not full path)
+			// Update route visibility directly
 			updateRouteVisibility(routerElement, routePath);
 
-			// Prevent default link behavior if this is a link
+			// Prevent default link behavior
 			event.preventDefault();
 		},
 
@@ -258,6 +243,7 @@ store('gateway/router', {
 			const fullPath = basePath + routePath;
 
 			context.route = routePath;
+			ref.dataset.currentRoute = routePath;
 			window.history.pushState({ path: fullPath }, '', fullPath);
 			updateRouteVisibility(ref, routePath);
 		},
@@ -296,7 +282,10 @@ store('gateway/router', {
 			ref.dataset.basePath = basePath;
 			console.log('[Router] Base path:', basePath);
 
+			// Store current route both in context and as data attribute
+			// Data attribute allows external links to check current route
 			context.route = routePath;
+			ref.dataset.currentRoute = routePath;
 
 			// Update route visibility on init
 			console.log('[Router] Calling updateRouteVisibility');
@@ -307,6 +296,7 @@ store('gateway/router', {
 				const fullPathname = getCurrentPathname();
 				const routePath = getRouteFromPathname(fullPathname, routePaths);
 				context.route = routePath;
+				ref.dataset.currentRoute = routePath;
 				updateRouteVisibility(ref, routePath);
 			};
 
@@ -332,6 +322,7 @@ store('gateway/router', {
 
 					if (context.route !== routePath) {
 						context.route = routePath;
+						ref.dataset.currentRoute = routePath;
 						window.history.pushState({ path: fullPath }, '', fullPath);
 						updateRouteVisibility(ref, routePath);
 					}
