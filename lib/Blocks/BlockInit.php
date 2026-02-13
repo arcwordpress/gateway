@@ -109,6 +109,8 @@ class BlockInit
         BlockTypes\AppHeader\AppHeader::register();
         BlockTypes\AppMain\AppMain::register();
         BlockTypes\AppFooter\AppFooter::register();
+        BlockTypes\AppSidebar\AppSidebar::register();
+        BlockTypes\AppContent\AppContent::register();
 
         // Register GTY UI blocks
         BlockTypes\Button\Button::register();
@@ -147,6 +149,18 @@ class BlockInit
         wp_register_style(
             'gateway-app-footer',
             BlockTypes\AppFooter\AppFooter::getStylesheetUrl(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-app-sidebar',
+            BlockTypes\AppSidebar\AppSidebar::getStylesheetUrl(),
+            [],
+            GATEWAY_VERSION
+        );
+        wp_register_style(
+            'gateway-app-content',
+            BlockTypes\AppContent\AppContent::getStylesheetUrl(),
             [],
             GATEWAY_VERSION
         );
