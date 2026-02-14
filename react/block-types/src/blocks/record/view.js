@@ -171,17 +171,47 @@ store('gateway/record', {
 			context.notFound = false;
 			context.item = null;
 
-			console.log('[Record] 🔄 State initialized - starting fetch...');
+			// 🆕 If using route params, wait for router:ready event
+			if (context.useRouteParam) {
+				console.log('[Record] ⏳ Using route param - waiting for router:ready event...');
 
-			try {
-				await fetchRecordData(context);
-				console.log('[Record] ✅ fetchRecordData completed');
-				console.log('[Record] 📦 Final context.item:', context.item);
-			} catch (err) {
-				console.error('[Record] ❌ Error initializing record:', err);
-				console.error('[Record] Stack trace:', err.stack);
-				context.error = err.message;
-				context.loading = false;
+				// Listen for router:ready event
+				const handleRouterReady = async (event) => {
+					console.log('[Record] 📡 Received router:ready event!');
+					console.log('[Record] 📡 Event detail:', event.detail);
+
+					// Now fetch data with route params available
+					console.log('[Record] 🔄 Router ready - starting fetch...');
+					try {
+						await fetchRecordData(context);
+						console.log('[Record] ✅ fetchRecordData completed');
+						console.log('[Record] 📦 Final context.item:', context.item);
+					} catch (err) {
+						console.error('[Record] ❌ Error fetching record after router ready:', err);
+						console.error('[Record] Stack trace:', err.stack);
+						context.error = err.message;
+						context.loading = false;
+					}
+				};
+
+				// Listen on document for the router:ready event
+				document.addEventListener('router:ready', handleRouterReady, { once: true });
+
+				console.log('[Record] 👂 Event listener registered for router:ready');
+			} else {
+				// No route params - fetch immediately
+				console.log('[Record] 🔄 Not using route params - starting immediate fetch...');
+
+				try {
+					await fetchRecordData(context);
+					console.log('[Record] ✅ fetchRecordData completed');
+					console.log('[Record] 📦 Final context.item:', context.item);
+				} catch (err) {
+					console.error('[Record] ❌ Error initializing record:', err);
+					console.error('[Record] Stack trace:', err.stack);
+					context.error = err.message;
+					context.loading = false;
+				}
 			}
 
 			console.log('[Record] 🏁 ========== INIT CALLBACK COMPLETE ==========');

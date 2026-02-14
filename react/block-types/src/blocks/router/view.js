@@ -468,4 +468,19 @@ function updateRouteVisibility(routerElement, currentPath) {
 			}
 		}
 	}
+
+	// 🆕 Dispatch custom event when route params are ready
+	// This allows other blocks to wait for router to finish before reading params
+	const routerReadyEvent = new CustomEvent('router:ready', {
+		detail: {
+			currentPath,
+			params: routerInstance?.currentParams || {},
+			matchedRoute: foundMatch
+		},
+		bubbles: true,
+		composed: true
+	});
+
+	console.log('[Router] 📡 Dispatching router:ready event with params:', routerInstance?.currentParams);
+	routerElement.dispatchEvent(routerReadyEvent);
 }
