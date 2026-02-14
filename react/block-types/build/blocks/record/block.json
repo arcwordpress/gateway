@@ -6,7 +6,14 @@
   "category": "gateway",
   "icon": "admin-page",
   "description": "Fetch and display a single record from a Gateway collection. Works with dynamic routing to load records by slug or ID.",
-  "keywords": ["record", "single", "detail", "course", "lesson", "post"],
+  "keywords": [
+    "record",
+    "single",
+    "detail",
+    "course",
+    "lesson",
+    "post"
+  ],
   "attributes": {
     "collectionSlug": {
       "type": "string",
@@ -23,7 +30,10 @@
     "lookupField": {
       "type": "string",
       "default": "slug",
-      "enum": ["id", "slug"]
+      "enum": [
+        "id",
+        "slug"
+      ]
     },
     "useRouteParam": {
       "type": "boolean",

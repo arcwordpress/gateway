@@ -89,8 +89,8 @@ Returns: { success: true, data: { items: [...] } }
 4. Reads: getRouteParam('courseSlug') → "gutenberg-editing"
 5. Fetches collection: "courses"
 6. Filters: items.find(item => item.slug === "gutenberg-editing")
-7. Sets: context.record = { id: 5, slug: "gutenberg-editing", title: "...", ... }
-8. Child blocks access: context.record.title, context.record.description, etc.
+7. Sets: context.item = { id: 5, slug: "gutenberg-editing", title: "...", ... }
+8. Child blocks access: context.item.title, context.item.description, etc.
 ```
 
 ### Static Mode
@@ -101,7 +101,7 @@ Returns: { success: true, data: { items: [...] } }
 1. Block configured with: recordSlug="featured-course", useRouteParam=false
 2. Fetches collection: "courses"
 3. Filters: items.find(item => item.slug === "featured-course")
-4. Sets: context.record = {...}
+4. Sets: context.item = {...}
 5. Child blocks render record data
 ```
 
@@ -309,7 +309,7 @@ const recordCache = {};
 const cacheKey = `${collectionSlug}:${lookupField}:${lookupValue}`;
 
 if (recordCache[cacheKey]) {
-    context.record = recordCache[cacheKey];
+    context.item = recordCache[cacheKey];
 } else {
     // Fetch and cache
     recordCache[cacheKey] = record;
@@ -320,7 +320,7 @@ if (recordCache[cacheKey]) {
 Enable fetching related records:
 ```javascript
 // Course has many lessons
-const course = context.record;
+const course = context.item;
 const lessons = await fetchRecords('gateway/v1', 'lessons', {
     filter: { course_id: course.id }
 });

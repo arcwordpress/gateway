@@ -168,7 +168,7 @@ Router Block
 2. Router extracts `courseSlug = "web-development"`
 3. Record block reads from `getRouteParam('courseSlug')`
 4. Fetches collection, finds record where `slug === "web-development"`
-5. Sets context.record for child blocks
+5. Sets context.item for child blocks
 
 #### Example 2: Static Record by ID
 ```
@@ -253,7 +253,7 @@ const record = items.find(item => item[lookupField] === lookupValue);
 3. Configure: collectionSlug="courses", useRouteParam=true
 4. Navigate to `/course/test-course`
 5. Verify console logs show record fetching
-6. Verify child blocks can access `context.record`
+6. Verify child blocks can access `context.item`
 
 ### Test Case 2: Static Record
 1. Add Record block (no router)

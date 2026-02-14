@@ -44,20 +44,32 @@ async function getCollectionInfo(collectionSlug) {
  * Fetches and provides access to a single record from a Gateway collection.
  * Integrates with dynamic routing to load records based on URL parameters.
  *
+ * Universal Pattern: Sets record data at context.item (same as data-loop)
+ * This allows render blocks like dynamic-string to work universally.
+ *
  * Usage:
  * - Set data-wp-interactive="gateway/record" (or custom namespace)
  * - Set data-wp-init="callbacks.init" to initialize record fetching
- * - Access context.record for the fetched record data
+ * - Access context.item for the fetched record data
  * - Use state.loading, state.error, state.notFound for status
  */
 store('gateway/record', {
 	state: {
 		/**
-		 * Get the current record
+		 * Get the current item (standardized across loops and records)
+		 * This allows universal render blocks to work everywhere
+		 */
+		get item() {
+			const context = getContext();
+			return context.item || null;
+		},
+
+		/**
+		 * Alias for backward compatibility
+		 * @deprecated Use state.item instead
 		 */
 		get record() {
-			const context = getContext();
-			return context.record || null;
+			return this.item;
 		},
 
 		/**
@@ -85,19 +97,19 @@ store('gateway/record', {
 		},
 
 		/**
-		 * Check if record exists
+		 * Check if item/record exists
 		 */
 		get hasRecord() {
 			const context = getContext();
-			return context.record !== null && context.record !== undefined;
+			return context.item !== null && context.item !== undefined;
 		},
 
 		/**
-		 * Get a specific field from the record
+		 * Get a specific field from the item
 		 */
 		getField: (fieldName) => {
 			const context = getContext();
-			return context.record?.[fieldName];
+			return context.item?.[fieldName];
 		},
 	},
 
@@ -150,7 +162,7 @@ store('gateway/record', {
 			context.loading = true;
 			context.error = null;
 			context.notFound = false;
-			context.record = null;
+			context.item = null;
 
 			try {
 				await fetchRecordData(context);
@@ -249,14 +261,15 @@ async function fetchRecordData(context) {
 		if (!record) {
 			console.warn(`[Record] ❌ Record not found: ${lookupField} = ${lookupValue}`);
 			context.notFound = true;
-			context.record = null;
+			context.item = null;
 		} else {
 			console.log('[Record] ✅ Record loaded:', {
 				id: record.id,
 				slug: record.slug,
 				title: record.title || record.name || '(untitled)',
 			});
-			context.record = record;
+			// Set as context.item (universal pattern - same as data-loop)
+			context.item = record;
 		}
 
 		context.loading = false;
@@ -264,7 +277,7 @@ async function fetchRecordData(context) {
 		console.error('[Record] Error fetching record:', err);
 		context.error = err.message;
 		context.notFound = false;
-		context.record = null;
+		context.item = null;
 		context.loading = false;
 	}
 }
