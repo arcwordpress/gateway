@@ -112,7 +112,7 @@ Router Block
 3. Fetches collection endpoint info
 4. Fetches all records from collection
 5. Filters to find matching record by `lookupField`
-6. Sets `context.record` for child blocks to access
+6. Sets `context.item` for child blocks to access
 
 **Example Flow:**
 ```
@@ -128,7 +128,7 @@ Result: Finds record where slug === "react-basics"
 1. Block initializes on page load
 2. Uses configured `recordId` or `recordSlug`
 3. Fetches collection and finds matching record
-4. Sets `context.record` for child blocks
+4. Sets `context.item` for child blocks
 
 ## Accessing Record Data
 
@@ -143,7 +143,7 @@ store('your-block/store', {
   state: {
     get courseTitle() {
       const context = getContext();
-      return context.record?.title;
+      return context.item?.title;
     }
   }
 });

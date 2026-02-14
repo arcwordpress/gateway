@@ -298,6 +298,8 @@ registerBlockType(metadata.name, {
 		} = attributes;
 
 		// Create the context object
+		// Note: Using 'item' instead of 'record' for universal compatibility
+		// This allows render blocks (dynamic-string, etc.) to work the same in loops and records
 		const context = JSON.stringify({
 			collectionSlug,
 			recordId,
@@ -305,7 +307,7 @@ registerBlockType(metadata.name, {
 			lookupField,
 			useRouteParam,
 			routeParamName,
-			record: null,
+			item: null,  // Universal pattern - matches data-loop
 			loading: true,
 			error: null,
 			notFound: false,
