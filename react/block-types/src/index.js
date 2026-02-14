@@ -7,6 +7,7 @@ import('./blocks/context-select/index.js');
 import('./blocks/data-loop/index.js');
 import('./blocks/data-source/index.js');
 import('./blocks/dynamic-string/index.js');
+import('./blocks/store/index.js');
 import('./blocks/expander/index.js');
 import('./blocks/expander-body/index.js');
 import('./blocks/expander-heading/index.js');
