@@ -144,7 +144,14 @@ export function getRouteParams() {
  * @returns {string|undefined} The param value
  */
 export function getRouteParam(key) {
-	return routerInstance?.currentParams?.[key];
+	console.log('[Router] 🔍 getRouteParam called with key:', key);
+	console.log('[Router] 🔍 routerInstance exists:', !!routerInstance);
+	console.log('[Router] 🔍 routerInstance?.currentParams:', routerInstance?.currentParams);
+
+	const value = routerInstance?.currentParams?.[key];
+	console.log('[Router] 🔍 Returning value:', value);
+
+	return value;
 }
 
 /**
@@ -275,7 +282,7 @@ store('gateway/router', {
 		 * Sets up history listener and initial route
 		 */
 		init: () => {
-			console.log('[Router] Init callback called');
+			console.log('[Router] 🚀 ========== INIT CALLBACK CALLED ==========');
 			const { ref } = getElement();
 			const context = getContext();
 
@@ -285,9 +292,14 @@ store('gateway/router', {
 				el.getAttribute('data-router-path')
 			);
 
+			console.log('[Router] 📋 Registered route patterns:', routePaths);
+
 			// Set initial route from current browser path
 			const fullPathname = getCurrentPathname();
+			console.log('[Router] 🌐 Current browser URL path:', fullPathname);
+
 			const routePath = getRouteFromPathname(fullPathname, routePaths);
+			console.log('[Router] 🎯 Matched initial route:', routePath);
 
 			// Calculate base path
 			// Base path is the prefix before the router's routes
@@ -392,15 +404,22 @@ store('gateway/router', {
  * Stores matched params globally in routerInstance for access from any block
  */
 function updateRouteVisibility(routerElement, currentPath) {
+	console.log('[Router] 🔄 updateRouteVisibility called with currentPath:', currentPath);
+	console.log('[Router] 🔄 routerInstance exists:', !!routerInstance);
+	console.log('[Router] 🔄 routerInstance.currentParams before update:', routerInstance?.currentParams);
+
 	// Find all route blocks (direct children with data-router-path)
 	const routeElements = routerElement.querySelectorAll(':scope > [data-router-path]');
+	console.log('[Router] 🔄 Found route elements:', routeElements.length);
 
 	let foundMatch = false;
 	let matchedParams = {};
 
 	routeElements.forEach((routeElement) => {
 		const routePath = routeElement.getAttribute('data-router-path');
+		console.log('[Router] 🔄 Checking route pattern:', routePath);
 		const matches = matchPath(currentPath, routePath);
+		console.log('[Router] 🔄 Match result for', routePath, ':', matches);
 
 		if (matches && !foundMatch) {
 			// Show this route (first match wins)
@@ -449,4 +468,19 @@ function updateRouteVisibility(routerElement, currentPath) {
 			}
 		}
 	}
+
+	// 🆕 Dispatch custom event when route params are ready
+	// This allows other blocks to wait for router to finish before reading params
+	const routerReadyEvent = new CustomEvent('router:ready', {
+		detail: {
+			currentPath,
+			params: routerInstance?.currentParams || {},
+			matchedRoute: foundMatch
+		},
+		bubbles: true,
+		composed: true
+	});
+
+	console.log('[Router] 📡 Dispatching router:ready event with params:', routerInstance?.currentParams);
+	routerElement.dispatchEvent(routerReadyEvent);
 }
