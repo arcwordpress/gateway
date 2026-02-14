@@ -20,8 +20,21 @@
     "label": {
       "type": "string",
       "default": "Link"
+    },
+    "useDynamicPath": {
+      "type": "boolean",
+      "default": false
+    },
+    "pathTemplate": {
+      "type": "string",
+      "default": ""
     }
   },
+  "usesContext": [
+    "gateway/itemName",
+    "gateway/inLoop",
+    "gateway/availableFields"
+  ],
   "supports": {
     "html": false,
     "interactivity": true,
@@ -31,6 +44,7 @@
     }
   },
   "editorScript": "file:./index.js",
+  "viewScript": "file:./view.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
   "textdomain": "gateway"
