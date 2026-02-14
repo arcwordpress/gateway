@@ -29,6 +29,6 @@ class App extends \Gateway\Block {
 	}
 
 	public function render( array $attributes, string $content, $block ): string {
-		return '<div ' . get_block_wrapper_attributes() . '><InnerBlocks /></div>';
+		return '<div ' . get_block_wrapper_attributes() . '><InnerBlocks allowedBlocks=\'["gateway/gty-app-footer","gateway/gty-app-header","gateway/gty-app-main"]\' /></div>';
 	}
 }
