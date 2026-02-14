@@ -6,8 +6,6 @@ import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-
 import { PanelBody, TextControl, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import './editor.css';
-import './style.css';
 
 /**
  * Internal dependencies
@@ -24,9 +22,7 @@ registerBlockType(metadata.name, {
 		const collectionSlug = context['gateway/collectionSlug'] || '';
 		const availableFields = context['gateway/availableFields'] || [];
 
-		const blockProps = useBlockProps({
-			className: 'gateway-data-loop',
-		});
+		const blockProps = useBlockProps();
 
 		// Determine how many preview iterations to show
 		const previewCount = Math.min(previewItems.length, 3);
@@ -162,9 +158,7 @@ registerBlockType(metadata.name, {
 
 		return (
 			<template {...templateAttributes}>
-				<div className="gateway-data-loop-item">
-					<InnerBlocks.Content />
-				</div>
+				<InnerBlocks.Content />
 			</template>
 		);
 	},

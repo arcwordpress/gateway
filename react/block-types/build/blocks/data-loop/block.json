@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "gateway/loop",
   "version": "0.1.0",
-  "title": "Loop",
+  "title": "Gateway Loop",
   "category": "gateway",
   "icon": "update",
   "description": "A loop block that iterates over data using wp-each directive with InnerBlocks support.",
