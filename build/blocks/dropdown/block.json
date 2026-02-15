@@ -5,5 +5,10 @@
   "title": "GTY Dropdown",
   "category": "common",
   "description": "A dropdown menu block",
+  "supports": {
+    "html": false,
+    "anchor": true,
+    "className": true
+  },
   "viewScriptModule": "file:./view.js"
 }
