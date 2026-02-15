@@ -158,7 +158,9 @@ registerBlockType(metadata.name, {
 
 		return (
 			<template {...templateAttributes}>
-				<InnerBlocks.Content />
+				<div className="gateway-data-loop-item">
+					<InnerBlocks.Content />
+				</div>
 			</template>
 		);
 	},
