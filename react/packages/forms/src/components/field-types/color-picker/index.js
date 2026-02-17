@@ -19,10 +19,15 @@ const ColorPickerControl = ({ config = {} }) => {
     label,
     required = false,
     swatches: customSwatches,
-    showSwatches = true,
+    showSwatches: showSwatchesRaw = true,
     default: defaultValue = '#000000',
     help = '',
   } = config;
+
+  // Coerce string "true"/"false" from Exta Builder to boolean
+  const showSwatches = typeof showSwatchesRaw === 'string'
+    ? showSwatchesRaw !== 'false' && showSwatchesRaw !== '0'
+    : Boolean(showSwatchesRaw);
 
   const currentValue = watch(name) || defaultValue;
   const [showPicker, setShowPicker] = useState(false);
@@ -36,7 +41,12 @@ const ColorPickerControl = ({ config = {} }) => {
     '#000000', '#FFFFFF', '#EF4444', '#F59E0B',
   ];
 
-  const swatches = customSwatches || defaultSwatches;
+  // Support comma-separated string (from Exta Builder)
+  const swatches = customSwatches
+    ? (typeof customSwatches === 'string'
+        ? customSwatches.split(',').map(s => s.trim()).filter(Boolean)
+        : customSwatches)
+    : defaultSwatches;
 
   return (
     <div className="color-picker-field">

@@ -6,7 +6,13 @@ import './style.css';
 // Button Group Control Component (for button rendering)
 const ButtonGroupControl = ({ config = {} }) => {
   const { register, watch, setValue } = useGatewayForm();
-  const { name, options = [] } = config;
+  const { name } = config;
+  let { options = [] } = config;
+
+  // Support comma-separated string (from Exta Builder)
+  if (typeof options === 'string') {
+    options = options.split(',').map(opt => opt.trim()).filter(Boolean);
+  }
 
   const currentValue = watch(name);
 
@@ -88,8 +94,11 @@ export const ButtonGroupFieldTypeDisplay = ({ value, config }) => {
     return <span className="button-group-field__display button-group-field__display--empty">-</span>;
   }
 
-  // Get options from config
-  const options = config?.options || [];
+  // Get options from config, support comma-separated string (from Exta Builder)
+  let options = config?.options || [];
+  if (typeof options === 'string') {
+    options = options.split(',').map(opt => opt.trim()).filter(Boolean);
+  }
 
   // Normalize options to {label, value} format
   const normalizedOptions = options.map(option => {

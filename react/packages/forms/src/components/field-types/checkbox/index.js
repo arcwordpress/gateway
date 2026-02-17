@@ -18,8 +18,13 @@ const CheckboxControl = ({ config = {}, error }) => {
     label,
     required = false,
     help = '',
-    default: defaultChecked = false
+    default: defaultRaw = false
   } = config;
+
+  // Coerce string "true"/"false" from Exta Builder to boolean
+  const defaultChecked = typeof defaultRaw === 'string'
+    ? defaultRaw === 'true' || defaultRaw === '1'
+    : Boolean(defaultRaw);
 
   return (
     <div className="checkbox-field">
