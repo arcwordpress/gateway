@@ -7,7 +7,7 @@ class RelationField extends \Gateway\Field {
     protected $type   = 'relation';
     protected $fields = [
         [
-            'name'        => 'endpoint',
+            'name'        => 'relation.endpoint',
             'label'       => 'API Endpoint',
             'type'        => 'text',
             'required'    => true,
@@ -15,7 +15,7 @@ class RelationField extends \Gateway\Field {
             'description' => 'The API endpoint to fetch related objects from',
         ],
         [
-            'name'        => 'labelField',
+            'name'        => 'relation.labelField',
             'label'       => 'Label Field',
             'type'        => 'text',
             'required'    => false,
@@ -24,7 +24,7 @@ class RelationField extends \Gateway\Field {
             'description' => 'Field name to use as the display label',
         ],
         [
-            'name'        => 'valueField',
+            'name'        => 'relation.valueField',
             'label'       => 'Value Field',
             'type'        => 'text',
             'required'    => false,
@@ -33,7 +33,7 @@ class RelationField extends \Gateway\Field {
             'description' => 'Field name to use as the stored value',
         ],
         [
-            'name'        => 'placeholder',
+            'name'        => 'relation.placeholder',
             'label'       => 'Dropdown Placeholder',
             'type'        => 'text',
             'required'    => false,

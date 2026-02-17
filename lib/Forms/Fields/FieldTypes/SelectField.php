@@ -9,10 +9,10 @@ class SelectField extends \Gateway\Field {
         [
             'name'        => 'options',
             'label'       => 'Options',
-            'type'        => 'text',
+            'type'        => 'array',
             'required'    => true,
-            'placeholder' => 'Option 1, Option 2, Option 3',
-            'description' => 'Comma-separated list of options',
+            'placeholder' => 'Option 1' . "\n" . 'Option 2' . "\n" . 'Option 3',
+            'description' => 'One option per line',
         ],
         [
             'name'        => 'placeholder',

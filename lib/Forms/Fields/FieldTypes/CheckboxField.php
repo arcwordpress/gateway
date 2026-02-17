@@ -9,10 +9,9 @@ class CheckboxField extends \Gateway\Field {
         [
             'name'        => 'default',
             'label'       => 'Checked by Default',
-            'type'        => 'text',
+            'type'        => 'boolean',
             'required'    => false,
-            'placeholder' => 'false',
-            'description' => 'Use "true" or "false"',
+            'default'     => false,
         ],
     ];
 

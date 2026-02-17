@@ -23,11 +23,12 @@ const RelationControl = ({ config = {} }) => {
     relation: relationConfig = {},
   } = config;
 
-  // Support both nested relation config (code-defined) and flat config (Exta Builder)
-  const endpoint = relationConfig.endpoint || config.endpoint;
-  const labelField = relationConfig.labelField || config.labelField || 'title';
-  const valueField = relationConfig.valueField || config.valueField || 'id';
-  const placeholder = relationConfig.placeholder || config.placeholder || 'Select an option...';
+  const {
+    endpoint,
+    labelField = 'title',
+    valueField = 'id',
+    placeholder = 'Select an option...',
+  } = relationConfig;
 
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(true);
