@@ -85,10 +85,9 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
               <FieldConfigInput
                 key={i}
                 fieldConfig={fieldConfig}
-                value={field.config?.[fieldConfig.name] || ''}
+                value={field[fieldConfig.name] || fieldConfig.default || ''}
                 onChange={(value) => {
-                  const config = field.config || {};
-                  onUpdate(index, 'config', { ...config, [fieldConfig.name]: value });
+                  onUpdate(index, fieldConfig.name, value);
                 }}
               />
             ))}
@@ -108,20 +107,24 @@ const FieldEditor = ({ field, index, onUpdate, onMove, onRemove, isFirst, isLast
   );
 };
 
-// Helper component to render individual field config inputs - simple text-based for now
+// Helper component to render individual field config inputs
 const FieldConfigInput = ({ fieldConfig, value, onChange }) => {
   return (
     <div>
       <label className="block text-xs font-medium !text-slate-400 mb-1">
         {fieldConfig.label || fieldConfig.name}
+        {fieldConfig.required && <span className="!text-red-400 ml-1">*</span>}
       </label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-3 py-2 text-sm bg-neutral-900 border border-slate-600 !text-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
-        placeholder={fieldConfig.name}
+        placeholder={fieldConfig.placeholder || fieldConfig.name}
       />
+      {fieldConfig.description && (
+        <p className="mt-1 text-xs !text-slate-500">{fieldConfig.description}</p>
+      )}
     </div>
   );
 };

@@ -17,7 +17,10 @@ const SelectControl = ({ config = {} }) => {
 
   let options = config.options || [];
 
-  if (!Array.isArray(options) && typeof options === 'object') {
+  // Support comma-separated string (from Exta Builder)
+  if (typeof options === 'string') {
+    options = options.split(',').map(opt => opt.trim()).filter(Boolean);
+  } else if (!Array.isArray(options) && typeof options === 'object') {
     options = Object.entries(options).map(([value, label]) => ({
       value,
       label
@@ -74,7 +77,10 @@ const SelectFieldTypeDisplay = ({ value, config }) => {
 
   let options = config?.options || [];
 
-  if (!Array.isArray(options) && typeof options === 'object') {
+  // Support comma-separated string (from Exta Builder)
+  if (typeof options === 'string') {
+    options = options.split(',').map(opt => opt.trim()).filter(Boolean);
+  } else if (!Array.isArray(options) && typeof options === 'object') {
     options = Object.entries(options).map(([val, label]) => ({
       value: val,
       label
