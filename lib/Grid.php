@@ -39,6 +39,15 @@ namespace Gateway;
 abstract class Grid
 {
     /**
+     * Unique identifier for this grid. When left empty it is inferred from the
+     * class name by stripping the "Grid" suffix and converting to snake_case
+     * (e.g. PortfolioGrid → portfolio).
+     *
+     * @var string
+     */
+    protected $key = '';
+
+    /**
      * Data Source.
      *
      * Typically a \Gateway\Collection instance or fully-qualified class name,
@@ -199,5 +208,49 @@ abstract class Grid
     public function getPerPage(): int
     {
         return $this->perPage;
+    }
+
+    // -------------------------------------------------------------------------
+    // Identity
+    // -------------------------------------------------------------------------
+
+    /**
+     * Get the unique key for this grid.
+     *
+     * Falls back to a snake_case derivation of the class name with any "Grid"
+     * suffix removed (e.g. PortfolioGrid → portfolio).
+     *
+     * @return string
+     */
+    public function getKey(): string
+    {
+        if ($this->key !== '') {
+            return $this->key;
+        }
+
+        $className = class_basename(static::class);
+        $className = preg_replace('/Grid$/', '', $className);
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
+    }
+
+    // -------------------------------------------------------------------------
+    // Registration
+    // -------------------------------------------------------------------------
+
+    /**
+     * Register this grid with the GridRegistry.
+     *
+     * Subclasses call this as a static method:
+     *
+     * ```php
+     * PortfolioGrid::register();
+     * ```
+     *
+     * @return static
+     */
+    public static function register()
+    {
+        $instance = new static();
+        return \Gateway\Plugin::getInstance()->getGridRegistry()->register($instance);
     }
 }

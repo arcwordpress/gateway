@@ -59,6 +59,7 @@ class Plugin
     private $migrationRunnerRoute;
     private $mazeRoutes;
     private $patternRegistry;
+    private $gridRegistry;
 
     public static function getInstance()
     {
@@ -71,10 +72,12 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
+        $this->gridRegistry = new Grids\GridRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
+        new Grids\GridRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
@@ -203,6 +206,11 @@ class Plugin
     public function getRegistry()
     {
         return $this->registry;
+    }
+
+    public function getGridRegistry()
+    {
+        return $this->gridRegistry;
     }
 
     public function getPackageRegistry()
