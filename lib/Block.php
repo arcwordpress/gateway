@@ -86,22 +86,54 @@ abstract class Block {
     }
     
     /**
-     * Check if the block template contains InnerBlocks
-     * Calls the actual render() method to check, so it works with
-     * both file-based templates and method-based templates.
+     * Check if the block template contains InnerBlocks.
+     *
+     * Uses static source-code inspection via reflection instead of calling
+     * render(), because render() typically calls get_block_wrapper_attributes()
+     * which invokes WP_Block_Supports::apply_block_supports(). That method
+     * tries to dereference $this->block_to_render['blockName'] — but
+     * block_to_render is null when we are outside a real render context
+     * (e.g. during enqueue_block_editor_assets), producing the PHP warning
+     * "Trying to access array offset on value of type null".
      */
     public static function hasInnerBlocks(): bool
     {
         try {
-            // Create a temporary instance and call render() to check if
-            // it returns content with <InnerBlocks> placeholder
-            $instance = new static();
-            $output = $instance->render([], '', null);
-            
-            // Check if output contains <InnerBlocks> in any form
-            return preg_match('/<InnerBlocks\b/i', $output) === 1;
+            $reflection = new \ReflectionMethod(static::class, 'render');
+            $file_path  = $reflection->getFileName();
+            $start_line = $reflection->getStartLine() - 1; // getStartLine() is 1-indexed
+            $end_line   = $reflection->getEndLine();
+
+            $all_lines = file($file_path);
+            if ($all_lines === false) {
+                return false;
+            }
+
+            $method_source = implode('', array_slice($all_lines, $start_line, $end_line - $start_line));
+
+            // Check for <InnerBlocks directly in the render method body.
+            if (preg_match('/<InnerBlocks\b/i', $method_source)) {
+                return true;
+            }
+
+            // Check for template files referenced via include/require
+            // (e.g. include __DIR__ . '/template.php')
+            if (preg_match_all('/(?:include|require)(?:_once)?\s*[^;]+[\'"]([^\'"]+\.php)[\'"]/i', $method_source, $matches)) {
+                $class_dir = dirname($file_path);
+                foreach ($matches[1] as $path_segment) {
+                    // Resolve relative to class directory (strip leading slash from concatenated path).
+                    $template_path = $class_dir . '/' . ltrim($path_segment, '/');
+                    if (file_exists($template_path)) {
+                        $template_content = file_get_contents($template_path);
+                        if ($template_content !== false && preg_match('/<InnerBlocks\b/i', $template_content)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         } catch (\Throwable $e) {
-            // If we can't instantiate or render, assume no inner blocks
             return false;
         }
     }
