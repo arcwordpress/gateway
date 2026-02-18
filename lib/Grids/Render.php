@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Grid;
+namespace Gateway\Grids;
 
 class Render
 {

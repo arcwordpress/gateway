@@ -118,7 +118,7 @@ class Plugin
         Forms\Shortcode::init();
 
         // Initialize front-end grids
-        Grid\Render::init();
+        Grids\Render::init();
 
         // Initialize front-end filters
         Filters\Render::init();
