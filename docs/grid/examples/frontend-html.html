@@ -1,0 +1,138 @@
+<!--
+  Gateway Grid Block — Frontend HTML reference
+
+  This is the HTML that save() produces (before block serialization
+  and after WordPress renders the post to the frontend).
+
+  The Interactivity API reads the data-wp-* attributes and hydrates
+  the element with the gateway/gateway-grid store from view.js.
+
+  Attribute glossary:
+    data-wp-interactive  — binds element to the named store namespace
+    data-wp-context      — JSON initial state for this block instance
+    data-wp-init         — callback invoked once when the page loads
+    data-wp-bind--hidden — sets/removes the [hidden] attribute from a named state getter
+    data-wp-text         — sets element.textContent from a named state getter
+    data-wp-on--change   — calls a store action on the 'change' DOM event
+    data-wp-each--record — iterates state.records; exposes current item as context.record
+    data-wp-each-key     — stable key for list reconciliation (like React's key prop)
+-->
+
+<div
+  class="gateway-grid wp-block-gateway-gateway-grid"
+  data-wp-interactive="gateway/gateway-grid"
+  data-wp-context='{"collectionSlug":"articles","data":[],"records":[],"statusFilter":"","loading":true,"error":null}'
+  data-wp-init="callbacks.init"
+>
+
+  <!--
+    Loading indicator
+    Visible while loading=true; hidden when loading=false.
+    state.isNotLoading = !loading, so [hidden] is set when we do NOT want it shown.
+  -->
+  <p class="gateway-grid__loading" data-wp-bind--hidden="state.isNotLoading">
+    Loading records…
+  </p>
+
+  <!--
+    Error message
+    Hidden when there is no error (state.hasNoError=true).
+    data-wp-text fills the content with the error string when shown.
+  -->
+  <p
+    class="gateway-grid__error"
+    data-wp-bind--hidden="state.hasNoError"
+    data-wp-text="state.error"
+  ></p>
+
+  <!--
+    Grid body — hidden while loading.
+    All interactive UI lives inside this wrapper.
+  -->
+  <div class="gateway-grid__body" data-wp-bind--hidden="state.loading">
+
+    <!-- Status filter -->
+    <div class="gateway-grid__filters">
+      <label class="gateway-grid__filter-label" for="gateway-grid-status">
+        Filter by Status:
+      </label>
+      <!--
+        NOTE: Option values are hardcoded.
+        TODO: Derive from collection field enum or unique data values.
+        The filterByStatus action works with any string value — only the
+        <option> list needs updating.
+      -->
+      <select
+        id="gateway-grid-status"
+        class="gateway-grid__filter-select"
+        data-wp-on--change="actions.filterByStatus"
+      >
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="pending">Pending</option>
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+    </div>
+
+    <!-- Record count (updated reactively as filter changes) -->
+    <p class="gateway-grid__count">
+      Showing
+      <span data-wp-text="state.filteredCount"></span>
+      of
+      <span data-wp-text="state.totalCount"></span>
+      records
+    </p>
+
+    <!-- Records grid -->
+    <div class="gateway-grid__records">
+
+      <!-- Header row (static) -->
+      <div class="gateway-grid__row gateway-grid__row--header">
+        <span class="gateway-grid__cell gateway-grid__cell--id">ID</span>
+        <span class="gateway-grid__cell gateway-grid__cell--title">Title</span>
+        <span class="gateway-grid__cell gateway-grid__cell--status">Status</span>
+      </div>
+
+      <!--
+        Record loop
+        data-wp-each--record iterates state.records (the filtered array).
+        Inside this template, context.record is the current iteration item.
+        data-wp-each-key tells the Interactivity API how to identify items
+        for efficient DOM updates when the list changes (like React's key).
+
+        TODO: Make rendered columns configurable once the block is decomposed
+        into child column blocks.
+      -->
+      <template
+        data-wp-each--record="state.records"
+        data-wp-each-key="context.record.id"
+      >
+        <div class="gateway-grid__row">
+          <span
+            class="gateway-grid__cell gateway-grid__cell--id"
+            data-wp-text="context.record.id"
+          ></span>
+          <span
+            class="gateway-grid__cell gateway-grid__cell--title"
+            data-wp-text="context.record.title"
+          ></span>
+          <span
+            class="gateway-grid__cell gateway-grid__cell--status"
+            data-wp-text="context.record.status"
+          ></span>
+        </div>
+      </template>
+
+      <!-- Empty state — shown when filter returns no results -->
+      <p
+        class="gateway-grid__empty"
+        data-wp-bind--hidden="state.hasRecords"
+      >
+        No records match the current filter.
+      </p>
+
+    </div><!-- /.gateway-grid__records -->
+  </div><!-- /.gateway-grid__body -->
+</div><!-- /.gateway-grid -->

@@ -1,65 +1,23 @@
 /**
- * Gateway Grid — Editor styles
+ * Gateway Grid — Editor-specific styles
+ *
+ * The editor canvas now uses the same gateway-grid__* classes as the
+ * frontend (from style.css), so this file only needs the editor-only
+ * additions.
  */
 
-.gateway-grid-editor {
-	border: 1px dashed #c3c4c7;
-	border-radius: 2px;
-	padding: 12px 16px;
-	background: #f6f7f7;
-}
-
-.gateway-grid-editor__header {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 8px;
-}
-
-.gateway-grid-editor__collection-badge {
+/**
+ * "Editor preview — live data" badge that appears at the bottom of the
+ * grid body in the editor canvas to distinguish it from the frontend.
+ */
+.gateway-grid-editor__badge {
 	display: inline-block;
+	margin-top: 10px;
+	padding: 2px 8px;
 	background: #1d2327;
 	color: #fff;
-	font-size: 11px;
+	font-size: 10px;
 	font-family: monospace;
-	padding: 2px 7px;
 	border-radius: 2px;
-}
-
-.gateway-grid-editor__notice {
-	color: #50575e;
-	font-size: 12px;
-	font-style: italic;
-}
-
-.gateway-grid-editor__preview {
-	margin-top: 8px;
-}
-
-.gateway-grid-editor__preview-note {
-	font-size: 11px;
-	color: #50575e;
-	margin: 0 0 6px;
-}
-
-.gateway-grid-editor__table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 12px;
-}
-
-.gateway-grid-editor__table th,
-.gateway-grid-editor__table td {
-	text-align: left;
-	padding: 4px 8px;
-	border: 1px solid #ddd;
-}
-
-.gateway-grid-editor__table th {
-	background: #e2e4e7;
-	font-weight: 600;
-}
-
-.gateway-grid-editor__table tr:nth-child(even) td {
-	background: #f9f9f9;
+	letter-spacing: 0.03em;
 }
