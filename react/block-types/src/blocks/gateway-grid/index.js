@@ -279,33 +279,7 @@ registerBlockType( metadata.name, {
 				data-wp-context={ context }
 				data-wp-init="callbacks.init"
 			>
-				{ /* Loading indicator */ }
-				<p
-					className="gateway-grid__loading"
-					data-wp-bind--hidden="state.isNotLoading"
-				>
-					{ __( 'Loading records…', 'gateway' ) }
-				</p>
-
-				{ /* Error message */ }
-				<p
-					className="gateway-grid__error"
-					data-wp-bind--hidden="state.hasNoError"
-					data-wp-text="state.error"
-				/>
-
-				{ /* Grid body — hidden while loading; child blocks render here */ }
-				<div
-					className="gateway-grid__body"
-					data-wp-bind--hidden="state.loading"
-				>
-					{ /*
-					 * All child blocks (filter-group, grid-summary, grid-records)
-					 * render here.  They inherit this element's gateway/gateway-grid
-					 * namespace so their data-wp-* directives resolve to this store.
-					 */ }
-					<InnerBlocks.Content />
-				</div>
+				<InnerBlocks.Content />
 			</div>
 		);
 	},
