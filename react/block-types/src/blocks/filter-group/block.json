@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/filter-group",
+  "title": "Filter Group",
+  "category": "gateway",
+  "icon": "filter",
+  "description": "Renders the status filter UI for a Gateway Grid block. Must be placed inside a Gateway Grid.",
+  "parent": ["gateway/gateway-grid"],
+  "attributes": {
+    "statusFilter": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "interactivity": true,
+    "inserter": true
+  },
+  "editorScript": "file:./index.js",
+  "viewScriptModule": "file:./view.js"
+}
