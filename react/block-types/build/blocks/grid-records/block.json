@@ -6,8 +6,12 @@
   "category": "gateway",
   "icon": "list-view",
   "description": "Renders the records table for a Gateway Grid block. Draft — column configuration is hardcoded (ID, Title, Status) pending a configurable column system.",
-  "parent": ["gateway/gateway-grid"],
-  "usesContext": ["gateway/totalCount"],
+  "parent": [
+    "gateway/gateway-grid"
+  ],
+  "usesContext": [
+    "gateway/totalCount"
+  ],
   "supports": {
     "html": false,
     "interactivity": true,

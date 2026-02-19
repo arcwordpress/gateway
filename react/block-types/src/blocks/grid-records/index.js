@@ -40,20 +40,9 @@ registerBlockType( metadata.name, {
 	 * store at runtime and cannot be previewed statically.
 	 */
 	edit: ( { context } ) => {
-		const isConfigured = context[ 'gateway/isConfigured' ] ?? false;
-		const total        = context[ 'gateway/totalCount' ]    ?? 0;
+		const total = context[ 'gateway/totalCount' ] ?? 0;
 
 		const blockProps = useBlockProps( { className: 'gateway-grid__records' } );
-
-		if ( ! isConfigured ) {
-			return (
-				<div { ...blockProps }>
-					<p className="gateway-grid__placeholder">
-						{ __( 'Records will appear here once a collection is configured.', 'gateway' ) }
-					</p>
-				</div>
-			);
-		}
 
 		return (
 			<div { ...blockProps }>

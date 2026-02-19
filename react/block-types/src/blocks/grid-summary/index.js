@@ -36,21 +36,12 @@ registerBlockType( metadata.name, {
 	 * Values update reactively as the Grid loads data.
 	 */
 	edit: ( { context } ) => {
-		const isConfigured = context[ 'gateway/isConfigured' ] ?? false;
-		const total        = context[ 'gateway/totalCount' ]    ?? 0;
-		const filtered     = context[ 'gateway/filteredCount' ] ?? 0;
+		const total    = context[ 'gateway/totalCount' ]    ?? 0;
+		const filtered = context[ 'gateway/filteredCount' ] ?? 0;
 
 		const blockProps = useBlockProps( {
 			className: 'gateway-grid__count',
 		} );
-
-		if ( ! isConfigured ) {
-			return (
-				<p { ...blockProps }>
-					{ __( 'Record count will appear here once a collection is configured.', 'gateway' ) }
-				</p>
-			);
-		}
 
 		return (
 			<p { ...blockProps }>
