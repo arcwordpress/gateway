@@ -7,23 +7,22 @@
  * Named with the "Gateway" prefix to avoid any conflict with the WordPress
  * core "core/grid" block that ships with the block editor.
  *
- * This is a monolithic block — all grid HTML lives in save() and all frontend
- * behaviour lives in view.js. The plan is to later decompose this into a tree
- * of smaller child blocks (filter, row, cell, pagination …) once the
- * Interactivity API integration is proven end-to-end.
+ * Block tree (in progress):
+ *   gateway/gateway-grid          ← this block
+ *     └─ gateway/filter-group     ← child InnerBlock (optional, default template)
  *
  * Editor preview mirrors view.js:
- *   The edit() function replicates the store's data/records split and the
- *   filterByStatus action using React state so the editor canvas shows the
- *   exact same interactive behaviour as the frontend — including a working
- *   status filter.  Changing the collection attribute triggers a full
- *   re-fetch, clearing the active filter, which mirrors callbacks.init.
+ *   data/records split is managed in React state.  The active filter value
+ *   is read from the child filter-group block's `statusFilter` attribute via
+ *   useSelect so that changing the filter in the editor's Filter Group updates
+ *   the record list here automatically.
  */
 
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	InspectorControls,
 	useBlockProps,
+	InnerBlocks,
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
@@ -33,33 +32,28 @@ import {
 	Button,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import './editor.css';
 import './style.css';
 import metadata from './block.json';
 
 // ---------------------------------------------------------------------------
-// Shared constants
+// Constants
 // ---------------------------------------------------------------------------
 
 /**
- * Status filter options — shared between editor <select> and save() HTML.
- *
- * NOTE: Hardcoded for now. Future iteration: derive from collection field
- * enum (collectionInfo.fields.status.options) or from unique values in the
- * loaded dataset via Array.from(new Set(data.map(r => r.status))).
- *
- * Option values must match the `status` strings returned by the API.
+ * Only the Filter Group block may be inserted as a child.
+ * Enforced via both allowedBlocks here and block.json `parent` on the child.
  */
-const STATUS_OPTIONS = [
-	{ label: __( 'All Statuses', 'gateway' ), value: '' },
-	{ label: __( 'Active', 'gateway' ), value: 'active' },
-	{ label: __( 'Inactive', 'gateway' ), value: 'inactive' },
-	{ label: __( 'Pending', 'gateway' ), value: 'pending' },
-	{ label: __( 'Draft', 'gateway' ), value: 'draft' },
-	{ label: __( 'Published', 'gateway' ), value: 'published' },
-];
+const ALLOWED_BLOCKS = [ 'gateway/filter-group' ];
+
+/**
+ * Default inner-block template: one Filter Group pre-inserted.
+ * Users can remove it if they don't need filtering.
+ */
+const INNER_BLOCKS_TEMPLATE = [ [ 'gateway/filter-group', {} ] ];
 
 // ---------------------------------------------------------------------------
 // Block registration
@@ -69,35 +63,56 @@ registerBlockType( metadata.name, {
 	/**
 	 * Editor component.
 	 *
-	 * Mirrors the view.js Interactivity API store so the editor canvas is a
-	 * live, interactive preview of the frontend output:
+	 * State / data mirrors view.js:
+	 *   data    (useState)  ↔ context.data    — full dataset, never mutated
+	 *   records (useMemo)   ↔ context.records — derived from data + filter
 	 *
-	 *   data    (useState) ↔ context.data    — full dataset, never mutated
-	 *   records (useState) ↔ context.records — filtered view, updated on filter
-	 *
-	 * Changing collectionSlug triggers a full re-fetch and resets the filter,
-	 * equivalent to the frontend running callbacks.init again.
+	 * Filter value comes from the child Filter Group block's `statusFilter`
+	 * attribute, read via useSelect.  Changing the collection resets both
+	 * the data and any filter the child has applied (via loadData).
 	 */
-	edit: ( { attributes, setAttributes } ) => {
+	edit: ( { attributes, setAttributes, clientId } ) => {
 		const { collectionSlug } = attributes;
 
-		// Available collections for the settings panel picker
+		// Collections list for the settings panel picker
 		const [ collections, setCollections ] = useState( [] );
 		const [ collectionsLoading, setCollectionsLoading ] = useState( true );
 		const [ collectionsError, setCollectionsError ] = useState( null );
 
-		// Mirror of view.js context.data / context.records / context.loading
+		// Full dataset — source of truth, never mutated by filters
 		const [ data, setData ] = useState( [] );
-		const [ records, setRecords ] = useState( [] );
 		const [ loading, setLoading ] = useState( false );
 		const [ error, setError ] = useState( null );
 
-		// Mirror of view.js context.statusFilter
-		const [ statusFilter, setStatusFilter ] = useState( '' );
-
 		const blockProps = useBlockProps( { className: 'gateway-grid' } );
 
-		// ── Load available collections (runs once on mount) ─────────────────
+		// ── Read active filter from the child Filter Group block ─────────────
+		//
+		// When the user changes the Filter Group's <select>, setAttributes is
+		// called on that child block.  useSelect picks up the attribute change
+		// and this component re-renders with the new filter value.
+
+		const childStatusFilter = useSelect(
+			( select ) => {
+				const innerBlocks = select( 'core/block-editor' ).getBlocks( clientId );
+				const filterGroup = innerBlocks.find(
+					( b ) => b.name === 'gateway/filter-group'
+				);
+				return filterGroup?.attributes?.statusFilter ?? '';
+			},
+			[ clientId ]
+		);
+
+		// ── Derive records from data + childStatusFilter ──────────────────────
+		//
+		// Mirrors the frontend: context.records = data filtered by statusFilter.
+
+		const records = useMemo( () => {
+			if ( ! childStatusFilter ) return data;
+			return data.filter( ( r ) => r.status === childStatusFilter );
+		}, [ data, childStatusFilter ] );
+
+		// ── Load available collections (runs once on mount) ──────────────────
 
 		useEffect( () => {
 			const load = async () => {
@@ -109,10 +124,7 @@ registerBlockType( metadata.name, {
 					} );
 					setCollections( response.data || response || [] );
 				} catch ( err ) {
-					console.error(
-						'[Gateway Grid Editor] Failed to load collections:',
-						err
-					);
+					console.error( '[Gateway Grid] Failed to load collections:', err );
 					setCollectionsError( err.message );
 				} finally {
 					setCollectionsLoading( false );
@@ -121,65 +133,42 @@ registerBlockType( metadata.name, {
 			load();
 		}, [] );
 
-		// ── Load records whenever collectionSlug changes ────────────────────
-		//
-		// This is the editor equivalent of callbacks.init in view.js.
-		// It resolves the collection REST endpoint then fetches all records,
-		// stores the full set in `data`, and initialises `records` to the same
-		// full set (no filter applied yet).  Changing the collection resets the
-		// statusFilter so the preview starts clean.
+		// ── Load records when collectionSlug changes — mirrors callbacks.init ─
 
 		const loadData = useCallback( async ( slug ) => {
 			if ( ! slug ) {
 				setData( [] );
-				setRecords( [] );
-				setStatusFilter( '' );
 				setError( null );
 				return;
 			}
 
 			setLoading( true );
 			setError( null );
-			setStatusFilter( '' ); // reset filter — mirrors callbacks.init behaviour
 
 			try {
-				// Step 1: resolve collection REST endpoint
 				const collectionInfo = await apiFetch( {
 					path: `/gateway/v1/collections/${ slug }`,
 				} );
 
 				if ( ! collectionInfo || collectionInfo.success === false ) {
-					throw new Error(
-						collectionInfo?.message || 'Collection not found'
-					);
+					throw new Error( collectionInfo?.message || 'Collection not found' );
 				}
 
 				const endpoint = collectionInfo.routes?.endpoint;
 				if ( ! endpoint ) {
-					throw new Error(
-						`No REST endpoint found for collection "${ slug }"`
-					);
+					throw new Error( `No REST endpoint found for "${ slug }"` );
 				}
 
-				// Step 2: fetch all records
 				const response = await apiFetch( {
 					path: endpoint.replace( /^.*\/wp-json/, '' ),
 				} );
 
-				const allData =
-					response.data?.items ?? response.items ?? response ?? [];
-
-				// Populate store mirrors — data = source of truth, records = view
+				const allData = response.data?.items ?? response.items ?? response ?? [];
 				setData( allData );
-				setRecords( allData );
 			} catch ( err ) {
-				console.error(
-					'[Gateway Grid Editor] Failed to load records:',
-					err
-				);
+				console.error( '[Gateway Grid] Failed to load records:', err );
 				setError( err.message );
 				setData( [] );
-				setRecords( [] );
 			} finally {
 				setLoading( false );
 			}
@@ -188,17 +177,6 @@ registerBlockType( metadata.name, {
 		useEffect( () => {
 			loadData( collectionSlug );
 		}, [ collectionSlug, loadData ] );
-
-		// ── Filter handler — mirrors actions.filterByStatus in view.js ──────
-
-		const handleStatusFilter = ( value ) => {
-			setStatusFilter( value );
-			if ( ! value ) {
-				setRecords( [ ...data ] );
-			} else {
-				setRecords( data.filter( ( r ) => r.status === value ) );
-			}
-		};
 
 		// ── Build collection picker options ──────────────────────────────────
 
@@ -235,13 +213,12 @@ registerBlockType( metadata.name, {
 									setAttributes( { collectionSlug: value } )
 								}
 								help={ __(
-									'Changing the collection resets the filter and re-loads all records.',
+									'Changing the collection resets the filter and reloads all records.',
 									'gateway'
 								) }
 							/>
 						) }
 
-						{ /* Manual refresh in case data changes while editing */ }
 						{ collectionSlug && ! collectionsLoading && (
 							<Button
 								variant="secondary"
@@ -258,17 +235,15 @@ registerBlockType( metadata.name, {
 					</PanelBody>
 				</InspectorControls>
 
-				{ /* ── Editor canvas — mirrors the frontend grid layout ────── */ }
+				{ /* ── Editor canvas ────────────────────────────────────────── */ }
 				<div { ...blockProps }>
 
-					{ /* No collection selected */ }
 					{ ! collectionSlug && (
 						<p className="gateway-grid__loading">
 							{ __( '← Select a collection in the block settings panel.', 'gateway' ) }
 						</p>
 					) }
 
-					{ /* Loading */ }
 					{ collectionSlug && loading && (
 						<p className="gateway-grid__loading">
 							<Spinner />{ ' ' }
@@ -276,47 +251,27 @@ registerBlockType( metadata.name, {
 						</p>
 					) }
 
-					{ /* Error */ }
-					{ error && (
-						<p className="gateway-grid__error">{ error }</p>
-					) }
+					{ error && <p className="gateway-grid__error">{ error }</p> }
 
-					{ /* Grid body — same markup/classes as save() / frontend */ }
 					{ collectionSlug && ! loading && ! error && (
 						<div className="gateway-grid__body">
-							{ /* Status filter — live in editor */ }
-							<div className="gateway-grid__filters">
-								<label
-									className="gateway-grid__filter-label"
-									htmlFor="gateway-grid-editor-status"
-								>
-									{ __( 'Filter by Status:', 'gateway' ) }
-								</label>
-								{ /*
-								 * NOTE: Status options are hardcoded (STATUS_OPTIONS).
-								 * TODO: Load dynamically from collection field enum or
-								 * derive from unique values in `data`.
-								 */ }
-								<select
-									id="gateway-grid-editor-status"
-									className="gateway-grid__filter-select"
-									value={ statusFilter }
-									onChange={ ( e ) =>
-										handleStatusFilter( e.target.value )
-									}
-								>
-									{ STATUS_OPTIONS.map( ( opt ) => (
-										<option
-											key={ opt.value }
-											value={ opt.value }
-										>
-											{ opt.label }
-										</option>
-									) ) }
-								</select>
-							</div>
 
-							{ /* Record count */ }
+							{ /* ── Filter Group InnerBlocks ──────────────────── */ }
+							{ /*
+							 * Renders the gateway/filter-group child block(s).
+							 * The Filter Group's edit() renders its own <select>;
+							 * changing it updates its `statusFilter` attribute,
+							 * which useSelect reads above to re-derive `records`.
+							 *
+							 * ALLOWED_BLOCKS restricts insertion to filter-group only.
+							 * INNER_BLOCKS_TEMPLATE pre-populates with one filter-group.
+							 */ }
+							<InnerBlocks
+								allowedBlocks={ ALLOWED_BLOCKS }
+								template={ INNER_BLOCKS_TEMPLATE }
+							/>
+
+							{ /* ── Record count ────────────────────────────── */ }
 							<p className="gateway-grid__count">
 								{ __( 'Showing', 'gateway' ) }{ ' ' }
 								{ records.length }{ ' ' }
@@ -325,7 +280,7 @@ registerBlockType( metadata.name, {
 								{ __( 'records', 'gateway' ) }
 							</p>
 
-							{ /* Records grid */ }
+							{ /* ── Records grid ───────────────────────────── */ }
 							<div className="gateway-grid__records">
 								<div className="gateway-grid__row gateway-grid__row--header">
 									<span className="gateway-grid__cell gateway-grid__cell--id">
@@ -363,7 +318,6 @@ registerBlockType( metadata.name, {
 								) }
 							</div>
 
-							{ /* Editor-only badge so it's clear this is a live preview */ }
 							<div className="gateway-grid-editor__badge">
 								{ __( 'Editor preview — live data', 'gateway' ) }
 							</div>
@@ -375,15 +329,26 @@ registerBlockType( metadata.name, {
 	},
 
 	/**
-	 * Save function — outputs the static HTML that the Interactivity API
-	 * hydrates on the frontend.
+	 * Save function — outputs the static HTML hydrated by the Interactivity API.
 	 *
-	 * All dynamic rendering (loading state, filtering, looping) is handled
-	 * by data-wp-* directives interpreted by the gateway/gateway-grid store
-	 * defined in view.js.
+	 * Structure:
+	 *   <div data-wp-interactive="gateway/gateway-grid" …>
+	 *     <p.loading />
+	 *     <p.error />
+	 *     <div.gateway-grid__body>          ← hidden while loading
+	 *       <InnerBlocks.Content />         ← filter-group renders here
+	 *       <p.count />
+	 *       <div.records>
+	 *         <template data-wp-each--record="state.records" />
+	 *         <p.empty />
+	 *       </div>
+	 *     </div>
+	 *   </div>
 	 *
-	 * The initial context sets loading:true so the loading indicator is
-	 * shown before JS executes, preventing a flash of empty content.
+	 * The Filter Group's saved HTML has no data-wp-interactive of its own, so
+	 * it inherits this element's gateway/gateway-grid namespace.  The select's
+	 * data-wp-on--change="actions.filterByStatus" therefore resolves to the
+	 * Grid store's filterByStatus action automatically.
 	 */
 	save: ( { attributes } ) => {
 		const { collectionSlug } = attributes;
@@ -392,15 +357,6 @@ registerBlockType( metadata.name, {
 			className: 'gateway-grid',
 		} );
 
-		/**
-		 * Initial Interactivity API context.
-		 *
-		 * data         — populated by callbacks.init on the frontend
-		 * records      — populated by callbacks.init (starts = data)
-		 * statusFilter — tracks the active filter value
-		 * loading      — starts true to show loading indicator immediately
-		 * error        — null until a fetch failure
-		 */
 		const context = JSON.stringify( {
 			collectionSlug,
 			data: [],
@@ -417,12 +373,7 @@ registerBlockType( metadata.name, {
 				data-wp-context={ context }
 				data-wp-init="callbacks.init"
 			>
-				{ /* ── Loading indicator ──────────────────────────────────── */ }
-				{ /*
-				 * Shown while loading === true; hidden once init completes.
-				 * state.isNotLoading = !loading so [hidden] is set when we do
-				 * NOT want the spinner visible.
-				 */ }
+				{ /* Loading indicator */ }
 				<p
 					className="gateway-grid__loading"
 					data-wp-bind--hidden="state.isNotLoading"
@@ -430,50 +381,23 @@ registerBlockType( metadata.name, {
 					{ __( 'Loading records…', 'gateway' ) }
 				</p>
 
-				{ /* ── Error message ──────────────────────────────────────── */ }
-				{ /*
-				 * state.hasNoError = !error; element carries [hidden] when
-				 * there is no error.  data-wp-text fills it on failure.
-				 */ }
+				{ /* Error message */ }
 				<p
 					className="gateway-grid__error"
 					data-wp-bind--hidden="state.hasNoError"
 					data-wp-text="state.error"
 				/>
 
-				{ /* ── Main grid body — hidden while loading ───────────────── */ }
+				{ /* Grid body — hidden while loading */ }
 				<div
 					className="gateway-grid__body"
 					data-wp-bind--hidden="state.loading"
 				>
-					{ /* Status filter
-					 *
-					 * NOTE: Option values are hardcoded (see STATUS_OPTIONS).
-					 * TODO: Replace with dynamic list from collection field enum
-					 * or Array.from(new Set(data.map(r => r.status))) computed
-					 * in callbacks.init.  No store changes needed — the
-					 * filterByStatus action is already generic.
+					{ /* Filter Group child block(s) render here.
+					 * They inherit this element's gateway/gateway-grid namespace
+					 * so their data-wp-on--change directives resolve to this store.
 					 */ }
-					<div className="gateway-grid__filters">
-						<label
-							className="gateway-grid__filter-label"
-							htmlFor="gateway-grid-status"
-						>
-							{ __( 'Filter by Status:', 'gateway' ) }
-						</label>
-						<select
-							id="gateway-grid-status"
-							className="gateway-grid__filter-select"
-							data-wp-on--change="actions.filterByStatus"
-						>
-							<option value="">{ __( 'All Statuses', 'gateway' ) }</option>
-							<option value="active">{ __( 'Active', 'gateway' ) }</option>
-							<option value="inactive">{ __( 'Inactive', 'gateway' ) }</option>
-							<option value="pending">{ __( 'Pending', 'gateway' ) }</option>
-							<option value="draft">{ __( 'Draft', 'gateway' ) }</option>
-							<option value="published">{ __( 'Published', 'gateway' ) }</option>
-						</select>
-					</div>
+					<InnerBlocks.Content />
 
 					{ /* Record count */ }
 					<p className="gateway-grid__count">
@@ -484,15 +408,7 @@ registerBlockType( metadata.name, {
 						{ ' ' }{ __( 'records', 'gateway' ) }
 					</p>
 
-					{ /* ── Records ──────────────────────────────────────────── */ }
-					{ /*
-					 * data-wp-each--record iterates state.records (filtered).
-					 * Each iteration exposes the current item as context.record.
-					 * data-wp-each-key provides stable identity for DOM updates.
-					 *
-					 * Fields: id, title, status (assumed present on every record).
-					 * TODO: Make columns configurable once the block is decomposed.
-					 */ }
+					{ /* Records */ }
 					<div className="gateway-grid__records">
 						<div className="gateway-grid__row gateway-grid__row--header">
 							<span className="gateway-grid__cell gateway-grid__cell--id">
@@ -526,7 +442,6 @@ registerBlockType( metadata.name, {
 							</div>
 						</template>
 
-						{ /* Empty state */ }
 						<p
 							className="gateway-grid__empty"
 							data-wp-bind--hidden="state.hasRecords"

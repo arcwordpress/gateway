@@ -12,6 +12,7 @@
       "default": ""
     }
   },
+  "allowedBlocks": ["gateway/filter-group"],
   "supports": {
     "html": false,
     "interactivity": true,
