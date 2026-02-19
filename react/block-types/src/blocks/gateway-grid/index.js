@@ -39,7 +39,6 @@ import {
 	PanelBody,
 	SelectControl,
 	Spinner,
-	Notice,
 	Button,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -240,44 +239,10 @@ registerBlockType( metadata.name, {
 
 				{ /* ── Editor canvas ────────────────────────────────────────── */ }
 				<div { ...blockProps }>
-
-					{ /* Status messages — shown above the block body */ }
-					{ ! collectionSlug && (
-						<p className="gateway-grid__loading">
-							{ __( '← Select a collection in the block settings panel.', 'gateway' ) }
-						</p>
-					) }
-
-					{ collectionSlug && loading && (
-						<p className="gateway-grid__loading">
-							<Spinner />{ ' ' }
-							{ __( 'Loading records…', 'gateway' ) }
-						</p>
-					) }
-
-					{ error && (
-						<p className="gateway-grid__error">{ error }</p>
-					) }
-
-					{ /* ── Inner blocks ─────────────────────────────────────── */ }
-					{ /*
-					 * Always rendered so child blocks are accessible regardless
-					 * of whether a collection has been configured yet.
-					 * Each child reads gateway/isConfigured from context and
-					 * renders an appropriate placeholder when the grid is not set up.
-					 */ }
-					<div className="gateway-grid__body">
-						<InnerBlocks
-							allowedBlocks={ ALLOWED_BLOCKS }
-							template={ INNER_BLOCKS_TEMPLATE }
-						/>
-					</div>
-
-					{ collectionSlug && ! loading && ! error && (
-						<div className="gateway-grid-editor__badge">
-							{ __( 'Editor preview — live data', 'gateway' ) }
-						</div>
-					) }
+					<InnerBlocks
+						allowedBlocks={ ALLOWED_BLOCKS }
+						template={ INNER_BLOCKS_TEMPLATE }
+					/>
 				</div>
 			</>
 		);
