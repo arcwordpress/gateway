@@ -18,15 +18,21 @@
     "previewFilteredCount": {
       "type": "integer",
       "default": 0
+    },
+    "previewIsConfigured": {
+      "type": "boolean",
+      "default": false
     }
   },
   "providesContext": {
     "gateway/totalCount": "previewTotalCount",
-    "gateway/filteredCount": "previewFilteredCount"
+    "gateway/filteredCount": "previewFilteredCount",
+    "gateway/isConfigured": "previewIsConfigured"
   },
   "allowedBlocks": [
     "gateway/filter-group",
-    "gateway/grid-summary"
+    "gateway/grid-summary",
+    "gateway/grid-records"
   ],
   "supports": {
     "html": false,

@@ -11,7 +11,8 @@
   ],
   "usesContext": [
     "gateway/totalCount",
-    "gateway/filteredCount"
+    "gateway/filteredCount",
+    "gateway/isConfigured"
   ],
   "supports": {
     "html": false,
