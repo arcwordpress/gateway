@@ -10,10 +10,23 @@
     "collectionSlug": {
       "type": "string",
       "default": ""
+    },
+    "previewTotalCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "previewFilteredCount": {
+      "type": "integer",
+      "default": 0
     }
   },
+  "providesContext": {
+    "gateway/totalCount": "previewTotalCount",
+    "gateway/filteredCount": "previewFilteredCount"
+  },
   "allowedBlocks": [
-    "gateway/filter-group"
+    "gateway/filter-group",
+    "gateway/grid-summary"
   ],
   "supports": {
     "html": false,

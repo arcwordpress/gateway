@@ -10,9 +10,21 @@
     "collectionSlug": {
       "type": "string",
       "default": ""
+    },
+    "previewTotalCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "previewFilteredCount": {
+      "type": "integer",
+      "default": 0
     }
   },
-  "allowedBlocks": ["gateway/filter-group"],
+  "providesContext": {
+    "gateway/totalCount":    "previewTotalCount",
+    "gateway/filteredCount": "previewFilteredCount"
+  },
+  "allowedBlocks": ["gateway/filter-group", "gateway/grid-summary"],
   "supports": {
     "html": false,
     "interactivity": true,
