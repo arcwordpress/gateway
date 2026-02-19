@@ -9,7 +9,8 @@
  *
  * Block tree (in progress):
  *   gateway/gateway-grid          ← this block
- *     └─ gateway/filter-group     ← child InnerBlock (optional, default template)
+ *     ├─ gateway/filter-group     ← status filter (default template)
+ *     └─ gateway/grid-summary     ← filtered/total count (default template)
  *
  * Editor preview mirrors view.js:
  *   data/records split is managed in React state.  The active filter value
@@ -44,16 +45,19 @@ import metadata from './block.json';
 // ---------------------------------------------------------------------------
 
 /**
- * Only the Filter Group block may be inserted as a child.
- * Enforced via both allowedBlocks here and block.json `parent` on the child.
+ * Blocks permitted as direct children.
+ * Enforced here and via block.json `parent` on each child block.
  */
-const ALLOWED_BLOCKS = [ 'gateway/filter-group' ];
+const ALLOWED_BLOCKS = [ 'gateway/filter-group', 'gateway/grid-summary' ];
 
 /**
- * Default inner-block template: one Filter Group pre-inserted.
- * Users can remove it if they don't need filtering.
+ * Default inner-block template — pre-populates filter then summary.
+ * Users may remove either if they don't need it.
  */
-const INNER_BLOCKS_TEMPLATE = [ [ 'gateway/filter-group', {} ] ];
+const INNER_BLOCKS_TEMPLATE = [
+	[ 'gateway/filter-group', {} ],
+	[ 'gateway/grid-summary', {} ],
+];
 
 // ---------------------------------------------------------------------------
 // Block registration
@@ -111,6 +115,21 @@ registerBlockType( metadata.name, {
 			if ( ! childStatusFilter ) return data;
 			return data.filter( ( r ) => r.status === childStatusFilter );
 		}, [ data, childStatusFilter ] );
+
+		// ── Push live counts into block attributes for providesContext ───────
+		//
+		// block.json maps previewTotalCount → gateway/totalCount and
+		// previewFilteredCount → gateway/filteredCount via providesContext.
+		// The Grid-Summary child block consumes these via usesContext so it
+		// can render a live count in the editor.  We keep the attributes in
+		// sync here whenever the dataset or the derived records change.
+
+		useEffect( () => {
+			setAttributes( {
+				previewTotalCount:    data.length,
+				previewFilteredCount: records.length,
+			} );
+		}, [ data.length, records.length ] );
 
 		// ── Load available collections (runs once on mount) ──────────────────
 
@@ -271,15 +290,6 @@ registerBlockType( metadata.name, {
 								template={ INNER_BLOCKS_TEMPLATE }
 							/>
 
-							{ /* ── Record count ────────────────────────────── */ }
-							<p className="gateway-grid__count">
-								{ __( 'Showing', 'gateway' ) }{ ' ' }
-								{ records.length }{ ' ' }
-								{ __( 'of', 'gateway' ) }{ ' ' }
-								{ data.length }{ ' ' }
-								{ __( 'records', 'gateway' ) }
-							</p>
-
 							{ /* ── Records grid ───────────────────────────── */ }
 							<div className="gateway-grid__records">
 								<div className="gateway-grid__row gateway-grid__row--header">
@@ -398,15 +408,6 @@ registerBlockType( metadata.name, {
 					 * so their data-wp-on--change directives resolve to this store.
 					 */ }
 					<InnerBlocks.Content />
-
-					{ /* Record count */ }
-					<p className="gateway-grid__count">
-						{ __( 'Showing', 'gateway' ) }{ ' ' }
-						<span data-wp-text="state.filteredCount"></span>
-						{ ' ' }{ __( 'of', 'gateway' ) }{ ' ' }
-						<span data-wp-text="state.totalCount"></span>
-						{ ' ' }{ __( 'records', 'gateway' ) }
-					</p>
 
 					{ /* Records */ }
 					<div className="gateway-grid__records">
