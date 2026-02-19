@@ -279,7 +279,25 @@ registerBlockType( metadata.name, {
 				data-wp-context={ context }
 				data-wp-init="callbacks.init"
 			>
-				<InnerBlocks.Content />
+				<p
+					className="gateway-grid__loading"
+					data-wp-bind--hidden="state.isNotLoading"
+				>
+					{ __( 'Loading records…', 'gateway' ) }
+				</p>
+
+				<p
+					className="gateway-grid__error"
+					data-wp-bind--hidden="state.hasNoError"
+					data-wp-text="state.error"
+				/>
+
+				<div
+					className="gateway-grid__body"
+					data-wp-bind--hidden="state.loading"
+				>
+					<InnerBlocks.Content />
+				</div>
 			</div>
 		);
 	},
