@@ -1,0 +1,116 @@
+/**
+ * Gateway Grid — Frontend styles
+ *
+ * Built as a simple flex-based grid. When this block is later decomposed into
+ * child blocks, these styles will move into the individual child blocks.
+ */
+
+.gateway-grid {
+	font-family: inherit;
+	font-size: 14px;
+}
+
+/* ── Loading / error states ──────────────────────────────────────────────── */
+
+.gateway-grid__loading {
+	color: #50575e;
+	font-style: italic;
+}
+
+.gateway-grid__error {
+	color: #cc1818;
+	font-weight: 500;
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+
+.gateway-grid__filters {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.gateway-grid__filter-label {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.gateway-grid__filter-select {
+	padding: 4px 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+/* ── Record count ────────────────────────────────────────────────────────── */
+
+.gateway-grid__count {
+	font-size: 12px;
+	color: #50575e;
+	margin: 0 0 8px;
+}
+
+/* ── Records grid ────────────────────────────────────────────────────────── */
+
+.gateway-grid__records {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.gateway-grid__row {
+	display: grid;
+	/* Three fixed columns: id | title | status
+	 * TODO: Make column widths configurable when decomposing into child blocks. */
+	grid-template-columns: 80px 1fr 120px;
+	border-bottom: 1px solid #ececec;
+}
+
+.gateway-grid__row:last-child {
+	border-bottom: none;
+}
+
+.gateway-grid__row--header {
+	background: #f6f7f7;
+	font-weight: 700;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #50575e;
+}
+
+.gateway-grid__cell {
+	padding: 8px 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gateway-grid__cell--id {
+	color: #50575e;
+	font-family: monospace;
+	font-size: 12px;
+}
+
+/* Status badge colouring — optional visual affordance.
+ * TODO: Drive colours from field definitions once statuses are dynamic. */
+.gateway-grid__cell--status {
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.gateway-grid__empty {
+	padding: 16px;
+	text-align: center;
+	color: #50575e;
+	font-style: italic;
+	margin: 0;
+}
+
+/* Alternate row shading */
+.gateway-grid__row:not(.gateway-grid__row--header):nth-child(even) {
+	background: #f9f9f9;
+}

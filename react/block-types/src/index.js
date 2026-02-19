@@ -1,4 +1,5 @@
 // Import all block entry points to ensure they are built by wp-scripts
+import('./blocks/gateway-grid/index.js');
 import('./blocks/bound-string/index.js');
 import('./blocks/checkbox-filter/index.js');
 import('./blocks/click-control/index.js');
