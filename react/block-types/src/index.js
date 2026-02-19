@@ -2,6 +2,7 @@
 import('./blocks/gateway-grid/index.js');
 import('./blocks/filter-group/index.js');
 import('./blocks/grid-summary/index.js');
+import('./blocks/grid-records/index.js');
 import('./blocks/bound-string/index.js');
 import('./blocks/checkbox-filter/index.js');
 import('./blocks/click-control/index.js');
