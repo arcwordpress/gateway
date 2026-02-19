@@ -9,10 +9,9 @@
  * Gateway Grid block.
  *
  * Editor:
- *   Reads gateway/totalCount and gateway/filteredCount from block context,
- *   which the parent Grid provides via providesContext (kept in sync with its
- *   React state via a useEffect).  The count is therefore live in the editor:
- *   it updates whenever the collection loads or the filter changes.
+ *   Reads gateway/totalCount, gateway/filteredCount, and gateway/isConfigured
+ *   from the parent Grid's context.  Shows a placeholder when the parent has
+ *   not yet loaded a collection; otherwise displays the live count.
  *
  * Frontend:
  *   No data-wp-interactive is set — this element sits inside the Grid's
@@ -32,17 +31,26 @@ registerBlockType( metadata.name, {
 	/**
 	 * Editor component.
 	 *
-	 * The `context` prop carries gateway/totalCount and gateway/filteredCount
-	 * pushed down from the parent Grid block via providesContext.  Both values
-	 * update reactively as the Grid loads data and the filter changes.
+	 * The `context` prop carries gateway/totalCount, gateway/filteredCount, and
+	 * gateway/isConfigured pushed down from the parent Grid via providesContext.
+	 * Values update reactively as the Grid loads data.
 	 */
 	edit: ( { context } ) => {
-		const total    = context[ 'gateway/totalCount' ]    ?? 0;
-		const filtered = context[ 'gateway/filteredCount' ] ?? 0;
+		const isConfigured = context[ 'gateway/isConfigured' ] ?? false;
+		const total        = context[ 'gateway/totalCount' ]    ?? 0;
+		const filtered     = context[ 'gateway/filteredCount' ] ?? 0;
 
 		const blockProps = useBlockProps( {
 			className: 'gateway-grid__count',
 		} );
+
+		if ( ! isConfigured ) {
+			return (
+				<p { ...blockProps }>
+					{ __( 'Record count will appear here once a collection is configured.', 'gateway' ) }
+				</p>
+			);
+		}
 
 		return (
 			<p { ...blockProps }>

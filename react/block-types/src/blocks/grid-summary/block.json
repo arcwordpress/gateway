@@ -7,7 +7,7 @@
   "icon": "info",
   "description": "Displays the filtered / total record count for a Gateway Grid. Must be placed inside a Gateway Grid.",
   "parent": ["gateway/gateway-grid"],
-  "usesContext": ["gateway/totalCount", "gateway/filteredCount"],
+  "usesContext": ["gateway/totalCount", "gateway/filteredCount", "gateway/isConfigured"],
   "supports": {
     "html": false,
     "interactivity": true
