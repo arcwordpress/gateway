@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/grid-headings",
+  "title": "Grid Headings",
+  "category": "gateway",
+  "icon": "heading",
+  "description": "Container block for the header row of a Gateway Grid. Add Grid Heading blocks inside to define each column header cell.",
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "textdomain": "gateway"
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/grid-heading",
+  "title": "Grid Heading",
+  "category": "gateway",
+  "icon": "editor-bold",
+  "description": "A single column header cell inside a Grid Headings block. Set the label to display as the column header text.",
+  "parent": ["gateway/grid-headings"],
+  "attributes": {
+    "label": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "textdomain": "gateway"
+}
