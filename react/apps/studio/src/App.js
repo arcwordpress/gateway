@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
+import CollectionRecordView from './pages/CollectionRecordView';
 import AppHeader from './components/AppHeader';
 
 function AppContent() {
@@ -20,6 +21,7 @@ function AppContent() {
           <Route path="/collection/:collectionKey" element={<Dashboard />} />
           <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
           <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
+          <Route path="/collection/:collectionKey/view/:id" element={<CollectionRecordView />} />
         </Routes>
       </main>
     </div>
