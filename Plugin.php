@@ -183,7 +183,11 @@ class Plugin
      */
     public static function getDisabledCollections()
     {
-        return get_option('gateway_disabled_collections', []);
+        $defaultDisabled = array_values(array_diff(
+            array_keys(self::getCoreCollections()),
+            ['wp_post', 'wp_user']
+        ));
+        return get_option('gateway_disabled_collections', $defaultDisabled);
     }
 
     public function registerCollections()
