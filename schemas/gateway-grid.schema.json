@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./gateway-grid.schema.json",
+  "title": "GatewayGrid",
+  "description": "Describes a Gateway Grid definition: how a Collection's records are presented in a tabular view — which columns are shown, how records are filtered, how they are sorted by default, and how many appear per page. This schema covers both the PHP Grid subclass configuration and the shape returned by the /wp-json/gateway/v1/grids REST endpoint.",
+
+  "$defs": {
+
+    "gridKey": {
+      "description": "A snake_case identifier that uniquely names a Gateway Grid within the GridRegistry. Must begin with a lowercase letter followed by lowercase letters, digits, or underscores. Inferred from the PHP class name when not set explicitly — e.g. PortfolioGrid becomes 'portfolio'.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+
+    "collectionRef": {
+      "description": "The key of the registered Gateway Collection backing this grid, or null when the grid uses a custom query object as its data source rather than a Collection instance.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        { "type": "null" }
+      ]
+    }
+
+  },
+
+  "type": "object",
+  "required": ["key"],
+  "properties": {
+
+    "key": {
+      "$ref": "#/$defs/gridKey",
+      "description": "Unique identifier for this grid within the GridRegistry."
+    },
+
+    "class": {
+      "description": "Fully-qualified PHP class name of the Grid subclass (e.g. 'Gateway\\\\Collections\\\\TicketGrid'). Present in REST API responses. Not required when authoring grid definitions.",
+      "type": "string",
+      "minLength": 1
+    },
+
+    "collection": {
+      "$ref": "#/$defs/collectionRef"
+    },
+
+    "columns": {
+      "description": "Ordered list of columns to display. Each entry is a column-definition object binding a data field key to a header label. Controls both column visibility and display order. The evolved object form supersedes bare string field keys in the legacy PHP $columns array.",
+      "type": "array",
+      "items": { "$ref": "./column-definition.schema.json" },
+      "uniqueItems": true
+    },
+
+    "facetFilters": {
+      "description": "Ordered list of facet filter controls exposed to the user. Each entry is a polymorphic filter object discriminated by its 'type' property. An empty array means no filter UI is rendered.",
+      "type": "array",
+      "items": { "$ref": "./facet-filter.schema.json" },
+      "default": []
+    },
+
+    "defaultSort": {
+      "$ref": "./sort-config.schema.json",
+      "description": "Sort applied when no explicit sort is requested by the consumer. Omit to leave sort order to the data source's natural ordering (typically insertion order)."
+    },
+
+    "perPage": {
+      "description": "Number of records to show per page. The PHP Grid class defaults to 20. The live REST API enforces a separate per-request cap independent of this value.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 20
+    }
+
+  },
+
+  "additionalProperties": false,
+
+  "examples": [
+    {
+      "key": "ticket",
+      "class": "Gateway\\Collections\\TicketGrid",
+      "collection": "ticket",
+      "columns": [
+        { "key": "id",          "label": "ID",          "sortable": true  },
+        { "key": "title",       "label": "Title",        "sortable": true  },
+        { "key": "status",      "label": "Status",       "sortable": false },
+        { "key": "priority",    "label": "Priority",     "sortable": true  },
+        { "key": "assigned_to", "label": "Assigned To",  "sortable": false },
+        { "key": "created_at",  "label": "Created",      "sortable": true  }
+      ],
+      "facetFilters": [
+        {
+          "type": "select",
+          "field": "status",
+          "label": "Status",
+          "placeholder": "All Statuses",
+          "choices": [
+            { "value": "active",   "label": "Active"   },
+            { "value": "inactive", "label": "Inactive" },
+            { "value": "pending",  "label": "Pending"  }
+          ]
+        },
+        {
+          "type": "text",
+          "field": "title",
+          "label": "Search",
+          "placeholder": "Search tickets…",
+          "debounce": 300
+        },
+        {
+          "type": "checkbox",
+          "field": "priority",
+          "label": "Priority",
+          "choices": [
+            { "value": "low",    "label": "Low"    },
+            { "value": "medium", "label": "Medium" },
+            { "value": "high",   "label": "High"   }
+          ]
+        }
+      ],
+      "defaultSort": { "field": "created_at", "direction": "desc" },
+      "perPage": 25
+    }
+  ]
+}

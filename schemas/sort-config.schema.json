@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./sort-config.schema.json",
+  "title": "SortConfig",
+  "description": "Default sort applied to a Gateway Grid when no explicit sort is requested by the consumer.",
+  "type": "object",
+  "required": ["field", "direction"],
+  "properties": {
+    "field": {
+      "description": "The field key to sort by. Must match a field key returned by the grid's collection.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_.]*$"
+    },
+    "direction": {
+      "description": "Sort direction — ascending or descending.",
+      "type": "string",
+      "enum": ["asc", "desc"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    { "field": "created_at", "direction": "desc" },
+    { "field": "title",      "direction": "asc"  }
+  ]
+}

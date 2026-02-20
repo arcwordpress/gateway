@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./column-definition.schema.json",
+  "title": "ColumnDefinition",
+  "description": "Defines a single displayable column in a Gateway Grid, binding a Collection field key to a header label. This is the evolved object form, matching the gateway/grid-column block's attribute shape (fieldKey, label), and supersedes bare string field keys used in the legacy PHP $columns array.",
+  "type": "object",
+  "required": ["key"],
+  "properties": {
+    "key": {
+      "description": "The Collection field accessor key whose value this column displays (e.g. 'title', 'status', 'created_at'). For dotted paths on related objects use dot notation (e.g. 'author.name').",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_.]*$"
+    },
+    "label": {
+      "description": "Human-readable column header text shown in the grid UI. When omitted, consumers fall back to the field key.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sortable": {
+      "description": "Whether the user can click this column header to sort by it. Default true. Set false for computed attributes, long-text fields, or relationship fields that require complex joins.",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    { "key": "id",         "label": "ID",          "sortable": true  },
+    { "key": "title",      "label": "Title",        "sortable": true  },
+    { "key": "status",     "label": "Status",       "sortable": false },
+    { "key": "created_at", "label": "Created",      "sortable": true  },
+    { "key": "assigned_to","label": "Assigned To",  "sortable": false }
+  ]
+}
