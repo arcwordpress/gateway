@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./facet-filter.schema.json",
+  "title": "FacetFilter",
+  "description": "A single facet filter definition for a Gateway Grid. FacetFilters are polymorphic: the 'type' property discriminates which additional properties are valid. Each variant extends a shared base of common properties (type, field, label, placeholder).",
+
+  "$defs": {
+
+    "filterBase": {
+      "description": "Properties shared by every facet filter variant.",
+      "type": "object",
+      "required": ["type", "field"],
+      "properties": {
+        "type": {
+          "description": "Discriminator identifying the filter's UI widget and matching behaviour.",
+          "type": "string",
+          "enum": ["select", "text", "checkbox", "range", "date_range"]
+        },
+        "field": {
+          "description": "The Collection field key this filter is applied to. Must match a field key returned by the collection's REST endpoint.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_.]*$"
+        },
+        "label": {
+          "description": "Human-readable label displayed above the filter control.",
+          "type": "string",
+          "minLength": 1
+        },
+        "placeholder": {
+          "description": "Placeholder hint shown inside the control when no value is selected. For two-input filters (range, date_range) this may be an object with named keys for each input.",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "min":   { "type": "string" },
+                "max":   { "type": "string" },
+                "start": { "type": "string" },
+                "end":   { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      }
+    },
+
+    "selectChoice": {
+      "description": "A single option in a select or checkbox filter.",
+      "type": "object",
+      "required": ["value", "label"],
+      "properties": {
+        "value": {
+          "description": "Raw value submitted to the filter when this option is selected.",
+          "type": "string"
+        },
+        "label": {
+          "description": "Human-readable text displayed for this option.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "selectFilter": {
+      "description": "A single-value select dropdown (<select>). Maps to the gateway/filter-group block (statusFilter attribute). The user picks one value; the grid shows records matching that value. Omitting 'choices' signals that the UI should derive options dynamically from the live dataset.",
+      "allOf": [{ "$ref": "#/$defs/filterBase" }],
+      "properties": {
+        "type":        { "const": "select" },
+        "field":       {},
+        "label":       {},
+        "placeholder": {},
+        "choices": {
+          "description": "Static list of selectable options. At least one entry when provided. Omit to let the UI derive choices from live data.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/selectChoice" },
+          "minItems": 1
+        }
+      },
+      "unevaluatedProperties": false
+    },
+
+    "textFilter": {
+      "description": "A free-text search input. Applies a case-insensitive substring match against the target field. Input is debounced to reduce unnecessary re-renders on large datasets.",
+      "allOf": [{ "$ref": "#/$defs/filterBase" }],
+      "properties": {
+        "type":        { "const": "text" },
+        "field":       {},
+        "label":       {},
+        "placeholder": {},
+        "debounce": {
+          "description": "Milliseconds to wait after the last keystroke before the filter fires. Lower values feel more responsive; higher values reduce render pressure on large datasets. Defaults to 300.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5000,
+          "default": 300
+        }
+      },
+      "unevaluatedProperties": false
+    },
+
+    "checkboxFilter": {
+      "description": "A multi-select checkbox group. Maps to the gateway/checkbox-filter block. The user may select any number of values; the filter passes a record if its field value matches any selected option.",
+      "allOf": [{ "$ref": "#/$defs/filterBase" }],
+      "properties": {
+        "type":        { "const": "checkbox" },
+        "field":       {},
+        "label":       {},
+        "placeholder": {},
+        "choices": {
+          "description": "Static list of checkbox options. Omit to derive options from live data.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/selectChoice" }
+        },
+        "valueKey": {
+          "description": "When options are derived at runtime from a context source, the property name to use as the submitted value. Defaults to 'value'.",
+          "type": "string",
+          "minLength": 1,
+          "default": "value"
+        },
+        "labelKey": {
+          "description": "When options are derived at runtime from a context source, the property name to use as the display label. Defaults to 'label'.",
+          "type": "string",
+          "minLength": 1,
+          "default": "label"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+
+    "rangeFilter": {
+      "description": "A numeric range filter with separate min and max inputs. Passes a record if its field value falls within [min, max], where both bounds are optional (open-ended range).",
+      "allOf": [{ "$ref": "#/$defs/filterBase" }],
+      "properties": {
+        "type":        { "const": "range" },
+        "field":       {},
+        "label":       {},
+        "placeholder": {},
+        "min": {
+          "description": "Minimum allowed input value enforced as an HTML constraint. Does not imply a default filter value — the input may be left blank.",
+          "type": "number"
+        },
+        "max": {
+          "description": "Maximum allowed input value enforced as an HTML constraint.",
+          "type": "number"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+
+    "dateRangeFilter": {
+      "description": "A date-range filter with start and end date inputs (ISO 8601, YYYY-MM-DD). Uses HTML5 date inputs. Both ends are optional; omitting either makes the range open at that end.",
+      "allOf": [{ "$ref": "#/$defs/filterBase" }],
+      "properties": {
+        "type":        { "const": "date_range" },
+        "field":       {},
+        "label":       {},
+        "placeholder": {}
+      },
+      "unevaluatedProperties": false
+    }
+
+  },
+
+  "oneOf": [
+    { "$ref": "#/$defs/selectFilter"    },
+    { "$ref": "#/$defs/textFilter"      },
+    { "$ref": "#/$defs/checkboxFilter"  },
+    { "$ref": "#/$defs/rangeFilter"     },
+    { "$ref": "#/$defs/dateRangeFilter" }
+  ],
+
+  "examples": [
+    {
+      "type": "select",
+      "field": "status",
+      "label": "Status",
+      "placeholder": "All Statuses",
+      "choices": [
+        { "value": "active",   "label": "Active"   },
+        { "value": "inactive", "label": "Inactive" },
+        { "value": "pending",  "label": "Pending"  }
+      ]
+    },
+    {
+      "type": "text",
+      "field": "title",
+      "label": "Search",
+      "placeholder": "Search by title…",
+      "debounce": 400
+    },
+    {
+      "type": "checkbox",
+      "field": "priority",
+      "label": "Priority",
+      "choices": [
+        { "value": "low",    "label": "Low"    },
+        { "value": "medium", "label": "Medium" },
+        { "value": "high",   "label": "High"   }
+      ]
+    },
+    {
+      "type": "range",
+      "field": "price",
+      "label": "Price Range",
+      "min": 0,
+      "max": 10000,
+      "placeholder": { "min": "Min price", "max": "Max price" }
+    },
+    {
+      "type": "date_range",
+      "field": "created_at",
+      "label": "Created Between",
+      "placeholder": { "start": "From", "end": "To" }
+    }
+  ]
+}
