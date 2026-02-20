@@ -1,5 +1,10 @@
 // Import all block entry points to ensure they are built by wp-scripts
 import('./blocks/gateway-grid/index.js');
+import('./blocks/grid-columns/index.js');
+import('./blocks/grid-column/index.js');
+import('./blocks/grid-headings/index.js');
+import('./blocks/grid-heading/index.js');
+import('./blocks/grid-row/index.js');
 import('./blocks/filter-group/index.js');
 import('./blocks/grid-summary/index.js');
 import('./blocks/grid-records/index.js');
