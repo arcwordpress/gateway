@@ -58,6 +58,15 @@ class BlockRoutes
         $registry = BlockRegistry::instance();
 
         if (!$registry->has($block_name)) {
+            // Fallback: check JsonBlockLoader for JSON-defined blocks
+            $json_def = \Gateway\Blocks\JsonBlock\JsonBlockLoader::get($block_name);
+            if ($json_def !== null && isset($json_def['template'])) {
+                return rest_ensure_response([
+                    'template'  => $json_def['template'],
+                    'blockName' => $block_name,
+                ]);
+            }
+
             return new \WP_Error(
                 'block_not_found',
                 'Block not found',
