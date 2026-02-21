@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class TermRelationship extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_term_relationship';
     protected $title  = 'Term Relationship';
     protected $titlePlural = 'Term Relationships';

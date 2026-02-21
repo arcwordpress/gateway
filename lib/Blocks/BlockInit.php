@@ -329,9 +329,15 @@ class BlockInit
     public static function registerBlocks()
     {
         $registry = BlockRegistry::instance();
-        
+
         foreach ($registry->getAll() as $block) {
             $name = $block->getName();
+
+            // Skip block types the user has deactivated.
+            if (!\Gateway\Collections\Gateway\BlockTypeUser::isActive($name)) {
+                continue;
+            }
+
             $block_dir = $block->getBlockDir();
             $registration_type = $block::getRegistrationType();
 

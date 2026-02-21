@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class TermTaxonomy extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_term_taxonomy';
     protected $title  = 'Term Taxonomy';
     protected $titlePlural = 'Term Taxonomies';

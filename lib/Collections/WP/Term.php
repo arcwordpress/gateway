@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class Term extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_term';
     protected $title  = 'Term';
     protected $titlePlural = 'Terms';

@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class CommentMeta extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_commentmeta';
     protected $title  = 'Comment Meta';
     protected $titlePlural = 'Comment Meta';

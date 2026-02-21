@@ -45,13 +45,23 @@ class BlockRegistry
             $block_dirs = glob($block_types_dir . '/*', GLOB_ONLYDIR);
 
             foreach ($block_dirs as $block_path) {
-                $block_name = basename($block_path);
-
-                // Require both block.json and index.js to exist
-                if (file_exists($block_path . '/block.json') &&
-                    file_exists($block_path . '/index.js')) {
-                    register_block_type($block_path);
+                // Require both block.json and index.js to exist.
+                if (!file_exists($block_path . '/block.json') ||
+                    !file_exists($block_path . '/index.js')) {
+                    continue;
                 }
+
+                // Resolve the canonical block slug from block.json so the
+                // active check uses the same key the seeder records.
+                $meta = json_decode(file_get_contents($block_path . '/block.json'), true);
+                $slug = $meta['name'] ?? '';
+
+                // Skip block types the user has deactivated.
+                if ($slug && !\Gateway\Collections\Gateway\BlockTypeUser::isActive($slug)) {
+                    continue;
+                }
+
+                register_block_type($block_path);
             }
         }
 

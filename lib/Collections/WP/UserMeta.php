@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class UserMeta extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_usermeta';
     protected $title  = 'User Meta';
     protected $titlePlural = 'User Meta';

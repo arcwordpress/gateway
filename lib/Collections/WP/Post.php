@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class Post extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_post';
     protected $title  = 'Post';
     protected $titlePlural = 'Posts';

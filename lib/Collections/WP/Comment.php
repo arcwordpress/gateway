@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class Comment extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_comment';
     protected $title  = 'Comment';
     protected $titlePlural = 'Comments';

@@ -41,6 +41,12 @@ class JsonBlockRegistrar
         JsonBlockLoader::load();
 
         foreach (JsonBlockLoader::getAll() as $definition) {
+            // Skip block types the user has deactivated.
+            if (!empty($definition['name']) &&
+                !\Gateway\Collections\Gateway\BlockTypeUser::isActive($definition['name'])) {
+                continue;
+            }
+
             self::registerOne($definition);
         }
     }

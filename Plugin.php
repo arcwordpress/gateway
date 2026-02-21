@@ -145,8 +145,12 @@ class Plugin
         // Initialize app page template and SPA routing
         AppTemplate::init();
 
-        // Register core collections.
+        // Register internal gateway collections, then core WP collections.
         add_action('gateway_loaded', [$this, 'registerCollections']);
+
+        // Seed block type and collection user tables after registration.
+        add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
+        add_action('gateway_loaded', [$this, 'seedCollections'], 20);
 
     }
 
@@ -158,52 +162,106 @@ class Plugin
     }
 
     /**
-     * Get list of core collections that can be disabled
+     * Core WP table collection map, keyed by collection key.
      *
-     * @return array Associative array of collection key => class name
+     * @return array<string, class-string>
      */
-    public static function getCoreCollections()
+    private static function coreCollectionMap(): array
     {
         return [
-            'wp_post' => Collections\WP\Post::class,
-            'wp_user' => Collections\WP\User::class,
-            'wp_comment' => Collections\WP\Comment::class,
-            'wp_option' => Collections\WP\Option::class,
-            'wp_postmeta' => Collections\WP\PostMeta::class,
-            'wp_usermeta' => Collections\WP\UserMeta::class,
-            'wp_commentmeta' => Collections\WP\CommentMeta::class,
-            'wp_term' => Collections\WP\Term::class,
-            'wp_term_taxonomy' => Collections\WP\TermTaxonomy::class,
+            'wp_post'              => Collections\WP\Post::class,
+            'wp_user'              => Collections\WP\User::class,
+            'wp_comment'           => Collections\WP\Comment::class,
+            'wp_option'            => Collections\WP\Option::class,
+            'wp_postmeta'          => Collections\WP\PostMeta::class,
+            'wp_usermeta'          => Collections\WP\UserMeta::class,
+            'wp_commentmeta'       => Collections\WP\CommentMeta::class,
+            'wp_term'              => Collections\WP\Term::class,
+            'wp_term_taxonomy'     => Collections\WP\TermTaxonomy::class,
             'wp_term_relationship' => Collections\WP\TermRelationship::class,
-            'wp_termmeta' => Collections\WP\TermMeta::class,
-            'wp_link' => Collections\WP\Link::class,
+            'wp_termmeta'          => Collections\WP\TermMeta::class,
+            'wp_link'              => Collections\WP\Link::class,
         ];
     }
 
     /**
-     * Get list of disabled collection keys
+     * Register internal Gateway collections and core WP collections.
      *
-     * @return array Array of disabled collection keys
+     * Internal collections (BlockTypeUser, CollectionUser) are always
+     * registered — they are structural and required by the plugin.
+     *
+     * Core WP collections are only registered when their active flag is true
+     * in the CollectionUser table (defaults to true when no row exists).
      */
-    public static function getDisabledCollections()
-    {
-        $defaultDisabled = array_values(array_diff(
-            array_keys(self::getCoreCollections()),
-            ['wp_post', 'wp_user']
-        ));
-        return get_option('gateway_disabled_collections', $defaultDisabled);
-    }
-
     public function registerCollections()
     {
-        $disabledCollections = self::getDisabledCollections();
-        $coreCollections = self::getCoreCollections();
+        // Always register internal structural collections first.
+        Collections\Gateway\BlockTypeUser::register();
+        Collections\Gateway\CollectionUser::register();
 
-        // Register WordPress core table collections (if not disabled)
-        foreach ($coreCollections as $key => $class) {
-            if (!in_array($key, $disabledCollections, true)) {
+        // Register core WP collections, gated by CollectionUser active flag.
+        foreach (self::coreCollectionMap() as $key => $class) {
+            if (Collections\Gateway\CollectionUser::isActive($key)) {
                 $class::register();
             }
+        }
+    }
+
+    /**
+     * Seed the gateway_block_type_users table.
+     *
+     * Enumerates block types from all three registration systems and inserts
+     * a row with active = 1 for any slug not yet recorded. Existing rows
+     * (including user-set active = 0) are never overwritten.
+     */
+    public function seedBlockTypes()
+    {
+        // 1. Gutenberg / React blocks (react/block-types/build/blocks/*/block.json)
+        $gutenbergDir = GATEWAY_PATH . 'react/block-types/build/blocks';
+        if (is_dir($gutenbergDir)) {
+            foreach (glob($gutenbergDir . '/*/block.json') ?: [] as $jsonPath) {
+                $meta = json_decode(file_get_contents($jsonPath), true);
+                if (!empty($meta['name'])) {
+                    Collections\Gateway\BlockTypeUser::seedOne(
+                        $meta['name'],
+                        $meta['title'] ?? $meta['name'],
+                        'gutenberg'
+                    );
+                }
+            }
+        }
+
+        // 2. PHP-class blocks (registered via BlockInit::registerInternalBlocks)
+        foreach (Blocks\BlockRegistry::instance()->getAll() as $block) {
+            Collections\Gateway\BlockTypeUser::seedOne(
+                $block::getName(),
+                $block::getTitle(),
+                'php'
+            );
+        }
+
+        // 3. JSON schema blocks (schema/blocks/types/*.json)
+        foreach (Blocks\JsonBlock\JsonBlockLoader::getAll() as $definition) {
+            if (!empty($definition['name'])) {
+                Collections\Gateway\BlockTypeUser::seedOne(
+                    $definition['name'],
+                    $definition['title'] ?? $definition['name'],
+                    'json'
+                );
+            }
+        }
+    }
+
+    /**
+     * Seed the gateway_collection_users table.
+     *
+     * Inserts a row with active = 1 for each core WP collection key that
+     * does not yet have a record. Existing rows are never overwritten.
+     */
+    public function seedCollections()
+    {
+        foreach (array_keys(self::coreCollectionMap()) as $key) {
+            Collections\Gateway\CollectionUser::seedOne($key);
         }
     }
 

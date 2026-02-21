@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class Link extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_link';
     protected $title  = 'Link';
     protected $titlePlural = 'Links';
