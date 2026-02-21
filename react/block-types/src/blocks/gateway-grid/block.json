@@ -29,7 +29,14 @@
     "gateway/filteredCount": "previewFilteredCount",
     "gateway/isConfigured":  "previewIsConfigured"
   },
-  "allowedBlocks": ["gateway/filter-group", "gateway/grid-summary", "gateway/grid-records"],
+  "allowedBlocks": [
+    "gateway/filter-group",
+    "gateway/grid-summary",
+    "gateway/grid-records",
+    "gateway/grid-columns",
+    "gateway/grid-headings",
+    "gateway/grid-row"
+  ],
   "supports": {
     "html": false,
     "interactivity": true,

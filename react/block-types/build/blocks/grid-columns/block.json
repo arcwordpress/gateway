@@ -6,7 +6,9 @@
   "category": "gateway",
   "icon": "columns",
   "description": "Container block for defining the column structure of a Gateway Grid. Add Grid Column blocks inside to configure each column's field binding and label.",
-  "parent": ["gateway/gateway-grid"],
+  "parent": [
+    "gateway/gateway-grid"
+  ],
   "attributes": {},
   "supports": {
     "html": false,
