@@ -6,7 +6,9 @@
   "category": "gateway",
   "icon": "heading",
   "description": "Container block for the header row of a Gateway Grid. Add Grid Heading blocks inside to define each column header cell.",
-  "parent": ["gateway/gateway-grid"],
+  "parent": [
+    "gateway/gateway-grid"
+  ],
   "attributes": {},
   "supports": {
     "html": false,
