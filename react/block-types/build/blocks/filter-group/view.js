@@ -1,1 +1,0 @@
-import{store as r}from"@wordpress/interactivity";r("gateway-filter-group",{});

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/field-badge",
+  "title": "Field Badge",
+  "category": "gateway",
+  "icon": "tag",
+  "description": "Renders a styled badge from a collection record field via the Interactivity API.",
+  "parent": ["gateway/column"],
+  "attributes": {
+    "fieldKey": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/heading",
+  "title": "Heading",
+  "category": "gateway",
+  "icon": "minus",
+  "description": "A header row inside a Heading Group. Add Column blocks inside to define each column header cell.",
+  "parent": [
+    "gateway/heading-group"
+  ],
+  "allowedBlocks": [
+    "gateway/column"
+  ],
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}

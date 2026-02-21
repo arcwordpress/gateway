@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/row",
+  "title": "Row",
+  "category": "gateway",
+  "icon": "minus",
+  "description": "A single data row inside a Row Group. Add Column blocks inside to display record fields.",
+  "parent": ["gateway/row-group"],
+  "allowedBlocks": ["gateway/column"],
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}

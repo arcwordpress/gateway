@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/facet-group",
+  "title": "Facet Group",
+  "category": "gateway",
+  "icon": "filter",
+  "description": "Container for filter controls (facets) inside a Gateway Grid.",
+  "parent": [
+    "gateway/grid"
+  ],
+  "allowedBlocks": [
+    "gateway/facet"
+  ],
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}

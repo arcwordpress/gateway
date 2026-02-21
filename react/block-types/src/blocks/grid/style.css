@@ -1,0 +1,53 @@
+/**
+ * Gateway Grid — Frontend styles
+ */
+
+.gateway-grid {
+	font-family: inherit;
+	font-size: 14px;
+}
+
+.gateway-grid__loading {
+	color: #50575e;
+	font-style: italic;
+}
+
+.gateway-grid__error {
+	color: #cc1818;
+	font-weight: 500;
+}
+
+.gateway-grid__filters {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.gateway-grid__filter-label {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.gateway-grid__filter-select {
+	padding: 4px 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.gateway-grid__count {
+	font-size: 12px;
+	color: #50575e;
+	margin: 0 0 8px;
+}
+
+.gateway-grid__empty {
+	padding: 16px;
+	text-align: center;
+	color: #50575e;
+	font-style: italic;
+	margin: 0;
+}

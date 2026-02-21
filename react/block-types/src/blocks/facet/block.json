@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/facet",
+  "title": "Facet",
+  "category": "gateway",
+  "icon": "filter",
+  "description": "A single filter control (facet) inside a Facet Group.",
+  "parent": ["gateway/facet-group"],
+  "attributes": {
+    "filterKey": {
+      "type": "string",
+      "default": "status"
+    },
+    "label": {
+      "type": "string",
+      "default": "Filter by Status"
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}
