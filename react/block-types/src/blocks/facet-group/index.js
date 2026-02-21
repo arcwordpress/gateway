@@ -5,24 +5,30 @@
  * Title:      Facet Group
  * Parent:     gateway/grid
  *
- * Container for gateway/facet filter controls inside a Gateway Grid.
- * Inherits the parent grid's Interactivity API namespace.
+ * Container for facet filter blocks inside a Gateway Grid.
+ * Allowed children: gateway/facet-select, gateway/facet-search, gateway/facet-toggle
  */
 
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import metadata from './block.json';
 
-const TEMPLATE = [ [ 'gateway/facet', {} ] ];
+const ALLOWED_BLOCKS = [
+	'gateway/facet-select',
+	'gateway/facet-search',
+	'gateway/facet-toggle',
+];
+
+const TEMPLATE = [ [ 'gateway/facet-select', {} ] ];
 
 registerBlockType( metadata.name, {
 	edit: () => {
-		const blockProps = useBlockProps( { className: 'gateway-grid__filters' } );
+		const blockProps = useBlockProps( { className: 'gateway-facet-group' } );
 
 		return (
 			<div { ...blockProps }>
 				<InnerBlocks
-					allowedBlocks={ [ 'gateway/facet' ] }
+					allowedBlocks={ ALLOWED_BLOCKS }
 					template={ TEMPLATE }
 					templateLock={ false }
 				/>
@@ -32,9 +38,7 @@ registerBlockType( metadata.name, {
 
 	save: () => {
 		return (
-			<div
-				{ ...useBlockProps.save( { className: 'gateway-grid__filters' } ) }
-			>
+			<div { ...useBlockProps.save( { className: 'gateway-facet-group' } ) }>
 				<InnerBlocks.Content />
 			</div>
 		);

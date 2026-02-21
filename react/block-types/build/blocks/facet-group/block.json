@@ -10,7 +10,9 @@
     "gateway/grid"
   ],
   "allowedBlocks": [
-    "gateway/facet"
+    "gateway/facet-select",
+    "gateway/facet-search",
+    "gateway/facet-toggle"
   ],
   "attributes": {},
   "supports": {

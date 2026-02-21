@@ -205,7 +205,7 @@ registerBlockType( metadata.name, {
 			collectionSlug,
 			data: [],
 			records: [],
-			statusFilter: '',
+			filters: {},
 			loading: true,
 			error: null,
 		} );

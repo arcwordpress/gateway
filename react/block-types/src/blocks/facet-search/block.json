@@ -1,20 +1,24 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/facet",
-  "title": "Facet",
+  "name": "gateway/facet-search",
+  "title": "Facet Search",
   "category": "gateway",
-  "icon": "filter",
-  "description": "A single filter control (facet) inside a Facet Group.",
+  "icon": "search",
+  "description": "A text search filter inside a Facet Group. Leave the field key blank to search all fields.",
   "parent": ["gateway/facet-group"],
   "attributes": {
-    "filterKey": {
+    "fieldKey": {
       "type": "string",
-      "default": "status"
+      "default": ""
     },
     "label": {
       "type": "string",
-      "default": "Filter by Status"
+      "default": "Search"
+    },
+    "placeholder": {
+      "type": "string",
+      "default": "Search…"
     }
   },
   "supports": {

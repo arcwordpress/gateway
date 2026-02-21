@@ -7,7 +7,7 @@
   "icon": "filter",
   "description": "Container for filter controls (facets) inside a Gateway Grid.",
   "parent": ["gateway/grid"],
-  "allowedBlocks": ["gateway/facet"],
+  "allowedBlocks": ["gateway/facet-select", "gateway/facet-search", "gateway/facet-toggle"],
   "attributes": {},
   "supports": {
     "html": false,
