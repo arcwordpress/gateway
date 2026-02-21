@@ -98,12 +98,6 @@ class BlockInit
 
         $registry = BlockRegistry::instance();
 
-        // Register Grid block
-        BlockTypes\Grid\Grid::register();
-
-        // Register GridItem block (used inside Grid)
-        BlockTypes\GridItem\GridItem::register();
-
         // Register App Layout blocks
         BlockTypes\App\App::register();
         BlockTypes\AppHeader\AppHeader::register();
