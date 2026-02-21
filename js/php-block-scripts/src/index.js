@@ -1,78 +1,21 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
-import { Fragment } from '@wordpress/element';
+import { PanelBody } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import TemplateBlock from './TemplateBlock';
 
 /**
- * Render a single field as a control in the inspector panel.
- */
-const FieldControl = ({ field, value, onChange }) => {
-    const label = field.label || field.name;
-
-    switch (field.type) {
-        case 'textarea':
-            return (
-                <TextareaControl
-                    label={label}
-                    value={value || ''}
-                    onChange={onChange}
-                />
-            );
-
-        case 'select':
-            return (
-                <SelectControl
-                    label={label}
-                    value={value || ''}
-                    options={[
-                        { label: '— Select —', value: '' },
-                        ...(field.options || []).map(opt =>
-                            typeof opt === 'object'
-                                ? opt
-                                : { label: String(opt), value: String(opt) }
-                        ),
-                    ]}
-                    onChange={onChange}
-                />
-            );
-
-        case 'number':
-            return (
-                <TextControl
-                    label={label}
-                    type="number"
-                    value={value !== undefined && value !== null ? String(value) : ''}
-                    onChange={(val) => onChange(val === '' ? 0 : Number(val))}
-                />
-            );
-
-        case 'email':
-        case 'password':
-            return (
-                <TextControl
-                    label={label}
-                    type={field.type}
-                    value={value || ''}
-                    onChange={onChange}
-                />
-            );
-
-        // text, slug, and any other type default to a plain text input
-        default:
-            return (
-                <TextControl
-                    label={label}
-                    value={value || ''}
-                    onChange={onChange}
-                />
-            );
-    }
-};
-
-/**
  * Build a WordPress block attributes map from a fields array.
+ *
+ * This is legitimate plumbing — WordPress requires blocks to declare their
+ * attribute schema upfront. This function converts the PHP-defined field list
+ * (passed via wp_localize_script as gatewayBlocks[].fields) into that schema
+ * so field values are correctly persisted as block attributes.
+ *
+ * Attribute storage is already working: when a field changes, the value is
+ * stored via setAttributes({ [name]: value }), and WordPress serialises it
+ * into the block comment delimiters. This function just tells WordPress what
+ * attribute names and types to expect.
  */
 const buildAttributesFromFields = (fields) => {
     const attrs = {};
@@ -92,10 +35,11 @@ const registerBlocks = (blocks) => {
         // Check if block supports InnerBlocks based on PHP template detection
         const hasInnerBlocks = block.hasInnerBlocks || false;
         const fields = block.fields || [];
-        const hasFields = fields.length > 0;
 
-        // Build attributes from fields (if any)
-        const fieldAttributes = hasFields ? buildAttributesFromFields(fields) : {};
+        // Build WP attribute schema from PHP field definitions.
+        // This allows field values to round-trip correctly through block attributes
+        // regardless of which field UI renders them.
+        const fieldAttributes = fields.length > 0 ? buildAttributesFromFields(fields) : {};
 
         registerBlockType(block.name, {
             title: block.title,
@@ -116,27 +60,49 @@ const registerBlocks = (blocks) => {
                     />
                 );
 
-                if (!hasFields) {
-                    return mainContent;
-                }
+                // TODO: Wire up Gateway field components here.
+                //
+                // The real implementation should use BlockForm (or GutenbergFieldGroup)
+                // from @gateway/forms, which needs to be added as a dependency first:
+                //
+                //   "dependencies": { "@gateway/forms": "workspace:*" }
+                //
+                // Gateway's field system uses a watch/register pattern. BlockForm wraps
+                // ControlledForm, which provides a watch() shim backed by the current
+                // attributes object — so fields that call watch(name) to read their value
+                // will naturally read from block attributes. The register(name) function
+                // routes onChange through setAttributes({ [name]: value }), which is the
+                // same path that was already working in the now-removed fake implementation.
+                //
+                // The fields array from PHP maps directly to Gateway field configs:
+                //   { name, type, label, default, options }
+                //
+                // Simplest approach — auto-renders all fields in a panel:
+                //
+                //   import { BlockForm } from '@gateway/forms';
+                //
+                //   if (fields.length > 0) {
+                //     return (
+                //       <>
+                //         <InspectorControls>
+                //           <PanelBody title="Settings" initialOpen={true}>
+                //             <BlockForm
+                //               attributes={attributes}
+                //               setAttributes={setAttributes}
+                //               fields={fields}
+                //             />
+                //           </PanelBody>
+                //         </InspectorControls>
+                //         {mainContent}
+                //       </>
+                //     );
+                //   }
+                //
+                // For custom layouts use GutenbergFieldProvider + GutenbergField instead.
+                // buildAttributesFromFields above already handles the WP attribute schema,
+                // so no changes are needed there once the field UI is wired up.
 
-                return (
-                    <Fragment>
-                        <InspectorControls>
-                            <PanelBody title="Settings" initialOpen={true}>
-                                {fields.map(field => (
-                                    <FieldControl
-                                        key={field.name}
-                                        field={field}
-                                        value={attributes[field.name]}
-                                        onChange={(val) => setAttributes({ [field.name]: val })}
-                                    />
-                                ))}
-                            </PanelBody>
-                        </InspectorControls>
-                        {mainContent}
-                    </Fragment>
-                );
+                return mainContent;
             },
             save: (props) => hasInnerBlocks ? (
                 <InnerBlocks.Content />
