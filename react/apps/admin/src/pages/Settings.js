@@ -15,9 +15,6 @@ const Settings = () => {
     const [dbDriver, setDbDriver] = useState('mysql');
     const [sqlitePath, setSqlitePath] = useState('');
     const [isSqliteEnvironment, setIsSqliteEnvironment] = useState(false);
-    const [coreCollections, setCoreCollections] = useState([]);
-    const [disabledCollections, setDisabledCollections] = useState([]);
-    const [savingCollections, setSavingCollections] = useState(false);
 
     useEffect(() => {
         loadSettings();
@@ -41,8 +38,6 @@ const Settings = () => {
             setDbDriver(data.db_driver || 'mysql');
             setSqlitePath(data.sqlite_path || '');
             setIsSqliteEnvironment(data.is_sqlite_environment || false);
-            setCoreCollections(data.core_collections || []);
-            setDisabledCollections(data.disabled_collections || []);
         } catch (err) {
             setError('Failed to load settings');
         } finally {
@@ -132,56 +127,6 @@ const Settings = () => {
         }
     };
 
-    const formatCollectionName = (key) => {
-        return key
-            .replace(/^wp_/, '')
-            .split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    };
-
-    const toggleCollection = (key) => {
-        setDisabledCollections(prev => {
-            if (prev.includes(key)) {
-                return prev.filter(k => k !== key);
-            } else {
-                return [...prev, key];
-            }
-        });
-    };
-
-    const handleSaveCollections = async () => {
-        setSavingCollections(true);
-        setError('');
-        setSuccess('');
-
-        try {
-            const response = await fetch(
-                `${window.gatewayAdminScript.apiUrl}gateway/v1/settings`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-WP-Nonce': window.gatewayAdminScript.nonce,
-                    },
-                    body: JSON.stringify({ disabled_collections: disabledCollections }),
-                }
-            );
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setSuccess('Collection settings saved. Please reload the page for changes to take effect.');
-                setTimeout(() => setSuccess(''), 5000);
-            } else {
-                setError(data.message || 'Failed to save collection settings');
-            }
-        } catch (err) {
-            setError('Failed to save collection settings');
-        } finally {
-            setSavingCollections(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -493,68 +438,6 @@ const Settings = () => {
                         )}
                     </div>
                 </form>
-            </div>
-
-            {/* Core Collections Section */}
-            <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Core Collections
-                </h2>
-                <p className="text-sm text-gray-500 mb-4">
-                    Select which WordPress core collections should be active. Disabled collections will not be registered and their REST API endpoints will not be available.
-                </p>
-
-                <div className="space-y-2 mb-4">
-                    {coreCollections.map((key) => (
-                        <label
-                            key={key}
-                            className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
-                        >
-                            <input
-                                type="checkbox"
-                                checked={!disabledCollections.includes(key)}
-                                onChange={() => toggleCollection(key)}
-                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">
-                                {formatCollectionName(key)}
-                            </span>
-                            <span className="text-xs text-gray-400 font-mono">
-                                ({key})
-                            </span>
-                        </label>
-                    ))}
-                </div>
-
-                {error && (
-                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
-                        <p className="text-red-600 text-sm flex items-center">
-                            <span className="mr-2">x</span>
-                            {error}
-                        </p>
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded">
-                        <p className="text-green-600 text-sm flex items-center">
-                            <span className="mr-2">&#10003;</span>
-                            {success}
-                        </p>
-                    </div>
-                )}
-
-                <button
-                    onClick={handleSaveCollections}
-                    disabled={savingCollections}
-                    className={`px-4 py-2 rounded font-medium transition-colors ${
-                        savingCollections
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                >
-                    {savingCollections ? 'Saving...' : 'Save Collection Settings'}
-                </button>
             </div>
 
             {/* Test Connection Section */}

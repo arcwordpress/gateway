@@ -34,9 +34,15 @@ class CollectionRoutes
             'permission_callback' => [$this, 'checkPermission'],
             'args' => [
                 'package' => [
-                    'required' => false,
-                    'type' => 'string',
+                    'required'    => false,
+                    'type'        => 'string',
                     'description' => 'Filter collections by package name',
+                ],
+                'include_private' => [
+                    'required'    => false,
+                    'type'        => 'boolean',
+                    'default'     => false,
+                    'description' => 'When true, include core and private collections in the response.',
                 ],
             ],
         ]);
@@ -110,29 +116,37 @@ class CollectionRoutes
     public function getMany(\WP_REST_Request $request)
     {
         try {
-            $packageFilter = $request->get_param('package');
-            $collections = $this->getRegistry()->getAll();
-            $result = [];
+            $packageFilter  = $request->get_param('package');
+            $includePrivate = (bool) $request->get_param('include_private');
+            $collections    = $this->getRegistry()->getAll();
+            $result         = [];
 
             foreach ($collections as $entry) {
                 // If registry returned an instance, use it; if it returned a class name, instantiate.
                 if (is_object($entry)) {
-                    $collection = $entry;
+                    $collection      = $entry;
                     $collectionClass = get_class($collection);
                 } elseif (is_string($entry) && class_exists($entry)) {
                     $collectionClass = $entry;
-                    $collection = new $collectionClass();
+                    $collection      = new $collectionClass();
                 } else {
                     // Skip invalid entries
                     continue;
                 }
 
+                // Exclude core / private collections unless the caller opts in.
+                if (!$includePrivate &&
+                    method_exists($collection, 'isHidden') &&
+                    $collection->isHidden()) {
+                    continue;
+                }
+
                 // Filter by package if specified
                 if ($packageFilter !== null && $packageFilter !== '') {
-                    $collectionPackage = method_exists($collection, 'getPackage') 
-                        ? $collection->getPackage() 
+                    $collectionPackage = method_exists($collection, 'getPackage')
+                        ? $collection->getPackage()
                         : 'default';
-                    
+
                     if ($collectionPackage !== $packageFilter) {
                         continue;
                     }
@@ -240,11 +254,17 @@ class CollectionRoutes
         // Get package
         $package = method_exists($collection, 'getPackage') ? $collection->getPackage() : 'default';
 
+        // Visibility flags
+        $core    = method_exists($collection, 'isCore')    ? $collection->isCore()    : false;
+        $private = method_exists($collection, 'isPrivate') ? $collection->isPrivate() : false;
+
         return [
-            'key' => $key,
-            'title' => $title,
+            'key'        => $key,
+            'title'      => $title,
             'titlePlural' => $titlePlural,
-            'package' => $package,
+            'package'    => $package,
+            'core'       => $core,
+            'private'    => $private,
             'class' => $collectionClass,
             'name' => basename(str_replace('\\', '/', $collectionClass)),
             'table' => $table,

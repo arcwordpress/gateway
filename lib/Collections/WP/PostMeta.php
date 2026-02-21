@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class PostMeta extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_postmeta';
     protected $title  = 'Post Meta';
     protected $titlePlural = 'Post Meta';

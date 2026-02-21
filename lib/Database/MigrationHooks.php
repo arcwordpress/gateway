@@ -99,12 +99,14 @@ class MigrationHooks
     /**
      * Run core migrations (called during plugin activation)
      *
+     * Creates internal Gateway tables that must exist before any request
+     * attempts to read block-type or collection active/inactive state.
+     *
      * @return void
      */
     public static function runCoreMigrations()
     {
-        // No core collections require migration on activation
-        // Extension plugins can hook into 'gateway/collection/migrations'
-        // to run their own migrations when needed
+        \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
+        \Gateway\Migrations\GatewayCollectionUserMigration::create();
     }
 }

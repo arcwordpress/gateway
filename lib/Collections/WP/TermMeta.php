@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class TermMeta extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_termmeta';
     protected $title  = 'Term Meta';
     protected $titlePlural = 'Term Meta';

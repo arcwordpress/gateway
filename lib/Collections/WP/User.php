@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class User extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_user';
     protected $title  = 'User';
     protected $titlePlural = 'Users';

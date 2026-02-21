@@ -4,6 +4,7 @@ namespace Gateway\Collections\WP;
 
 class Option extends \Gateway\Collection {
 
+    protected $core    = true;
     protected $key    = 'wp_option';
     protected $title  = 'Option';
     protected $titlePlural = 'Options';
