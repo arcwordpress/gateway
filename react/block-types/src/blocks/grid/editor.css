@@ -1,0 +1,15 @@
+/**
+ * Gateway Grid — Editor-specific styles
+ */
+
+.gateway-grid-editor__badge {
+	display: inline-block;
+	margin-top: 10px;
+	padding: 2px 8px;
+	background: #1d2327;
+	color: #fff;
+	font-size: 10px;
+	font-family: monospace;
+	border-radius: 2px;
+	letter-spacing: 0.03em;
+}

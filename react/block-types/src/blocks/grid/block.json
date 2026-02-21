@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/grid",
+  "title": "Grid",
+  "category": "gateway",
+  "icon": "grid-view",
+  "description": "Gateway data grid. Loads all records for a collection and renders them via the Interactivity API.",
+  "attributes": {
+    "collectionSlug": {
+      "type": "string",
+      "default": ""
+    },
+    "previewTotalCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "previewFilteredCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "previewIsConfigured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "providesContext": {
+    "gateway/totalCount":    "previewTotalCount",
+    "gateway/filteredCount": "previewFilteredCount",
+    "gateway/isConfigured":  "previewIsConfigured"
+  },
+  "allowedBlocks": [
+    "gateway/facet-group",
+    "gateway/heading-group",
+    "gateway/row-group"
+  ],
+  "supports": {
+    "html": false,
+    "interactivity": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScriptModule": "file:./view.js"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/row-group",
+  "title": "Row Group",
+  "category": "gateway",
+  "icon": "list-view",
+  "description": "Iterates over collection records via the Interactivity API, stamping out one Row per record.",
+  "parent": ["gateway/grid"],
+  "allowedBlocks": ["gateway/row"],
+  "usesContext": ["gateway/totalCount"],
+  "attributes": {},
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "interactivity": true
+  },
+  "editorScript": "file:./index.js",
+  "textdomain": "gateway"
+}
