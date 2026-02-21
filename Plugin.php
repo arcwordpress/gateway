@@ -86,6 +86,7 @@ class Plugin
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
         new Blocks\BlockRoutes();
+        new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues
         $this->patternRegistry = new Patterns\PatternRegistry();
 
@@ -131,6 +132,9 @@ class Plugin
 
         // Initialize dynamic blocks (programmatic registration and asset enqueuing)
         Blocks\BlockInit::init();
+
+        // Initialize JSON-only block registration (schema/blocks/types/*.json)
+        Blocks\JsonBlock\JsonBlockRegistrar::init();
 
         // Initialize block bindings for collections
         Blocks\BlockBindings::init();

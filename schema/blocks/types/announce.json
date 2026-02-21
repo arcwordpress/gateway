@@ -1,0 +1,31 @@
+{
+  "$schema": "gateway/json-block-schema/v1",
+
+  "name": "gateway/json-announce",
+  "title": "JSON Announce",
+  "category": "gateway",
+  "icon": "megaphone",
+  "description": "A simple announcement banner registered entirely from JSON — no PHP class required.",
+
+  "fields": [
+    {
+      "name": "message",
+      "type": "text",
+      "label": "Message",
+      "default": "Important announcement goes here."
+    },
+    {
+      "name": "level",
+      "type": "text",
+      "label": "Level (info / warning / error)",
+      "default": "info"
+    }
+  ],
+
+  "supports": {
+    "html": false,
+    "className": true
+  },
+
+  "template": "<div class=\"gateway-announce gateway-announce--{{level}}\" role=\"alert\"><span class=\"gateway-announce__badge\">{{level}}</span><p class=\"gateway-announce__message\">{{message}}</p></div>"
+}

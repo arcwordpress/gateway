@@ -1,0 +1,38 @@
+{
+  "$schema": "gateway/json-block-schema/v1",
+
+  "name": "gateway/json-showcase",
+  "title": "JSON Showcase",
+  "category": "gateway",
+  "icon": "welcome-view-site",
+  "description": "A showcase card registered entirely from JSON — demonstrates arbitrary HTML output with multiple fields.",
+
+  "fields": [
+    {
+      "name": "heading",
+      "type": "text",
+      "label": "Heading",
+      "default": "Showcase Heading"
+    },
+    {
+      "name": "body",
+      "type": "textarea",
+      "label": "Body text",
+      "default": "This block was registered from a JSON file. No PHP class. No build step."
+    },
+    {
+      "name": "tag",
+      "type": "text",
+      "label": "Tag label",
+      "default": "new"
+    }
+  ],
+
+  "supports": {
+    "html": false,
+    "className": true,
+    "align": ["wide", "full"]
+  },
+
+  "template": "<article class=\"gateway-showcase\"><header class=\"gateway-showcase__header\"><span class=\"gateway-showcase__tag\">{{tag}}</span><h2 class=\"gateway-showcase__heading\">{{heading}}</h2></header><p class=\"gateway-showcase__body\">{{body}}</p></article>"
+}
