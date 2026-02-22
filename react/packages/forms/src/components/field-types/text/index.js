@@ -21,7 +21,9 @@ const TextInputControl = ({ config = {} }) => {
     default: defaultValue = ''
   } = config;
 
-  const currentValue = watch(name) ?? defaultValue;
+  const watchResult = watch(name);
+  const currentValue = watchResult ?? defaultValue;
+  console.log('[TextInputControl] name:', name, '| watch(name):', watchResult, '| currentValue:', currentValue);
 
   const inputClasses = ['text-field__input'];
   if (fieldError) {
