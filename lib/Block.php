@@ -139,10 +139,9 @@ abstract class Block {
     }
 
     /**
-     * Get block fields definition
-     * Supports the same field format as \Gateway\Collection:
-     * - Flat array of field arrays (each with 'name' and 'type')
-     * - Associative array keyed by field name
+     * Get block fields definition.
+     * Fields must be a flat indexed array where each entry is an array
+     * with at least 'name' and 'type' keys.
      *
      * @return array Associative array of field_name => field_config
      */
@@ -154,24 +153,14 @@ abstract class Block {
             return [];
         }
 
-        // Check if array is flat (numeric keys) and convert to associative
-        $firstKey = array_key_first($fields);
-        if (is_int($firstKey)) {
-            $assoc = [];
-            foreach ($fields as $field) {
-                if (!is_array($field) || empty($field['name']) || empty($field['type'])) {
-                    continue;
-                }
-                $assoc[$field['name']] = $field;
+        $assoc = [];
+        foreach ($fields as $field) {
+            if (!is_array($field) || empty($field['name']) || empty($field['type'])) {
+                continue;
             }
-            return $assoc;
+            $assoc[$field['name']] = $field;
         }
-
-        $result = [];
-        foreach ($fields as $name => $field) {
-            $result[$name] = array_merge(['name' => $name], $field);
-        }
-        return $result;
+        return $assoc;
     }
 
     /**
