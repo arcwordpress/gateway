@@ -41,7 +41,15 @@ const DatePickerControl = ({ config = {}, error }) => {
 
   useEffect(() => {
     if (currentValue === undefined && defaultValue) {
-      setValue(name, defaultValue);
+      let resolvedDefault = defaultValue;
+      if (defaultValue === 'today') {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        resolvedDefault = `${year}-${month}-${day}`;
+      }
+      setValue(name, resolvedDefault);
     }
   }, []);
 
