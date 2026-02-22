@@ -96,6 +96,8 @@ const ControlledForm = ({
   const valuesRef = useRef(values);
   valuesRef.current = values;
 
+  console.log('[ControlledForm] values prop:', values);
+
   // Stable onChange wrapper
   const onChangeStable = useCallback(
     (name, value) => {
