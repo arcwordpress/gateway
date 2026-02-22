@@ -5,7 +5,7 @@ import './style.css';
 
 const TextInputControl = ({ config = {} }) => {
 
-  const { register, formState } = useGatewayForm();
+  const { register, formState, watch } = useGatewayForm();
 
   const name = config.name;
   if (!name) {
@@ -21,6 +21,8 @@ const TextInputControl = ({ config = {} }) => {
     default: defaultValue = ''
   } = config;
 
+  const currentValue = watch(name) ?? defaultValue;
+
   const inputClasses = ['text-field__input'];
   if (fieldError) {
     inputClasses.push('text-field__input--error');
@@ -31,7 +33,7 @@ const TextInputControl = ({ config = {} }) => {
       type="text"
       name={name}
       placeholder={placeholder}
-      defaultValue={defaultValue}
+      value={currentValue}
       required={required}
       className={inputClasses.join(' ')}
       {...register(name)}
