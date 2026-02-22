@@ -167,7 +167,11 @@ abstract class Block {
             return $assoc;
         }
 
-        return $fields;
+        $result = [];
+        foreach ($fields as $name => $field) {
+            $result[$name] = array_merge(['name' => $name], $field);
+        }
+        return $result;
     }
 
     /**
