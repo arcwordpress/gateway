@@ -2,6 +2,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
+import { BlockForm } from '@arcwp/gateway-forms';
 import TemplateBlock from './TemplateBlock';
 
 /**
@@ -60,47 +61,22 @@ const registerBlocks = (blocks) => {
                     />
                 );
 
-                // TODO: Wire up Gateway field components here.
-                //
-                // The real implementation should use BlockForm (or GutenbergFieldGroup)
-                // from @gateway/forms, which needs to be added as a dependency first:
-                //
-                //   "dependencies": { "@gateway/forms": "workspace:*" }
-                //
-                // Gateway's field system uses a watch/register pattern. BlockForm wraps
-                // ControlledForm, which provides a watch() shim backed by the current
-                // attributes object — so fields that call watch(name) to read their value
-                // will naturally read from block attributes. The register(name) function
-                // routes onChange through setAttributes({ [name]: value }), which is the
-                // same path that was already working in the now-removed fake implementation.
-                //
-                // The fields array from PHP maps directly to Gateway field configs:
-                //   { name, type, label, default, options }
-                //
-                // Simplest approach — auto-renders all fields in a panel:
-                //
-                //   import { BlockForm } from '@gateway/forms';
-                //
-                //   if (fields.length > 0) {
-                //     return (
-                //       <>
-                //         <InspectorControls>
-                //           <PanelBody title="Settings" initialOpen={true}>
-                //             <BlockForm
-                //               attributes={attributes}
-                //               setAttributes={setAttributes}
-                //               fields={fields}
-                //             />
-                //           </PanelBody>
-                //         </InspectorControls>
-                //         {mainContent}
-                //       </>
-                //     );
-                //   }
-                //
-                // For custom layouts use GutenbergFieldProvider + GutenbergField instead.
-                // buildAttributesFromFields above already handles the WP attribute schema,
-                // so no changes are needed there once the field UI is wired up.
+                if (fields.length > 0) {
+                    return (
+                        <>
+                            <InspectorControls>
+                                <PanelBody title="Settings" initialOpen={true}>
+                                    <BlockForm
+                                        attributes={attributes}
+                                        setAttributes={setAttributes}
+                                        fields={fields}
+                                    />
+                                </PanelBody>
+                            </InspectorControls>
+                            {mainContent}
+                        </>
+                    );
+                }
 
                 return mainContent;
             },
