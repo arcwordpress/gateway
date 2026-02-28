@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { useNavigate, Link, useParams } from '@tanstack/react-router'
 import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
 
@@ -20,14 +20,9 @@ type FieldGroupSchema = {
   properties: Record<string, SchemaProperty>
 }
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
+type ExtensionData = Record<string, string>
 
-function toKey(title: string) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-}
+// ─── Helpers ───────────────────────────────────────────────────────────────
 
 const fieldGroupSchemaUrl = appConfig.schemaUrl.replace(/[^/]+$/, 'field-group.json')
 
@@ -47,14 +42,16 @@ function FieldSkeleton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
-export default function ExtensionCreate() {
+export default function ExtensionEdit() {
+  const { key } = useParams({ strict: false }) as { key: string }
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
   const [fields, setFields] = useState<Record<string, string>>({})
-  const [key, setKey] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const { data: schema, isLoading, isError } = useQuery<FieldGroupSchema>({
+  // Load field-group schema
+  const { data: schema, isLoading: schemaLoading } = useQuery<FieldGroupSchema>({
     queryKey: ['schema', 'field-group'],
     queryFn: async () => {
       const res = await fetch(fieldGroupSchemaUrl)
@@ -65,35 +62,44 @@ export default function ExtensionCreate() {
     retry: 2,
   })
 
-  // Seed defaults from schema once it arrives
+  // Load existing extension data
+  const { data: existing, isLoading: extLoading, isError: extError } = useQuery<ExtensionData>({
+    queryKey: ['extensions', key],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.extension as ExtensionData
+    },
+    enabled: !!key,
+  })
+
+  // Seed form fields from existing extension data once both schema and data are ready
   useEffect(() => {
-    if (!schema) return
-    setFields((prev) => {
+    if (!schema || !existing) return
+    setFields(() => {
       const seeded: Record<string, string> = {}
-      for (const [name, prop] of Object.entries(schema.properties)) {
-        seeded[name] = prev[name] ?? (prop.default !== undefined ? String(prop.default) : '')
+      for (const name of Object.keys(schema.properties)) {
+        seeded[name] = existing[name] ?? ''
       }
       return seeded
     })
-  }, [schema])
-
-  // Auto-generate key from title
-  useEffect(() => {
-    if (fields.title) setKey(toKey(fields.title))
-  }, [fields.title])
+  }, [schema, existing])
 
   const setField = (name: string, val: string) =>
     setFields((prev) => ({ ...prev, [name]: val }))
 
-  const mutation = useMutation({
+  // ── Update ────────────────────────────────────────────────────────────
+
+  const updateMutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
-      const res = await fetch(apiUrl('gateway/v1/extensions'), {
-        method: 'POST',
+      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), {
+        method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify(data),
       })
       const json = await res.json()
-      if (!json.success) throw new Error(json.message ?? 'Failed to create extension')
+      if (!json.success) throw new Error(json.message ?? 'Failed to update extension')
       return json
     },
     onSuccess: () => {
@@ -104,12 +110,30 @@ export default function ExtensionCreate() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const title = fields.title?.trim()
-    if (!title || !key.trim()) return
-    mutation.mutate({ ...fields, title, key: key.trim() })
+    if (!fields.title?.trim()) return
+    updateMutation.mutate({ ...fields })
   }
 
-  const isBusy = mutation.isPending
+  // ── Delete ────────────────────────────────────────────────────────────
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to delete extension')
+      return json
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      void navigate({ to: '/extensions' })
+    },
+  })
+
+  const isBusy = updateMutation.isPending || deleteMutation.isPending
+  const isLoading = schemaLoading || extLoading
   const required: string[] = schema?.required ?? []
   const schemaEntries = schema ? Object.entries(schema.properties) : []
 
@@ -119,12 +143,15 @@ export default function ExtensionCreate() {
         <Link to="/extensions" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
           ← Extensions
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-100 mt-3">New Extension</h1>
+        <h1 className="text-2xl font-semibold text-gray-100 mt-3">
+          {existing?.title || key}
+        </h1>
+        <p className="text-xs text-gray-600 font-mono mt-0.5">{key}</p>
       </div>
 
-      {isError && (
+      {extError && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-          Could not load field schema — check that the plugin schema file is accessible.
+          Could not load extension data.
         </div>
       )}
 
@@ -144,31 +171,15 @@ export default function ExtensionCreate() {
                     type="text"
                     value={fields[name] ?? ''}
                     disabled={isBusy}
-                    autoFocus={name === 'title'}
                     onChange={(e) => setField(name, e.target.value)}
                     className={baseInput}
                   />
-                  {/* Show auto-generated key below the title field */}
-                  {name === 'title' && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                        Key
-                        <span className="ml-2 text-xs text-gray-600 font-normal">auto-generated</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={key}
-                        readOnly
-                        className="w-full px-3 py-2 rounded-lg bg-gray-800/50 border border-gray-700/50 text-gray-500 font-mono text-sm focus:outline-none cursor-default"
-                      />
-                    </div>
-                  )}
                 </div>
               ))}
 
-          {mutation.isError && (
+          {updateMutation.isError && (
             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-              {(mutation.error as Error).message}
+              {(updateMutation.error as Error).message}
             </div>
           )}
 
@@ -178,7 +189,7 @@ export default function ExtensionCreate() {
               disabled={isBusy || !fields.title?.trim() || isLoading}
               className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
-              {isBusy ? 'Creating…' : 'Create Extension'}
+              {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
             </button>
             <Link
               to="/extensions"
@@ -188,6 +199,44 @@ export default function ExtensionCreate() {
             </Link>
           </div>
         </form>
+      </div>
+
+      {/* ── Delete ─────────────────────────────────────────────────────── */}
+      <div className="mt-6 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+        <p className="text-sm font-medium text-red-400 mb-1">Danger zone</p>
+        <p className="text-xs text-gray-500 mb-3">
+          Deletes the extension, its plugin files, and all associated data. This cannot be undone.
+        </p>
+
+        {deleteMutation.isError && (
+          <p className="text-xs text-red-400 mb-2">{(deleteMutation.error as Error).message}</p>
+        )}
+
+        {confirmDelete ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => deleteMutation.mutate()}
+              disabled={isBusy}
+              className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Yes, delete'}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              disabled={isBusy}
+              className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="px-4 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm transition-colors"
+          >
+            Delete Extension
+          </button>
+        )}
       </div>
     </div>
   )
