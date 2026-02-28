@@ -82,9 +82,6 @@ export default function Graph() {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-100">Graph Editor</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            React Flow · Dagre auto-layout · {nodes.length} nodes · {edges.length} edges
-          </p>
         </div>
         <button className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
           + Add Node
