@@ -52,14 +52,6 @@ class Raptor
             [__CLASS__, 'renderPage']
         );
 
-        add_submenu_page(
-            'gateway-raptor2',
-            'Graph Editor',
-            'Graph Editor',
-            'manage_options',
-            'gateway-raptor2-graph',
-            [__CLASS__, 'renderGraphPage']
-        );
     }
 
     // ─── Asset enqueuing ──────────────────────────────────────────────────
@@ -130,8 +122,5 @@ class Raptor
         echo '<div id="gateway-raptor-root" data-route="/"></div>';
     }
 
-    public static function renderGraphPage(): void
-    {
-        echo '<div id="gateway-raptor-root" data-route="/graph"></div>';
-    }
+
 }
