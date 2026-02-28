@@ -394,58 +394,33 @@ class Routes
     }
 
     /**
-     * Get all extensions from JSON files in extensions directory
+     * Get all extensions from the database
      *
      * @param \WP_REST_Request $request
      * @return \WP_REST_Response
      */
     public function getExtensions($request)
     {
-        $extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
-        $extensions = [];
+        $rows = \Gateway\Extensions\RaptorExtension::all();
 
-        // Check if directory exists
-        if (!is_dir($extensions_dir)) {
-            return new \WP_REST_Response([
-                'success' => true,
-                'extensions' => []
-            ], 200);
-        }
-
-        // Scan directory for subdirectories
-        $dirs = glob($extensions_dir . '/*', GLOB_ONLYDIR);
-
-        if ($dirs === false) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => 'Failed to read extensions directory'
-            ], 500);
-        }
-
-        // Parse extension.json from each subdirectory
-        foreach ($dirs as $dir) {
-            $extension_file = $dir . '/extension.json';
-            
-            if (!file_exists($extension_file)) {
-                continue;
-            }
-            
-            $json_content = file_get_contents($extension_file);
-            
-            if ($json_content === false) {
-                continue;
-            }
-
-            $parsed = json_decode($json_content, true);
-            
-            if (json_last_error() === JSON_ERROR_NONE && $parsed !== null) {
-                $extensions[] = $parsed;
-            }
-        }
+        $extensions = $rows->map(function ($row) {
+            return [
+                'key'             => $row->extension_key,
+                'title'          => $row->title,
+                'description'    => $row->description,
+                'version'        => $row->version,
+                'author'         => $row->author,
+                'author_uri'     => $row->author_uri,
+                'text_domain'    => $row->text_domain,
+                'min_wp_version' => $row->min_wp_version,
+                'namespace'      => $row->namespace,
+                'status'         => $row->status,
+            ];
+        })->values()->all();
 
         return new \WP_REST_Response([
-            'success' => true,
-            'extensions' => $extensions
+            'success'    => true,
+            'extensions' => $extensions,
         ], 200);
     }
 
@@ -529,6 +504,20 @@ class Routes
 
         // Activate the plugin
         $activation_result = $this->activatePlugin($plugin_generation['plugin_slug']);
+
+        // Persist the extension record to the database
+        \Gateway\Extensions\RaptorExtension::create([
+            'extension_key'  => $extension_key,
+            'title'          => $json_data['title']          ?? '',
+            'description'    => $json_data['description']    ?? '',
+            'version'        => $json_data['version']        ?? '1.0.0',
+            'author'         => $json_data['author']         ?? '',
+            'author_uri'     => $json_data['author_uri']     ?? '',
+            'text_domain'    => $json_data['text_domain']    ?? '',
+            'min_wp_version' => $json_data['min_wp_version'] ?? '',
+            'namespace'      => $json_data['namespace']      ?? '',
+            'status'         => 'active',
+        ]);
 
         $response_data = [
             'success' => true,
