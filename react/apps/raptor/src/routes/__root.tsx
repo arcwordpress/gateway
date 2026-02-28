@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Outlet, Link } from '@tanstack/react-router'
 import { appConfig } from '../config'
 import Header from '../components/Header'
@@ -58,16 +59,21 @@ function Sidebar() {
 
 // ─── Root layout ───────────────────────────────────────────────────────────
 export default function RootLayout() {
+  useEffect(() => {
+    if (!appConfig.isWordPress) return
+    // Apply to #gateway-raptor-root so the background moves with the content.
+    // Doing this on an inner div leaves the root background in place and
+    // creates a gap.
+    const root = document.getElementById('gateway-raptor-root')
+    if (!root) return
+    root.style.marginLeft = '-20px'
+    root.style.borderLeft = '1px solid white'
+  }, [])
+
   return (
     <div
       className="dark flex text-gray-100"
-      style={{
-        minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh',
-        ...(appConfig.isWordPress && {
-          marginLeft: '-20px',
-          borderLeft: '1px solid white',
-        }),
-      }}
+      style={{ minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh' }}
     >
       {/*
        * Sidebar is a sibling to the router outlet — the same pattern as Exta's
