@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import {
   ReactFlow,
+  Handle,
+  Position,
   Controls,
   MiniMap,
   Background,
@@ -58,6 +60,7 @@ function SiteNode(_: NodeProps<SiteNodeType>) {
       }}
     >
       Site
+      <Handle type="source" position={Position.Bottom} />
     </div>
   )
 }
@@ -77,10 +80,12 @@ function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
         fontSize: 13,
       }}
     >
+      <Handle type="target" position={Position.Top} />
       <div style={{ fontWeight: 500 }}>{data.title}</div>
       <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', marginTop: 2 }}>
         {data.extKey}
       </div>
+      <Handle type="source" position={Position.Bottom} />
     </div>
   )
 }
@@ -99,6 +104,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
         gap: 6,
       }}
     >
+      <Handle type="target" position={Position.Top} />
       <button
         onClick={data.onEdit}
         style={{
