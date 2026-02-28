@@ -101,6 +101,7 @@ export default function Graph() {
           fitView
           fitViewOptions={{ padding: 0.2 }}
           colorMode="dark"
+          proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
           <Controls />
@@ -108,6 +109,8 @@ export default function Graph() {
             nodeColor="#1e293b"
             nodeStrokeColor="#334155"
             maskColor="rgba(3,7,18,0.7)"
+            zoomable
+            pannable
           />
         </ReactFlow>
       </div>
