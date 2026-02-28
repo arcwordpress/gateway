@@ -2,10 +2,9 @@ import { useEffect } from 'react'
 import { Outlet, Link } from '@tanstack/react-router'
 import { appConfig } from '../config'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 // ─── Nav link ──────────────────────────────────────────────────────────────
-// `to` is string so it works for all routes; TanStack Router Link validates
-// at runtime in dev mode.
 function NavLink({ to, label }: { to: string; label: string }) {
   return (
     <Link
@@ -31,12 +30,11 @@ function SectionLabel({ label }: { label: string }) {
   )
 }
 
-// ─── Sidebar — rendered outside <Outlet>, stable across all route changes ──
+// ─── Sidebar ───────────────────────────────────────────────────────────────
 function Sidebar() {
   return (
     <aside
       className="w-48 shrink-0 border-r border-gray-800 flex flex-col"
-      // Full-height in standalone, body-height in WP (accounts for WP admin bar + page title)
       style={{ minHeight: appConfig.isWordPress ? 'inherit' : '100vh' }}
     >
       {/* Header — branding section at the top of the sidebar */}
@@ -47,12 +45,16 @@ function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         <SectionLabel label="App" />
-        <NavLink to="/" label="Dashboard" />
-        <NavLink to="/graph" label="Graph Editor" />
+        <NavLink to="/graph" label="Gateway 2" />
 
         <SectionLabel label="Data" />
         <NavLink to="/extensions" label="Extensions" />
       </nav>
+
+      {/* Footer — branding at the bottom of the sidebar */}
+      <Footer className="px-4 py-3 border-t border-gray-800 justify-end">
+        <Footer.Credit>Raptor v0.1.0</Footer.Credit>
+      </Footer>
     </aside>
   )
 }
@@ -61,9 +63,6 @@ function Sidebar() {
 export default function RootLayout() {
   useEffect(() => {
     if (!appConfig.isWordPress) return
-    // Apply to #gateway-raptor-root so the background moves with the content.
-    // Doing this on an inner div leaves the root background in place and
-    // creates a gap.
     const root = document.getElementById('gateway-raptor-root')
     if (!root) return
     root.style.marginLeft = '-20px'
@@ -75,10 +74,6 @@ export default function RootLayout() {
       className="dark flex text-gray-100"
       style={{ minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh' }}
     >
-      {/*
-       * Sidebar is a sibling to the router outlet — the same pattern as Exta's
-       * LeftSidebar sitting alongside <Routes>. It never unmounts on navigation.
-       */}
       <Sidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

@@ -30,7 +30,7 @@ function GatewayIcon({ className }: { className?: string }) {
 // ─── Header.Logo ───────────────────────────────────────────────────────────
 
 interface LogoProps {
-  /** Hide the "Raptor" wordmark — useful when the sidebar is collapsed */
+  /** Hide the "GATEWAY" wordmark — useful when the sidebar is collapsed */
   wordmark?: boolean
   className?: string
 }
@@ -40,8 +40,8 @@ function Logo({ wordmark = true, className }: LogoProps) {
     <div className={`flex items-center gap-2.5 ${className ?? ''}`}>
       <GatewayIcon className="w-5 h-4 text-blue-400 shrink-0" />
       {wordmark && (
-        <span className="font-semibold text-gray-100 text-sm tracking-wide select-none">
-          Raptor
+        <span className="font-semibold text-gray-100 text-sm tracking-widest select-none uppercase">
+          Gateway
         </span>
       )}
     </div>
