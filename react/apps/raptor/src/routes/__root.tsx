@@ -34,7 +34,7 @@ function SectionLabel({ label }: { label: string }) {
 function Sidebar() {
   return (
     <aside
-      className="w-48 shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col"
+      className="w-48 shrink-0 border-r border-gray-800 flex flex-col"
       // Full-height in standalone, body-height in WP (accounts for WP admin bar + page title)
       style={{ minHeight: appConfig.isWordPress ? 'inherit' : '100vh' }}
     >
@@ -60,8 +60,14 @@ function Sidebar() {
 export default function RootLayout() {
   return (
     <div
-      className="dark flex bg-gray-950 text-gray-100"
-      style={{ minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh' }}
+      className="dark flex text-gray-100"
+      style={{
+        minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh',
+        ...(appConfig.isWordPress && {
+          marginLeft: '-20px',
+          borderLeft: '1px solid white',
+        }),
+      }}
     >
       {/*
        * Sidebar is a sibling to the router outlet — the same pattern as Exta's
