@@ -38,7 +38,7 @@ interface LogoProps {
 function Logo({ wordmark = true, className }: LogoProps) {
   return (
     <div className={`flex items-center gap-2.5 ${className ?? ''}`}>
-      <GatewayIcon className="w-5 h-4 text-blue-400 shrink-0" />
+      <GatewayIcon className="w-5 h-4 text-gray-100 shrink-0" />
       {wordmark && (
         <span className="font-semibold text-gray-100 text-sm tracking-widest select-none uppercase">
           Gateway

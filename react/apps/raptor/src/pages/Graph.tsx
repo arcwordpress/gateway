@@ -15,7 +15,6 @@ import {
   type NodeTypes,
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
@@ -32,11 +31,19 @@ type FieldGroupSchema = {
   properties: Record<string, SchemaProperty>
 }
 
-type PanelState = { mode: 'edit' | 'delete'; key: string } | null
+type PanelState =
+  | { mode: 'create' }
+  | { mode: 'edit';   key: string }
+  | { mode: 'delete'; key: string }
+  | null
 
-type SiteNodeType   = Node<Record<string, never>, 'siteNode'>
-type ExtNodeType    = Node<{ title: string; extKey: string }, 'extensionNode'>
-type ActNodeType    = Node<{ onEdit: () => void; onDelete: () => void }, 'actionsNode'>
+type SiteNodeType = Node<Record<string, never>, 'siteNode'>
+type ExtNodeType  = Node<{ title: string; extKey: string }, 'extensionNode'>
+type ActNodeType  = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
+
+function toKey(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+}
 
 const fieldGroupSchemaUrl = appConfig.schemaUrl.replace(/[^/]+$/, 'field-group.json')
 
@@ -90,49 +97,62 @@ function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
   )
 }
 
-// ─── Custom node: Actions ───────────────────────────────────────────────────
+// ─── Custom node: Actions ────────────────────────────────────────────────────
+// Generic node for any list of clickable actions.
+// No colours — only near-black and near-white.
 
 function ActionsNode({ data }: NodeProps<ActNodeType>) {
   return (
     <div
       style={{
-        background: '#0f172a',
-        border: '1px solid #1e293b',
+        background: '#111',
+        border: '1px solid #1e1e1e',
         borderRadius: 8,
-        padding: '5px 8px',
-        display: 'flex',
-        gap: 6,
+        minWidth: 140,
+        overflow: 'hidden',
       }}
     >
       <Handle type="target" position={Position.Top} />
-      <button
-        onClick={data.onEdit}
+
+      {/* Heading */}
+      <div
         style={{
-          fontSize: 11,
-          padding: '3px 10px',
-          background: '#1d4ed8',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 5,
-          cursor: 'pointer',
+          padding: '5px 10px',
+          borderBottom: '1px solid #1e1e1e',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#f0f0f0',
+          userSelect: 'none',
         }}
       >
-        Edit
-      </button>
-      <button
-        onClick={data.onDelete}
-        style={{
-          fontSize: 11,
-          padding: '3px 10px',
-          background: '#991b1b',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 5,
-          cursor: 'pointer',
-        }}
-      >
-        Delete
-      </button>
+        Actions
+      </div>
+
+      {/* Links */}
+      <div>
+        {data.actions.map((action) => (
+          <button
+            key={action.label}
+            onClick={action.onClick}
+            style={{
+              display: 'block',
+              width: '100%',
+              textAlign: 'left',
+              padding: '5px 10px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#e8e8e8',
+              fontSize: 12,
+              fontFamily: 'inherit',
+            }}
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -148,7 +168,7 @@ const nodeTypes: NodeTypes = {
 const NODE_DIMS: Record<string, { w: number; h: number }> = {
   siteNode:      { w: 100, h: 42 },
   extensionNode: { w: 180, h: 54 },
-  actionsNode:   { w: 142, h: 36 },
+  actionsNode:   { w: 140, h: 80 },
 }
 
 function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
@@ -198,7 +218,6 @@ function PanelShell({
         flexDirection: 'column',
       }}
     >
-      {/* Header */}
       <div
         style={{
           padding: '16px 20px 12px',
@@ -235,7 +254,6 @@ function PanelShell({
         </button>
       </div>
 
-      {/* Body */}
       <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
         {children}
       </div>
@@ -243,7 +261,7 @@ function PanelShell({
   )
 }
 
-// ─── Edit panel ─────────────────────────────────────────────────────────────
+// ─── Shared form helpers ─────────────────────────────────────────────────────
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
@@ -258,6 +276,143 @@ function FieldSkeleton() {
     </div>
   )
 }
+
+// ─── Create panel ────────────────────────────────────────────────────────────
+
+function CreatePanel({ onClose }: { onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const [fields, setFields] = useState<Record<string, string>>({})
+  const [key, setKey] = useState('')
+
+  const { data: schema, isLoading, isError } = useQuery<FieldGroupSchema>({
+    queryKey: ['schema', 'field-group'],
+    queryFn: async () => {
+      const res = await fetch(fieldGroupSchemaUrl)
+      if (!res.ok) throw new Error(`Failed to load schema (HTTP ${res.status})`)
+      return res.json() as Promise<FieldGroupSchema>
+    },
+    staleTime: Infinity,
+    retry: 2,
+  })
+
+  useEffect(() => {
+    if (!schema) return
+    setFields((prev) => {
+      const seeded: Record<string, string> = {}
+      for (const [name, prop] of Object.entries(schema.properties)) {
+        seeded[name] = prev[name] ?? (prop.default !== undefined ? String(prop.default) : '')
+      }
+      return seeded
+    })
+  }, [schema])
+
+  useEffect(() => {
+    if (fields.title) setKey(toKey(fields.title))
+    else setKey('')
+  }, [fields.title])
+
+  const setField = (name: string, val: string) =>
+    setFields((prev) => ({ ...prev, [name]: val }))
+
+  const mutation = useMutation({
+    mutationFn: async (data: Record<string, string>) => {
+      const res = await fetch(apiUrl('gateway/v1/extensions'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to create extension')
+      return json
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      onClose()
+    },
+  })
+
+  const required: string[] = schema?.required ?? []
+  const schemaEntries = schema ? Object.entries(schema.properties) : []
+
+  return (
+    <PanelShell title="New Extension" onClose={onClose}>
+      {isError && (
+        <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          Could not load schema.
+        </div>
+      )}
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          const title = fields.title?.trim()
+          if (!title || !key.trim()) return
+          mutation.mutate({ ...fields, title, key: key.trim() })
+        }}
+        className="space-y-4"
+      >
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)
+          : schemaEntries.map(([name, prop]) => (
+              <div key={name}>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  {prop.title}
+                  {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
+                  <span className="ml-1.5 text-gray-600 font-mono font-normal">{name}</span>
+                </label>
+                <input
+                  type="text"
+                  value={fields[name] ?? ''}
+                  disabled={mutation.isPending}
+                  autoFocus={name === 'title'}
+                  onChange={(e) => setField(name, e.target.value)}
+                  className={baseInput}
+                />
+                {name === 'title' && (
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                      Key
+                      <span className="ml-1.5 text-gray-600 font-normal">auto-generated</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={key}
+                      readOnly
+                      className="w-full px-3 py-2 rounded-lg bg-gray-900/50 border border-gray-800/50 text-gray-500 font-mono text-xs focus:outline-none cursor-default"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+
+        {mutation.isError && (
+          <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+            {(mutation.error as Error).message}
+          </div>
+        )}
+
+        <div className="flex gap-2 pt-1">
+          <button
+            type="submit"
+            disabled={mutation.isPending || !fields.title?.trim() || isLoading}
+            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+          >
+            {mutation.isPending ? 'Creating…' : 'Create'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </PanelShell>
+  )
+}
+
+// ─── Edit panel ──────────────────────────────────────────────────────────────
 
 function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
@@ -326,7 +481,7 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
   return (
     <PanelShell title={existing?.title || extKey} sub={extKey} onClose={onClose}>
       {extError && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+        <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           Could not load extension data.
         </div>
       )}
@@ -426,8 +581,8 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
         <span className="font-semibold text-gray-100">{existing?.title || extKey}</span>.
       </p>
       <p className="text-xs text-gray-500 mb-6">
-        This will remove the extension, its plugin files, and all associated data. This cannot
-        be undone.
+        This removes the extension, its plugin files, and all associated data. This cannot be
+        undone.
       </p>
 
       {deleteMutation.isError && (
@@ -473,6 +628,7 @@ export default function Graph() {
     },
   })
 
+  const openCreate = useCallback(() => setPanel({ mode: 'create' }), [])
   const openEdit   = useCallback((key: string) => setPanel({ mode: 'edit',   key }), [])
   const openDelete = useCallback((key: string) => setPanel({ mode: 'delete', key }), [])
   const closePanel = useCallback(() => setPanel(null), [])
@@ -481,14 +637,32 @@ export default function Graph() {
     const exts = extensions ?? []
 
     const rawNodes: Node[] = [
+      // Site root node
       {
         id: 'site',
         type: 'siteNode',
         data: {},
         position: { x: 0, y: 0 },
       },
+      // Site-level actions node
+      {
+        id: 'site-actions',
+        type: 'actionsNode',
+        data: {
+          actions: [{ label: 'Create Extension', onClick: openCreate }],
+        },
+        position: { x: 0, y: 0 },
+      },
     ]
-    const rawEdges: Edge[] = []
+
+    const rawEdges: Edge[] = [
+      {
+        id: 'e-site-actions',
+        source: 'site',
+        target: 'site-actions',
+        style: { stroke: '#334155' },
+      },
+    ]
 
     for (const ext of exts) {
       const extId = `ext-${ext.key}`
@@ -504,13 +678,14 @@ export default function Graph() {
         id: actId,
         type: 'actionsNode',
         data: {
-          onEdit:   () => openEdit(ext.key),
-          onDelete: () => openDelete(ext.key),
+          actions: [
+            { label: 'Edit',   onClick: () => openEdit(ext.key) },
+            { label: 'Delete', onClick: () => openDelete(ext.key) },
+          ],
         },
         position: { x: 0, y: 0 },
       })
 
-      // Site → extension → actions
       rawEdges.push({
         id: `e-site-${ext.key}`,
         source: 'site',
@@ -527,7 +702,7 @@ export default function Graph() {
 
     setNodes(layoutWithDagre(rawNodes, rawEdges))
     setEdges(rawEdges)
-  }, [extensions, openEdit, openDelete, setNodes, setEdges])
+  }, [extensions, openCreate, openEdit, openDelete, setNodes, setEdges])
 
   return (
     <div className="flex flex-col h-full" style={{ minHeight: 'calc(100vh - 160px)' }}>
@@ -558,6 +733,7 @@ export default function Graph() {
         </ReactFlow>
       </div>
 
+      {panel?.mode === 'create' && <CreatePanel onClose={closePanel} />}
       {panel?.mode === 'edit'   && <EditPanel   extKey={panel.key} onClose={closePanel} />}
       {panel?.mode === 'delete' && <DeletePanel extKey={panel.key} onClose={closePanel} />}
     </div>
