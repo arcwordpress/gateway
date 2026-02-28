@@ -30,56 +30,60 @@ function SectionLabel({ label }: { label: string }) {
   )
 }
 
-// ─── Sidebar ───────────────────────────────────────────────────────────────
-function Sidebar() {
-  return (
-    <aside
-      className="w-48 shrink-0 border-r border-gray-800 flex flex-col"
-      style={{ minHeight: appConfig.isWordPress ? 'inherit' : '100vh' }}
-    >
-      {/* Header — branding section at the top of the sidebar */}
-      <Header className="px-4 py-4 border-b border-gray-800">
-        <Header.Logo />
-      </Header>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        <SectionLabel label="App" />
-        <NavLink to="/graph" label="Gateway 2" />
-
-        <SectionLabel label="Data" />
-        <NavLink to="/extensions" label="Extensions" />
-      </nav>
-
-      {/* Footer — branding at the bottom of the sidebar */}
-      <Footer className="px-4 py-3 border-t border-gray-800 justify-end">
-        <Footer.Credit>Raptor v0.1.0</Footer.Credit>
-      </Footer>
-    </aside>
-  )
-}
-
 // ─── Root layout ───────────────────────────────────────────────────────────
+//
+//  ┌──────┬──────────────────────────────────┐
+//  │      │  HEADER                          │
+//  │ LEFT ├──────────────────────────────────┤
+//  │      │  MAIN                            │
+//  │      ├──────────────────────────────────┤
+//  │      │  FOOTER            credit →      │
+//  └──────┴──────────────────────────────────┘
+//
 export default function RootLayout() {
   useEffect(() => {
     if (!appConfig.isWordPress) return
     const root = document.getElementById('gateway-raptor-root')
     if (!root) return
     root.style.marginLeft = '-20px'
-    root.style.borderLeft = '1px solid white'
   }, [])
 
   return (
     <div
-      className="dark flex text-gray-100"
-      style={{ minHeight: appConfig.isWordPress ? 'calc(100vh - 80px)' : '100vh' }}
+      className="dark flex text-gray-100 bg-gray-950"
+      style={{ height: appConfig.isWordPress ? 'calc(100vh - 32px)' : '100vh' }}
     >
-      <Sidebar />
+      {/* ── LEFT panel — full height ──────────────────────────────────── */}
+      <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full">
+        {/* Logo at the top of the LEFT stack */}
+        <div className="px-4 py-4 border-b border-gray-800">
+          <Header.Logo />
+        </div>
 
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Navigation */}
+        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+          <SectionLabel label="App" />
+          <NavLink to="/graph" label="Site" />
+
+          <SectionLabel label="Data" />
+          <NavLink to="/extensions" label="Extensions" />
+        </nav>
+      </aside>
+
+      {/* ── Right column: HEADER + MAIN + FOOTER stacked ─────────────── */}
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
+        {/* HEADER — horizontal bar across the top */}
+        <div className="h-12 shrink-0 border-b border-gray-800" />
+
+        {/* MAIN — scrollable content area */}
         <main className="flex-1 overflow-auto p-6">
           <Outlet />
         </main>
+
+        {/* FOOTER — horizontal bar across the bottom */}
+        <Footer className="px-6 py-2.5 border-t border-gray-800 justify-end shrink-0">
+          <Footer.Credit>Raptor v0.1.0</Footer.Credit>
+        </Footer>
       </div>
     </div>
   )
