@@ -82,8 +82,10 @@ export default function Extensions() {
       {!isLoading && !isError && extensions.length > 0 && (
         <div className="space-y-2">
           {extensions.map((ext) => (
-            <div
+            <Link
               key={ext.key}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              to={`/extensions/${ext.key}/edit` as any}
               className="group flex items-center gap-4 p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-gray-700 hover:bg-gray-900/80 transition-all"
             >
               <div className="flex-1 min-w-0">
@@ -93,7 +95,7 @@ export default function Extensions() {
                 <p className="text-xs text-gray-600 mt-0.5 font-mono">{ext.key}</p>
               </div>
               <ArrowIcon />
-            </div>
+            </Link>
           ))}
         </div>
       )}

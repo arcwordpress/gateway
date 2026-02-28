@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/field-group",
+  "title": "Field Group",
+  "description": "Fields that map to the properties of a Gateway extension.",
+  "type": "object",
+  "required": ["title"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Display name for this extension."
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Short summary shown in the WordPress admin plugin list."
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "Semantic version of the generated plugin.",
+      "default": "0.1.0"
+    },
+    "author": {
+      "type": "string",
+      "title": "Author",
+      "description": "Full name of the plugin author or organisation."
+    },
+    "author_uri": {
+      "type": "string",
+      "title": "Author URL",
+      "description": "Website of the plugin author or organisation."
+    },
+    "text_domain": {
+      "type": "string",
+      "title": "Text Domain",
+      "description": "Unique slug used for i18n. Typically matches the plugin key."
+    },
+    "namespace": {
+      "type": "string",
+      "title": "PHP Namespace",
+      "description": "Root PHP namespace for generated plugin classes. PascalCase recommended."
+    },
+    "min_wp_version": {
+      "type": "string",
+      "title": "Minimum WP Version",
+      "description": "Oldest WordPress version the plugin officially supports."
+    }
+  }
+}
