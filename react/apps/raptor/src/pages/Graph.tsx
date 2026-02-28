@@ -19,6 +19,7 @@ import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { appConfig } from '../config'
+import { useApp } from '../context/app'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -192,6 +193,17 @@ function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
 
 // ─── Shared panel shell ─────────────────────────────────────────────────────
 
+// WP admin bar is always 32 px. In normal embed mode the panel must not
+// cover it. In expanded mode (app fills the full viewport) it can go full height.
+function usePanelGeometry() {
+  const { isExpanded } = useApp()
+  const constrained = appConfig.isWordPress && !isExpanded
+  return {
+    top:    constrained ? 32  : 0,
+    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+  }
+}
+
 function PanelShell({
   title,
   sub,
@@ -203,13 +215,15 @@ function PanelShell({
   onClose: () => void
   children: React.ReactNode
 }) {
+  const { top, height } = usePanelGeometry()
+
   return (
     <div
       style={{
         position: 'fixed',
         right: 0,
-        top: 0,
-        height: '100vh',
+        top,
+        height,
         width: 320,
         background: '#000',
         borderLeft: '1px solid #1e293b',
