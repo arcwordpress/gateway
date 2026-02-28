@@ -1,5 +1,6 @@
 import { Outlet, Link } from '@tanstack/react-router'
 import { appConfig } from '../config'
+import Header from '../components/Header'
 
 // ─── Nav link ──────────────────────────────────────────────────────────────
 // `to` is string so it works for all routes; TanStack Router Link validates
@@ -37,11 +38,10 @@ function Sidebar() {
       // Full-height in standalone, body-height in WP (accounts for WP admin bar + page title)
       style={{ minHeight: appConfig.isWordPress ? 'inherit' : '100vh' }}
     >
-      {/* Logo / wordmark */}
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-800">
-        <span className="text-blue-400">⬡</span>
-        <span className="font-semibold text-gray-100 text-sm tracking-wide">Raptor</span>
-      </div>
+      {/* Header — branding section at the top of the sidebar */}
+      <Header className="px-4 py-4 border-b border-gray-800">
+        <Header.Logo />
+      </Header>
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
