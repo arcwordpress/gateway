@@ -116,6 +116,8 @@ class Raptor
                 'nonce'       => wp_create_nonce('wp_rest'),
                 'version'     => GATEWAY_VERSION,
                 'isWordPress' => true,
+                // Schema files are static JSON served directly from the plugin directory
+                'schemaUrl'   => GATEWAY_URL . 'schemas/raptor/extension.json',
             ]
         );
     }

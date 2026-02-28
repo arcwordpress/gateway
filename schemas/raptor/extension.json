@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/extension",
+  "title": "Extension",
+  "description": "Properties used when generating a WordPress plugin from a Gateway extension. Ordered by how commonly each field appears in real plugins.",
+  "type": "object",
+  "required": ["description", "version", "author", "text_domain", "min_wp_version"],
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Short summary shown in the WordPress admin plugin list.",
+      "ui": {
+        "widget": "textarea",
+        "placeholder": "A brief summary of what this extension does.",
+        "rows": 3
+      }
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "Semantic version of the generated plugin.",
+      "default": "1.0.0",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$",
+      "ui": {
+        "placeholder": "1.0.0"
+      }
+    },
+    "author": {
+      "type": "string",
+      "title": "Author",
+      "description": "Full name of the plugin author or organisation.",
+      "ui": {
+        "placeholder": "Acme Corp"
+      }
+    },
+    "author_uri": {
+      "type": "string",
+      "title": "Author URL",
+      "description": "Website of the plugin author or organisation.",
+      "format": "uri",
+      "ui": {
+        "widget": "url",
+        "placeholder": "https://example.com"
+      }
+    },
+    "text_domain": {
+      "type": "string",
+      "title": "Text Domain",
+      "description": "Unique slug used for i18n. Typically matches the plugin key.",
+      "ui": {
+        "placeholder": "my-extension"
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "title": "PHP Namespace",
+      "description": "Root PHP namespace for generated plugin classes. PascalCase recommended.",
+      "ui": {
+        "placeholder": "MyExtension"
+      }
+    },
+    "min_wp_version": {
+      "type": "string",
+      "title": "Minimum WP Version",
+      "description": "Oldest WordPress version the plugin officially supports.",
+      "default": "6.4",
+      "enum": ["5.9", "6.0", "6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7"],
+      "ui": {
+        "widget": "select"
+      }
+    }
+  }
+}
