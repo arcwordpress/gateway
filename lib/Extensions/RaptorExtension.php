@@ -40,21 +40,28 @@ class RaptorExtension extends \Gateway\Collection
     // Internal Gateway table — excluded from public collection listings.
     protected $core = true;
 
-    protected $fillable = [
-        'extension_key',
-        'title',
-        'description',
-        'version',
-        'author',
-        'author_uri',
-        'text_domain',
-        'min_wp_version',
-        'namespace',
-        'status',
-    ];
-
     // No public REST routes — managed exclusively via Exta\Routes.
     protected $routes = [
         'enabled' => false,
     ];
+
+    /**
+     * \Gateway\Collection::getFillable() derives from $fields, not $fillable.
+     * Override it here so Eloquent's mass-assignment guard uses our explicit list.
+     */
+    public function getFillable(): array
+    {
+        return [
+            'extension_key',
+            'title',
+            'description',
+            'version',
+            'author',
+            'author_uri',
+            'text_domain',
+            'min_wp_version',
+            'namespace',
+            'status',
+        ];
+    }
 }
