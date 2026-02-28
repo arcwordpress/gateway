@@ -1,0 +1,14 @@
+{
+  "$id": "https://gateway.dev/schemas/endpoint",
+  "title": "Endpoint",
+  "type": "object",
+  "required": ["name", "method", "path"],
+  "properties": {
+    "name": { "type": "string", "description": "index, show, store, update, destroy" },
+    "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+    "path": { "type": "string" },
+    "enabled": { "type": "boolean", "default": true },
+    "middleware": { "type": "array", "items": { "type": "string" } },
+    "permissions": { "type": "array", "items": { "type": "string" } }
+  }
+}

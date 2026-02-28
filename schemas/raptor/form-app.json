@@ -1,0 +1,31 @@
+{
+  "$id": "https://gateway.dev/schemas/form-app",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "App Form",
+  "version": "1.0",
+  "allOf": [
+    { "$ref": "https://gateway.dev/schemas/form" },
+    {
+      "type": "object",
+      "properties": {
+        "autosave": {
+          "type": "object",
+          "properties": {
+            "debounce": { "type": "integer", "default": 500, "description": "Ms to wait after change before saving" },
+            "indicator": { "type": "boolean", "default": true, "description": "Show saving indicator" },
+            "on_error": { 
+              "type": "string", 
+              "enum": ["retry", "notify", "revert"],
+              "default": "notify"
+            }
+          }
+        },
+        "validation": {
+          "type": "string",
+          "enum": ["on_change", "on_blur"],
+          "default": "on_change"
+        }
+      }
+    }
+  ]
+}
