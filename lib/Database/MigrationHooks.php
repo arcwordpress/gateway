@@ -108,5 +108,6 @@ class MigrationHooks
     {
         \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
         \Gateway\Migrations\GatewayCollectionUserMigration::create();
+        \Gateway\Migrations\GatewayRaptorExtensionMigration::create();
     }
 }

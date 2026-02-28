@@ -50,6 +50,24 @@ class Routes
             'callback' => [$this, 'createExtension'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
+
+        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-z0-9_]+)', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getExtension'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
+
+        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-z0-9_]+)', [
+            'methods' => ['PATCH', 'PUT'],
+            'callback' => [$this, 'updateExtension'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
+
+        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-z0-9_]+)', [
+            'methods' => 'DELETE',
+            'callback' => [$this, 'deleteExtension'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
     }
 
     /**
@@ -394,58 +412,33 @@ class Routes
     }
 
     /**
-     * Get all extensions from JSON files in extensions directory
+     * Get all extensions from the database
      *
      * @param \WP_REST_Request $request
      * @return \WP_REST_Response
      */
     public function getExtensions($request)
     {
-        $extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
-        $extensions = [];
+        $rows = \Gateway\Extensions\RaptorExtension::all();
 
-        // Check if directory exists
-        if (!is_dir($extensions_dir)) {
-            return new \WP_REST_Response([
-                'success' => true,
-                'extensions' => []
-            ], 200);
-        }
-
-        // Scan directory for subdirectories
-        $dirs = glob($extensions_dir . '/*', GLOB_ONLYDIR);
-
-        if ($dirs === false) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => 'Failed to read extensions directory'
-            ], 500);
-        }
-
-        // Parse extension.json from each subdirectory
-        foreach ($dirs as $dir) {
-            $extension_file = $dir . '/extension.json';
-            
-            if (!file_exists($extension_file)) {
-                continue;
-            }
-            
-            $json_content = file_get_contents($extension_file);
-            
-            if ($json_content === false) {
-                continue;
-            }
-
-            $parsed = json_decode($json_content, true);
-            
-            if (json_last_error() === JSON_ERROR_NONE && $parsed !== null) {
-                $extensions[] = $parsed;
-            }
-        }
+        $extensions = $rows->map(function ($row) {
+            return [
+                'key'             => $row->extension_key,
+                'title'          => $row->title,
+                'description'    => $row->description,
+                'version'        => $row->version,
+                'author'         => $row->author,
+                'author_uri'     => $row->author_uri,
+                'text_domain'    => $row->text_domain,
+                'min_wp_version' => $row->min_wp_version,
+                'namespace'      => $row->namespace,
+                'status'         => $row->status,
+            ];
+        })->values()->all();
 
         return new \WP_REST_Response([
-            'success' => true,
-            'extensions' => $extensions
+            'success'    => true,
+            'extensions' => $extensions,
         ], 200);
     }
 
@@ -529,6 +522,20 @@ class Routes
 
         // Activate the plugin
         $activation_result = $this->activatePlugin($plugin_generation['plugin_slug']);
+
+        // Persist the extension record to the database
+        \Gateway\Extensions\RaptorExtension::create([
+            'extension_key'  => $extension_key,
+            'title'          => $json_data['title']          ?? '',
+            'description'    => $json_data['description']    ?? '',
+            'version'        => $json_data['version']        ?? '1.0.0',
+            'author'         => $json_data['author']         ?? '',
+            'author_uri'     => $json_data['author_uri']     ?? '',
+            'text_domain'    => $json_data['text_domain']    ?? '',
+            'min_wp_version' => $json_data['min_wp_version'] ?? '',
+            'namespace'      => $json_data['namespace']      ?? '',
+            'status'         => 'active',
+        ]);
 
         $response_data = [
             'success' => true,
@@ -795,6 +802,151 @@ class Routes
                 'file_path' => null,
             ];
         }
+    }
+
+    /**
+     * Get a single extension by key
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function getExtension($request)
+    {
+        $extension_key = $request->get_url_params()['extension_key'];
+
+        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+
+        if (!$extension) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension not found',
+            ], 404);
+        }
+
+        return new \WP_REST_Response([
+            'success'   => true,
+            'extension' => [
+                'key'             => $extension->extension_key,
+                'title'           => $extension->title,
+                'description'     => $extension->description,
+                'version'         => $extension->version,
+                'author'          => $extension->author,
+                'author_uri'      => $extension->author_uri,
+                'text_domain'     => $extension->text_domain,
+                'min_wp_version'  => $extension->min_wp_version,
+                'namespace'       => $extension->namespace,
+                'status'          => $extension->status,
+            ],
+        ], 200);
+    }
+
+    /**
+     * Update extension metadata
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function updateExtension($request)
+    {
+        $extension_key = $request->get_url_params()['extension_key'];
+        $data = $request->get_json_params();
+
+        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+
+        if (!$extension) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension not found',
+            ], 404);
+        }
+
+        $fillable = ['title', 'description', 'version', 'author', 'author_uri', 'text_domain', 'min_wp_version', 'namespace'];
+        $updates = [];
+        foreach ($fillable as $field) {
+            if (isset($data[$field])) {
+                $updates[$field] = $data[$field];
+            }
+        }
+
+        $extension->fill($updates);
+        $extension->save();
+
+        // Update extension.json on disk
+        $extension_file = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key . '/extension.json';
+        if (file_exists($extension_file)) {
+            $existing = json_decode(file_get_contents($extension_file), true) ?? [];
+            $merged   = array_merge($existing, $updates);
+            file_put_contents($extension_file, json_encode($merged, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'message' => 'Extension updated successfully',
+        ], 200);
+    }
+
+    /**
+     * Delete an extension, its files, and its plugin
+     *
+     * @param \WP_REST_Request $request
+     * @return \WP_REST_Response
+     */
+    public function deleteExtension($request)
+    {
+        $extension_key = $request->get_url_params()['extension_key'];
+
+        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+
+        if (!$extension) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Extension not found',
+            ], 404);
+        }
+
+        // Deactivate and remove the plugin
+        $plugin_slug = str_replace('_', '-', $extension_key);
+        $plugin_file = $plugin_slug . '/' . $plugin_slug . '.php';
+
+        if (function_exists('is_plugin_active') && is_plugin_active($plugin_file)) {
+            deactivate_plugins($plugin_file);
+        }
+
+        $plugin_dir = WP_PLUGIN_DIR . '/' . $plugin_slug;
+        if (is_dir($plugin_dir)) {
+            $this->deleteDirectory($plugin_dir);
+        }
+
+        // Remove extension directory
+        $extension_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key;
+        if (is_dir($extension_dir)) {
+            $this->deleteDirectory($extension_dir);
+        }
+
+        // Remove DB record
+        $extension->delete();
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'message' => 'Extension deleted successfully',
+        ], 200);
+    }
+
+    /**
+     * Recursively delete a directory
+     *
+     * @param string $dir
+     */
+    private function deleteDirectory($dir)
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        foreach (array_diff(scandir($dir), ['.', '..']) as $item) {
+            $path = $dir . '/' . $item;
+            is_dir($path) ? $this->deleteDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     /**
