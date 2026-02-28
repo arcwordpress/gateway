@@ -1,1 +1,1 @@
-{"root":["./src/config.ts","./src/main.tsx","./src/router.ts","./src/pages/Dashboard.tsx","./src/pages/Graph.tsx","./src/routes/__root.tsx"],"version":"5.9.3"}
+{"root":["./src/config.ts","./src/main.tsx","./src/router.ts","./src/lib/api.ts","./src/pages/Dashboard.tsx","./src/pages/ExtensionCreate.tsx","./src/pages/Extensions.tsx","./src/pages/Graph.tsx","./src/routes/__root.tsx"],"version":"5.9.3"}

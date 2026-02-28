@@ -10,6 +10,8 @@ import { appConfig } from './config'
 import RootLayout from './routes/__root'
 import DashboardPage from './pages/Dashboard'
 import GraphPage from './pages/Graph'
+import ExtensionsPage from './pages/Extensions'
+import ExtensionCreatePage from './pages/ExtensionCreate'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -37,7 +39,24 @@ const graphRoute = createRoute({
   component: GraphPage,
 })
 
-const routeTree = rootRoute.addChildren([indexRoute, graphRoute])
+const extensionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/extensions',
+  component: ExtensionsPage,
+})
+
+const extensionCreateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/extensions/create',
+  component: ExtensionCreatePage,
+})
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  graphRoute,
+  extensionsRoute,
+  extensionCreateRoute,
+])
 
 const history = appConfig.isWordPress
   ? createHashHistory()
