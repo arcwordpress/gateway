@@ -115,6 +115,7 @@ class Plugin
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init(); // Restored Builder admin link
+        Admin\Raptor::init();  // Gateway 2 — Raptor node graph editor (Vite/React Flow)
         Package\PackageMenus::init();
 
         // Initialize front-end forms
