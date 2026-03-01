@@ -75,6 +75,7 @@ export default function RootLayout() {
           <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
             <SectionLabel label="App" />
             <NavLink to="/graph" label="Site" />
+            <NavLink to="/collections" label="Collections" />
 
             <SectionLabel label="Data" />
             <NavLink to="/extensions" label="Extensions" />
