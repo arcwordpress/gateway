@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/relationship-types/belongs-to",
+  "title": "Belongs To",
+  "description": "The source model has a foreign key pointing to the target model's primary key. Example: a Comment belongs to a Post — comments.post_id → posts.id.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "belongsTo"
+    },
+    "methodName": {
+      "type": "string",
+      "title": "Method Name",
+      "description": "camelCase PHP method on the source model returning the related instance. E.g. 'post' for $comment->post().",
+      "ui": {
+        "placeholder": "post"
+      }
+    },
+    "foreignKey": {
+      "type": "string",
+      "title": "Foreign Key",
+      "description": "Column on the source model's table that holds the reference. E.g. 'post_id'.",
+      "ui": {
+        "placeholder": "post_id"
+      }
+    },
+    "ownerKey": {
+      "type": "string",
+      "title": "Owner Key",
+      "description": "Primary key column on the target model's table. Usually 'id'.",
+      "ui": {
+        "placeholder": "id"
+      }
+    }
+  }
+}

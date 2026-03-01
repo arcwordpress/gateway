@@ -38,6 +38,10 @@ class RaptorCollection extends \Gateway\Collection
         'enabled' => false,
     ];
 
+    protected $casts = [
+        'relationships' => 'array',
+    ];
+
     public function getFillable(): array
     {
         return [
@@ -45,6 +49,7 @@ class RaptorCollection extends \Gateway\Collection
             'title',
             'description',
             'status',
+            'relationships',
         ];
     }
 }

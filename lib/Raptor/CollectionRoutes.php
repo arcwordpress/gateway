@@ -152,6 +152,9 @@ class CollectionRoutes
         if (isset($data['status'])) {
             $update['status'] = sanitize_text_field($data['status']);
         }
+        if (array_key_exists('relationships', $data)) {
+            $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
+        }
 
         $collection->update($update);
 
