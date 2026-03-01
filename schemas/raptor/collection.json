@@ -1,23 +1,28 @@
 {
-  "$id": "https://gateway.dev/schemas/collection",
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/collection",
   "title": "Collection",
-  "version": "1.1",
+  "description": "A named collection stored in the Gateway Raptor database (wp_gateway_raptor_collections).",
   "type": "object",
-  "required": ["key", "table"],
+  "required": ["title"],
   "properties": {
-    "key": { "type": "string", "description": "Snake_case identifier, e.g. event" },
-    "table": { "type": "string", "description": "DB table name, e.g. gateway_events" },
-    "title": { "type": "string" },
-    "titlePlural": { "type": "string" },
-    "package": { "type": "string", "default": "default" },
-    "core": { "type": "boolean", "default": false },
-    "private": { "type": "boolean", "default": false },
-    "timestamps": { "type": "boolean", "default": true },
-    "searchable": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Field keys that are full-text searchable"
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Human-readable name for this collection.",
+      "ui": {
+        "placeholder": "My Collection"
+      }
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Optional summary of what records this collection stores.",
+      "ui": {
+        "widget": "textarea",
+        "placeholder": "Describe the purpose of this collection.",
+        "rows": 3
+      }
     }
   }
 }

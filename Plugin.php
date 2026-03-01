@@ -85,6 +85,7 @@ class Plugin
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
+        new Raptor\CollectionRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues
