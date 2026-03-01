@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/collection-relationship",
+  "title": "Collection Relationship",
+  "description": "An Eloquent relationship between two Raptor collections. Must be oneOf the supported relationship types.",
+  "type": "object",
+  "required": ["source", "target", "type", "methodName"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUID identifying this relationship."
+    },
+    "source": {
+      "type": "string",
+      "title": "Source Collection",
+      "description": "collection_key of the collection that owns or declares this relationship."
+    },
+    "target": {
+      "type": "string",
+      "title": "Target Collection",
+      "description": "collection_key of the related collection."
+    },
+    "type": {
+      "type": "string",
+      "title": "Relationship Type",
+      "enum": ["belongsTo", "hasMany", "hasOne"],
+      "description": "The Eloquent relationship method to use on the source model."
+    },
+    "methodName": {
+      "type": "string",
+      "title": "Method Name",
+      "description": "camelCase PHP method name declared on the source model class."
+    },
+    "foreignKey": {
+      "type": "string",
+      "title": "Foreign Key",
+      "description": "The foreign key column name used to join the tables."
+    },
+    "ownerKey": {
+      "type": "string",
+      "title": "Owner Key",
+      "description": "The local/owner key column name (usually 'id')."
+    }
+  },
+  "oneOf": [
+    { "$ref": "gateway://raptor/relationship-types/belongs-to" },
+    { "$ref": "gateway://raptor/relationship-types/has-many" },
+    { "$ref": "gateway://raptor/relationship-types/has-one" }
+  ]
+}

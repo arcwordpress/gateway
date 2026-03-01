@@ -30,6 +30,7 @@ class GatewayRaptorCollectionMigration
             title varchar(200) NOT NULL DEFAULT '',
             description text NULL,
             status varchar(50) NOT NULL DEFAULT 'active',
+            relationships longtext NULL,
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
