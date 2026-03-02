@@ -632,6 +632,8 @@ export default function Graph() {
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null)
+  useEffect(() => { setCanvasHost(document.getElementById('gateway-raptor-canvas-host')) }, [])
 
   const { data: extensions } = useQuery<Extension[]>({
     queryKey: ['extensions'],
@@ -722,7 +724,7 @@ export default function Graph() {
   return (
     <>
       {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
-      {createPortal(
+      {canvasHost && createPortal(
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <ReactFlow
           nodes={nodes}
@@ -746,7 +748,7 @@ export default function Graph() {
           />
         </ReactFlow>
         </div>,
-        document.getElementById('gateway-raptor-canvas-host')!
+        canvasHost
       )}
 
       {panel?.mode === 'create' && <CreatePanel onClose={closePanel} />}
