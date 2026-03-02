@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ReactFlow,
   Handle,
@@ -928,31 +929,34 @@ export default function Collections() {
 
   return (
     <>
-      {/* Surface: fixed, edge-to-edge, beneath all chrome (z-index 0) */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.25 }}
-          colorMode="dark"
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
-          <Controls />
-          <MiniMap
-            nodeColor="#1e293b"
-            nodeStrokeColor="#334155"
-            maskColor="rgba(3,7,18,0.7)"
-            zoomable
-            pannable
-          />
-        </ReactFlow>
-      </div>
+      {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
+      {createPortal(
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            fitView
+            fitViewOptions={{ padding: 0.25 }}
+            colorMode="dark"
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
+            <Controls />
+            <MiniMap
+              nodeColor="#1e293b"
+              nodeStrokeColor="#334155"
+              maskColor="rgba(3,7,18,0.7)"
+              zoomable
+              pannable
+            />
+          </ReactFlow>
+        </div>,
+        document.getElementById('gateway-raptor-canvas-host')!
+      )}
 
       {panel?.mode === 'create'       && <CreatePanel onClose={closePanel} />}
       {panel?.mode === 'edit'         && <EditPanel   collKey={panel.key}   onClose={closePanel} />}

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ReactFlow,
   Handle,
@@ -720,8 +721,9 @@ export default function Graph() {
 
   return (
     <>
-      {/* Surface: fixed, edge-to-edge, beneath all chrome (z-index 0) */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+      {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
+      {createPortal(
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -743,7 +745,9 @@ export default function Graph() {
             pannable
           />
         </ReactFlow>
-      </div>
+        </div>,
+        document.getElementById('gateway-raptor-canvas-host')!
+      )}
 
       {panel?.mode === 'create' && <CreatePanel onClose={closePanel} />}
       {panel?.mode === 'edit'   && <EditPanel   extKey={panel.key} onClose={closePanel} />}
