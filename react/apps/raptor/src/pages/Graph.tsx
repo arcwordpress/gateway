@@ -719,11 +719,9 @@ export default function Graph() {
   }, [extensions, openCreate, openEdit, openDelete, setNodes, setEdges])
 
   return (
-    <div className="flex flex-col h-full" style={{ minHeight: 'calc(100vh - 160px)' }}>
-      <div
-        className="flex-1 rounded-xl overflow-hidden border border-gray-800"
-        style={{ minHeight: 520 }}
-      >
+    <>
+      {/* Surface: fixed, edge-to-edge, beneath all chrome (z-index 0) */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -750,6 +748,6 @@ export default function Graph() {
       {panel?.mode === 'create' && <CreatePanel onClose={closePanel} />}
       {panel?.mode === 'edit'   && <EditPanel   extKey={panel.key} onClose={closePanel} />}
       {panel?.mode === 'delete' && <DeletePanel extKey={panel.key} onClose={closePanel} />}
-    </div>
+    </>
   )
 }

@@ -67,7 +67,7 @@ export default function RootLayout() {
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
-        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full">
+        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full bg-gray-950 relative z-[1]">
           <div className="px-4 py-4 border-b border-gray-800">
             <Header.Logo />
           </div>
@@ -83,7 +83,7 @@ export default function RootLayout() {
         </aside>
 
         {/* ── Right column: HEADER + MAIN + FOOTER stacked ─────────── */}
-        <div className="flex flex-col flex-1 min-w-0 min-h-0">
+        <div className="flex flex-col flex-1 min-w-0 min-h-0 bg-gray-950 relative z-[1]">
           {/* HEADER */}
           <div className="h-12 shrink-0 border-b border-gray-800 flex items-center justify-end px-4">
             <button
