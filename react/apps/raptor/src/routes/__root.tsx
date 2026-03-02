@@ -59,7 +59,8 @@ export default function RootLayout() {
   return (
     <AppContext.Provider value={{ isExpanded, toggleExpand }}>
       <div
-        className="dark flex text-gray-100 bg-gray-950"
+        id="gateway-raptor-canvas-host"
+        className="dark flex text-gray-100 bg-gray-950 relative"
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999 }
