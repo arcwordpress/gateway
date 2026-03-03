@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ReactFlow,
   Handle,
@@ -19,6 +20,7 @@ import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { appConfig } from '../config'
+import { useApp } from '../context/app'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -192,6 +194,17 @@ function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
 
 // ─── Shared panel shell ─────────────────────────────────────────────────────
 
+// WP admin bar is always 32 px. In normal embed mode the panel must not
+// cover it. In expanded mode (app fills the full viewport) it can go full height.
+function usePanelGeometry() {
+  const { isExpanded } = useApp()
+  const constrained = appConfig.isWordPress && !isExpanded
+  return {
+    top:    constrained ? 32  : 0,
+    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+  }
+}
+
 function PanelShell({
   title,
   sub,
@@ -203,19 +216,22 @@ function PanelShell({
   onClose: () => void
   children: React.ReactNode
 }) {
+  const { top, height } = usePanelGeometry()
+
   return (
     <div
       style={{
         position: 'fixed',
         right: 0,
-        top: 0,
-        height: '100vh',
+        top,
+        height,
         width: 320,
         background: '#000',
         borderLeft: '1px solid #1e293b',
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
+        pointerEvents: 'auto',
       }}
     >
       <div
@@ -617,6 +633,8 @@ export default function Graph() {
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null)
+  useEffect(() => { setCanvasHost(document.getElementById('gateway-raptor-canvas-host')) }, [])
 
   const { data: extensions } = useQuery<Extension[]>({
     queryKey: ['extensions'],
@@ -705,11 +723,10 @@ export default function Graph() {
   }, [extensions, openCreate, openEdit, openDelete, setNodes, setEdges])
 
   return (
-    <div className="flex flex-col h-full" style={{ minHeight: 'calc(100vh - 160px)' }}>
-      <div
-        className="flex-1 rounded-xl overflow-hidden border border-gray-800"
-        style={{ minHeight: 520 }}
-      >
+    <>
+      {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
+      {canvasHost && createPortal(
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -721,7 +738,7 @@ export default function Graph() {
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
+          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
           <Controls />
           <MiniMap
             nodeColor="#1e293b"
@@ -731,11 +748,13 @@ export default function Graph() {
             pannable
           />
         </ReactFlow>
-      </div>
+        </div>,
+        canvasHost
+      )}
 
       {panel?.mode === 'create' && <CreatePanel onClose={closePanel} />}
       {panel?.mode === 'edit'   && <EditPanel   extKey={panel.key} onClose={closePanel} />}
       {panel?.mode === 'delete' && <DeletePanel extKey={panel.key} onClose={closePanel} />}
-    </div>
+    </>
   )
 }

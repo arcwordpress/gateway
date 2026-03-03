@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/relationship-types/has-many",
+  "title": "Has Many",
+  "description": "The target model has a foreign key pointing to the source model's primary key. Returns a collection. Example: a Post has many Comments — comments.post_id → posts.id.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "hasMany"
+    },
+    "methodName": {
+      "type": "string",
+      "title": "Method Name",
+      "description": "camelCase PHP method on the source model returning the related collection. E.g. 'comments' for $post->comments().",
+      "ui": {
+        "placeholder": "comments"
+      }
+    },
+    "foreignKey": {
+      "type": "string",
+      "title": "Foreign Key",
+      "description": "Column on the target model's table that holds the reference back to the source. E.g. 'post_id'.",
+      "ui": {
+        "placeholder": "post_id"
+      }
+    },
+    "ownerKey": {
+      "type": "string",
+      "title": "Owner Key",
+      "description": "Primary key column on the source model's table. Usually 'id'.",
+      "ui": {
+        "placeholder": "id"
+      }
+    }
+  }
+}

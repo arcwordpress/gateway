@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/collection",
+  "title": "Collection",
+  "description": "A named collection stored in the Gateway Raptor database (wp_gateway_raptor_collections).",
+  "type": "object",
+  "required": ["title"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "Human-readable name for this collection.",
+      "ui": {
+        "placeholder": "My Collection"
+      }
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Optional summary of what records this collection stores.",
+      "ui": {
+        "widget": "textarea",
+        "placeholder": "Describe the purpose of this collection.",
+        "rows": 3
+      }
+    }
+  }
+}

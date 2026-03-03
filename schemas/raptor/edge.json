@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RaptorEdge",
+  "type": "object",
+  "required": ["id", "source", "target", "graph_id"],
+  "properties": {
+    "id": { "type": "string" },
+    "graph_id": { "type": "string" },
+    "source": { "type": "string", "description": "Source node id" },
+    "target": { "type": "string", "description": "Target node id" },
+    "sourceHandle": { "type": "string", "description": "Field-level handle, e.g. event__id" },
+    "targetHandle": { "type": "string", "description": "Field-level handle, e.g. attendee__event_id" },
+    "type": { "type": "string", "description": "Relationship type — hasMany, belongsTo, etc." },
+    "data": { "type": "object", "additionalProperties": true }
+  }
+}

@@ -10,6 +10,7 @@ import { appConfig } from './config'
 import RootLayout from './routes/__root'
 import DashboardPage from './pages/Dashboard'
 import GraphPage from './pages/Graph'
+import CollectionsPage from './pages/Collections'
 import ExtensionsPage from './pages/Extensions'
 import ExtensionCreatePage from './pages/ExtensionCreate'
 import ExtensionEditPage from './pages/ExtensionEdit'
@@ -41,6 +42,12 @@ const graphRoute = createRoute({
   component: GraphPage,
 })
 
+const collectionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections',
+  component: CollectionsPage,
+})
+
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions',
@@ -68,6 +75,7 @@ const fieldsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   graphRoute,
+  collectionsRoute,
   extensionsRoute,
   extensionCreateRoute,
   extensionEditRoute,

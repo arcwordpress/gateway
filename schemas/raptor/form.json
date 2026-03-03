@@ -1,0 +1,21 @@
+{
+  "$id": "https://gateway.dev/schemas/form",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gateway Form",
+  "version": "1.0",
+  "type": "object",
+  "required": ["key", "collection"],
+  "properties": {
+    "key": { "type": "string" },
+    "title": { "type": "string" },
+    "collection": { 
+      "type": "string", 
+      "description": "Collection key this form projects" 
+    },
+    "fields": {
+      "type": "array",
+      "description": "Subset of collection fields with UI overrides",
+      "items": { "$ref": "https://gateway.dev/schemas/field-type" }
+    }
+  }
+}

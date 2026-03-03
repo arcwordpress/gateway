@@ -1,0 +1,23 @@
+{
+  "$id": "https://gateway.dev/schemas/collection-endpoint",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Collection Endpoint",
+  "version": "1.1",
+  "type": "object",
+  "required": ["collection", "name", "method", "path"],
+  "properties": {
+    "collection": { "type": "string", "description": "Collection key" },
+    "name": {
+      "type": "string",
+      "enum": ["index", "show", "store", "update", "destroy"]
+    },
+    "method": {
+      "type": "string",
+      "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    },
+    "path": { "type": "string" },
+    "enabled": { "type": "boolean", "default": true },
+    "middleware": { "type": "array", "items": { "type": "string" } },
+    "permissions": { "type": "array", "items": { "type": "string" } }
+  }
+}

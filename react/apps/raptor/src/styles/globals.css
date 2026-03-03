@@ -2,16 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-bg: #1d2327; /* WordPress Admin dark background — single source of truth */
+}
+
 /* Scoped to the raptor root so WP admin styles don't leak in */
 #gateway-raptor-root {
-  --app-bg: #1d2327; /* WP Admin dark background — single source of truth */
   font-family: system-ui, -apple-system, sans-serif;
-  background: var(--app-bg);
+  background-color: var(--app-bg);
 }
 
 /* React Flow dark-mode overrides scoped to the graph page */
 #gateway-raptor-root .react-flow__background {
-  background-color: #030712;
+  background-color: var(--app-bg);
 }
 
 #gateway-raptor-root .react-flow__minimap {

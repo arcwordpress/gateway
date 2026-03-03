@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
-import { Outlet, Link } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { Link, Outlet } from '@tanstack/react-router'
 import { appConfig } from '../config'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import { AppContext } from '../context/app'
 
 // ─── Nav link ──────────────────────────────────────────────────────────────
 function NavLink({ to, label }: { to: string; label: string }) {
@@ -33,7 +34,7 @@ function SectionLabel({ label }: { label: string }) {
 // ─── Root layout ───────────────────────────────────────────────────────────
 //
 //  ┌──────┬──────────────────────────────────┐
-//  │      │  HEADER                          │
+//  │      │  HEADER            [EXPAND/EXIT]  │
 //  │ LEFT ├──────────────────────────────────┤
 //  │      │  MAIN                            │
 //  │      ├──────────────────────────────────┤
@@ -41,51 +42,70 @@ function SectionLabel({ label }: { label: string }) {
 //  └──────┴──────────────────────────────────┘
 //
 export default function RootLayout() {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const toggleExpand = () => setIsExpanded((v) => !v)
+
+  // In normal WP embed mode the host page provides a fixed 32 px admin bar.
+  // When expanded we take over the full viewport with fixed positioning.
+  const isWP = appConfig.isWordPress
+
   useEffect(() => {
-    if (!appConfig.isWordPress) return
+    if (!isWP) return
     const root = document.getElementById('gateway-raptor-root')
     if (!root) return
     root.style.marginLeft = '-20px'
-  }, [])
+  }, [isWP])
 
   return (
-    <div
-      className="dark flex text-gray-100 bg-gray-950"
-      style={{ height: appConfig.isWordPress ? 'calc(100vh - 32px)' : '100vh' }}
-    >
-      {/* ── LEFT panel — full height ──────────────────────────────────── */}
-      <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full">
-        {/* Logo at the top of the LEFT stack */}
-        <div className="px-4 py-4 border-b border-gray-800">
-          <Header.Logo />
+    <AppContext.Provider value={{ isExpanded, toggleExpand }}>
+      <div
+        id="gateway-raptor-canvas-host"
+        className="flex text-gray-100 relative"
+        style={
+          isExpanded
+            ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
+            : { height: isWP ? 'calc(100vh - 32px)' : '100vh', backgroundColor: 'var(--app-bg)' }
+        }
+      >
+        {/* ── LEFT panel — full height ──────────────────────────────── */}
+        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+          <div className="px-4 py-4 border-b border-gray-800">
+            <Header.Logo />
+          </div>
+
+          <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
+            <SectionLabel label="App" />
+            <NavLink to="/graph" label="Site" />
+            <NavLink to="/collections" label="Collections" />
+
+            <SectionLabel label="Data" />
+            <NavLink to="/extensions" label="Extensions" />
+          </nav>
+        </aside>
+
+        {/* ── Right column: HEADER + FOOTER only ─────────── */} 
+        <div className="flex flex-col flex-1 min-w-0 min-h-0 relative">
+          {/* HEADER */}
+          <div className="h-12 shrink-0 flex items-center justify-end px-4 relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+            <button
+              onClick={toggleExpand}
+              className="text-[11px] font-semibold tracking-widest uppercase text-gray-500 hover:text-gray-200 transition-colors px-2 py-1"
+            >
+              {isExpanded ? 'Exit' : 'Expand'}
+            </button>
+          </div>
+
+          {/* Outlet for other pages, transparent so Graph canvas shows through */}
+          <div className="flex-1 min-h-0">
+            <Outlet />
+          </div>
+
+          {/* FOOTER */}
+          <Footer className="px-6 py-2.5 border-t border-gray-800 justify-end shrink-0 relative z-[1]">
+            <Footer.Credit>Raptor v0.1.0</Footer.Credit>
+          </Footer>
         </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          <SectionLabel label="App" />
-          <NavLink to="/graph" label="Site" />
-          <NavLink to="/fields" label="Fields" />
-
-          <SectionLabel label="Data" />
-          <NavLink to="/extensions" label="Extensions" />
-        </nav>
-      </aside>
-
-      {/* ── Right column: HEADER + MAIN + FOOTER stacked ─────────────── */}
-      <div className="flex flex-col flex-1 min-w-0 min-h-0">
-        {/* HEADER — horizontal bar across the top */}
-        <div className="h-12 shrink-0 border-b border-gray-800" />
-
-        {/* MAIN — scrollable content area */}
-        <main className="flex-1 overflow-auto p-6">
-          <Outlet />
-        </main>
-
-        {/* FOOTER — horizontal bar across the bottom */}
-        <Footer className="px-6 py-2.5 border-t border-gray-800 justify-end shrink-0">
-          <Footer.Credit>Raptor v0.1.0</Footer.Credit>
-        </Footer>
       </div>
-    </div>
+    </AppContext.Provider>
   )
 }

@@ -1,0 +1,27 @@
+{
+  "$id": "https://gateway.dev/schemas/field-types/select",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Select Field",
+  "allOf": [
+    { "$ref": "https://gateway.dev/schemas/field-base" },
+    {
+      "type": "object",
+      "required": ["options"],
+      "properties": {
+        "type": { "const": "select" },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "properties": {
+              "value": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "multiple": { "type": "boolean", "default": false }
+      }
+    }
+  ]
+}
