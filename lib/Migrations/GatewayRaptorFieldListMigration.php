@@ -9,9 +9,9 @@ if (!defined('ABSPATH')) {
 /**
  * Migration: gateway_raptor_field_list
  *
- * Stores one field-list record per collection. The record ties a group of
- * fields to a collection identified by collection_key (not a DB foreign key —
- * the collection may exist only in code).
+ * Stores field-list records for collections. A collection may have multiple
+ * field lists (one-to-many). Each record is tied to a collection identified
+ * by collection_key (not a DB foreign key — the collection may exist only in code).
  *
  * Safe to run multiple times — dbDelta() is idempotent.
  */
@@ -30,7 +30,7 @@ class GatewayRaptorFieldListMigration
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
-            UNIQUE KEY collection_key (collection_key)
+            KEY collection_key (collection_key)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
