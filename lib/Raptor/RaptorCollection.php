@@ -52,4 +52,9 @@ class RaptorCollection extends \Gateway\Collection
             'relationships',
         ];
     }
+
+    public function fieldList(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RaptorFieldList::class, 'collection_key', 'collection_key');
+    }
 }

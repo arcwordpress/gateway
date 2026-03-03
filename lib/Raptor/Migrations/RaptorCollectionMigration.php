@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Migrations;
+namespace Gateway\Raptor\Migrations;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
  *
  * Safe to run multiple times — dbDelta() is idempotent.
  */
-class GatewayRaptorCollectionMigration
+class RaptorCollectionMigration
 {
     public static function create(): void
     {
