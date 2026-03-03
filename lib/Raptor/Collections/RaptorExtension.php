@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Extensions;
+namespace Gateway\Raptor\Collections;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {

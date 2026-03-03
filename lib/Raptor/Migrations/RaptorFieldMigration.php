@@ -1,36 +1,39 @@
 <?php
 
-namespace Gateway\Migrations;
+namespace Gateway\Raptor\Migrations;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
 /**
- * Migration: gateway_raptor_field_list
+ * Migration: gateway_raptor_field
  *
- * Stores field-list records for collections. A collection may have multiple
- * field lists (one-to-many). Each record is tied to a collection identified
- * by collection_key (not a DB foreign key — the collection may exist only in code).
+ * Stores individual field definitions belonging to a field list. Each row
+ * represents one field with its name (snake_case), type, label, and position.
  *
  * Safe to run multiple times — dbDelta() is idempotent.
  */
-class GatewayRaptorFieldListMigration
+class RaptorFieldMigration
 {
     public static function create(): void
     {
         global $wpdb;
 
-        $table_name      = $wpdb->prefix . 'gateway_raptor_field_list';
+        $table_name      = $wpdb->prefix . 'gateway_raptor_field';
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            collection_key varchar(200) NOT NULL DEFAULT '',
+            field_list_id bigint(20) unsigned NOT NULL,
+            name varchar(200) NOT NULL DEFAULT '',
+            type varchar(100) NOT NULL DEFAULT 'text',
+            label varchar(200) NOT NULL DEFAULT '',
+            sort_order int(11) NOT NULL DEFAULT 0,
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
-            KEY collection_key (collection_key)
+            KEY field_list_id (field_list_id)
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

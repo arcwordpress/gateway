@@ -419,7 +419,7 @@ class Routes
      */
     public function getExtensions($request)
     {
-        $rows = \Gateway\Extensions\RaptorExtension::all();
+        $rows = \Gateway\Raptor\Collections\RaptorExtension::all();
 
         $extensions = $rows->map(function ($row) {
             return [
@@ -524,7 +524,7 @@ class Routes
         $activation_result = $this->activatePlugin($plugin_generation['plugin_slug']);
 
         // Persist the extension record to the database
-        \Gateway\Extensions\RaptorExtension::create([
+        \Gateway\Raptor\Collections\RaptorExtension::create([
             'extension_key'  => $extension_key,
             'title'          => $json_data['title']          ?? '',
             'description'    => $json_data['description']    ?? '',
@@ -814,7 +814,7 @@ class Routes
     {
         $extension_key = $request->get_url_params()['extension_key'];
 
-        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+        $extension = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $extension_key)->first();
 
         if (!$extension) {
             return new \WP_REST_Response([
@@ -851,7 +851,7 @@ class Routes
         $extension_key = $request->get_url_params()['extension_key'];
         $data = $request->get_json_params();
 
-        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+        $extension = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $extension_key)->first();
 
         if (!$extension) {
             return new \WP_REST_Response([
@@ -895,7 +895,7 @@ class Routes
     {
         $extension_key = $request->get_url_params()['extension_key'];
 
-        $extension = \Gateway\Extensions\RaptorExtension::where('extension_key', $extension_key)->first();
+        $extension = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $extension_key)->first();
 
         if (!$extension) {
             return new \WP_REST_Response([

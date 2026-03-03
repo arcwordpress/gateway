@@ -108,9 +108,9 @@ class MigrationHooks
     {
         \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
         \Gateway\Migrations\GatewayCollectionUserMigration::create();
-        \Gateway\Migrations\GatewayRaptorExtensionMigration::create();
-        \Gateway\Migrations\GatewayRaptorCollectionMigration::create();
-        \Gateway\Migrations\GatewayRaptorFieldListMigration::create();
-        \Gateway\Migrations\GatewayRaptorFieldMigration::create();
+        \Gateway\Raptor\Migrations\RaptorExtensionMigration::create();
+        \Gateway\Raptor\Migrations\RaptorCollectionMigration::create();
+        \Gateway\Raptor\Migrations\RaptorFieldListMigration::create();
+        \Gateway\Raptor\Migrations\RaptorFieldMigration::create();
     }
 }
