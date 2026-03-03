@@ -48,6 +48,12 @@ const collectionsRoute = createRoute({
   component: CollectionsPage,
 })
 
+const fieldsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections/$collectionKey/fields',
+  component: FieldsPage,
+})
+
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions',
@@ -64,12 +70,6 @@ const extensionEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions/$key/edit',
   component: ExtensionEditPage,
-})
-
-const fieldsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/fields',
-  component: FieldsPage,
 })
 
 const routeTree = rootRoute.addChildren([
