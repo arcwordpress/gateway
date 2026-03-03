@@ -14,6 +14,7 @@ import CollectionsPage from './pages/Collections'
 import ExtensionsPage from './pages/Extensions'
 import ExtensionCreatePage from './pages/ExtensionCreate'
 import ExtensionEditPage from './pages/ExtensionEdit'
+import FieldsPage from './pages/Fields'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -65,6 +66,12 @@ const extensionEditRoute = createRoute({
   component: ExtensionEditPage,
 })
 
+const fieldsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/fields',
+  component: FieldsPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   graphRoute,
@@ -72,6 +79,7 @@ const routeTree = rootRoute.addChildren([
   extensionsRoute,
   extensionCreateRoute,
   extensionEditRoute,
+  fieldsRoute
 ])
 
 const history = appConfig.isWordPress
