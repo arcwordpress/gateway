@@ -19,6 +19,7 @@ const FieldsContext = createContext<{
 const COLLECTION = {
   key: 'event',
   title: 'Event',
+  table: 'wp_event'
 }
 
 const FIELDS = [
@@ -167,6 +168,24 @@ function TopBar() {
     )
 }
 
+function Files() {
+    return(
+        <div>
+            <h2 className="!text-white">Output Files</h2>
+            <article>
+            <ul>
+                <li>
+                    <h3 className="!text-white">Event.php</h3>
+                </li>
+                <li>
+                    <h3 className="!text-white">Migrate.php</h3>
+                </li>
+            </ul>
+            </article>
+        </div>
+    )
+}
+
 /*************************/
 /* FIELDS DEFAULT RENDER */
 /*************************/
@@ -183,18 +202,12 @@ export default function Fields() {
           <CollectionName />
         </div>
         <h3>FIELDS</h3>
-        <div>
-          <h2>Output Files</h2>
-          <article>
-            <ul>
-              <li><h3 className="!text-white">Event.php</h3></li>
-              <li><h3>Migrate.php</h3></li>
-            </ul>
-          </article>
-        </div>
-        <div className="flex space-between items-center">
-          <Editor setEditSurface={setEditSurface} />
-          <Graph />
+        <div className="flex space-between">
+            <div className="flex flex-col gap-8">
+                <Editor setEditSurface={setEditSurface} />
+                <Files/>
+            </div>
+            <Graph />
         </div>
       </section>
 
