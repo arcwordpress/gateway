@@ -5,6 +5,10 @@ import '@xyflow/react/dist/style.css'
 
 type Field = { name: string; type: string; label: string }
 
+type SurfaceState =
+  | { mode: 'deleteConfirm'; field: Field }
+  | null
+
 const FieldsContext = createContext<{
   fields: Field[]
   addField: (field: Field) => void
@@ -13,8 +17,8 @@ const FieldsContext = createContext<{
 } | null>(null)
 
 const COLLECTION = {
-    key: 'event',
-    title: "Event"
+  key: 'event',
+  title: 'Event',
 }
 
 const FIELDS = [
@@ -26,8 +30,12 @@ const FIELDS = [
 
 const initialNodes: Node[] = [
   { id: '1', type: 'default', data: { label: COLLECTION.title }, position: { x: 0, y: 0 } },
+  { id: 'node-2', type: 'default', data: { label: "JSON Schema" }, position: { x: 0, y: 200 } },
+  { id: 'node-db-table', type: 'default', data: { label: "Database Table" }, position: { x: -100, y: 200 } },
 ]
-const initialEdges: Edge[] = []
+const initialEdges: Edge[] = [
+  { id: 'e1-2', source: '1', target: 'node-2' }
+]
 
 function Graph() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes)
@@ -53,23 +61,19 @@ function Graph() {
 }
 
 function CollectionName() {
-    return(
-        <div>
-            {COLLECTION.title}
-        </div>
-    )
+  return <div>{COLLECTION.title}</div>
 }
 
-function Editor() {
-    return(
-        <section className="text-white">
-            <FieldsList/>
-        </section>
-    )
+function Editor({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
+  return (
+    <section className="text-white">
+      <FieldsList setEditSurface={setEditSurface} />
+    </section>
+  )
 }
 
-function FieldsList() {
-  const { fields, addField, moveField, deleteField } = useFields()
+function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
+  const { fields, addField, moveField } = useFields()
 
   return (
     <section>
@@ -79,13 +83,13 @@ function FieldsList() {
       </header>
       <ul>
         {fields.map((field) => (
-            <li className="flex gap-4" key={field.name}>
-                <button onClick={() => moveField(field.name, 'up')}>Up</button>
-                <button onClick={() => moveField(field.name, 'down')}>Down</button>
-                <h3 className="!text-white">{field.label}</h3>
-                <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
-                <button onClick={() => deleteField(field.name)}>Delete</button>
-            </li>
+          <li className="flex gap-4" key={field.name}>
+            <button onClick={() => moveField(field.name, 'up')}>Up</button>
+            <button onClick={() => moveField(field.name, 'down')}>Down</button>
+            <h3 className="!text-white">{field.label}</h3>
+            <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
+            <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
+          </li>
         ))}
       </ul>
     </section>
@@ -95,21 +99,21 @@ function FieldsList() {
 function FieldsProvider({ children }: { children: React.ReactNode }) {
   const [fields, setFields] = useState(FIELDS)
 
-  const addField = (field: typeof FIELDS[number]) =>
+  const addField = (field: Field) =>
     setFields((prev) => [...prev, field])
 
-    const moveField = (name: string, dir: 'up' | 'down') =>
+  const moveField = (name: string, dir: 'up' | 'down') =>
     setFields((prev) => {
-        const i = prev.findIndex((f) => f.name === name)
-        if (dir === 'up' && i === 0) return prev
-        if (dir === 'down' && i === prev.length - 1) return prev
-        const next = [...prev]
-        const swap = dir === 'up' ? i - 1 : i + 1
-        ;[next[i], next[swap]] = [next[swap], next[i]]
-        return next
+      const i = prev.findIndex((f) => f.name === name)
+      if (dir === 'up' && i === 0) return prev
+      if (dir === 'down' && i === prev.length - 1) return prev
+      const next = [...prev]
+      const swap = dir === 'up' ? i - 1 : i + 1
+      ;[next[i], next[swap]] = [next[swap], next[i]]
+      return next
     })
 
-    const deleteField = (name: string) =>
+  const deleteField = (name: string) =>
     setFields((prev) => prev.filter((f) => f.name !== name))
 
   return (
@@ -125,7 +129,7 @@ const useFields = () => {
   return ctx
 }
 
-function EditPanel({ onClose }: { onClose: () => void }) {
+function EditPanel({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
     <div style={{
       position: 'fixed',
@@ -138,9 +142,29 @@ function EditPanel({ onClose }: { onClose: () => void }) {
       color: 'white',
     }}>
       <button onClick={onClose}>✕</button>
-      <p>Edit panel content here</p>
+      {children}
     </div>
   )
+}
+
+function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => void }) {
+  const { deleteField } = useFields()
+  return (
+    <div>
+      <p>Delete <strong>{field.label}</strong>?</p>
+      <button onClick={() => { deleteField(field.name); onClose() }}>Confirm</button>
+      <button onClick={onClose}>Cancel</button>
+    </div>
+  )
+}
+
+function TopBar() {
+    return(
+        <section>
+            <a href="https://arcwp.ca/docs">DOCS</a>
+            <a href="https://arcwp.ca/support">SUPPORT</a>
+        </section>
+    )
 }
 
 /*************************/
@@ -148,39 +172,39 @@ function EditPanel({ onClose }: { onClose: () => void }) {
 /*************************/
 
 export default function Fields() {
+  const [editSurface, setEditSurface] = useState<SurfaceState>(null)
 
-    const [editSurface, setEditSurface] = useState<'edit' | null>(null)
+  return (
+    <FieldsProvider>
+      <section className="text-white">
+        <TopBar/>
+        <div>
+          <h5>COLLECTION</h5>
+          <CollectionName />
+        </div>
+        <h3>FIELDS</h3>
+        <div>
+          <h2>Output Files</h2>
+          <article>
+            <ul>
+              <li><h3 className="!text-white">Event.php</h3></li>
+              <li><h3>Migrate.php</h3></li>
+            </ul>
+          </article>
+        </div>
+        <div className="flex space-between items-center">
+          <Editor setEditSurface={setEditSurface} />
+          <Graph />
+        </div>
+      </section>
 
-    return(
-        <FieldsProvider>
-            <section className="text-white">
-                <div>
-                    <h5>COLLECTION</h5>
-                    <CollectionName/>
-                    <button onClick={() => setEditSurface('edit')}>Open Panel</button>   
-                </div>
-                <h3>FIELDS</h3>
-                <div>
-                    <h2>Output Files</h2>
-                    <article>
-                        <ul>
-                            <li>
-                                <h3 className="!text-white">Event.php</h3>
-                            </li>
-                            <li>
-                                <h3>Migrate.php</h3>
-                            </li>
-                        </ul>
-                    </article>
-                </div>
-                <div className="flex space-between items-center">
-                    <Editor/>
-                    <Graph/>
-                </div>
-            </section>
-            
-            {editSurface && <EditPanel onClose={() => setEditSurface(null)} />}
-        </FieldsProvider>
-    )
-
+      {editSurface && (
+        <EditPanel onClose={() => setEditSurface(null)}>
+          {editSurface.mode === 'deleteConfirm' && (
+            <DeleteConfirmation field={editSurface.field} onClose={() => setEditSurface(null)} />
+          )}
+        </EditPanel>
+      )}
+    </FieldsProvider>
+  )
 }
