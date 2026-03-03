@@ -1,14 +1,65 @@
 import { createContext, useContext, useState } from 'react'
+import { useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { fieldsRoute } from '../router.ts'
+import { apiUrl, authHeaders } from '../lib/api'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Collection = {
+  id: number
+  collection_key: string
+  title: string
+  description: string
+  status: string
+}
 
 type Field = { name: string; type: string; label: string }
 
 type SurfaceState =
   | { mode: 'deleteConfirm'; field: Field }
   | null
+
+// ─── Collection context ───────────────────────────────────────────────────────
+
+type CollectionContextValue = {
+  collection: Collection | undefined
+  isLoading: boolean
+  isError: boolean
+}
+
+const CollectionContext = createContext<CollectionContextValue | null>(null)
+
+export const useCollection = () => {
+  const ctx = useContext(CollectionContext)
+  if (!ctx) throw new Error('useCollection must be used inside CollectionProvider')
+  return ctx
+}
+
+function CollectionProvider({ collectionKey, children }: { collectionKey: string; children: React.ReactNode }) {
+  const { data: collection, isLoading, isError } = useQuery<Collection>({
+    queryKey: ['raptor-collections', collectionKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collectionKey}`), {
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.collection as Collection
+    },
+    enabled: !!collectionKey,
+  })
+
+  return (
+    <CollectionContext.Provider value={{ collection, isLoading, isError }}>
+      {children}
+    </CollectionContext.Provider>
+  )
+}
+
+// ─── Fields context ───────────────────────────────────────────────────────────
 
 const FieldsContext = createContext<{
   fields: Field[]
@@ -17,31 +68,58 @@ const FieldsContext = createContext<{
   deleteField: (name: string) => void
 } | null>(null)
 
-const COLLECTION = {
-  key: 'event',
-  title: 'Event',
-  table: 'wp_event'
+const useFields = () => {
+  const ctx = useContext(FieldsContext)
+  if (!ctx) throw new Error('useFields must be used within FieldsProvider')
+  return ctx
 }
 
-const FIELDS = [
-  { name: 'title',      type: 'text', label: 'Title'      },
-  { name: 'slug',       type: 'slug', label: 'Slug'       },
-  { name: 'created_at', type: 'date', label: 'Created At' },
-  { name: 'updated_at', type: 'date', label: 'Updated At' },
-]
+function FieldsProvider({ children }: { children: React.ReactNode }) {
+  const [fields, setFields] = useState<Field[]>([])
 
-const initialNodes: Node[] = [
-  { id: '1', type: 'default', data: { label: COLLECTION.title }, position: { x: 0, y: 0 } },
-  { id: 'node-2', type: 'default', data: { label: "JSON Schema" }, position: { x: 0, y: 200 } },
-  { id: 'node-db-table', type: 'default', data: { label: "Database Table" }, position: { x: -100, y: 200 } },
-]
-const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: 'node-2' }
+  const addField = (field: Field) =>
+    setFields((prev) => [...prev, field])
+
+  const moveField = (name: string, dir: 'up' | 'down') =>
+    setFields((prev) => {
+      const i = prev.findIndex((f) => f.name === name)
+      if (dir === 'up' && i === 0) return prev
+      if (dir === 'down' && i === prev.length - 1) return prev
+      const next = [...prev]
+      const swap = dir === 'up' ? i - 1 : i + 1
+      ;[next[i], next[swap]] = [next[swap], next[i]]
+      return next
+    })
+
+  const deleteField = (name: string) =>
+    setFields((prev) => prev.filter((f) => f.name !== name))
+
+  return (
+    <FieldsContext.Provider value={{ fields, addField, moveField, deleteField }}>
+      {children}
+    </FieldsContext.Provider>
+  )
+}
+
+// ─── Graph ────────────────────────────────────────────────────────────────────
+
+const STATIC_EDGES: Edge[] = [
+  { id: 'e1-2', source: '1', target: 'node-2' },
 ]
 
 function Graph() {
+  const { collection } = useCollection()
+
+  // initialNodes is consumed only on first mount; by the time Graph renders,
+  // FieldsContent has already gated on isLoading so collection is defined.
+  const initialNodes: Node[] = [
+    { id: '1',            type: 'default', data: { label: collection?.title },    position: { x: 0,    y: 0   } },
+    { id: 'node-2',       type: 'default', data: { label: 'JSON Schema' },        position: { x: 0,    y: 200 } },
+    { id: 'node-db-table',type: 'default', data: { label: 'Database Table' },     position: { x: -100, y: 200 } },
+  ]
+
   const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges)
+  const [edges, , onEdgesChange] = useEdgesState(STATIC_EDGES)
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
@@ -62,9 +140,15 @@ function Graph() {
   )
 }
 
+// ─── Collection name ──────────────────────────────────────────────────────────
+
 function CollectionName() {
-  return <h1 className="!text-neutral-300 text-2xl font-bold">{COLLECTION.title} ({COLLECTION.key})</h1>
+  const { collection, isLoading } = useCollection()
+  if (isLoading) return <div className="h-5 w-32 rounded bg-gray-700 animate-pulse" />
+  return <div>{collection?.title}</div>
 }
+
+// ─── Editor / FieldsList ──────────────────────────────────────────────────────
 
 function Editor({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
   return (
@@ -103,38 +187,7 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
   )
 }
 
-function FieldsProvider({ children }: { children: React.ReactNode }) {
-  const [fields, setFields] = useState(FIELDS)
-
-  const addField = (field: Field) =>
-    setFields((prev) => [...prev, field])
-
-  const moveField = (name: string, dir: 'up' | 'down') =>
-    setFields((prev) => {
-      const i = prev.findIndex((f) => f.name === name)
-      if (dir === 'up' && i === 0) return prev
-      if (dir === 'down' && i === prev.length - 1) return prev
-      const next = [...prev]
-      const swap = dir === 'up' ? i - 1 : i + 1
-      ;[next[i], next[swap]] = [next[swap], next[i]]
-      return next
-    })
-
-  const deleteField = (name: string) =>
-    setFields((prev) => prev.filter((f) => f.name !== name))
-
-  return (
-    <FieldsContext.Provider value={{ fields, addField, moveField, deleteField }}>
-      {children}
-    </FieldsContext.Provider>
-  )
-}
-
-const useFields = () => {
-  const ctx = useContext(FieldsContext)
-  if (!ctx) throw new Error('useFields must be used within FieldsProvider')
-  return ctx
-}
+// ─── Edit panel / Delete confirmation ────────────────────────────────────────
 
 function EditPanel({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
@@ -165,59 +218,49 @@ function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => v
   )
 }
 
+// ─── Top bar ──────────────────────────────────────────────────────────────────
+
 function TopBar() {
-    return(
-        <section className="flex gap-6 border border-neutral-600 px-6 py-3 rounded mb-12">
-            <a href="https://arcwp.ca/docs">DOCS</a>
-            <a href="https://arcwp.ca/support">SUPPORT</a>
-        </section>
-    )
+  return (
+    <section>
+      <a href="https://arcwp.ca/docs">DOCS</a>
+      <a href="https://arcwp.ca/support">SUPPORT</a>
+    </section>
+  )
 }
 
-function Files() {
-    return(
-        <div>
-            <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
-            <article>
-              <ul>
-                  <li className="flex gap-6 items-center cursor-pointer">
-                      <h3 className="!text-white text-lg">Event.php</h3>
-                  </li>
-                  <li className="flex gap-6 items-center cursor-pointer">
-                      <h3 className="!text-white text-lg">Migrate.php</h3>
-                  </li>
-              </ul>
-            </article>
-        </div>
-    )
-}
+// ─── Inner page (renders after collection resolves) ───────────────────────────
 
-/*************************/
-/* FIELDS DEFAULT RENDER */
-/*************************/
+function FieldsContent({ editSurface, setEditSurface }: {
+  editSurface: SurfaceState
+  setEditSurface: (s: SurfaceState) => void
+}) {
+  const { isLoading, isError } = useCollection()
 
-export default function Fields() {
-
-  const { key } = fieldsRoute.useParams()
-  const [editSurface, setEditSurface] = useState<SurfaceState>(null)
+  if (isLoading) return <div className="p-8 text-gray-400">Loading collection…</div>
+  if (isError)   return <div className="p-8 text-red-400">Failed to load collection.</div>
 
   return (
-    <FieldsProvider>
-      <section className="text-white px-12">
-        <TopBar/>
-        <div>
-          <h4 className="font-medium mb-2">COLLECTION</h4>
-          <CollectionName />
-        </div>
-        <h3>FIELDS</h3>
-        <div className="flex space-between">
-            <div className="flex flex-col gap-8">
-                <Editor setEditSurface={setEditSurface} />
-                <Files/>
-            </div>
-            <Graph />
-        </div>
-      </section>
+    <section className="text-white">
+      <TopBar />
+      <div>
+        <h5>COLLECTION</h5>
+        <CollectionName />
+      </div>
+      <h3>FIELDS</h3>
+      <div>
+        <h2>Output Files</h2>
+        <article>
+          <ul>
+            <li><h3 className="!text-white">Event.php</h3></li>
+            <li><h3>Migrate.php</h3></li>
+          </ul>
+        </article>
+      </div>
+      <div className="flex space-between items-center">
+        <Editor setEditSurface={setEditSurface} />
+        <Graph />
+      </div>
 
       {editSurface && (
         <EditPanel onClose={() => setEditSurface(null)}>
@@ -226,6 +269,23 @@ export default function Fields() {
           )}
         </EditPanel>
       )}
-    </FieldsProvider>
+    </section>
+  )
+}
+
+/*************************/
+/* FIELDS DEFAULT RENDER */
+/*************************/
+
+export default function Fields() {
+  const { key } = useParams({ strict: false }) as { key: string }
+  const [editSurface, setEditSurface] = useState<SurfaceState>(null)
+
+  return (
+    <CollectionProvider collectionKey={key}>
+      <FieldsProvider>
+        <FieldsContent editSurface={editSurface} setEditSurface={setEditSurface} />
+      </FieldsProvider>
+    </CollectionProvider>
   )
 }
