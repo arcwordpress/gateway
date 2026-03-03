@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from 'react'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { fieldsRoute } from '../router.ts'
 
 type Field = { name: string; type: string; label: string }
 
@@ -77,18 +78,21 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
 
   return (
     <section>
-      <header>
-        <h2>Field List</h2>
+      <header className="flex justify-between gap-6">
+        <h2 className="!text-white">Field List</h2>
         <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
       </header>
-      <ul>
+      <ul className="">
         {fields.map((field) => (
-          <li className="flex gap-4" key={field.name}>
-            <button onClick={() => moveField(field.name, 'up')}>Up</button>
-            <button onClick={() => moveField(field.name, 'down')}>Down</button>
+          <li className="group relative flex gap-8 border border-1 border-white px-4 py-2" key={field.name}>
             <h3 className="!text-white">{field.label}</h3>
-            <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
-            <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
+            <div className="opacity-0 group-hover:opacity-100 flex gap-2">
+              <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
+              <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
+              <button onClick={() => moveField(field.name, 'up')}>Up</button>
+              <button onClick={() => moveField(field.name, 'down')}>Down</button>
+              <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>
@@ -172,6 +176,8 @@ function TopBar() {
 /*************************/
 
 export default function Fields() {
+
+  const { key } = fieldsRoute.useParams()
   const [editSurface, setEditSurface] = useState<SurfaceState>(null)
 
   return (
@@ -179,7 +185,7 @@ export default function Fields() {
       <section className="text-white">
         <TopBar/>
         <div>
-          <h5>COLLECTION</h5>
+          <h5>COLLECTION {key} </h5>
           <CollectionName />
         </div>
         <h3>FIELDS</h3>
