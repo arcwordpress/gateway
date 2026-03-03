@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from 'react'
-import { useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
@@ -111,12 +110,10 @@ const STATIC_EDGES: Edge[] = [
 function Graph() {
   const { collection } = useCollection()
 
-  // initialNodes is consumed only on first mount; by the time Graph renders,
-  // FieldsContent has already gated on isLoading so collection is defined.
   const initialNodes: Node[] = [
-    { id: '1',            type: 'default', data: { label: collection?.title },    position: { x: 0,    y: 0   } },
-    { id: 'node-2',       type: 'default', data: { label: 'JSON Schema' },        position: { x: 0,    y: 200 } },
-    { id: 'node-db-table',type: 'default', data: { label: 'Database Table' },     position: { x: -100, y: 200 } },
+    { id: '1',             type: 'default', data: { label: collection?.title }, position: { x: 0,    y: 0   } },
+    { id: 'node-2',        type: 'default', data: { label: 'JSON Schema' },     position: { x: 0,    y: 200 } },
+    { id: 'node-db-table', type: 'default', data: { label: 'Database Table' },  position: { x: -100, y: 200 } },
   ]
 
   const [nodes, , onNodesChange] = useNodesState(initialNodes)
@@ -146,7 +143,7 @@ function Graph() {
 function CollectionName() {
   const { collection, isLoading } = useCollection()
   if (isLoading) return <div className="h-5 w-32 rounded bg-gray-700 animate-pulse" />
-  return <div>{collection?.title}</div>
+  return <h1 className="!text-neutral-300 text-2xl font-bold">{collection?.title}</h1>
 }
 
 // ─── Editor / FieldsList ──────────────────────────────────────────────────────
@@ -223,10 +220,30 @@ function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => v
 
 function TopBar() {
   return (
-    <section>
+    <section className="flex gap-6 border border-neutral-600 px-6 py-3 rounded mb-12">
       <a href="https://arcwp.ca/docs">DOCS</a>
       <a href="https://arcwp.ca/support">SUPPORT</a>
     </section>
+  )
+}
+
+// ─── Files ────────────────────────────────────────────────────────────────────
+
+function Files() {
+  return (
+    <div>
+      <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
+      <article>
+        <ul>
+          <li className="flex gap-6 items-center cursor-pointer">
+            <h3 className="!text-white text-lg">Event.php</h3>
+          </li>
+          <li className="flex gap-6 items-center cursor-pointer">
+            <h3 className="!text-white text-lg">Migrate.php</h3>
+          </li>
+        </ul>
+      </article>
+    </div>
   )
 }
 
@@ -242,24 +259,17 @@ function FieldsContent({ editSurface, setEditSurface }: {
   if (isError)   return <div className="p-8 text-red-400">Failed to load collection.</div>
 
   return (
-    <section className="text-white">
+    <section className="text-white px-12">
       <TopBar />
       <div>
-        <h5>COLLECTION</h5>
+        <h4 className="font-medium mb-2">COLLECTION</h4>
         <CollectionName />
       </div>
-      <h3>FIELDS</h3>
-      <div>
-        <h2>Output Files</h2>
-        <article>
-          <ul>
-            <li><h3 className="!text-white">Event.php</h3></li>
-            <li><h3>Migrate.php</h3></li>
-          </ul>
-        </article>
-      </div>
-      <div className="flex space-between items-center">
-        <Editor setEditSurface={setEditSurface} />
+      <div className="flex space-between items-start mt-12">
+        <div className="flex flex-col gap-8">
+          <Editor setEditSurface={setEditSurface} />
+          <Files />
+        </div>
         <Graph />
       </div>
 
