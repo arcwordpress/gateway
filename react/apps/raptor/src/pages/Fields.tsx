@@ -5,6 +5,8 @@ import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xy
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { fieldsRoute } from '../router'
+import { useApp } from '../context/app'
+import { appConfig } from '../config'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +22,7 @@ type Field = { name: string; type: string; label: string }
 
 type SurfaceState =
   | { mode: 'deleteConfirm'; field: Field }
+  | { mode: 'editField'; field: Field }
   | null
 
 // ─── Collection context ───────────────────────────────────────────────────────
@@ -66,6 +69,7 @@ const FieldsContext = createContext<{
   addField: (field: Field) => void
   moveField: (name: string, dir: 'up' | 'down') => void
   deleteField: (name: string) => void
+  updateField: (oldName: string, updates: Partial<Field>) => void
 } | null>(null)
 
 const useFields = () => {
@@ -94,8 +98,11 @@ function FieldsProvider({ children }: { children: React.ReactNode }) {
   const deleteField = (name: string) =>
     setFields((prev) => prev.filter((f) => f.name !== name))
 
+  const updateField = (oldName: string, updates: Partial<Field>) =>
+    setFields((prev) => prev.map((f) => f.name === oldName ? { ...f, ...updates } : f))
+
   return (
-    <FieldsContext.Provider value={{ fields, addField, moveField, deleteField }}>
+    <FieldsContext.Provider value={{ fields, addField, moveField, deleteField, updateField }}>
       {children}
     </FieldsContext.Provider>
   )
@@ -175,7 +182,7 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
               <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
               <button onClick={() => moveField(field.name, 'up')}>Up</button>
               <button onClick={() => moveField(field.name, 'down')}>Down</button>
-              <button onClick={() => console.log('edit', field)} disabled>Edit</button>
+              <button onClick={() => setEditSurface({ mode: 'editField', field })}>Edit</button>
               <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
             </div>
           </li>
@@ -187,21 +194,96 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
 
 // ─── Edit panel / Delete confirmation ────────────────────────────────────────
 
-function EditPanel({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+function usePanelGeometry() {
+  const { isExpanded } = useApp()
+  const constrained = appConfig.isWordPress && !isExpanded
+  return {
+    top:    constrained ? 32  : 0,
+    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+  }
+}
+
+function EditPanel({ title, sub, onClose, children }: {
+  title: string
+  sub?: string
+  onClose: () => void
+  children: React.ReactNode
+}) {
+  const { top, height } = usePanelGeometry()
   return (
     <div style={{
-      position: 'fixed',
-      right: 0, top: 0, bottom: 0,
-      width: 320,
-      background: '#0f0f0f',
-      borderLeft: '1px solid #1e293b',
-      zIndex: 100000,
-      padding: '20px',
-      color: 'white',
+      position: 'fixed', right: 0, top, height, width: 320,
+      background: '#0f0f0f', borderLeft: '1px solid #1e293b',
+      zIndex: 100000, display: 'flex', flexDirection: 'column', color: 'white',
     }}>
-      <button onClick={onClose}>✕</button>
-      {children}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '16px 20px', borderBottom: '1px solid #1e293b', flexShrink: 0,
+      }}>
+        <div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
+          {sub && <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{sub}</div>}
+        </div>
+        <button onClick={onClose} aria-label="Close panel" style={{
+          color: '#64748b', fontSize: 18, lineHeight: 1,
+          background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+        }}>✕</button>
+      </div>
+      <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
+        {children}
+      </div>
     </div>
+  )
+}
+
+const FIELD_TYPES = ['text', 'select', 'textarea', 'checkbox', 'radio']
+
+const baseInput =
+  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'focus:ring-blue-500 transition-colors text-sm'
+
+function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }) {
+  const { updateField } = useFields()
+  const [name, setName]   = useState(field.name)
+  const [type, setType]   = useState(field.type)
+  const [label, setLabel] = useState(field.label)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    updateField(field.name, { name, type, label })
+    onClose()
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1.5">Name</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)}
+               className={baseInput} required />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1.5">Type</label>
+        <select value={type} onChange={e => setType(e.target.value)} className={baseInput}>
+          {FIELD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1.5">Label</label>
+        <input type="text" value={label} onChange={e => setLabel(e.target.value)}
+               className={baseInput} required />
+      </div>
+      <div className="flex gap-2 mt-2">
+        <button type="submit"
+                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors">
+          Save
+        </button>
+        <button type="button" onClick={onClose}
+                className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors">
+          Cancel
+        </button>
+      </div>
+    </form>
   )
 }
 
@@ -274,9 +356,16 @@ function FieldsContent({ editSurface, setEditSurface }: {
       </div>
 
       {editSurface && (
-        <EditPanel onClose={() => setEditSurface(null)}>
+        <EditPanel
+          title={editSurface.mode === 'editField' ? 'Edit Field' : 'Delete Field'}
+          sub={editSurface.field.name}
+          onClose={() => setEditSurface(null)}
+        >
           {editSurface.mode === 'deleteConfirm' && (
             <DeleteConfirmation field={editSurface.field} onClose={() => setEditSurface(null)} />
+          )}
+          {editSurface.mode === 'editField' && (
+            <FieldEditForm field={editSurface.field} onClose={() => setEditSurface(null)} />
           )}
         </EditPanel>
       )}
