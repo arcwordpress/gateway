@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Raptor;
+namespace Gateway\Raptor\Collections;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
@@ -29,7 +29,7 @@ class RaptorFieldList extends \Gateway\Collection
     // Internal Gateway table — excluded from public collection listings.
     protected $core = true;
 
-    // Managed exclusively via Raptor\FieldListRoutes, not via standard REST.
+    // Managed exclusively via Raptor\Endpoints\FieldListRoutes, not via standard REST.
     protected $routes = [
         'enabled' => false,
     ];
