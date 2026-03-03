@@ -113,6 +113,8 @@ class CollectionRoutes
             'status'         => 'active',
         ]);
 
+        RaptorFieldList::create(['collection_key' => $key]);
+
         return new \WP_REST_Response([
             'success'    => true,
             'message'    => 'Collection created.',

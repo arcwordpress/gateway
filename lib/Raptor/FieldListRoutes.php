@@ -87,13 +87,6 @@ class FieldListRoutes
             ], 400);
         }
 
-        if (RaptorFieldList::where('collection_key', $key)->exists()) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => "A field list for collection \"{$key}\" already exists.",
-            ], 409);
-        }
-
         $list = RaptorFieldList::create([
             'collection_key' => $key,
         ]);
