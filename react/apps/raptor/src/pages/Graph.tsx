@@ -231,6 +231,7 @@ function PanelShell({
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
+        pointerEvents: 'auto',
       }}
     >
       <div
@@ -737,7 +738,7 @@ export default function Graph() {
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
+          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
           <Controls />
           <MiniMap
             nodeColor="#1e293b"
