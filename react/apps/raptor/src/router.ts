@@ -72,6 +72,12 @@ const fieldsRoute = createRoute({
   component: FieldsPage,
 })
 
+const fieldEditorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/fields/$key',
+  component: FieldsPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   graphRoute,
@@ -79,7 +85,8 @@ const routeTree = rootRoute.addChildren([
   extensionsRoute,
   extensionCreateRoute,
   extensionEditRoute,
-  fieldsRoute
+  fieldsRoute,
+  fieldEditorRoute,
 ])
 
 const history = appConfig.isWordPress
