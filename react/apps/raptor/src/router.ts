@@ -80,7 +80,6 @@ const routeTree = rootRoute.addChildren([
   extensionCreateRoute,
   extensionEditRoute,
   fieldsRoute,
-  fieldEditorRoute,
 ])
 
 const history = appConfig.isWordPress

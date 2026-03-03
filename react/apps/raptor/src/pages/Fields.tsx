@@ -5,6 +5,7 @@ import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/reac
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
+import { fieldsRoute } from '../router'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -177,7 +178,7 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
               <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
               <button onClick={() => moveField(field.name, 'up')}>Up</button>
               <button onClick={() => moveField(field.name, 'down')}>Down</button>
-              <button onClick={() => setEditSurface({ mode: 'edit', field })}>Edit</button>
+              <button onClick={() => console.log('edit', field)} disabled>Edit</button>
               <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
             </div>
           </li>
@@ -278,7 +279,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
 /*************************/
 
 export default function Fields() {
-  const { key } = useParams({ strict: false }) as { key: string }
+  const { key } = fieldsRoute.useParams()
   const [editSurface, setEditSurface] = useState<SurfaceState>(null)
 
   return (
