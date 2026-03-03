@@ -1,0 +1,204 @@
+<?php
+
+namespace Gateway\Raptor;
+
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * REST API routes for Raptor fields.
+ *
+ * All endpoints are scoped to /gateway/v1/raptor/field and require
+ * the manage_options capability.
+ *
+ * Endpoints:
+ *   GET    /gateway/v1/raptor/field               — list all (filter: ?field_list_id=X)
+ *   POST   /gateway/v1/raptor/field               — create
+ *   GET    /gateway/v1/raptor/field/{id}          — get one
+ *   PATCH  /gateway/v1/raptor/field/{id}          — update
+ *   DELETE /gateway/v1/raptor/field/{id}          — delete
+ */
+class FieldRoutes
+{
+    public function __construct()
+    {
+        add_action('rest_api_init', [$this, 'registerRoutes']);
+    }
+
+    // ─── Route registration ───────────────────────────────────────────────
+
+    public function registerRoutes(): void
+    {
+        register_rest_route('gateway/v1', '/raptor/field', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getFields'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'createField'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+
+        register_rest_route('gateway/v1', '/raptor/field/(?P<id>\d+)', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getField'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+            [
+                'methods'             => 'PATCH, PUT',
+                'callback'            => [$this, 'updateField'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+            [
+                'methods'             => 'DELETE',
+                'callback'            => [$this, 'deleteField'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+    }
+
+    // ─── Handlers ─────────────────────────────────────────────────────────
+
+    public function getFields(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $query = RaptorField::orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+
+        $field_list_id = $request->get_param('field_list_id');
+        if ($field_list_id !== null) {
+            $query->where('field_list_id', (int) $field_list_id);
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'fields'  => $query->get()->toArray(),
+        ], 200);
+    }
+
+    public function createField(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $data = $request->get_json_params() ?? [];
+
+        $field_list_id = isset($data['field_list_id']) ? (int) $data['field_list_id'] : 0;
+        if (!$field_list_id) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'field_list_id is required.',
+            ], 400);
+        }
+
+        $name = sanitize_key($data['name'] ?? '');
+        if (!$name) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'name is required.',
+            ], 400);
+        }
+
+        $field = RaptorField::create([
+            'field_list_id' => $field_list_id,
+            'name'          => $name,
+            'type'          => sanitize_text_field($data['type'] ?? 'text'),
+            'label'         => sanitize_text_field($data['label'] ?? ''),
+            'sort_order'    => isset($data['sort_order']) ? (int) $data['sort_order'] : 0,
+        ]);
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'message' => 'Field created.',
+            'field'   => $field->toArray(),
+        ], 201);
+    }
+
+    public function getField(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $field = $this->findOrFail((int) $request->get_param('id'));
+        if ($field instanceof \WP_REST_Response) {
+            return $field;
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'field'   => $field->toArray(),
+        ], 200);
+    }
+
+    public function updateField(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $field = $this->findOrFail((int) $request->get_param('id'));
+        if ($field instanceof \WP_REST_Response) {
+            return $field;
+        }
+
+        $data   = $request->get_json_params() ?? [];
+        $update = [];
+
+        if (isset($data['name'])) {
+            $update['name'] = sanitize_key($data['name']);
+        }
+        if (isset($data['type'])) {
+            $update['type'] = sanitize_text_field($data['type']);
+        }
+        if (isset($data['label'])) {
+            $update['label'] = sanitize_text_field($data['label']);
+        }
+        if (isset($data['sort_order'])) {
+            $update['sort_order'] = (int) $data['sort_order'];
+        }
+
+        if ($update) {
+            $field->update($update);
+        }
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'field'   => $field->fresh()->toArray(),
+        ], 200);
+    }
+
+    public function deleteField(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $field = $this->findOrFail((int) $request->get_param('id'));
+        if ($field instanceof \WP_REST_Response) {
+            return $field;
+        }
+
+        $field->delete();
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'message' => 'Field deleted.',
+        ], 200);
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────
+
+    /**
+     * Returns the RaptorField model or a 404 response.
+     *
+     * @return RaptorField|\WP_REST_Response
+     */
+    private function findOrFail(int $id)
+    {
+        $field = RaptorField::find($id);
+
+        if (!$field) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Field not found.',
+            ], 404);
+        }
+
+        return $field;
+    }
+
+    public function checkPermissions(): bool
+    {
+        return current_user_can('manage_options');
+    }
+}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "gateway://raptor/collection",
   "title": "Collection",
-  "description": "A named collection stored in the Gateway Raptor database (wp_gateway_raptor_collections).",
+  "description": "A named collection stored in the Gateway Raptor database (wp_gateway_raptor_collection).",
   "type": "object",
   "required": ["title"],
   "properties": {
