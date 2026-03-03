@@ -77,6 +77,7 @@ export default function RootLayout() {
             <SectionLabel label="App" />
             <NavLink to="/graph" label="Site" />
             <NavLink to="/collections" label="Collections" />
+            <NavLink to="/fields" label="Fields" />
 
             <SectionLabel label="Data" />
             <NavLink to="/extensions" label="Extensions" />
