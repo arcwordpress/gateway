@@ -43,7 +43,7 @@ function CollectionProvider({ collectionKey, children }: { collectionKey: string
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collectionKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collectionKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collectionKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)

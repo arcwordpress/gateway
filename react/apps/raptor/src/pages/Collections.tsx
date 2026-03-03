@@ -321,7 +321,7 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collections'), {
+      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
@@ -425,7 +425,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -443,7 +443,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({ title: title.trim(), description: description.trim() }),
@@ -540,7 +540,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
   const { data: collection } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -552,7 +552,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${collKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'DELETE',
         headers: authHeaders(),
       })
@@ -633,7 +633,7 @@ function RelationshipPanel({
   const mutation = useMutation({
     mutationFn: async () => {
       // Fetch current relationships for source collection
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collections/${sourceKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -650,7 +650,7 @@ function RelationshipPanel({
         ownerKey:   ownerKey.trim() || 'id',
       }
 
-      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collections/${sourceKey}`), {
+      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({ relationships: [...existing, newRel] }),
@@ -816,7 +816,7 @@ export default function Collections() {
   const { data: collections } = useQuery<Collection[]>({
     queryKey: ['raptor-collections'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collections'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.collections as Collection[]
