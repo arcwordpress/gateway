@@ -109,8 +109,6 @@ class MigrationHooks
         \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
         \Gateway\Migrations\GatewayCollectionUserMigration::create();
         \Gateway\Migrations\GatewayRaptorExtensionMigration::create();
-        // Rename plural → singular before re-running the collection migration.
-        \Gateway\Migrations\GatewayRaptorCollectionRenameMigration::create();
         \Gateway\Migrations\GatewayRaptorCollectionMigration::create();
         \Gateway\Migrations\GatewayRaptorFieldListMigration::create();
         \Gateway\Migrations\GatewayRaptorFieldMigration::create();
