@@ -47,4 +47,9 @@ class RaptorField extends \Gateway\Collection
             'sort_order',
         ];
     }
+
+    public function fieldList(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RaptorFieldList::class, 'field_list_id');
+    }
 }

@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
  * Records are stored in {prefix}gateway_raptor_field_list
  * (e.g. wp_gateway_raptor_field_list).
  *
- * A collection may have one or more field lists (one-to-many).
+ * Each collection has exactly one field list (one-to-one).
  * The collection_key is a string slug — the collection may only exist in code.
  *
  * @property int    $id
@@ -39,5 +39,15 @@ class RaptorFieldList extends \Gateway\Collection
         return [
             'collection_key',
         ];
+    }
+
+    public function collection(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RaptorCollection::class, 'collection_key', 'collection_key');
+    }
+
+    public function fields(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorField::class, 'field_list_id');
     }
 }
