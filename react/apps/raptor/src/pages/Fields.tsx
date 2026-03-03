@@ -63,7 +63,7 @@ function Graph() {
 }
 
 function CollectionName() {
-  return <div>{COLLECTION.title}</div>
+  return <h1 className="!text-neutral-300 text-2xl font-bold">{COLLECTION.title} ({COLLECTION.key})</h1>
 }
 
 function Editor({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
@@ -79,19 +79,21 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
 
   return (
     <section>
-      <header className="flex justify-between gap-6">
-        <h2 className="!text-white">Field List</h2>
-        <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
+      <header className="flex justify-between items-center gap-6 mb-10">
+        <h2 className="!text-white text-xl font-medium">Field List</h2>
+        <button className="text-3xl" onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
       </header>
-      <ul className="">
+      <ul className="min-w-96">
         {fields.map((field) => (
           <li className="group relative flex gap-8 border border-1 border-white px-4 py-2" key={field.name}>
-            <h3 className="!text-white">{field.label}</h3>
-            <div className="opacity-0 group-hover:opacity-100 flex gap-2">
+            <div>HANDLE</div>
+            <h3 className="basis-1/2 !text-white">{field.label}</h3>
+            <div className="basis-1/2 opacity-0 group-hover:opacity-100 flex gap-2">
               <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
               <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
               <button onClick={() => moveField(field.name, 'up')}>Up</button>
               <button onClick={() => moveField(field.name, 'down')}>Down</button>
+              <button onClick={() => setEditSurface({ mode: 'edit', field })}>Edit</button>
               <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
             </div>
           </li>
@@ -165,7 +167,7 @@ function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => v
 
 function TopBar() {
     return(
-        <section>
+        <section className="flex gap-6 border border-neutral-600 px-6 py-3 rounded mb-12">
             <a href="https://arcwp.ca/docs">DOCS</a>
             <a href="https://arcwp.ca/support">SUPPORT</a>
         </section>
@@ -175,16 +177,16 @@ function TopBar() {
 function Files() {
     return(
         <div>
-            <h2 className="!text-white">Output Files</h2>
+            <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
             <article>
-            <ul>
-                <li>
-                    <h3 className="!text-white">Event.php</h3>
-                </li>
-                <li>
-                    <h3 className="!text-white">Migrate.php</h3>
-                </li>
-            </ul>
+              <ul>
+                  <li className="flex gap-6 items-center cursor-pointer">
+                      <h3 className="!text-white text-lg">Event.php</h3>
+                  </li>
+                  <li className="flex gap-6 items-center cursor-pointer">
+                      <h3 className="!text-white text-lg">Migrate.php</h3>
+                  </li>
+              </ul>
             </article>
         </div>
     )
@@ -201,10 +203,10 @@ export default function Fields() {
 
   return (
     <FieldsProvider>
-      <section className="text-white">
+      <section className="text-white px-12">
         <TopBar/>
         <div>
-          <h5>COLLECTION {key} </h5>
+          <h4 className="font-medium mb-2">COLLECTION</h4>
           <CollectionName />
         </div>
         <h3>FIELDS</h3>
