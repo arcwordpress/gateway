@@ -163,18 +163,23 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
 
   return (
     <section>
-      <header>
-        <h2>Field List</h2>
-        <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
+      <header className="flex justify-between items-center gap-6 mb-10">
+        <h2 className="!text-white text-xl font-medium">Field List</h2>
+        <button className="text-3xl" onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
       </header>
-      <ul>
+      <ul className="min-w-96">
         {fields.map((field) => (
-          <li className="flex gap-4" key={field.name}>
-            <button onClick={() => moveField(field.name, 'up')}>Up</button>
-            <button onClick={() => moveField(field.name, 'down')}>Down</button>
-            <h3 className="!text-white">{field.label}</h3>
-            <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
-            <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
+          <li className="group relative flex gap-8 border border-1 border-white px-4 py-2" key={field.name}>
+            <div>HANDLE</div>
+            <h3 className="basis-1/2 !text-white">{field.label}</h3>
+            <div className="basis-1/2 opacity-0 group-hover:opacity-100 flex gap-2">
+              <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
+              <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
+              <button onClick={() => moveField(field.name, 'up')}>Up</button>
+              <button onClick={() => moveField(field.name, 'down')}>Down</button>
+              <button onClick={() => setEditSurface({ mode: 'edit', field })}>Edit</button>
+              <button onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>
