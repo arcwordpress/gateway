@@ -13,8 +13,8 @@ if (!defined('ABSPATH')) {
  * Records are stored in {prefix}gateway_raptor_field_list
  * (e.g. wp_gateway_raptor_field_list).
  *
- * One field list exists per collection, identified by collection_key.
- * The key is a string slug — the collection may only exist in code.
+ * A collection may have one or more field lists (one-to-many).
+ * The collection_key is a string slug — the collection may only exist in code.
  *
  * @property int    $id
  * @property string $collection_key  Slug of the owning collection, e.g. "event"
