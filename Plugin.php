@@ -86,6 +86,8 @@ class Plugin
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
         new Raptor\CollectionRoutes();
+        new Raptor\FieldListRoutes();
+        new Raptor\FieldRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues

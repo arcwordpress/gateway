@@ -7,30 +7,26 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Migration: gateway_raptor_collection
+ * Migration: gateway_raptor_field_list
  *
- * Stores collection definitions created through the Raptor UI.
- * Each row is a lightweight record (key, title, description, status)
- * representing a named collection managed in the database.
+ * Stores one field-list record per collection. The record ties a group of
+ * fields to a collection identified by collection_key (not a DB foreign key —
+ * the collection may exist only in code).
  *
  * Safe to run multiple times — dbDelta() is idempotent.
  */
-class GatewayRaptorCollectionMigration
+class GatewayRaptorFieldListMigration
 {
     public static function create(): void
     {
         global $wpdb;
 
-        $table_name      = $wpdb->prefix . 'gateway_raptor_collection';
+        $table_name      = $wpdb->prefix . 'gateway_raptor_field_list';
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             collection_key varchar(200) NOT NULL DEFAULT '',
-            title varchar(200) NOT NULL DEFAULT '',
-            description text NULL,
-            status varchar(50) NOT NULL DEFAULT 'active',
-            relationships longtext NULL,
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),

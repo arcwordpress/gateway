@@ -10,15 +10,15 @@ if (!defined('ABSPATH')) {
 /**
  * REST API routes for Raptor-managed collections.
  *
- * All endpoints are scoped to /gateway/v1/raptor/collections and require
+ * All endpoints are scoped to /gateway/v1/raptor/collection and require
  * the manage_options capability.
  *
  * Endpoints:
- *   GET    /gateway/v1/raptor/collections              — list all
- *   POST   /gateway/v1/raptor/collections              — create
- *   GET    /gateway/v1/raptor/collections/{key}        — get one
- *   PATCH  /gateway/v1/raptor/collections/{key}        — update
- *   DELETE /gateway/v1/raptor/collections/{key}        — delete
+ *   GET    /gateway/v1/raptor/collection              — list all
+ *   POST   /gateway/v1/raptor/collection              — create
+ *   GET    /gateway/v1/raptor/collection/{key}        — get one
+ *   PATCH  /gateway/v1/raptor/collection/{key}        — update
+ *   DELETE /gateway/v1/raptor/collection/{key}        — delete
  */
 class CollectionRoutes
 {
@@ -31,7 +31,7 @@ class CollectionRoutes
 
     public function registerRoutes(): void
     {
-        register_rest_route('gateway/v1', '/raptor/collections', [
+        register_rest_route('gateway/v1', '/raptor/collection', [
             [
                 'methods'             => 'GET',
                 'callback'            => [$this, 'getCollections'],
@@ -44,7 +44,7 @@ class CollectionRoutes
             ],
         ]);
 
-        register_rest_route('gateway/v1', '/raptor/collections/(?P<collection_key>[a-zA-Z0-9_\-]+)', [
+        register_rest_route('gateway/v1', '/raptor/collection/(?P<collection_key>[a-zA-Z0-9_\-]+)', [
             [
                 'methods'             => 'GET',
                 'callback'            => [$this, 'getCollection'],

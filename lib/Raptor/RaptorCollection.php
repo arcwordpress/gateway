@@ -10,8 +10,8 @@ if (!defined('ABSPATH')) {
 /**
  * Eloquent model for collections created and managed through the Raptor UI.
  *
- * Records are stored in {prefix}gateway_raptor_collections
- * (e.g. wp_gateway_raptor_collections).
+ * Records are stored in {prefix}gateway_raptor_collection
+ * (e.g. wp_gateway_raptor_collection).
  *
  * These are lightweight collection definitions (title, key, description)
  * persisted to the database, as opposed to the file-based collections
@@ -27,8 +27,8 @@ class RaptorCollection extends \Gateway\Collection
 {
     protected $key   = 'raptor_collection';
 
-    // WP prefix is prepended automatically, giving wp_gateway_raptor_collections.
-    protected $table = 'gateway_raptor_collections';
+    // WP prefix is prepended automatically, giving wp_gateway_raptor_collection.
+    protected $table = 'gateway_raptor_collection';
 
     // Internal Gateway table — excluded from public collection listings.
     protected $core = true;
