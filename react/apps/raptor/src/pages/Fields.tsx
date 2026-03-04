@@ -3,6 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — JS-only package; declarations in src/types.d.ts
+import { ControlledForm } from '@arcwp/gateway-forms'
+import '@arcwp/gateway-forms/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { fieldsRoute } from '../router'
 import { useApp } from '../context/app'
@@ -33,41 +37,17 @@ type SurfaceState =
   | { mode: 'editField'; field: Field }
   | null
 
-type FieldTypeConfigSpec = {
-  name: string
-  label: string
-  type: string
-  required?: boolean
-  default?: unknown
-  description?: string
-  placeholder?: string
-}
-
+// Field type definition shape returned by gateway/v1/field-types
 type FieldTypeDef = {
   type: string
-  fields: FieldTypeConfigSpec[]
+  fields: { name: string; label: string; type: string; required?: boolean; default?: unknown; description?: string; placeholder?: string }[]
 }
 
 // ─── Field type helpers ───────────────────────────────────────────────────────
 
+// "date-picker" → "Date Picker"
 function formatFieldTypeLabel(type: string): string {
   return type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-}
-
-function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split('.').reduce<unknown>((cur, key) => (cur as Record<string, unknown>)?.[key], obj)
-}
-
-function resolveUpdate(
-  obj: Record<string, unknown>,
-  path: string,
-  value: unknown,
-): [string, unknown] {
-  const parts = path.split('.')
-  if (parts.length === 1) return [path, value]
-  const [parent, ...rest] = parts
-  const [, nested] = resolveUpdate((obj[parent] as Record<string, unknown>) ?? {}, rest.join('.'), value)
-  return [parent, { ...(obj[parent] as object ?? {}), [rest.join('.')]: nested }]
 }
 
 // ─── Collection context ───────────────────────────────────────────────────────
@@ -328,84 +308,6 @@ const baseInput =
   'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
-// ─── FieldConfigInput ─────────────────────────────────────────────────────────
-
-function FieldConfigInput({
-  fieldConfig,
-  value,
-  onChange,
-  disabled,
-}: {
-  fieldConfig: FieldTypeConfigSpec
-  value: unknown
-  onChange: (v: unknown) => void
-  disabled?: boolean
-}) {
-  const label = (
-    <label className="block text-xs font-medium text-gray-400 mb-1">
-      {fieldConfig.label || fieldConfig.name}
-      {fieldConfig.required && <span className="text-red-400 ml-1">*</span>}
-    </label>
-  )
-  const desc = fieldConfig.description
-    ? <p className="mt-1 text-xs text-gray-500">{fieldConfig.description}</p>
-    : null
-
-  if (fieldConfig.type === 'boolean') {
-    return (
-      <div>
-        {label}
-        <select
-          value={value === true || value === 'true' ? 'true' : 'false'}
-          onChange={(e) => onChange(e.target.value === 'true')}
-          className={baseInput}
-          disabled={disabled}
-        >
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-        {desc}
-      </div>
-    )
-  }
-
-  if (fieldConfig.type === 'array') {
-    const text = Array.isArray(value) ? (value as string[]).join('\n') : (value as string) || ''
-    return (
-      <div>
-        {label}
-        <textarea
-          value={text}
-          onChange={(e) => {
-            const lines = e.target.value.split('\n').map(l => l.trim()).filter(Boolean)
-            onChange(lines)
-          }}
-          className={baseInput}
-          placeholder={fieldConfig.placeholder ?? 'One item per line'}
-          rows={3}
-          disabled={disabled}
-        />
-        {desc}
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      {label}
-      <input
-        type="text"
-        value={(value as string) ?? ''}
-        onChange={(e) => onChange(e.target.value)}
-        className={baseInput}
-        placeholder={fieldConfig.placeholder ?? fieldConfig.name}
-        disabled={disabled}
-      />
-      {desc}
-    </div>
-  )
-}
-
 // ─── FieldEditForm ────────────────────────────────────────────────────────────
 
 function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }) {
@@ -481,22 +383,19 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
                className={baseInput} required disabled={mutation.isPending} />
       </div>
 
-      {/* Type-specific configuration fields */}
+      {/* Type-specific configuration via the real forms package */}
       {selectedTypeDef && selectedTypeDef.fields.length > 0 && (
-        <div className="pt-3 border-t border-gray-800 flex flex-col gap-3">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Field Configuration</div>
-          {selectedTypeDef.fields.map(spec => (
-            <FieldConfigInput
-              key={spec.name}
-              fieldConfig={spec}
-              value={getNestedValue(extras, spec.name) ?? spec.default ?? ''}
-              onChange={value => {
-                const [topKey, topValue] = resolveUpdate(extras, spec.name, value)
-                setExtras(prev => ({ ...prev, [topKey]: topValue }))
-              }}
-              disabled={mutation.isPending}
-            />
-          ))}
+        <div className="pt-3 border-t border-gray-800">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+            Field Configuration
+          </div>
+          <ControlledForm
+            fields={selectedTypeDef.fields}
+            values={extras}
+            onChange={(name: string, value: unknown) =>
+              setExtras(prev => ({ ...prev, [name]: value }))
+            }
+          />
         </div>
       )}
 
