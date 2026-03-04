@@ -10,7 +10,14 @@ import { appConfig } from '../config'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Field = { id: number; name: string; type: string; label: string; sort_order: number }
+type Field = {
+  id: number
+  name: string
+  type: string
+  label: string
+  sort_order: number
+  config?: Record<string, unknown>
+}
 
 type Collection = {
   id: number
@@ -25,6 +32,43 @@ type SurfaceState =
   | { mode: 'deleteConfirm'; field: Field }
   | { mode: 'editField'; field: Field }
   | null
+
+type FieldTypeConfigSpec = {
+  name: string
+  label: string
+  type: string
+  required?: boolean
+  default?: unknown
+  description?: string
+  placeholder?: string
+}
+
+type FieldTypeDef = {
+  type: string
+  fields: FieldTypeConfigSpec[]
+}
+
+// ─── Field type helpers ───────────────────────────────────────────────────────
+
+function formatFieldTypeLabel(type: string): string {
+  return type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce<unknown>((cur, key) => (cur as Record<string, unknown>)?.[key], obj)
+}
+
+function resolveUpdate(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): [string, unknown] {
+  const parts = path.split('.')
+  if (parts.length === 1) return [path, value]
+  const [parent, ...rest] = parts
+  const [, nested] = resolveUpdate((obj[parent] as Record<string, unknown>) ?? {}, rest.join('.'), value)
+  return [parent, { ...(obj[parent] as object ?? {}), [rest.join('.')]: nested }]
+}
 
 // ─── Collection context ───────────────────────────────────────────────────────
 
@@ -279,12 +323,90 @@ function EditPanel({ title, sub, onClose, children }: {
   )
 }
 
-const FIELD_TYPES = ['text', 'select', 'textarea', 'checkbox', 'radio']
-
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
   'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
+
+// ─── FieldConfigInput ─────────────────────────────────────────────────────────
+
+function FieldConfigInput({
+  fieldConfig,
+  value,
+  onChange,
+  disabled,
+}: {
+  fieldConfig: FieldTypeConfigSpec
+  value: unknown
+  onChange: (v: unknown) => void
+  disabled?: boolean
+}) {
+  const label = (
+    <label className="block text-xs font-medium text-gray-400 mb-1">
+      {fieldConfig.label || fieldConfig.name}
+      {fieldConfig.required && <span className="text-red-400 ml-1">*</span>}
+    </label>
+  )
+  const desc = fieldConfig.description
+    ? <p className="mt-1 text-xs text-gray-500">{fieldConfig.description}</p>
+    : null
+
+  if (fieldConfig.type === 'boolean') {
+    return (
+      <div>
+        {label}
+        <select
+          value={value === true || value === 'true' ? 'true' : 'false'}
+          onChange={(e) => onChange(e.target.value === 'true')}
+          className={baseInput}
+          disabled={disabled}
+        >
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+        {desc}
+      </div>
+    )
+  }
+
+  if (fieldConfig.type === 'array') {
+    const text = Array.isArray(value) ? (value as string[]).join('\n') : (value as string) || ''
+    return (
+      <div>
+        {label}
+        <textarea
+          value={text}
+          onChange={(e) => {
+            const lines = e.target.value.split('\n').map(l => l.trim()).filter(Boolean)
+            onChange(lines)
+          }}
+          className={baseInput}
+          placeholder={fieldConfig.placeholder ?? 'One item per line'}
+          rows={3}
+          disabled={disabled}
+        />
+        {desc}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {label}
+      <input
+        type="text"
+        value={(value as string) ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        className={baseInput}
+        placeholder={fieldConfig.placeholder ?? fieldConfig.name}
+        disabled={disabled}
+      />
+      {desc}
+    </div>
+  )
+}
+
+// ─── FieldEditForm ────────────────────────────────────────────────────────────
 
 function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }) {
   const { updateField } = useFields()
@@ -293,13 +415,28 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
   const [name, setName]   = useState(field.name)
   const [type, setType]   = useState(field.type)
   const [label, setLabel] = useState(field.label)
+  const [extras, setExtras] = useState<Record<string, unknown>>(field.config ?? {})
+
+  // Load all registered field types (cached for the session)
+  const { data: fieldTypeDefs, isLoading: typesLoading } = useQuery<FieldTypeDef[]>({
+    queryKey: ['field-types'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/field-types'), { headers: authHeaders() })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to load field types')
+      return json.data as FieldTypeDef[]
+    },
+    staleTime: Infinity,
+  })
+
+  const selectedTypeDef = fieldTypeDefs?.find(ft => ft.type === type)
 
   const mutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ name, type, label }),
+        body: JSON.stringify({ name, type, label, config: extras }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update field')
@@ -326,9 +463,16 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">Type</label>
-        <select value={type} onChange={e => setType(e.target.value)}
-                className={baseInput} disabled={mutation.isPending}>
-          {FIELD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        <select
+          value={type}
+          onChange={e => setType(e.target.value)}
+          className={baseInput}
+          disabled={mutation.isPending || typesLoading}
+        >
+          {typesLoading && <option value={type}>{formatFieldTypeLabel(type)}</option>}
+          {fieldTypeDefs?.map(ft => (
+            <option key={ft.type} value={ft.type}>{formatFieldTypeLabel(ft.type)}</option>
+          ))}
         </select>
       </div>
       <div>
@@ -336,6 +480,26 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
         <input type="text" value={label} onChange={e => setLabel(e.target.value)}
                className={baseInput} required disabled={mutation.isPending} />
       </div>
+
+      {/* Type-specific configuration fields */}
+      {selectedTypeDef && selectedTypeDef.fields.length > 0 && (
+        <div className="pt-3 border-t border-gray-800 flex flex-col gap-3">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Field Configuration</div>
+          {selectedTypeDef.fields.map(spec => (
+            <FieldConfigInput
+              key={spec.name}
+              fieldConfig={spec}
+              value={getNestedValue(extras, spec.name) ?? spec.default ?? ''}
+              onChange={value => {
+                const [topKey, topValue] = resolveUpdate(extras, spec.name, value)
+                setExtras(prev => ({ ...prev, [topKey]: topValue }))
+              }}
+              disabled={mutation.isPending}
+            />
+          ))}
+        </div>
+      )}
+
       {mutation.isError && (
         <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           {(mutation.error as Error).message}
@@ -356,6 +520,8 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
     </form>
   )
 }
+
+// ─── DeleteConfirmation ───────────────────────────────────────────────────────
 
 function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => void }) {
   const { deleteField } = useFields()

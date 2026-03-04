@@ -15,12 +15,13 @@ if (!defined('ABSPATH')) {
  *
  * Each field belongs to a RaptorFieldList via field_list_id.
  *
- * @property int    $id
- * @property int    $field_list_id  ID of the owning RaptorFieldList
- * @property string $name           snake_case machine name, e.g. "event_date"
- * @property string $type           Field type, e.g. "text", "slug", "date"
- * @property string $label          Human-readable label, e.g. "Event Date"
- * @property int    $sort_order     Zero-based display order within the list
+ * @property int        $id
+ * @property int        $field_list_id  ID of the owning RaptorFieldList
+ * @property string     $name           snake_case machine name, e.g. "event_date"
+ * @property string     $type           Field type, e.g. "text", "slug", "date"
+ * @property string     $label          Human-readable label, e.g. "Event Date"
+ * @property int        $sort_order     Zero-based display order within the list
+ * @property array|null $config         Type-specific configuration key/value pairs
  */
 class RaptorField extends \Gateway\Collection
 {
@@ -45,8 +46,13 @@ class RaptorField extends \Gateway\Collection
             'type',
             'label',
             'sort_order',
+            'config',
         ];
     }
+
+    protected $casts = [
+        'config' => 'array',
+    ];
 
     public function fieldList(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
