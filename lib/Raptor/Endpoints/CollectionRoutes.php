@@ -70,7 +70,14 @@ class CollectionRoutes
 
     public function getCollections(\WP_REST_Request $request): \WP_REST_Response
     {
-        $collections = RaptorCollection::orderBy('created_at', 'asc')->get();
+        $query = RaptorCollection::orderBy('created_at', 'asc');
+
+        $extensionKey = $request->get_param('extension_key');
+        if ($extensionKey) {
+            $query->where('extension_key', sanitize_text_field($extensionKey));
+        }
+
+        $collections = $query->get();
 
         return new \WP_REST_Response([
             'success'     => true,
@@ -111,6 +118,7 @@ class CollectionRoutes
 
         $collection = CollectionController::create([
             'collection_key' => $key,
+            'extension_key'  => sanitize_text_field($data['extension_key'] ?? ''),
             'title'          => $title,
             'description'    => sanitize_textarea_field($data['description'] ?? ''),
             'status'         => 'active',

@@ -85,6 +85,7 @@ class Plugin
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Exta\Routes();
+        new Raptor\Endpoints\ExtensionRoutes();
         new Raptor\Endpoints\CollectionRoutes();
         new Raptor\Endpoints\FieldListRoutes();
         new Raptor\Endpoints\FieldRoutes();
