@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorFieldList;
 
 // Exit if accessed directly
@@ -89,8 +90,16 @@ class FieldListRoutes
             ], 400);
         }
 
+        $collection = RaptorCollection::where('collection_key', $key)->first();
+        if (!$collection) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Collection not found.',
+            ], 404);
+        }
+
         $list = RaptorFieldList::create([
-            'collection_key' => $key,
+            'collection_id' => $collection->id,
         ]);
 
         return new \WP_REST_Response([
@@ -120,7 +129,7 @@ class FieldListRoutes
             return $list;
         }
 
-        // collection_key is the identifier — no updatable fields currently.
+        // No updatable fields currently.
         return new \WP_REST_Response([
             'success'    => true,
             'field_list' => $list->fresh()->toArray(),
@@ -145,13 +154,22 @@ class FieldListRoutes
     // ─── Helpers ──────────────────────────────────────────────────────────
 
     /**
-     * Returns the RaptorFieldList model or a 404 response.
+     * Returns the RaptorFieldList for the given collection key, or a 404 response.
      *
      * @return RaptorFieldList|\WP_REST_Response
      */
-    private function findOrFail(string $key)
+    private function findOrFail(string $collectionKey)
     {
-        $list = RaptorFieldList::where('collection_key', $key)->first();
+        $collection = RaptorCollection::where('collection_key', $collectionKey)->first();
+
+        if (!$collection) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Collection not found.',
+            ], 404);
+        }
+
+        $list = RaptorFieldList::where('collection_id', $collection->id)->first();
 
         if (!$list) {
             return new \WP_REST_Response([

@@ -14,10 +14,9 @@ if (!defined('ABSPATH')) {
  * (e.g. wp_gateway_raptor_field_list).
  *
  * Each collection has exactly one field list (one-to-one).
- * The collection_key is a string slug — the collection may only exist in code.
  *
- * @property int    $id
- * @property string $collection_key  Slug of the owning collection, e.g. "event"
+ * @property int $id
+ * @property int $collection_id  FK to gateway_raptor_collection.id
  */
 class RaptorFieldList extends \Gateway\Collection
 {
@@ -37,13 +36,13 @@ class RaptorFieldList extends \Gateway\Collection
     public function getFillable(): array
     {
         return [
-            'collection_key',
+            'collection_id',
         ];
     }
 
     public function collection(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(RaptorCollection::class, 'collection_key', 'collection_key');
+        return $this->belongsTo(RaptorCollection::class, 'collection_id', 'id');
     }
 
     public function fields(): \Illuminate\Database\Eloquent\Relations\HasMany

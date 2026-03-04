@@ -48,7 +48,7 @@ class RaptorBuilder
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
         );
 
-        $collections = RaptorCollection::where('extension_key', $extensionKey)
+        $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with('fieldList.fields')
             ->orderBy('id')
             ->get();
