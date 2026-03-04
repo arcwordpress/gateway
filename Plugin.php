@@ -109,6 +109,12 @@ class Plugin
         register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
         register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
 
+        // Re-run core migrations whenever the plugin version changes.
+        // register_activation_hook only fires on manual (de)activate, not on updates,
+        // so schema changes added after the initial install would never be applied.
+        // dbDelta() is idempotent — it only adds missing columns/keys, never drops them.
+        $this->maybeRunMigrations();
+
         // Boot Eloquent on plugins_loaded
         $this->bootEloquent();
 
@@ -335,6 +341,21 @@ class Plugin
     public static function findSQLiteDatabase()
     {
         return Database\DatabaseConnection::findSQLiteDatabase();
+    }
+
+    /**
+     * Run core migrations if the stored schema version differs from the current
+     * plugin version.  Called on every request but exits immediately when the
+     * version matches, so the overhead is a single get_option() call.
+     */
+    private function maybeRunMigrations(): void
+    {
+        $stored = get_option('gateway_schema_version', '');
+        if ($stored === GATEWAY_VERSION) {
+            return;
+        }
+        Database\MigrationHooks::runCoreMigrations();
+        update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
     /**
