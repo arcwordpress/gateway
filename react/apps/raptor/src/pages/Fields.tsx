@@ -213,7 +213,8 @@ type AdminCollectionInfo = {
 
 type CollRootNodeData    = Node<{ title: string; collKey: string }, 'collectionRootNode'>
 type DbNodeData          = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
-type RecordsContNodeData = Node<{ total: number | null }, 'recordsContainerNode'>
+type RecordsStatus       = 'idle' | 'loading' | 'empty' | 'loaded'
+type RecordsContNodeData = Node<{ status: RecordsStatus; count: number; onRefresh: () => void }, 'recordsContainerNode'>
 type RecordNodeData      = Node<{ recordId: number | string; label: string }, 'recordNode'>
 
 type JsonSchemaProp = { name: string; type: string; format?: string; description?: string; required: boolean }
@@ -283,16 +284,23 @@ function DatabaseNode({ data }: NodeProps<DbNodeData>) {
 // ─── Custom node: Records container ──────────────────────────────────────────
 
 function RecordsContainerNode({ data }: NodeProps<RecordsContNodeData>) {
+  const statusLine = {
+    idle:    { text: 'not loaded',        color: '#57534e' },
+    loading: { text: 'loading…',          color: '#a8a29e' },
+    empty:   { text: '0 records found',   color: '#78716c' },
+    loaded:  { text: `${data.count} loaded`, color: '#78716c' },
+  }[data.status]
+
   return (
     <div
       style={{
         background: '#1c1917',
         border: '1px solid #78716c',
         borderRadius: 10,
-        padding: '10px 20px',
+        padding: '10px 16px',
         color: '#d6d3d1',
         fontSize: 12,
-        minWidth: 140,
+        minWidth: 150,
         textAlign: 'center',
       }}
     >
@@ -301,11 +309,26 @@ function RecordsContainerNode({ data }: NodeProps<RecordsContNodeData>) {
       <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8a29e', marginBottom: 4, fontWeight: 600 }}>
         Records
       </div>
-      {data.total !== null && (
-        <div style={{ fontSize: 11, color: '#78716c' }}>
-          {data.total.toLocaleString()} total
-        </div>
-      )}
+      <div style={{ fontSize: 11, color: statusLine.color, marginBottom: 8 }}>
+        {statusLine.text}
+      </div>
+      <button
+        onClick={data.onRefresh}
+        disabled={data.status === 'loading'}
+        style={{
+          background: 'none',
+          border: '1px solid #57534e',
+          borderRadius: 4,
+          color: data.status === 'loading' ? '#57534e' : '#a8a29e',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          padding: '2px 8px',
+          cursor: data.status === 'loading' ? 'default' : 'pointer',
+        }}
+      >
+        REFRESH
+      </button>
     </div>
   )
 }
@@ -508,8 +531,9 @@ function Graph() {
   // Derive the get_many route from admin-data if available.
   const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null
 
-  // Fetch the last 5 records from the collection's standard REST endpoint.
-  const { data: recordsData } = useQuery<Record<string, unknown>[]>({
+  // Records are NOT fetched automatically — only when the user clicks REFRESH.
+  const [recordsEnabled, setRecordsEnabled] = useState(false)
+  const { data: recordsData, isFetching: recordsFetching, refetch: refetchRecords } = useQuery<Record<string, unknown>[]>({
     queryKey: ['collection-recent-records', getManyRoute],
     queryFn: async () => {
       const url = apiUrl(`${getManyRoute}?per_page=5&order_by=id&order=desc`)
@@ -518,14 +542,27 @@ function Graph() {
       const json = await res.json() as { data?: { items?: Record<string, unknown>[] } }
       return json.data?.items ?? []
     },
-    enabled: !!getManyRoute,
-    staleTime: 30_000,
+    enabled: recordsEnabled && !!getManyRoute,
+    staleTime: Infinity,
   })
 
+  const handleRefresh = useCallback(() => {
+    if (!getManyRoute) return
+    if (recordsEnabled) {
+      void refetchRecords()
+    } else {
+      setRecordsEnabled(true)
+    }
+  }, [getManyRoute, recordsEnabled, refetchRecords])
+
   const tableName     = adminData?.table ?? (collKey ? `wp_gateway_${collKey}` : 'Unknown')
-  const recordCount   = adminData?.record_count ?? null
   const recentRecords = recordsData ?? []
   const schemaProps   = fieldsToSchemaProps(fields)
+
+  const recordsStatus: RecordsStatus =
+    recordsFetching                ? 'loading' :
+    !recordsEnabled                ? 'idle'    :
+    recentRecords.length === 0     ? 'empty'   : 'loaded'
 
   // ── Layout constants ──────────────────────────────────────────────────────
   // Collection root sits centre-top.  Database branches left, schema branches
@@ -551,7 +588,7 @@ function Graph() {
     {
       id: 'node-db-table',
       type: 'databaseNode',
-      data: { tableName, recordCount },
+      data: { tableName, recordCount: adminData?.record_count ?? null },
       position: { x: DB_X, y: 160 },
     },
     {
@@ -563,7 +600,7 @@ function Graph() {
     {
       id: 'node-records',
       type: 'recordsContainerNode',
-      data: { total: recordCount },
+      data: { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh },
       position: { x: RECORDS_X, y: 320 },
     },
     ...slicedRecords.map((rec, i) => ({
@@ -592,8 +629,8 @@ function Graph() {
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
   // Re-sync nodes/edges whenever the underlying data changes.
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, fields])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                      // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, recordsStatus, collection, fields, handleRefresh])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                                                   // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
