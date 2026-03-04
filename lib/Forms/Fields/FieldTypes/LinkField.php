@@ -28,6 +28,7 @@ class LinkField extends \Gateway\Field {
             'type'        => 'checkbox',
             'required'    => false,
             'default'     => false,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'enableTarget',
@@ -35,6 +36,7 @@ class LinkField extends \Gateway\Field {
             'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'addButtonText',

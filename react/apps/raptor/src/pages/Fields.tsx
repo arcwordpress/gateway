@@ -5,7 +5,7 @@ import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xy
 import '@xyflow/react/dist/style.css'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JS-only package; declarations in src/types.d.ts
-import { ControlledForm } from '@arcwp/gateway-forms'
+import { ControlledForm, useFieldType } from '@arcwp/gateway-forms'
 import '@arcwp/gateway-forms/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { fieldsRoute } from '../router'
@@ -40,7 +40,7 @@ type SurfaceState =
 // Field type definition shape returned by gateway/v1/field-types
 type FieldTypeDef = {
   type: string
-  fields: { name: string; label: string; type: string; required?: boolean; default?: unknown; description?: string; placeholder?: string }[]
+  fields: { name: string; label: string; type: string; required?: boolean; default?: unknown; description?: string; placeholder?: string; group?: string }[]
 }
 
 // ─── Field type helpers ───────────────────────────────────────────────────────
@@ -48,6 +48,64 @@ type FieldTypeDef = {
 // "date-picker" → "Date Picker"
 function formatFieldTypeLabel(type: string): string {
   return type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
+// ─── TabbedFieldConfig ────────────────────────────────────────────────────────
+
+// Renders a single field via the forms-package registry (same as ControlledFieldRenderer inside ControlledForm)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FieldRenderer = ({ config }: { config: any }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { Input } = (useFieldType as any)(config)
+  return <Input config={config} />
+}
+
+// Wraps ControlledForm with optional tab navigation derived from field `group` annotations.
+// Falls back to a flat list when all fields share a single group (or none are annotated).
+function TabbedFieldConfig({
+  fields,
+  values,
+  onChange,
+}: {
+  fields: FieldTypeDef['fields']
+  values: Record<string, unknown>
+  onChange: (name: string, value: unknown) => void
+}) {
+  const groups: Record<string, FieldTypeDef['fields']> = {}
+  for (const field of fields) {
+    const g = field.group ?? 'general'
+    ;(groups[g] ??= []).push(field)
+  }
+  const groupKeys = Object.keys(groups)
+  const [activeTab, setActiveTab] = useState(groupKeys[0] ?? 'general')
+
+  const visibleFields = groupKeys.length > 1 ? (groups[activeTab] ?? []) : fields
+
+  return (
+    <ControlledForm values={values} onChange={onChange}>
+      {groupKeys.length > 1 && (
+        <div className="flex gap-1 mb-4 border-b border-gray-700">
+          {groupKeys.map(g => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setActiveTab(g)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
+                activeTab === g
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              {g.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            </button>
+          ))}
+        </div>
+      )}
+      {visibleFields.map(f =>
+        !f.name || !f.type ? null : <FieldRenderer key={f.name} config={f} />
+      )}
+    </ControlledForm>
+  )
 }
 
 // ─── Collection context ───────────────────────────────────────────────────────
@@ -394,7 +452,7 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
             Field Configuration
           </div>
-          <ControlledForm
+          <TabbedFieldConfig
             fields={selectedTypeDef.fields}
             values={extras}
             onChange={handleExtrasChange}
