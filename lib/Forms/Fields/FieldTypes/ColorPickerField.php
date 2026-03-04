@@ -21,6 +21,7 @@ class ColorPickerField extends \Gateway\Field {
             'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'swatches',
@@ -29,6 +30,7 @@ class ColorPickerField extends \Gateway\Field {
             'required'    => false,
             'placeholder' => '#000000' . "\n" . '#FFFFFF' . "\n" . '#EF4444',
             'description' => 'One hex color per line',
+            'group'       => 'advanced',
         ],
     ];
 
