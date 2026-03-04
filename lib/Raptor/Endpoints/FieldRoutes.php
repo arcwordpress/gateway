@@ -102,12 +102,15 @@ class FieldRoutes
             ], 400);
         }
 
+        $config = isset($data['config']) && is_array($data['config']) ? $data['config'] : null;
+
         $field = RaptorField::create([
             'field_list_id' => $field_list_id,
             'name'          => $name,
             'type'          => sanitize_text_field($data['type'] ?? 'text'),
             'label'         => sanitize_text_field($data['label'] ?? ''),
             'sort_order'    => isset($data['sort_order']) ? (int) $data['sort_order'] : 0,
+            'config'        => $config,
         ]);
 
         return new \WP_REST_Response([
@@ -151,6 +154,9 @@ class FieldRoutes
         }
         if (isset($data['sort_order'])) {
             $update['sort_order'] = (int) $data['sort_order'];
+        }
+        if (array_key_exists('config', $data)) {
+            $update['config'] = is_array($data['config']) ? $data['config'] : null;
         }
 
         if ($update) {
