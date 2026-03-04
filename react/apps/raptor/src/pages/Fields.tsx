@@ -211,10 +211,13 @@ type AdminCollectionInfo = {
   routes: { type: string; method: string; route: string }[]
 }
 
-type CollRootNodeData = Node<{ title: string; collKey: string }, 'collectionRootNode'>
-type DbNodeData       = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
+type CollRootNodeData    = Node<{ title: string; collKey: string }, 'collectionRootNode'>
+type DbNodeData          = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
 type RecordsContNodeData = Node<{ total: number | null }, 'recordsContainerNode'>
-type RecordNodeData   = Node<{ recordId: number | string; label: string }, 'recordNode'>
+type RecordNodeData      = Node<{ recordId: number | string; label: string }, 'recordNode'>
+
+type JsonSchemaProp = { name: string; type: string; format?: string; description?: string; required: boolean }
+type SchemaNodeData  = Node<{ title: string; properties: JsonSchemaProp[] }, 'jsonSchemaNode'>
 
 // ─── Custom node: Collection root ─────────────────────────────────────────────
 
@@ -335,6 +338,90 @@ function RecordNode({ data }: NodeProps<RecordNodeData>) {
   )
 }
 
+// ─── Custom node: JSON Schema ─────────────────────────────────────────────────
+
+const TYPE_BADGE_COLORS: Record<string, { bg: string; text: string }> = {
+  string:  { bg: '#1e3a5f', text: '#93c5fd' },
+  number:  { bg: '#1a2e1a', text: '#4ade80' },
+  integer: { bg: '#1a2e1a', text: '#4ade80' },
+  boolean: { bg: '#2d1b4e', text: '#c084fc' },
+  array:   { bg: '#1c1917', text: '#fb923c' },
+  object:  { bg: '#1c1917', text: '#fbbf24' },
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const colors = TYPE_BADGE_COLORS[type] ?? { bg: '#1e293b', text: '#94a3b8' }
+  return (
+    <span style={{
+      background: colors.bg, color: colors.text,
+      fontSize: 9, fontFamily: 'monospace', fontWeight: 600,
+      padding: '1px 5px', borderRadius: 4, letterSpacing: '0.03em',
+    }}>
+      {type}
+    </span>
+  )
+}
+
+function JsonSchemaNode({ data }: NodeProps<SchemaNodeData>) {
+  return (
+    <div style={{
+      background: '#111827',
+      border: '1px solid #4b5563',
+      borderRadius: 10,
+      minWidth: 220,
+      maxWidth: 280,
+      fontSize: 11,
+      color: '#d1d5db',
+      overflow: 'hidden',
+    }}>
+      <Handle type="target" position={Position.Top} />
+
+      {/* Header */}
+      <div style={{
+        background: '#1f2937', borderBottom: '1px solid #374151',
+        padding: '8px 12px',
+      }}>
+        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 2 }}>
+          JSON Schema
+        </div>
+        <div style={{ fontWeight: 600, color: '#f9fafb', fontSize: 12 }}>{data.title}</div>
+        <div style={{ fontSize: 10, color: '#6b7280', marginTop: 2, fontFamily: 'monospace' }}>
+          type: <span style={{ color: '#fbbf24' }}>object</span>
+        </div>
+      </div>
+
+      {/* Properties */}
+      <div style={{ padding: '6px 0' }}>
+        {data.properties.length === 0 ? (
+          <div style={{ padding: '6px 12px', color: '#4b5563', fontStyle: 'italic' }}>no fields defined</div>
+        ) : (
+          data.properties.map(prop => (
+            <div key={prop.name} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '3px 12px', gap: 8,
+            }}>
+              <span style={{ fontFamily: 'monospace', color: prop.required ? '#e5e7eb' : '#9ca3af', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {prop.required && <span style={{ color: '#ef4444', marginRight: 3 }}>*</span>}
+                {prop.name}
+              </span>
+              <span style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                <TypeBadge type={prop.type} />
+                {prop.format && <TypeBadge type={prop.format} />}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Footer: built-in id field */}
+      <div style={{ borderTop: '1px solid #1f2937', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: 'monospace', color: '#4b5563' }}>id</span>
+        <TypeBadge type="integer" />
+      </div>
+    </div>
+  )
+}
+
 // ─── Node types registry ──────────────────────────────────────────────────────
 
 const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
@@ -342,6 +429,7 @@ const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
   databaseNode:         DatabaseNode,
   recordsContainerNode: RecordsContainerNode,
   recordNode:           RecordNode,
+  jsonSchemaNode:       JsonSchemaNode,
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -357,10 +445,51 @@ function recordLabel(record: Record<string, unknown>): string {
   return `ID ${record['id'] ?? '?'}`
 }
 
+/** Convert a collection's fields into JSON Schema property descriptors on-the-fly. */
+function fieldsToSchemaProps(fields: Field[]): JsonSchemaProp[] {
+  return fields.map(f => {
+    let type    = 'string'
+    let format: string | undefined
+
+    switch (f.type) {
+      case 'number':
+        type = 'number'; break
+      case 'integer':
+        type = 'integer'; break
+      case 'boolean':
+      case 'checkbox':
+        type = 'boolean'; break
+      case 'date':
+      case 'date-picker':
+        format = 'date'; break
+      case 'datetime':
+      case 'datetime-local':
+        format = 'date-time'; break
+      case 'email':
+        format = 'email'; break
+      case 'url':
+        format = 'uri'; break
+      case 'file':
+      case 'image':
+        format = 'uri'; break
+      case 'select':
+      case 'radio':
+      case 'text':
+      case 'textarea':
+      default:
+        // stays string
+        break
+    }
+
+    return { name: f.name, type, format, required: false }
+  })
+}
+
 // ─── Graph ────────────────────────────────────────────────────────────────────
 
 function Graph() {
   const { collection } = useCollection()
+  const { fields }     = useFields()
   const collKey = collection?.collection_key ?? ''
 
   // Fetch admin-data to find the DB table name + record count for this collection.
@@ -396,32 +525,46 @@ function Graph() {
   const tableName     = adminData?.table ?? (collKey ? `wp_gateway_${collKey}` : 'Unknown')
   const recordCount   = adminData?.record_count ?? null
   const recentRecords = recordsData ?? []
+  const schemaProps   = fieldsToSchemaProps(fields)
 
-  // ── Build nodes & edges from latest data ─────────────────────────────────
+  // ── Layout constants ──────────────────────────────────────────────────────
+  // Collection root sits centre-top.  Database branches left, schema branches
+  // right at the same depth.  Records + individual record nodes sit below db.
+
+  const ROOT_X       = 200
+  const DB_X         = 0
+  const SCHEMA_X     = 380
+  const RECORDS_X    = 10
 
   const RECORD_SPACING   = 140
   const slicedRecords    = recentRecords.slice(0, 5)
   const totalRecordWidth = slicedRecords.length * RECORD_SPACING
-  const recordStartX     = -(totalRecordWidth / 2) + RECORD_SPACING / 2
+  const recordStartX     = RECORDS_X - totalRecordWidth / 2 + RECORD_SPACING / 2
 
   const computedNodes: Node[] = [
     {
       id: '1',
       type: 'collectionRootNode',
       data: { title: collection?.title ?? collKey, collKey },
-      position: { x: 0, y: 0 },
+      position: { x: ROOT_X, y: 0 },
     },
     {
       id: 'node-db-table',
       type: 'databaseNode',
       data: { tableName, recordCount },
-      position: { x: -20, y: 160 },
+      position: { x: DB_X, y: 160 },
+    },
+    {
+      id: 'node-schema',
+      type: 'jsonSchemaNode',
+      data: { title: collection?.title ?? collKey, properties: schemaProps },
+      position: { x: SCHEMA_X, y: 160 },
     },
     {
       id: 'node-records',
       type: 'recordsContainerNode',
       data: { total: recordCount },
-      position: { x: -10, y: 320 },
+      position: { x: RECORDS_X, y: 320 },
     },
     ...slicedRecords.map((rec, i) => ({
       id: `record-${rec['id'] ?? i}`,
@@ -435,8 +578,9 @@ function Graph() {
   ]
 
   const computedEdges: Edge[] = [
-    { id: 'e-root-db',    source: '1',             target: 'node-db-table' },
-    { id: 'e-db-records', source: 'node-db-table', target: 'node-records'  },
+    { id: 'e-root-db',     source: '1',             target: 'node-db-table' },
+    { id: 'e-root-schema', source: '1',              target: 'node-schema'   },
+    { id: 'e-db-records',  source: 'node-db-table', target: 'node-records'  },
     ...slicedRecords.map((rec, i) => ({
       id: `e-records-r${i}`,
       source: 'node-records',
@@ -448,8 +592,8 @@ function Graph() {
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
   // Re-sync nodes/edges whenever the underlying data changes.
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])              // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, fields])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                      // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
