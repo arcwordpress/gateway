@@ -286,6 +286,11 @@ function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => v
           onClick={() => addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: fields.length })}
         >+</button>
       </header>
+      {!fieldListId && (
+        <p className="mb-6 text-xs text-amber-400">
+          This is very unusual, this Collection does not have a Field List row associated with it.
+        </p>
+      )}
       {addMutation.isError && (
         <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           {(addMutation.error as Error).message}
