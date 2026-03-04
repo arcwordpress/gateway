@@ -19,6 +19,7 @@ if (!defined('ABSPATH')) {
  *
  * @property int    $id
  * @property string $collection_key  Slug identifier, e.g. "my_posts"
+ * @property string $extension_key   Parent extension, e.g. "ticketify"
  * @property string $title           Human-readable name
  * @property string $description
  * @property string $status          "active" | "inactive"
@@ -46,11 +47,17 @@ class RaptorCollection extends \Gateway\Collection
     {
         return [
             'collection_key',
+            'extension_key',
             'title',
             'description',
             'status',
             'relationships',
         ];
+    }
+
+    public function extension(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RaptorExtension::class, 'extension_key', 'extension_key');
     }
 
     public function fieldList(): \Illuminate\Database\Eloquent\Relations\HasOne

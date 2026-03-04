@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { apiUrl, authHeaders } from '../lib/api'
 
 type Extension = {
-  key: string
+  extension_key: string
   title: string
 }
 
@@ -26,7 +26,7 @@ export default function Extensions() {
   const { data: extensions = [], isLoading, isError } = useQuery<Extension[]>({
     queryKey: ['extensions'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/extensions'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.extensions ?? []
@@ -83,16 +83,16 @@ export default function Extensions() {
         <div className="space-y-2">
           {extensions.map((ext) => (
             <Link
-              key={ext.key}
+              key={ext.extension_key}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              to={`/extensions/${ext.key}/edit` as any}
+              to={`/extensions/${ext.extension_key}/edit` as any}
               className="group flex items-center gap-4 p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-gray-700 hover:bg-gray-900/80 transition-all"
             >
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-200 group-hover:text-gray-100">
-                  {ext.title || ext.key}
+                  {ext.title || ext.extension_key}
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5 font-mono">{ext.key}</p>
+                <p className="text-xs text-gray-600 mt-0.5 font-mono">{ext.extension_key}</p>
               </div>
               <ArrowIcon />
             </Link>

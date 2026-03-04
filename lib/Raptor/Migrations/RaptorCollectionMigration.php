@@ -27,6 +27,7 @@ class RaptorCollectionMigration
         $sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             collection_key varchar(200) NOT NULL DEFAULT '',
+            extension_key varchar(200) NOT NULL DEFAULT '',
             title varchar(200) NOT NULL DEFAULT '',
             description text NULL,
             status varchar(50) NOT NULL DEFAULT 'active',
