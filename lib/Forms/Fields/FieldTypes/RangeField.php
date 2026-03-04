@@ -49,7 +49,7 @@ class RangeField extends \Gateway\Field {
         [
             'name'        => 'showMinMax',
             'label'       => 'Show Min/Max Labels',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
         ],

@@ -9,7 +9,7 @@ class CheckboxField extends \Gateway\Field {
         [
             'name'        => 'default',
             'label'       => 'Checked by Default',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => false,
         ],
