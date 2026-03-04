@@ -33,6 +33,9 @@ class RaptorFieldList extends \Gateway\Collection
         'enabled' => false,
     ];
 
+    // Hide the legacy collection_key column — superseded by collection_id.
+    protected $hidden = ['collection_key'];
+
     public function getFillable(): array
     {
         return [

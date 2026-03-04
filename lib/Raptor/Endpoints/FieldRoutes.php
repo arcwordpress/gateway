@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorField;
 
 // Exit if accessed directly
@@ -113,6 +114,8 @@ class FieldRoutes
             'config'        => $config,
         ]);
 
+        $this->triggerBuildFromField($field);
+
         return new \WP_REST_Response([
             'success' => true,
             'message' => 'Field created.',
@@ -163,6 +166,8 @@ class FieldRoutes
             $field->update($update);
         }
 
+        $this->triggerBuildFromField($field);
+
         return new \WP_REST_Response([
             'success' => true,
             'field'   => $field->fresh()->toArray(),
@@ -176,6 +181,7 @@ class FieldRoutes
             return $field;
         }
 
+        $this->triggerBuildFromField($field);
         $field->delete();
 
         return new \WP_REST_Response([
@@ -203,6 +209,24 @@ class FieldRoutes
         }
 
         return $field;
+    }
+
+    /**
+     * Rebuild the extension that owns this field's collection, if any.
+     * Chain: field → field_list → collection → extension.
+     */
+    private function triggerBuildFromField(RaptorField $field): void
+    {
+        $field->load('fieldList.collection.extension');
+
+        $extension = null;
+        if ($field->fieldList && $field->fieldList->collection) {
+            $extension = $field->fieldList->collection->extension;
+        }
+
+        if ($extension) {
+            (new RaptorBuilder())->build($extension->extension_key);
+        }
     }
 
     public function checkPermissions(): bool
