@@ -204,6 +204,26 @@ class RaptorBuilder
         ];
     }
 
+    /**
+     * Trigger a full extension build for the extension that owns the given collection.
+     * No-ops if the collection has no extension.
+     */
+    public function buildFromCollection(RaptorCollection $collection): ?array
+    {
+        if (!$collection->extension_id) {
+            return null;
+        }
+
+        $collection->loadMissing('extension');
+        $extension = $collection->extension;
+
+        if (!$extension) {
+            return null;
+        }
+
+        return $this->build($extension->extension_key);
+    }
+
     // ─── Naming helpers ───────────────────────────────────────────────────────
 
     public function toPluginSlug(string $extensionKey): string

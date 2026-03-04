@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Controllers\CollectionController;
@@ -134,6 +135,8 @@ class CollectionRoutes
             'status'         => 'active',
         ]);
 
+        (new RaptorBuilder())->buildFromCollection($collection);
+
         return new \WP_REST_Response([
             'success'    => true,
             'message'    => 'Collection created.',
@@ -179,6 +182,8 @@ class CollectionRoutes
 
         $collection->update($update);
 
+        (new RaptorBuilder())->buildFromCollection($collection);
+
         return new \WP_REST_Response([
             'success'    => true,
             'collection' => $collection->fresh()->toArray(),
@@ -192,7 +197,12 @@ class CollectionRoutes
             return $collection;
         }
 
+        $extension = $collection->extension_id ? $collection->extension : null;
         $collection->delete();
+
+        if ($extension) {
+            (new RaptorBuilder())->build($extension->extension_key);
+        }
 
         return new \WP_REST_Response([
             'success' => true,
