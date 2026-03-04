@@ -1,6 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
+import {
+  useNodesState, useEdgesState,
+  type Node, type Edge, type NodeProps, type NodeTypes,
+  Handle, Position,
+} from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -197,29 +201,262 @@ function FieldsProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── Graph ────────────────────────────────────────────────────────────────────
+// ─── Graph types ─────────────────────────────────────────────────────────────
 
-const STATIC_EDGES: Edge[] = [
-  { id: 'e1-2', source: '1', target: 'node-2' },
-]
+type AdminCollectionInfo = {
+  key: string
+  title: string
+  table: string
+  record_count: number
+  routes: { type: string; method: string; route: string }[]
+}
+
+type CollRootNodeData = Node<{ title: string; collKey: string }, 'collectionRootNode'>
+type DbNodeData       = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
+type RecordsContNodeData = Node<{ total: number | null }, 'recordsContainerNode'>
+type RecordNodeData   = Node<{ recordId: number | string; label: string }, 'recordNode'>
+
+// ─── Custom node: Collection root ─────────────────────────────────────────────
+
+function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
+  return (
+    <div
+      style={{
+        background: '#1e3a5f',
+        border: '1px solid #3b82f6',
+        borderRadius: 10,
+        padding: '10px 20px',
+        color: '#dbeafe',
+        fontSize: 13,
+        fontWeight: 600,
+        minWidth: 160,
+        textAlign: 'center',
+      }}
+    >
+      <Handle type="source" position={Position.Bottom} />
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 4 }}>
+        Collection
+      </div>
+      <div>{data.title}</div>
+      <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', marginTop: 3, fontWeight: 400 }}>
+        {data.collKey}
+      </div>
+    </div>
+  )
+}
+
+// ─── Custom node: Database ────────────────────────────────────────────────────
+
+function DatabaseNode({ data }: NodeProps<DbNodeData>) {
+  return (
+    <div
+      style={{
+        background: '#1a2e1a',
+        border: '1px solid #22c55e',
+        borderRadius: 10,
+        padding: '10px 16px',
+        color: '#dcfce7',
+        fontSize: 12,
+        minWidth: 200,
+      }}
+    >
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4ade80', marginBottom: 6, fontWeight: 600 }}>
+        Database Table
+      </div>
+      <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#86efac', wordBreak: 'break-all' }}>
+        {data.tableName}
+      </div>
+      {data.recordCount !== null && (
+        <div style={{ marginTop: 6, fontSize: 11, color: '#6b7280' }}>
+          {data.recordCount.toLocaleString()} record{data.recordCount !== 1 ? 's' : ''}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Custom node: Records container ──────────────────────────────────────────
+
+function RecordsContainerNode({ data }: NodeProps<RecordsContNodeData>) {
+  return (
+    <div
+      style={{
+        background: '#1c1917',
+        border: '1px solid #78716c',
+        borderRadius: 10,
+        padding: '10px 20px',
+        color: '#d6d3d1',
+        fontSize: 12,
+        minWidth: 140,
+        textAlign: 'center',
+      }}
+    >
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8a29e', marginBottom: 4, fontWeight: 600 }}>
+        Records
+      </div>
+      {data.total !== null && (
+        <div style={{ fontSize: 11, color: '#78716c' }}>
+          {data.total.toLocaleString()} total
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Custom node: Individual record ──────────────────────────────────────────
+
+function RecordNode({ data }: NodeProps<RecordNodeData>) {
+  return (
+    <div
+      style={{
+        background: '#0f172a',
+        border: '1px solid #334155',
+        borderRadius: 8,
+        padding: '8px 12px',
+        color: '#94a3b8',
+        fontSize: 11,
+        minWidth: 110,
+        maxWidth: 160,
+        textAlign: 'center',
+      }}
+    >
+      <Handle type="target" position={Position.Top} />
+      <div style={{ fontSize: 10, color: '#475569', marginBottom: 2 }}>
+        #{data.recordId}
+      </div>
+      <div style={{ color: '#cbd5e1', wordBreak: 'break-word' }}>
+        {data.label}
+      </div>
+    </div>
+  )
+}
+
+// ─── Node types registry ──────────────────────────────────────────────────────
+
+const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
+  collectionRootNode:   CollectionRootNode,
+  databaseNode:         DatabaseNode,
+  recordsContainerNode: RecordsContainerNode,
+  recordNode:           RecordNode,
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Best-effort label for a record: first string-ish value that's not 'id'. */
+function recordLabel(record: Record<string, unknown>): string {
+  const skipKeys = new Set(['id', 'created_at', 'updated_at', 'deleted_at'])
+  for (const [k, v] of Object.entries(record)) {
+    if (skipKeys.has(k)) continue
+    if (typeof v === 'string' && v.trim()) return v.trim().slice(0, 40)
+    if (typeof v === 'number') return String(v)
+  }
+  return `ID ${record['id'] ?? '?'}`
+}
+
+// ─── Graph ────────────────────────────────────────────────────────────────────
 
 function Graph() {
   const { collection } = useCollection()
+  const collKey = collection?.collection_key ?? ''
 
-  const initialNodes: Node[] = [
-    { id: '1',             type: 'default', data: { label: collection?.title }, position: { x: 0,    y: 0   } },
-    { id: 'node-2',        type: 'default', data: { label: 'JSON Schema' },     position: { x: 0,    y: 200 } },
-    { id: 'node-db-table', type: 'default', data: { label: 'Database Table' },  position: { x: -100, y: 200 } },
+  // Fetch admin-data to find the DB table name + record count for this collection.
+  const { data: adminData } = useQuery<AdminCollectionInfo | null>({
+    queryKey: ['admin-data-collection', collKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
+      if (!res.ok) return null
+      const json = await res.json() as { collections?: AdminCollectionInfo[] }
+      return json.collections?.find(c => c.key === collKey) ?? null
+    },
+    enabled: !!collKey,
+    staleTime: 30_000,
+  })
+
+  // Derive the get_many route from admin-data if available.
+  const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null
+
+  // Fetch the last 5 records from the collection's standard REST endpoint.
+  const { data: recordsData } = useQuery<Record<string, unknown>[]>({
+    queryKey: ['collection-recent-records', getManyRoute],
+    queryFn: async () => {
+      const url = apiUrl(`${getManyRoute}?per_page=5&order_by=id&order=desc`)
+      const res = await fetch(url, { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json() as { data?: { items?: Record<string, unknown>[] } }
+      return json.data?.items ?? []
+    },
+    enabled: !!getManyRoute,
+    staleTime: 30_000,
+  })
+
+  const tableName     = adminData?.table ?? (collKey ? `wp_gateway_${collKey}` : 'Unknown')
+  const recordCount   = adminData?.record_count ?? null
+  const recentRecords = recordsData ?? []
+
+  // ── Build nodes & edges from latest data ─────────────────────────────────
+
+  const RECORD_SPACING   = 140
+  const slicedRecords    = recentRecords.slice(0, 5)
+  const totalRecordWidth = slicedRecords.length * RECORD_SPACING
+  const recordStartX     = -(totalRecordWidth / 2) + RECORD_SPACING / 2
+
+  const computedNodes: Node[] = [
+    {
+      id: '1',
+      type: 'collectionRootNode',
+      data: { title: collection?.title ?? collKey, collKey },
+      position: { x: 0, y: 0 },
+    },
+    {
+      id: 'node-db-table',
+      type: 'databaseNode',
+      data: { tableName, recordCount },
+      position: { x: -20, y: 160 },
+    },
+    {
+      id: 'node-records',
+      type: 'recordsContainerNode',
+      data: { total: recordCount },
+      position: { x: -10, y: 320 },
+    },
+    ...slicedRecords.map((rec, i) => ({
+      id: `record-${rec['id'] ?? i}`,
+      type: 'recordNode' as const,
+      data: {
+        recordId: (rec['id'] as number | string) ?? i + 1,
+        label: recordLabel(rec),
+      },
+      position: { x: recordStartX + i * RECORD_SPACING, y: 480 },
+    })),
   ]
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [edges, , onEdgesChange] = useEdgesState(STATIC_EDGES)
+  const computedEdges: Edge[] = [
+    { id: 'e-root-db',    source: '1',             target: 'node-db-table' },
+    { id: 'e-db-records', source: 'node-db-table', target: 'node-records'  },
+    ...slicedRecords.map((rec, i) => ({
+      id: `e-records-r${i}`,
+      source: 'node-records',
+      target: `record-${rec['id'] ?? i}`,
+    })),
+  ]
+
+  const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
+  const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
+
+  // Re-sync nodes/edges whenever the underlying data changes.
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])              // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={graphNodes}
+        edges={graphEdges}
+        nodeTypes={FIELD_GRAPH_NODE_TYPES}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
