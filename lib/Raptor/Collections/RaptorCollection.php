@@ -17,12 +17,12 @@ if (!defined('ABSPATH')) {
  * persisted to the database, as opposed to the file-based collections
  * managed by the Exta workflow.
  *
- * @property int    $id
- * @property string $collection_key  Slug identifier, e.g. "my_posts"
- * @property string $extension_key   Parent extension, e.g. "ticketify"
- * @property string $title           Human-readable name
- * @property string $description
- * @property string $status          "active" | "inactive"
+ * @property int      $id
+ * @property string   $collection_key  Slug identifier, e.g. "my_posts"
+ * @property int|null $extension_id    FK to gateway_raptor_extension.id
+ * @property string   $title           Human-readable name
+ * @property string   $description
+ * @property string   $status          "active" | "inactive"
  */
 class RaptorCollection extends \Gateway\Collection
 {
@@ -47,7 +47,7 @@ class RaptorCollection extends \Gateway\Collection
     {
         return [
             'collection_key',
-            'extension_key',
+            'extension_id',
             'title',
             'description',
             'status',
@@ -57,11 +57,11 @@ class RaptorCollection extends \Gateway\Collection
 
     public function extension(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(RaptorExtension::class, 'extension_key', 'extension_key');
+        return $this->belongsTo(RaptorExtension::class, 'extension_id', 'id');
     }
 
     public function fieldList(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(RaptorFieldList::class, 'collection_key', 'collection_key');
+        return $this->hasOne(RaptorFieldList::class, 'collection_id', 'id');
     }
 }

@@ -153,7 +153,7 @@ class ExtensionRoutes
         $extension = $this->findOrFail($request->get_param('extension_key'));
         if ($extension instanceof \WP_REST_Response) return $extension;
 
-        $collections = RaptorCollection::where('extension_key', $extension->extension_key)
+        $collections = RaptorCollection::where('extension_id', $extension->id)
             ->orderBy('id')
             ->get(['id', 'collection_key', 'title', 'description', 'status']);
 

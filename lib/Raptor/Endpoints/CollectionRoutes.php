@@ -3,6 +3,7 @@
 namespace Gateway\Raptor\Endpoints;
 
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Controllers\CollectionController;
 
 // Exit if accessed directly
@@ -74,7 +75,10 @@ class CollectionRoutes
 
         $extensionKey = $request->get_param('extension_key');
         if ($extensionKey) {
-            $query->where('extension_key', sanitize_text_field($extensionKey));
+            $extension = RaptorExtension::where('extension_key', sanitize_text_field($extensionKey))->first();
+            if ($extension) {
+                $query->where('extension_id', $extension->id);
+            }
         }
 
         $collections = $query->get();
@@ -116,9 +120,15 @@ class CollectionRoutes
             ], 409);
         }
 
+        $extensionId = null;
+        if (!empty($data['extension_key'])) {
+            $ext = RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
+            $extensionId = $ext ? $ext->id : null;
+        }
+
         $collection = CollectionController::create([
             'collection_key' => $key,
-            'extension_key'  => sanitize_text_field($data['extension_key'] ?? ''),
+            'extension_id'   => $extensionId,
             'title'          => $title,
             'description'    => sanitize_textarea_field($data['description'] ?? ''),
             'status'         => 'active',

@@ -37,7 +37,7 @@ class CollectionController
     {
         $collection = RaptorCollection::create($attributes);
 
-        RaptorFieldList::create(['collection_key' => $attributes['collection_key']]);
+        RaptorFieldList::create(['collection_id' => $collection->id]);
 
         return $collection;
     }
