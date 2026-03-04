@@ -213,12 +213,17 @@ type AdminCollectionInfo = {
 
 type CollRootNodeData    = Node<{ title: string; collKey: string }, 'collectionRootNode'>
 type DbNodeData          = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
-type RecordsStatus       = 'idle' | 'loading' | 'empty' | 'loaded'
-type RecordsContNodeData = Node<{ status: RecordsStatus; count: number; onRefresh: () => void }, 'recordsContainerNode'>
+type RecordsStatus       = 'idle' | 'loading' | 'empty' | 'loaded' | 'no-route'
+type RecordsContNodeData = Node<{ count: number }, 'recordsContainerNode'>
 type RecordNodeData      = Node<{ recordId: number | string; label: string }, 'recordNode'>
 
 type JsonSchemaProp = { name: string; type: string; format?: string; description?: string; required: boolean }
 type SchemaNodeData  = Node<{ title: string; properties: JsonSchemaProp[] }, 'jsonSchemaNode'>
+
+// Context so node components can read live records state without going through
+// React Flow's node data (which freezes function references).
+type RecordsCtxValue = { status: RecordsStatus; count: number; onRefresh: () => void }
+const RecordsCtx = createContext<RecordsCtxValue>({ status: 'idle', count: 0, onRefresh: () => {} })
 
 // ─── Custom node: Collection root ─────────────────────────────────────────────
 
@@ -283,13 +288,20 @@ function DatabaseNode({ data }: NodeProps<DbNodeData>) {
 
 // ─── Custom node: Records container ──────────────────────────────────────────
 
-function RecordsContainerNode({ data }: NodeProps<RecordsContNodeData>) {
-  const statusLine = {
-    idle:    { text: 'not loaded',        color: '#57534e' },
-    loading: { text: 'loading…',          color: '#a8a29e' },
-    empty:   { text: '0 records found',   color: '#78716c' },
-    loaded:  { text: `${data.count} loaded`, color: '#78716c' },
-  }[data.status]
+function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
+  // Read live state from context — not from node data, which would freeze the
+  // function reference and give stale status after the first render.
+  const { status, count, onRefresh } = useContext(RecordsCtx)
+
+  const statusLine: { text: string; color: string } = {
+    idle:     { text: 'not loaded',      color: '#57534e' },
+    loading:  { text: 'loading…',        color: '#a8a29e' },
+    empty:    { text: '0 records found', color: '#78716c' },
+    loaded:   { text: `${count} loaded`, color: '#86efac' },
+    'no-route': { text: 'no API route',  color: '#b45309' },
+  }[status]
+
+  const isDisabled = status === 'loading' || status === 'no-route'
 
   return (
     <div
@@ -313,18 +325,18 @@ function RecordsContainerNode({ data }: NodeProps<RecordsContNodeData>) {
         {statusLine.text}
       </div>
       <button
-        onClick={data.onRefresh}
-        disabled={data.status === 'loading'}
+        onClick={onRefresh}
+        disabled={isDisabled}
         style={{
           background: 'none',
-          border: '1px solid #57534e',
+          border: `1px solid ${isDisabled ? '#3c3834' : '#57534e'}`,
           borderRadius: 4,
-          color: data.status === 'loading' ? '#57534e' : '#a8a29e',
+          color: isDisabled ? '#3c3834' : '#a8a29e',
           fontSize: 9,
           fontWeight: 700,
           letterSpacing: '0.08em',
           padding: '2px 8px',
-          cursor: data.status === 'loading' ? 'default' : 'pointer',
+          cursor: isDisabled ? 'default' : 'pointer',
         }}
       >
         REFRESH
@@ -531,10 +543,12 @@ function Graph() {
   // Derive the get_many route from admin-data if available.
   const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null
 
-  // Records are NOT fetched automatically — only when the user clicks REFRESH.
-  const [recordsEnabled, setRecordsEnabled] = useState(false)
-  const { data: recordsData, isFetching: recordsFetching, refetch: refetchRecords } = useQuery<Record<string, unknown>[]>({
-    queryKey: ['collection-recent-records', getManyRoute],
+  // fetchTrigger drives lazy records loading: 0 = never fetched, increments on each REFRESH.
+  // Using it in the queryKey means every increment is treated as a distinct cache entry,
+  // so React Query always fires a new request regardless of prior state.
+  const [fetchTrigger, setFetchTrigger] = useState(0)
+  const { data: recordsData, isFetching: recordsFetching } = useQuery<Record<string, unknown>[]>({
+    queryKey: ['collection-recent-records', collKey, fetchTrigger],
     queryFn: async () => {
       const url = apiUrl(`${getManyRoute}?per_page=5&order_by=id&order=desc`)
       const res = await fetch(url, { headers: authHeaders() })
@@ -542,27 +556,23 @@ function Graph() {
       const json = await res.json() as { data?: { items?: Record<string, unknown>[] } }
       return json.data?.items ?? []
     },
-    enabled: recordsEnabled && !!getManyRoute,
+    enabled: fetchTrigger > 0 && !!getManyRoute,
     staleTime: Infinity,
   })
 
   const handleRefresh = useCallback(() => {
-    if (!getManyRoute) return
-    if (recordsEnabled) {
-      void refetchRecords()
-    } else {
-      setRecordsEnabled(true)
-    }
-  }, [getManyRoute, recordsEnabled, refetchRecords])
+    setFetchTrigger(t => t + 1)
+  }, [])
 
   const tableName     = adminData?.table ?? (collKey ? `wp_gateway_${collKey}` : 'Unknown')
   const recentRecords = recordsData ?? []
   const schemaProps   = fieldsToSchemaProps(fields)
 
   const recordsStatus: RecordsStatus =
-    recordsFetching                ? 'loading' :
-    !recordsEnabled                ? 'idle'    :
-    recentRecords.length === 0     ? 'empty'   : 'loaded'
+    !getManyRoute                  ? 'no-route' :
+    recordsFetching                ? 'loading'  :
+    fetchTrigger === 0             ? 'idle'      :
+    recentRecords.length === 0     ? 'empty'     : 'loaded'
 
   // ── Layout constants ──────────────────────────────────────────────────────
   // Collection root sits centre-top.  Database branches left, schema branches
@@ -600,7 +610,7 @@ function Graph() {
     {
       id: 'node-records',
       type: 'recordsContainerNode',
-      data: { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh },
+      data: { count: recentRecords.length },
       position: { x: RECORDS_X, y: 320 },
     },
     ...slicedRecords.map((rec, i) => ({
@@ -629,26 +639,30 @@ function Graph() {
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
   // Re-sync nodes/edges whenever the underlying data changes.
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, recordsStatus, collection, fields, handleRefresh])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                                                   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, fields])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                     // eslint-disable-line react-hooks/exhaustive-deps
+
+  const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 
   return (
-    <div style={{ width: '100%', height: '100vh' }}>
-      <ReactFlow
-        nodes={graphNodes}
-        edges={graphEdges}
-        nodeTypes={FIELD_GRAPH_NODE_TYPES}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        fitView
-        colorMode="dark"
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
-        <Controls />
-        <MiniMap zoomable pannable />
-      </ReactFlow>
-    </div>
+    <RecordsCtx.Provider value={recordsCtxValue}>
+      <div style={{ width: '100%', height: '100vh' }}>
+        <ReactFlow
+          nodes={graphNodes}
+          edges={graphEdges}
+          nodeTypes={FIELD_GRAPH_NODE_TYPES}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          colorMode="dark"
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
+          <Controls />
+          <MiniMap zoomable pannable />
+        </ReactFlow>
+      </div>
+    </RecordsCtx.Provider>
   )
 }
 
