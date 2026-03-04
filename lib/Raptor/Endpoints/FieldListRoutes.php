@@ -1,6 +1,8 @@
 <?php
 
-namespace Gateway\Raptor;
+namespace Gateway\Raptor\Endpoints;
+
+use Gateway\Raptor\Collections\RaptorFieldList;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {

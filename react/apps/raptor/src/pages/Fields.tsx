@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -10,15 +10,16 @@ import { appConfig } from '../config'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type Field = { id: number; name: string; type: string; label: string; sort_order: number }
+
 type Collection = {
   id: number
   collection_key: string
   title: string
   description: string
   status: string
+  field_list: { id: number; fields: Field[] } | null
 }
-
-type Field = { name: string; type: string; label: string }
 
 type SurfaceState =
   | { mode: 'deleteConfirm'; field: Field }
@@ -79,7 +80,13 @@ const useFields = () => {
 }
 
 function FieldsProvider({ children }: { children: React.ReactNode }) {
+  const { collection } = useCollection()
   const [fields, setFields] = useState<Field[]>([])
+
+  // Initialise (and re-sync) from server whenever the collection query settles.
+  useEffect(() => {
+    setFields(collection?.field_list?.fields ?? [])
+  }, [collection])
 
   const addField = (field: Field) =>
     setFields((prev) => [...prev, field])
@@ -165,21 +172,57 @@ function Editor({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void 
 
 function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
   const { fields, addField, moveField } = useFields()
+  const { collection } = useCollection()
+  const queryClient = useQueryClient()
+  const collectionKey = collection?.collection_key
+  const fieldListId   = collection?.field_list?.id
+
+  const addMutation = useMutation({
+    mutationFn: async (data: { name: string; type: string; label: string; sort_order: number }) => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/field'), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ field_list_id: fieldListId, ...data }),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to create field')
+      return json.field as Field
+    },
+    onSuccess: (field) => {
+      addField(field)
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections', collectionKey] })
+    },
+  })
 
   return (
     <section>
       <header className="flex justify-between items-center gap-6 mb-10">
         <h2 className="!text-white text-xl font-medium">Field List</h2>
-        <button className="text-3xl" onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
+        <button
+          className="text-3xl disabled:opacity-50"
+          disabled={addMutation.isPending || !fieldListId}
+          onClick={() => addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: fields.length })}
+        >+</button>
       </header>
+      {addMutation.isError && (
+        <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          {(addMutation.error as Error).message}
+        </div>
+      )}
       <ul className="min-w-96">
         {fields.map((field) => (
           <li className="group relative flex gap-8 border border-1 border-white px-4 py-2" key={field.name}>
             <div>HANDLE</div>
             <h3 className="basis-1/2 !text-white">{field.label}</h3>
             <div className="basis-1/2 opacity-0 group-hover:opacity-100 flex gap-2">
-              <button onClick={() => addField({ name: `field_${fields.length}`, type: 'text', label: 'New Field' })}>+</button>
-              <button onClick={() => addField({ ...field, name: `${field.name}_copy` })}>Copy</button>
+              <button
+                disabled={addMutation.isPending}
+                onClick={() => addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: fields.length })}
+              >+</button>
+              <button
+                disabled={addMutation.isPending}
+                onClick={() => addMutation.mutate({ name: `${field.name}_copy`, type: field.type, label: field.label, sort_order: fields.length })}
+              >Copy</button>
               <button onClick={() => moveField(field.name, 'up')}>Up</button>
               <button onClick={() => moveField(field.name, 'down')}>Down</button>
               <button onClick={() => setEditSurface({ mode: 'editField', field })}>Edit</button>
@@ -241,18 +284,37 @@ const FIELD_TYPES = ['text', 'select', 'textarea', 'checkbox', 'radio']
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
   'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors text-sm'
+  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }) {
   const { updateField } = useFields()
+  const { collection }  = useCollection()
+  const queryClient     = useQueryClient()
   const [name, setName]   = useState(field.name)
   const [type, setType]   = useState(field.type)
   const [label, setLabel] = useState(field.label)
 
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ name, type, label }),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to update field')
+      return json.field as Field
+    },
+    onSuccess: (updated) => {
+      updateField(field.name, updated)
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections', collection?.collection_key] })
+      onClose()
+    },
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    updateField(field.name, { name, type, label })
-    onClose()
+    mutation.mutate()
   }
 
   return (
@@ -260,26 +322,34 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">Name</label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
-               className={baseInput} required />
+               className={baseInput} required disabled={mutation.isPending} />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">Type</label>
-        <select value={type} onChange={e => setType(e.target.value)} className={baseInput}>
+        <select value={type} onChange={e => setType(e.target.value)}
+                className={baseInput} disabled={mutation.isPending}>
           {FIELD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1.5">Label</label>
         <input type="text" value={label} onChange={e => setLabel(e.target.value)}
-               className={baseInput} required />
+               className={baseInput} required disabled={mutation.isPending} />
       </div>
+      {mutation.isError && (
+        <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          {(mutation.error as Error).message}
+        </div>
+      )}
       <div className="flex gap-2 mt-2">
         <button type="submit"
-                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors">
-          Save
+                disabled={mutation.isPending}
+                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          {mutation.isPending ? 'Saving…' : 'Save'}
         </button>
         <button type="button" onClick={onClose}
-                className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors">
+                disabled={mutation.isPending}
+                className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50">
           Cancel
         </button>
       </div>
@@ -289,11 +359,49 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
 
 function DeleteConfirmation({ field, onClose }: { field: Field; onClose: () => void }) {
   const { deleteField } = useFields()
+  const { collection }  = useCollection()
+  const queryClient     = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to delete field')
+    },
+    onSuccess: () => {
+      deleteField(field.name)
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections', collection?.collection_key] })
+      onClose()
+    },
+  })
+
   return (
-    <div>
-      <p>Delete <strong>{field.label}</strong>?</p>
-      <button onClick={() => { deleteField(field.name); onClose() }}>Confirm</button>
-      <button onClick={onClose}>Cancel</button>
+    <div className="flex flex-col gap-4">
+      <p className="text-gray-300 text-sm">Delete <strong className="text-white">{field.label}</strong>?</p>
+      {mutation.isError && (
+        <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          {(mutation.error as Error).message}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <button
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+          className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {mutation.isPending ? 'Deleting…' : 'Confirm'}
+        </button>
+        <button
+          onClick={onClose}
+          disabled={mutation.isPending}
+          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }

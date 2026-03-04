@@ -1,6 +1,9 @@
 <?php
 
-namespace Gateway\Raptor;
+namespace Gateway\Raptor\Endpoints;
+
+use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Controllers\CollectionController;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
@@ -106,14 +109,12 @@ class CollectionRoutes
             ], 409);
         }
 
-        $collection = RaptorCollection::create([
+        $collection = CollectionController::create([
             'collection_key' => $key,
             'title'          => $title,
             'description'    => sanitize_textarea_field($data['description'] ?? ''),
             'status'         => 'active',
         ]);
-
-        RaptorFieldList::create(['collection_key' => $key]);
 
         return new \WP_REST_Response([
             'success'    => true,
@@ -131,7 +132,7 @@ class CollectionRoutes
 
         return new \WP_REST_Response([
             'success'    => true,
-            'collection' => $collection->toArray(),
+            'collection' => CollectionController::withNested($collection)->toArray(),
         ], 200);
     }
 
