@@ -17,6 +17,7 @@ import {
   type Connection,
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
@@ -91,8 +92,10 @@ function CollectionsRootNode(_: NodeProps<RootNodeType>) {
 // ─── Custom node: Collection ─────────────────────────────────────────────────
 
 function CollectionNode({ data }: NodeProps<CollNodeType>) {
+  const navigate = useNavigate()
   return (
     <div
+      onClick={() => void navigate({ to: '/collections/$key/fields', params: { key: data.collKey } })}
       style={{
         background: '#1e293b',
         border: '1px solid #334155',
@@ -101,6 +104,7 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
         width: 180,
         color: '#e2e8f0',
         fontSize: 13,
+        cursor: 'pointer',
       }}
     >
       {/* Vertical hierarchy handles */}

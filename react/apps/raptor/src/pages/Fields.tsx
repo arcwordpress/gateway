@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNodesState, useEdgesState, type Node, type Edge } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
@@ -319,6 +319,11 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
   const [label, setLabel] = useState(field.label)
   const [extras, setExtras] = useState<Record<string, unknown>>(field.config ?? {})
 
+  const handleExtrasChange = useCallback(
+    (name: string, value: unknown) => setExtras(prev => ({ ...prev, [name]: value })),
+    []
+  )
+
   // Load all registered field types (cached for the session)
   const { data: fieldTypeDefs, isLoading: typesLoading } = useQuery<FieldTypeDef[]>({
     queryKey: ['field-types'],
@@ -392,9 +397,7 @@ function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }
           <ControlledForm
             fields={selectedTypeDef.fields}
             values={extras}
-            onChange={(name: string, value: unknown) =>
-              setExtras(prev => ({ ...prev, [name]: value }))
-            }
+            onChange={handleExtrasChange}
           />
         </div>
       )}

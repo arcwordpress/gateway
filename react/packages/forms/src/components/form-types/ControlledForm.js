@@ -96,8 +96,6 @@ const ControlledForm = ({
   const valuesRef = useRef(values);
   valuesRef.current = values;
 
-  console.log('[ControlledForm] values prop:', values);
-
   // Stable onChange wrapper
   const onChangeStable = useCallback(
     (name, value) => {
@@ -127,9 +125,9 @@ const ControlledForm = ({
 
   const controlledMethods = useMemo(
     () => createControlledMethods(valuesRef, onChangeStable, errors),
-    // Depend on values identity so context consumers re-render when values change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onChangeStable, values]
+    // valuesRef.current is always up-to-date so watch() reads fresh values
+    // without needing to recreate the methods object on every render.
+    [onChangeStable]
   );
 
   const contextValue = useMemo(
