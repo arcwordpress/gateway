@@ -17,7 +17,7 @@ import {
   type Connection,
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
@@ -53,7 +53,7 @@ type PanelState =
   | null
 
 type RootNodeType = Node<Record<string, never>, 'collectionsRootNode'>
-type CollNodeType = Node<{ title: string; collKey: string }, 'collectionNode'>
+type CollNodeType = Node<{ title: string; collKey: string; extKey: string }, 'collectionNode'>
 type ActNodeType  = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
 
 function toKey(title: string): string {
@@ -95,7 +95,8 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
   const navigate = useNavigate()
   return (
     <div
-      onClick={() => void navigate({ to: '/collections/$key/fields', params: { key: data.collKey } })}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onClick={() => void navigate({ to: '/extensions/$extKey/collections/$collKey/fields' as any, params: { extKey: data.extKey, collKey: data.collKey } })}
       style={{
         background: '#1e293b',
         border: '1px solid #334155',
@@ -317,7 +318,7 @@ const baseTextarea =
 
 // ─── Create panel ─────────────────────────────────────────────────────────────
 
-function CreatePanel({ onClose }: { onClose: () => void }) {
+function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [description, setDesc] = useState('')
@@ -332,6 +333,7 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
           title: title.trim(),
           description: description.trim(),
           collection_key: key,
+          extension_key: extensionKey,
         }),
       })
       const json = await res.json()
@@ -811,20 +813,33 @@ function RelationshipPanel({
 // ─── Collections graph ────────────────────────────────────────────────────────
 
 export default function Collections() {
+  const { extKey } = useParams({ strict: false }) as { extKey: string }
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null)
   useEffect(() => { setCanvasHost(document.getElementById('gateway-raptor-canvas-host')) }, [])
 
-  const { data: collections } = useQuery<Collection[]>({
-    queryKey: ['raptor-collections'],
+  const { isError: extNotFound } = useQuery({
+    queryKey: ['raptor-extension', extKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${extKey}`), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.extension
+    },
+    retry: false,
+  })
+
+  const { data: collections } = useQuery<Collection[]>({
+    queryKey: ['raptor-collections', extKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection?extension_key=${encodeURIComponent(extKey)}`), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.collections as Collection[]
     },
+    enabled: !extNotFound,
   })
 
   const openCreate = useCallback(() => setPanel({ mode: 'create' }), [])
@@ -881,7 +896,7 @@ export default function Collections() {
       hierarchyNodes.push({
         id: colId,
         type: 'collectionNode',
-        data: { title: col.title, collKey: col.collection_key },
+        data: { title: col.title, collKey: col.collection_key, extKey },
         position: { x: 0, y: 0 },
       })
       hierarchyNodes.push({
@@ -933,6 +948,14 @@ export default function Collections() {
     setEdges([...hierarchyEdges, ...relEdges])
   }, [collections, openCreate, openEdit, openDelete, setNodes, setEdges])
 
+  if (extNotFound) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-red-400 text-sm">Extension not found.</p>
+      </div>
+    )
+  }
+
   return (
     <>
       {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
@@ -964,7 +987,7 @@ export default function Collections() {
         canvasHost
       )}
 
-      {panel?.mode === 'create'       && <CreatePanel onClose={closePanel} />}
+      {panel?.mode === 'create'       && <CreatePanel extensionKey={extKey} onClose={closePanel} />}
       {panel?.mode === 'edit'         && <EditPanel   collKey={panel.key}   onClose={closePanel} />}
       {panel?.mode === 'delete'       && <DeletePanel collKey={panel.key}   onClose={closePanel} />}
       {panel?.mode === 'relationship' && (

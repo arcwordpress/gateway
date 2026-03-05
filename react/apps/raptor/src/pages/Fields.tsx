@@ -1049,11 +1049,11 @@ function FieldsContent({ editSurface, setEditSurface }: {
 /*************************/
 
 export default function Fields() {
-  const { key } = fieldsRoute.useParams()
+  const { collKey } = fieldsRoute.useParams()
   const [editSurface, setEditSurface] = useState<SurfaceState>(null)
 
   return (
-    <CollectionProvider collectionKey={key}>
+    <CollectionProvider collectionKey={collKey}>
       <FieldsProvider>
         <FieldsContent editSurface={editSurface} setEditSurface={setEditSurface} />
       </FieldsProvider>
