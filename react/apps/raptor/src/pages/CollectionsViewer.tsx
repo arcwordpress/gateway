@@ -803,6 +803,7 @@ export default function CollectionsViewer() {
       if (expandedGroups.has(collGroupId)) {
         for (const col of cols.filter((c) => c.extension_id === ext.id)) {
           const colId = `col-${col.collection_key}`
+          const fieldsId = `fields-${col.collection_key}`
           const colIsActive = activeExtensionId === col.extension_id
 
           hierarchyNodes.push({
@@ -818,11 +819,30 @@ export default function CollectionsViewer() {
             position: { x: 0, y: 0 },
           })
 
+          // Add Fields node as child of collection
+          hierarchyNodes.push({
+            id: fieldsId,
+            type: 'fieldsNode',
+            data: {
+              collectionSlug: col.collection_key,
+              onNavigate: (slug: string) => navigate({ to: `/collections/${slug}/fields` }),
+            },
+            position: { x: 0, y: 0 },
+          })
+
           hierarchyEdges.push({
             id: `e-coll-group-${col.collection_key}`,
             source: collGroupId,
             target: colId,
             style: { stroke: colIsActive ? '#06b6d4' : '#16a34a' },
+          })
+
+          // Edge from collection to fields
+          hierarchyEdges.push({
+            id: `e-fields-${col.collection_key}`,
+            source: colId,
+            target: fieldsId,
+            style: { stroke: '#4b5563' },
           })
         }
       }
