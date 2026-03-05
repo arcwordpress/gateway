@@ -10,7 +10,8 @@ import { appConfig } from './config'
 import RootLayout from './routes/__root'
 import DashboardPage from './pages/Dashboard'
 import GraphPage from './pages/Graph'
-import CollectionsPage from './pages/Collections'
+// import CollectionsPage from './pages/Collections'
+import CollectionsViewerPage from './pages/CollectionsViewer'
 import ExtensionsPage from './pages/Extensions'
 import ExtensionCreatePage from './pages/ExtensionCreate'
 import ExtensionEditPage from './pages/ExtensionEdit'
@@ -36,49 +37,37 @@ const indexRoute = createRoute({
   component: DashboardPage,
 })
 
-const graphRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/graph',
-  component: GraphPage,
-})
-
+/*
 const collectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions/$extKey/collections',
   component: CollectionsPage,
 })
+*/
+
+const collectionsViewerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections',
+  component: CollectionsViewerPage,
+})
 
 export const fieldsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/extensions/$extKey/collections/$collKey/fields',
+  path: '/collections/$collectionKey/fields',
   component: FieldsPage,
 })
 
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions',
-  component: ExtensionsPage,
-})
-
-const extensionCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/create',
-  component: ExtensionCreatePage,
-})
-
-const extensionEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/$key/edit',
-  component: ExtensionEditPage,
+  component: GraphPage,
 })
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  graphRoute,
-  collectionsRoute,
+  //collectionsRoute,
+  collectionsViewerRoute,
   extensionsRoute,
-  extensionCreateRoute,
-  extensionEditRoute,
   fieldsRoute,
 ])
 

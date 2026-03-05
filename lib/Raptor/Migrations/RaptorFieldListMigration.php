@@ -9,9 +9,8 @@ if (!defined('ABSPATH')) {
 /**
  * Migration: gateway_raptor_field_list
  *
- * Stores field-list records for collections. A collection may have multiple
- * field lists (one-to-many). Each record is tied to a collection via
- * collection_id (integer FK to gateway_raptor_collection.id).
+ * Stores field-list records for collections. A collection has one field list (one-to-one).
+ * Each record is tied to a collection via collection_id (integer FK to gateway_raptor_collection.id).
  *
  * Safe to run multiple times — dbDelta() is idempotent.
  */

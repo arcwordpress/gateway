@@ -2,8 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
-  type Node, type Edge, type NodeProps, type NodeTypes,
-  Handle, Position,
+  type Node, type Edge,
 } from '@xyflow/react'
 import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -15,6 +14,14 @@ import { apiUrl, authHeaders } from '../lib/api'
 import { fieldsRoute } from '../router'
 import { useApp } from '../context/app'
 import { appConfig } from '../config'
+import {
+  AdminCollectionInfo,
+  JsonSchemaProp,
+  RecordsStatus,
+  RecordsCtxValue,
+  RecordsCtx,
+  FIELD_GRAPH_NODE_TYPES,
+} from '../components/graph_node_types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -203,269 +210,7 @@ function FieldsProvider({ children }: { children: React.ReactNode }) {
 
 // ─── Graph types ─────────────────────────────────────────────────────────────
 
-type AdminCollectionInfo = {
-  key: string
-  title: string
-  table: string
-  record_count: number
-  routes: { type: string; method: string; route: string }[]
-}
-
-type CollRootNodeData    = Node<{ title: string; collKey: string }, 'collectionRootNode'>
-type DbNodeData          = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
-type RecordsStatus       = 'idle' | 'loading' | 'empty' | 'loaded' | 'no-route'
-type RecordsContNodeData = Node<{ count: number }, 'recordsContainerNode'>
-type RecordNodeData      = Node<{ recordId: number | string; label: string }, 'recordNode'>
-
-type JsonSchemaProp = { name: string; type: string; format?: string; description?: string; required: boolean }
-type SchemaNodeData  = Node<{ title: string; properties: JsonSchemaProp[] }, 'jsonSchemaNode'>
-
-// Context so node components can read live records state without going through
-// React Flow's node data (which freezes function references).
-type RecordsCtxValue = { status: RecordsStatus; count: number; onRefresh: () => void }
-const RecordsCtx = createContext<RecordsCtxValue>({ status: 'idle', count: 0, onRefresh: () => {} })
-
-// ─── Custom node: Collection root ─────────────────────────────────────────────
-
-function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
-  return (
-    <div
-      style={{
-        background: '#1e3a5f',
-        border: '1px solid #3b82f6',
-        borderRadius: 10,
-        padding: '10px 20px',
-        color: '#dbeafe',
-        fontSize: 13,
-        fontWeight: 600,
-        minWidth: 160,
-        textAlign: 'center',
-      }}
-    >
-      <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#93c5fd', marginBottom: 4 }}>
-        Collection
-      </div>
-      <div>{data.title}</div>
-      <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', marginTop: 3, fontWeight: 400 }}>
-        {data.collKey}
-      </div>
-    </div>
-  )
-}
-
-// ─── Custom node: Database ────────────────────────────────────────────────────
-
-function DatabaseNode({ data }: NodeProps<DbNodeData>) {
-  return (
-    <div
-      style={{
-        background: '#1a2e1a',
-        border: '1px solid #22c55e',
-        borderRadius: 10,
-        padding: '10px 16px',
-        color: '#dcfce7',
-        fontSize: 12,
-        minWidth: 200,
-      }}
-    >
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4ade80', marginBottom: 6, fontWeight: 600 }}>
-        Database Table
-      </div>
-      <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#86efac', wordBreak: 'break-all' }}>
-        {data.tableName}
-      </div>
-      {data.recordCount !== null && (
-        <div style={{ marginTop: 6, fontSize: 11, color: '#6b7280' }}>
-          {data.recordCount.toLocaleString()} record{data.recordCount !== 1 ? 's' : ''}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Custom node: Records container ──────────────────────────────────────────
-
-function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
-  // Read live state from context — not from node data, which would freeze the
-  // function reference and give stale status after the first render.
-  const { status, count, onRefresh } = useContext(RecordsCtx)
-
-  const statusLine: { text: string; color: string } = {
-    idle:     { text: 'not loaded',      color: '#57534e' },
-    loading:  { text: 'loading…',        color: '#a8a29e' },
-    empty:    { text: '0 records found', color: '#78716c' },
-    loaded:   { text: `${count} loaded`, color: '#86efac' },
-    'no-route': { text: 'no API route',  color: '#b45309' },
-  }[status]
-
-  const isDisabled = status === 'loading' || status === 'no-route'
-
-  return (
-    <div
-      style={{
-        background: '#1c1917',
-        border: '1px solid #78716c',
-        borderRadius: 10,
-        padding: '10px 16px',
-        color: '#d6d3d1',
-        fontSize: 12,
-        minWidth: 150,
-        textAlign: 'center',
-      }}
-    >
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8a29e', marginBottom: 4, fontWeight: 600 }}>
-        Records
-      </div>
-      <div style={{ fontSize: 11, color: statusLine.color, marginBottom: 8 }}>
-        {statusLine.text}
-      </div>
-      <button
-        onClick={onRefresh}
-        disabled={isDisabled}
-        style={{
-          background: 'none',
-          border: `1px solid ${isDisabled ? '#3c3834' : '#57534e'}`,
-          borderRadius: 4,
-          color: isDisabled ? '#3c3834' : '#a8a29e',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          padding: '2px 8px',
-          cursor: isDisabled ? 'default' : 'pointer',
-        }}
-      >
-        REFRESH
-      </button>
-    </div>
-  )
-}
-
-// ─── Custom node: Individual record ──────────────────────────────────────────
-
-function RecordNode({ data }: NodeProps<RecordNodeData>) {
-  return (
-    <div
-      style={{
-        background: '#0f172a',
-        border: '1px solid #334155',
-        borderRadius: 8,
-        padding: '8px 12px',
-        color: '#94a3b8',
-        fontSize: 11,
-        minWidth: 110,
-        maxWidth: 160,
-        textAlign: 'center',
-      }}
-    >
-      <Handle type="target" position={Position.Top} />
-      <div style={{ fontSize: 10, color: '#475569', marginBottom: 2 }}>
-        #{data.recordId}
-      </div>
-      <div style={{ color: '#cbd5e1', wordBreak: 'break-word' }}>
-        {data.label}
-      </div>
-    </div>
-  )
-}
-
-// ─── Custom node: JSON Schema ─────────────────────────────────────────────────
-
-const TYPE_BADGE_COLORS: Record<string, { bg: string; text: string }> = {
-  string:  { bg: '#1e3a5f', text: '#93c5fd' },
-  number:  { bg: '#1a2e1a', text: '#4ade80' },
-  integer: { bg: '#1a2e1a', text: '#4ade80' },
-  boolean: { bg: '#2d1b4e', text: '#c084fc' },
-  array:   { bg: '#1c1917', text: '#fb923c' },
-  object:  { bg: '#1c1917', text: '#fbbf24' },
-}
-
-function TypeBadge({ type }: { type: string }) {
-  const colors = TYPE_BADGE_COLORS[type] ?? { bg: '#1e293b', text: '#94a3b8' }
-  return (
-    <span style={{
-      background: colors.bg, color: colors.text,
-      fontSize: 9, fontFamily: 'monospace', fontWeight: 600,
-      padding: '1px 5px', borderRadius: 4, letterSpacing: '0.03em',
-    }}>
-      {type}
-    </span>
-  )
-}
-
-function JsonSchemaNode({ data }: NodeProps<SchemaNodeData>) {
-  return (
-    <div style={{
-      background: '#111827',
-      border: '1px solid #4b5563',
-      borderRadius: 10,
-      minWidth: 220,
-      maxWidth: 280,
-      fontSize: 11,
-      color: '#d1d5db',
-      overflow: 'hidden',
-    }}>
-      <Handle type="target" position={Position.Top} />
-
-      {/* Header */}
-      <div style={{
-        background: '#1f2937', borderBottom: '1px solid #374151',
-        padding: '8px 12px',
-      }}>
-        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: 2 }}>
-          JSON Schema
-        </div>
-        <div style={{ fontWeight: 600, color: '#f9fafb', fontSize: 12 }}>{data.title}</div>
-        <div style={{ fontSize: 10, color: '#6b7280', marginTop: 2, fontFamily: 'monospace' }}>
-          type: <span style={{ color: '#fbbf24' }}>object</span>
-        </div>
-      </div>
-
-      {/* Properties */}
-      <div style={{ padding: '6px 0' }}>
-        {data.properties.length === 0 ? (
-          <div style={{ padding: '6px 12px', color: '#4b5563', fontStyle: 'italic' }}>no fields defined</div>
-        ) : (
-          data.properties.map(prop => (
-            <div key={prop.name} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '3px 12px', gap: 8,
-            }}>
-              <span style={{ fontFamily: 'monospace', color: prop.required ? '#e5e7eb' : '#9ca3af', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {prop.required && <span style={{ color: '#ef4444', marginRight: 3 }}>*</span>}
-                {prop.name}
-              </span>
-              <span style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                <TypeBadge type={prop.type} />
-                {prop.format && <TypeBadge type={prop.format} />}
-              </span>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Footer: built-in id field */}
-      <div style={{ borderTop: '1px solid #1f2937', padding: '4px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: 'monospace', color: '#4b5563' }}>id</span>
-        <TypeBadge type="integer" />
-      </div>
-    </div>
-  )
-}
-
-// ─── Node types registry ──────────────────────────────────────────────────────
-
-const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
-  collectionRootNode:   CollectionRootNode,
-  databaseNode:         DatabaseNode,
-  recordsContainerNode: RecordsContainerNode,
-  recordNode:           RecordNode,
-  jsonSchemaNode:       JsonSchemaNode,
-}
+// Graph types are imported from components/graphNodeTypes.tsx
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1049,11 +794,11 @@ function FieldsContent({ editSurface, setEditSurface }: {
 /*************************/
 
 export default function Fields() {
-  const { collKey } = fieldsRoute.useParams()
+  const { collectionKey } = fieldsRoute.useParams()
   const [editSurface, setEditSurface] = useState<SurfaceState>(null)
 
   return (
-    <CollectionProvider collectionKey={collKey}>
+    <CollectionProvider collectionKey={collectionKey}>
       <FieldsProvider>
         <FieldsContent editSurface={editSurface} setEditSurface={setEditSurface} />
       </FieldsProvider>

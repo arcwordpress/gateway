@@ -122,7 +122,11 @@ class CollectionRoutes
         }
 
         $extensionId = null;
-        if (!empty($data['extension_key'])) {
+        
+        // Accept either extension_id (numeric) or extension_key (string)
+        if (!empty($data['extension_id'])) {
+            $extensionId = (int) $data['extension_id'];
+        } elseif (!empty($data['extension_key'])) {
             $ext = RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
             $extensionId = $ext ? $ext->id : null;
         }
@@ -135,13 +139,24 @@ class CollectionRoutes
             'status'         => 'active',
         ]);
 
-        (new RaptorBuilder())->buildFromCollection($collection);
+        // Build the extension if this collection has one
+        $buildResult = null;
+        if ($extensionId) {
+            $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
+        }
 
-        return new \WP_REST_Response([
+        $response = [
             'success'    => true,
             'message'    => 'Collection created.',
             'collection' => $collection->toArray(),
-        ], 201);
+        ];
+
+        // Include build result if available
+        if ($buildResult) {
+            $response['build'] = $buildResult;
+        }
+
+        return new \WP_REST_Response($response, 201);
     }
 
     public function getCollection(\WP_REST_Request $request): \WP_REST_Response
@@ -182,12 +197,21 @@ class CollectionRoutes
 
         $collection->update($update);
 
-        (new RaptorBuilder())->buildFromCollection($collection);
+        $buildResult = null;
+        if ($collection->extension_id) {
+            $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
+        }
 
-        return new \WP_REST_Response([
+        $response = [
             'success'    => true,
             'collection' => $collection->fresh()->toArray(),
-        ], 200);
+        ];
+
+        if ($buildResult) {
+            $response['build'] = $buildResult;
+        }
+
+        return new \WP_REST_Response($response, 200);
     }
 
     public function deleteCollection(\WP_REST_Request $request): \WP_REST_Response
