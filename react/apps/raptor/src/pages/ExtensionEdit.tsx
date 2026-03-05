@@ -153,15 +153,21 @@ export default function ExtensionEdit() {
       )}
 
       {/* ── Collections ─────────────────────────────────────────────────── */}
-      {!isLoading && collections.length > 0 && (
-        <div className="mb-6 bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-medium text-gray-400 mb-3">Collections</h2>
+      <div className="mb-6 bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium text-gray-400">Collections</h2>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Link to={`/extensions/${key}/collections` as any} className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+            Manage →
+          </Link>
+        </div>
+        {!isLoading && collections.length > 0 && (
           <ul className="space-y-1">
             {collections.map((c) => (
               <li key={c.collection_key}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Link
-                  to={`/collections/${c.collection_key}/fields` as any}
+                  to={`/extensions/${key}/collections/${c.collection_key}/fields` as any}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors text-sm text-gray-300 hover:text-gray-100"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-gray-600 flex-shrink-0" />
@@ -171,8 +177,11 @@ export default function ExtensionEdit() {
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        )}
+        {!isLoading && collections.length === 0 && (
+          <p className="text-xs text-gray-600">No collections yet.</p>
+        )}
+      </div>
 
       {/* ── Edit form ────────────────────────────────────────────────────── */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">

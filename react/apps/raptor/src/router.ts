@@ -44,13 +44,13 @@ const graphRoute = createRoute({
 
 const collectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/collections',
+  path: '/extensions/$extKey/collections',
   component: CollectionsPage,
 })
 
 export const fieldsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: 'collections/$key/fields',
+  path: '/extensions/$extKey/collections/$collKey/fields',
   component: FieldsPage,
 })
 
