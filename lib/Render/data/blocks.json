@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "parent": 0,
+    "position": 1,
+    "type": "container"
+  },
+  {
+    "id": 2,
+    "parent": 1,
+    "position": 1,
+    "type": "container"
+  },
+  {
+    "id": 3,
+    "parent": 0,
+    "position": 2,
+    "type": "container"
+  }
+]

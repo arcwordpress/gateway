@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "gateway-render-test-wrapper",
+    "content": "    max-width: 1200px;\n    margin: 0 auto;\n    padding: 20px;"
+  },
+  {
+    "id": 2,
+    "name": "test-heading",
+    "content": "    font-size: 6rem;\n    font-weight: bold;\n    color: #333;\n    margin-bottom: 20px;"
+  },
+  {
+    "id": 3,
+    "name": "test-content",
+    "content": "    font-size: 1rem;\n    line-height: 1.6;\n    color: #666;"
+  },
+  {
+    "id": 4,
+    "name": "data-table",
+    "content": "    width: 100%;\n    border-collapse: collapse;\n    margin: 20px 0;\n    background-color: #fff;\n    border: 1px solid #ddd;"
+  },
+  {
+    "id": 5,
+    "name": "data-table-header",
+    "content": "    background-color: #000;\n    color: #fff;\n    font-weight: bold;\n    padding: 12px;\n    text-align: left;\n    border: 1px solid #34495e;"
+  },
+  {
+    "id": 6,
+    "name": "data-table-cell",
+    "content": "    background-color: #000;\n padding: 10px 12px;\n    border: 1px solid #ecf0f1;\n    text-align: left;"
+  }
+]
