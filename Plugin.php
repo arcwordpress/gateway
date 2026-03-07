@@ -132,6 +132,9 @@ class Plugin
         Forms\Render::init();
         Forms\Shortcode::init();
 
+        // Initialize experimental rendering system
+        Render\Render::init();
+
         // Initialize front-end grids
         Grids\Render::init();
 
