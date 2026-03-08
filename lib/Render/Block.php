@@ -10,6 +10,7 @@ class Block {
     protected $elements = [];
     protected $children = [];
     protected $position = null;
+    protected $markup = null;
 
     /**
      * Create a new Block
@@ -68,6 +69,26 @@ class Block {
     }
 
     /**
+     * Set raw markup for this block (alternative to building with elements)
+     *
+     * @param string $markup HTML markup, optionally with WP Interactivity directives
+     */
+    public function setMarkup($markup)
+    {
+        $this->markup = $markup;
+    }
+
+    /**
+     * Get the markup if set
+     *
+     * @return string|null
+     */
+    public function getMarkup()
+    {
+        return $this->markup;
+    }
+
+    /**
      * Add an element to this block
      *
      * @param Element $element
@@ -114,9 +135,14 @@ class Block {
      */
     public function render()
     {
+        // If markup is explicitly set, use that (simpler approach)
+        if ($this->markup !== null) {
+            return $this->markup;
+        }
+
         $output = '';
 
-        // Render all elements in this block
+        // Otherwise, render all elements in this block (build-up approach)
         foreach ($this->elements as $element) {
             if ($element instanceof Element) {
                 $output .= $element->render();
@@ -145,8 +171,60 @@ class Block {
             'parent' => $this->parent,
             'type' => $this->type,
             'position' => $this->position,
+            'has_markup' => $this->markup !== null,
             'elements_count' => count($this->elements),
             'children_count' => count($this->children),
         ];
+    }
+
+    /**
+     * Load blocks from JSON data
+     *
+     * @param array $data Array of block data from JSON
+     * @return array Array of Block instances keyed by ID
+     */
+    public static function loadFromData($data)
+    {
+        $blocks = [];
+        
+        foreach ($data as $blockData) {
+            $block = new self(
+                $blockData['id'],
+                $blockData['type'] ?? 'container',
+                $blockData['parent'] ?? 0,
+                $blockData['position'] ?? 0
+            );
+            
+            // Set markup if provided
+            if (isset($blockData['markup'])) {
+                $block->setMarkup($blockData['markup']);
+            }
+            
+            $blocks[$blockData['id']] = $block;
+        }
+        
+        return $blocks;
+    }
+
+    /**
+     * Load blocks from JSON file
+     *
+     * @param string $filePath Path to JSON file
+     * @return array Array of Block instances keyed by ID
+     */
+    public static function loadFromFile($filePath)
+    {
+        if (!file_exists($filePath)) {
+            throw new \Exception("Block file not found: $filePath");
+        }
+        
+        $json = file_get_contents($filePath);
+        $data = json_decode($json, true);
+        
+        if ($data === null) {
+            throw new \Exception("Invalid JSON in: $filePath");
+        }
+        
+        return self::loadFromData($data);
     }
 }

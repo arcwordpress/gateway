@@ -37,21 +37,21 @@ class Render {
     }
 
     /**
-     * Enqueue Interactivity API store script
+     * Register Interactivity API store script module
      */
     public static function enqueueScripts()
     {
-        $buildPath = dirname(__FILE__, 2) . '/build/gateway-store.js';
-        $buildUrl = plugins_url('build/gateway-store.js', dirname(__FILE__, 2) . '/gateway.php');
+        $storePath = dirname(__FILE__) . '/store/loader.js';
+        $storeUrl = plugins_url('store/loader.js', __FILE__);
 
-        if (file_exists($buildPath)) {
-            wp_enqueue_script(
+        if (file_exists($storePath)) {
+            wp_register_script_module(
                 'gateway-store',
-                $buildUrl,
-                ['wp-interactivity'],
-                filemtime($buildPath),
-                true
+                $storeUrl,
+                ['@wordpress/interactivity'],
+                filemtime($storePath),
             );
+            wp_enqueue_script_module('gateway-store');
         }
     }
 
@@ -93,6 +93,12 @@ class Render {
                 $row['parent'] ?? 0,
                 $row['position'] ?? 0
             );
+
+            // Allow simple raw-markup blocks from mock data.
+            if (isset($row['markup']) && $row['markup'] !== '') {
+                $block->setMarkup($row['markup']);
+            }
+
             $blocksById[$row['id']] = $block;
 
             // Track children by parent for later sorting
@@ -238,6 +244,11 @@ class Render {
                 if ($block->getPosition() !== null) {
                     $output .= ' [pos: ' . $block->getPosition() . ']';
                 }
+                if ($block->getMarkup() !== null && $block->getMarkup() !== '') {
+                    $output .= ' [markup: yes]';
+                } else {
+                    $output .= ' [markup: no]';
+                }
                 $output .= "\n";
 
                 // Show elements in this block
@@ -324,6 +335,14 @@ class Render {
         foreach ($blockTree as $block) {
             $output .= $block->render();
         }
+
+        // Output interactivity state for gateway store
+        wp_interactivity_state('gateway/forest', [
+            'apiRoute' => rest_url('gateway/v1/records'),
+            'records'  => [],
+            'isLoading' => false,
+            'error'    => null,
+        ]);
 
         return $debug . $output;
     }
