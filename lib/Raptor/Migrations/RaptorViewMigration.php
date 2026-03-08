@@ -18,10 +18,11 @@ class RaptorViewMigration
         $sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             view_key varchar(200) NOT NULL DEFAULT '',
-            collection_id bigint(20) unsigned NULL,
+            view_list_id bigint(20) unsigned NULL,
             title varchar(200) NOT NULL DEFAULT '',
             description text NULL,
             status varchar(50) NOT NULL DEFAULT 'active',
+            sort_order int(11) NOT NULL DEFAULT 0,
             source varchar(200) NULL,
             columns longtext NULL,
             facet_filters longtext NULL,

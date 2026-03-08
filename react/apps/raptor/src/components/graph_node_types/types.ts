@@ -8,7 +8,11 @@ export type AdminCollectionInfo = {
   routes: { type: string; method: string; route: string }[]
 }
 
-export type CollRootNodeData    = Node<{ title: string; collKey: string }, 'collectionRootNode'>
+export type CollRootNodeData    = Node<{
+  title: string
+  collKey: string
+  onManage?: (collKey: string) => void
+}, 'collectionRootNode'>
 export type DbNodeData          = Node<{ tableName: string; recordCount: number | null }, 'databaseNode'>
 export type RecordsStatus       = 'idle' | 'loading' | 'empty' | 'loaded' | 'no-route'
 export type RecordsContNodeData = Node<{ count: number }, 'recordsContainerNode'>
@@ -18,6 +22,15 @@ export type JsonSchemaProp = { name: string; type: string; format?: string; desc
 export type SchemaNodeData  = Node<{ title: string; properties: JsonSchemaProp[] }, 'jsonSchemaNode'>
 
 export type RecordsCtxValue = { status: RecordsStatus; count: number; onRefresh: () => void }
+
+export type ViewPreviewNodeType = Node<
+  {
+    title: string
+    columns: string[]
+    rows: Record<string, unknown>[]
+  },
+  'viewPreviewNode'
+>
 
 // Collections Viewer node types
 export type CollectionsLabelNodeType = Node<{ onCreate?: () => void }, 'collectionsLabelNode'>

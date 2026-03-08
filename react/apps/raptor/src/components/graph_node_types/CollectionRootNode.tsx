@@ -25,6 +25,27 @@ export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
       <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#60a5fa', marginTop: 3, fontWeight: 400 }}>
         {data.collKey}
       </div>
+      {data.onManage && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            data.onManage?.(data.collKey)
+          }}
+          style={{
+            marginTop: 8,
+            padding: '4px 8px',
+            fontSize: 11,
+            fontWeight: 600,
+            border: 'none',
+            borderRadius: 4,
+            background: '#2563eb',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Manage Collection
+        </button>
+      )}
     </div>
   )
 }

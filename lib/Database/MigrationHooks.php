@@ -112,5 +112,7 @@ class MigrationHooks
         \Gateway\Raptor\Migrations\RaptorCollectionMigration::create();
         \Gateway\Raptor\Migrations\RaptorFieldListMigration::create();
         \Gateway\Raptor\Migrations\RaptorFieldMigration::create();
+        \Gateway\Raptor\Migrations\RaptorViewListMigration::create();
+        \Gateway\Raptor\Migrations\RaptorViewMigration::create();
     }
 }

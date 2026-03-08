@@ -33,6 +33,6 @@ class ViewController
 
     public static function withNested(RaptorView $view): RaptorView
     {
-        return $view->load('collection');
+        return $view->load('viewList.collection');
     }
 }

@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Controllers;
 
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorFieldList;
+use Gateway\Raptor\Collections\RaptorViewList;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
@@ -38,6 +39,7 @@ class CollectionController
         $collection = RaptorCollection::create($attributes);
 
         RaptorFieldList::create(['collection_id' => $collection->id]);
+        RaptorViewList::create(['collection_id' => $collection->id]);
 
         return $collection;
     }
@@ -54,6 +56,6 @@ class CollectionController
      */
     public static function withNested(RaptorCollection $collection): RaptorCollection
     {
-        return $collection->load('fieldList.fields');
+        return $collection->load('fieldList.fields', 'viewList.views');
     }
 }

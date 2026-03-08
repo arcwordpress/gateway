@@ -103,6 +103,13 @@ class FieldRoutes
             ], 400);
         }
 
+        if (RaptorField::where('field_list_id', $field_list_id)->where('name', $name)->exists()) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => "A field named '{$name}' already exists in this collection.",
+            ], 409);
+        }
+
         $config = isset($data['config']) && is_array($data['config']) ? $data['config'] : null;
 
         $field = RaptorField::create([
@@ -147,7 +154,28 @@ class FieldRoutes
         $update = [];
 
         if (isset($data['name'])) {
-            $update['name'] = sanitize_key($data['name']);
+            $newName = sanitize_key($data['name']);
+
+            if (!$newName) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => 'name cannot be empty.',
+                ], 400);
+            }
+
+            $duplicate = RaptorField::where('field_list_id', $field->field_list_id)
+                ->where('name', $newName)
+                ->where('id', '!=', $field->id)
+                ->exists();
+
+            if ($duplicate) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => "A field named '{$newName}' already exists in this collection.",
+                ], 409);
+            }
+
+            $update['name'] = $newName;
         }
         if (isset($data['type'])) {
             $update['type'] = sanitize_text_field($data['type']);

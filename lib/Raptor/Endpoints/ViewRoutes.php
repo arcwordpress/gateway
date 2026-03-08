@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Endpoints;
 
 use Gateway\Raptor\Collections\RaptorView;
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Collections\RaptorViewList;
 use Gateway\Raptor\Controllers\ViewController;
 
 if (!defined('ABSPATH')) {
@@ -58,13 +59,16 @@ class ViewRoutes
 
     public function getViews(\WP_REST_Request $request): \WP_REST_Response
     {
-        $query = RaptorView::orderBy('created_at', 'asc');
+        $query = RaptorView::orderBy('sort_order', 'asc')->orderBy('id', 'asc');
 
         $collectionKey = $request->get_param('collection_key');
         if ($collectionKey) {
             $collection = RaptorCollection::where('collection_key', sanitize_text_field($collectionKey))->first();
             if ($collection) {
-                $query->where('collection_id', $collection->id);
+                $viewList = RaptorViewList::where('collection_id', $collection->id)->first();
+                if ($viewList) {
+                    $query->where('view_list_id', $viewList->id);
+                }
             }
         }
 
@@ -99,14 +103,10 @@ class ViewRoutes
             ], 400);
         }
 
-        if (RaptorView::where('view_key', $key)->exists()) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => "A view with key \"{$key}\" already exists.",
-            ], 409);
-        }
+        $key = $this->ensureUniqueKey($key);
 
         $collectionId = null;
+        $viewListId = null;
 
         if (!empty($data['collection_id'])) {
             $collectionId = (int) $data['collection_id'];
@@ -115,12 +115,18 @@ class ViewRoutes
             $collectionId = $coll ? $coll->id : null;
         }
 
+        if ($collectionId) {
+            $viewList = RaptorViewList::where('collection_id', $collectionId)->first();
+            $viewListId = $viewList ? $viewList->id : null;
+        }
+
         $view = ViewController::create([
             'view_key'      => $key,
-            'collection_id' => $collectionId,
+            'view_list_id'  => $viewListId,
             'title'         => $title,
             'description'   => sanitize_textarea_field($data['description'] ?? ''),
             'status'        => 'active',
+            'sort_order'    => isset($data['sort_order']) ? (int) $data['sort_order'] : 0,
             'source'        => sanitize_text_field($data['source'] ?? ''),
             'columns'       => $data['columns'] ?? [],
             'facet_filters' => $data['facet_filters'] ?? [],
@@ -182,6 +188,10 @@ class ViewRoutes
             $updates['status'] = sanitize_text_field($data['status']);
         }
 
+        if (isset($data['sort_order'])) {
+            $updates['sort_order'] = (int) $data['sort_order'];
+        }
+
         if (isset($data['source'])) {
             $updates['source'] = sanitize_text_field($data['source']);
         }
@@ -203,14 +213,25 @@ class ViewRoutes
         }
 
         if (isset($data['collection_id'])) {
-            $updates['collection_id'] = $data['collection_id'] ? (int) $data['collection_id'] : null;
+            $collectionId = $data['collection_id'] ? (int) $data['collection_id'] : null;
+            if ($collectionId) {
+                $viewList = RaptorViewList::where('collection_id', $collectionId)->first();
+                $updates['view_list_id'] = $viewList ? $viewList->id : null;
+            } else {
+                $updates['view_list_id'] = null;
+            }
         } elseif (isset($data['collection_key'])) {
             $collKey = sanitize_text_field($data['collection_key']);
             if ($collKey) {
                 $coll = RaptorCollection::where('collection_key', $collKey)->first();
-                $updates['collection_id'] = $coll ? $coll->id : null;
+                if ($coll) {
+                    $viewList = RaptorViewList::where('collection_id', $coll->id)->first();
+                    $updates['view_list_id'] = $viewList ? $viewList->id : null;
+                } else {
+                    $updates['view_list_id'] = null;
+                }
             } else {
-                $updates['collection_id'] = null;
+                $updates['view_list_id'] = null;
             }
         }
 
@@ -256,5 +277,20 @@ class ViewRoutes
         $key = preg_replace('/[^a-z0-9]+/', '_', $key);
         $key = trim($key, '_');
         return $key;
+    }
+
+    private function ensureUniqueKey(string $baseKey): string
+    {
+        if (!RaptorView::where('view_key', $baseKey)->exists()) {
+            return $baseKey;
+        }
+
+        $suffix = 1;
+        do {
+            $candidate = $baseKey . '_' . $suffix;
+            $suffix++;
+        } while (RaptorView::where('view_key', $candidate)->exists());
+
+        return $candidate;
     }
 }

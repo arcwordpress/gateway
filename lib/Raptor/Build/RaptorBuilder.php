@@ -125,16 +125,37 @@ class RaptorBuilder
         $fieldList = $collection->fieldList;
         $fields    = $fieldList ? $fieldList->fields()->orderBy('sort_order')->get() : collect();
 
+        $seenNames = [];
+        $warnings  = [];
+
+        $normalizedFields = $fields->map(function ($f) {
+            return array_merge(
+                ['name' => sanitize_key($f->name), 'type' => $f->type, 'label' => $f->label],
+                is_array($f->config) ? $f->config : []
+            );
+        })->filter(function ($f) use (&$warnings) {
+            if (empty($f['name'])) {
+                $warnings[] = 'Skipped a field with an empty/invalid name.';
+                return false;
+            }
+            return true;
+        })->values();
+
+        $dedupedFields = $normalizedFields->filter(function ($f) use (&$seenNames, &$warnings) {
+            if (isset($seenNames[$f['name']])) {
+                $warnings[] = "Skipped duplicate field name '{$f['name']}' while building collection.";
+                return false;
+            }
+
+            $seenNames[$f['name']] = true;
+            return true;
+        })->values();
+
         $collectionData = [
             'key'           => $collection->collection_key,
             'title'         => $collection->title,
             'relationships' => $collection->relationships ?? [],
-            'fields'        => $fields->map(function ($f) {
-                return array_merge(
-                    ['name' => $f->name, 'type' => $f->type, 'label' => $f->label],
-                    is_array($f->config) ? $f->config : []
-                );
-            })->toArray(),
+            'fields'        => $dedupedFields->toArray(),
         ];
 
         $classResult     = \Gateway\Collections\FileFromData::generateCollectionClass(
@@ -146,6 +167,7 @@ class RaptorBuilder
             'collection_key'  => $collection->collection_key,
             'class_generated' => $classResult,
             'migration'       => $migrationResult,
+            'warnings'        => $warnings,
         ];
     }
 

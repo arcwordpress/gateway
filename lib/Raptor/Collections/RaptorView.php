@@ -22,6 +22,7 @@ class RaptorView extends \Gateway\Collection
         'columns' => 'array',
         'facet_filters' => 'array',
         'default_sort' => 'array',
+        'sort_order' => 'integer',
         'per_page' => 'integer',
     ];
 
@@ -29,10 +30,11 @@ class RaptorView extends \Gateway\Collection
     {
         return [
             'view_key',
-            'collection_id',
+            'view_list_id',
             'title',
             'description',
             'status',
+            'sort_order',
             'source',
             'columns',
             'facet_filters',
@@ -41,8 +43,8 @@ class RaptorView extends \Gateway\Collection
         ];
     }
 
-    public function collection(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function viewList(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(RaptorCollection::class, 'collection_id', 'id');
+        return $this->belongsTo(RaptorViewList::class, 'view_list_id', 'id');
     }
 }

@@ -14,6 +14,7 @@ import GraphPage from './pages/Graph'
 import CollectionsViewerPage from './pages/CollectionsViewer'
 import FieldsPage from './pages/Fields'
 import ViewsPage from './pages/Views'
+import ViewDesignPage from './pages/ViewDesign'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -61,12 +62,17 @@ const extensionsRoute = createRoute({
   component: GraphPage,
 })
 
-const viewsRoute = createRoute({
+export const viewsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/collections/$collectionKey/views',
   component: ViewsPage,
 })
 
+export const viewDesignRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections/$collectionKey/views/$viewKey/design',
+  component: ViewDesignPage,
+})
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -75,6 +81,7 @@ const routeTree = rootRoute.addChildren([
   extensionsRoute,
   fieldsRoute,
   viewsRoute,
+  viewDesignRoute,
 ])
 
 const history = appConfig.isWordPress
