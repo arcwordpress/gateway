@@ -11,6 +11,7 @@ import { ExtensionNode } from './ExtensionNode'
 import { CollectionsGroupNode } from './CollectionsGroupNode'
 import { CollectionNode } from './CollectionNode'
 import { FieldsNode } from './FieldsNode'
+import { ViewsNode } from './ViewsNode'
 
 // Export all types
 export type {
@@ -28,6 +29,7 @@ export type {
   CollGroupNodeType,
   CollNodeType,
   FieldsNodeType,
+  ViewsNodeType,
 } from './types'
 
 // Export context
@@ -46,6 +48,7 @@ export { ExtensionNode } from './ExtensionNode'
 export { CollectionsGroupNode } from './CollectionsGroupNode'
 export { CollectionNode } from './CollectionNode'
 export { FieldsNode } from './FieldsNode'
+export { ViewsNode } from './ViewsNode'
 
 // Export node types registry
 export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
@@ -63,6 +66,7 @@ export const COLLECTIONS_GRAPH_NODE_TYPES: NodeTypes = {
   collectionsGroupNode:  CollectionsGroupNode,
   collectionNode:        CollectionNode,
   fieldsNode:            FieldsNode,
+  viewsNode:             ViewsNode,
 }
 
 // Export Collections Viewer layout utilities

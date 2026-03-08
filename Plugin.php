@@ -59,7 +59,7 @@ class Plugin
     private $migrationRunnerRoute;
     private $mazeRoutes;
     private $patternRegistry;
-    private $gridRegistry;
+    private $viewRegistry;
 
     public static function getInstance()
     {
@@ -72,12 +72,12 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
-        $this->gridRegistry = new Grids\GridRegistry();
+        $this->viewRegistry = new Views\ViewRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
-        new Grids\GridRoutes();
+        new Views\ViewRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
@@ -135,8 +135,8 @@ class Plugin
         // Initialize experimental rendering system
         Render\Render::init();
 
-        // Initialize front-end grids
-        Grids\Render::init();
+        // Initialize front-end views
+        // Views\Render::init();
 
         // Initialize front-end filters
         Filters\Render::init();
@@ -288,9 +288,9 @@ class Plugin
         return $this->registry;
     }
 
-    public function getGridRegistry()
+    public function getViewRegistry()
     {
-        return $this->gridRegistry;
+        return $this->viewRegistry;
     }
 
     public function getPackageRegistry()

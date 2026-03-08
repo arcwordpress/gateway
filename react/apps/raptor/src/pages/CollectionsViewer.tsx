@@ -830,6 +830,18 @@ export default function CollectionsViewer() {
             position: { x: 0, y: 0 },
           })
 
+          // Add Views node as child of collection
+          const viewsId = `views-${col.collection_key}`
+          hierarchyNodes.push({
+            id: viewsId,
+            type: 'viewsNode',
+            data: {
+              collectionSlug: col.collection_key,
+              onNavigate: (slug: string) => navigate({ to: `/collections/${slug}/views` }),
+            },
+            position: { x: 0, y: 0 },
+          })
+
           hierarchyEdges.push({
             id: `e-coll-group-${col.collection_key}`,
             source: collGroupId,
@@ -842,6 +854,14 @@ export default function CollectionsViewer() {
             id: `e-fields-${col.collection_key}`,
             source: colId,
             target: fieldsId,
+            style: { stroke: '#4b5563' },
+          })
+
+          // Edge from collection to views
+          hierarchyEdges.push({
+            id: `e-views-${col.collection_key}`,
+            source: colId,
+            target: viewsId,
             style: { stroke: '#4b5563' },
           })
         }

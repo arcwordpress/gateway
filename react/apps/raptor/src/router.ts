@@ -7,15 +7,13 @@ import {
 } from '@tanstack/react-router'
 
 import { appConfig } from './config'
-import RootLayout from './routes/__root'
+import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import GraphPage from './pages/Graph'
 // import CollectionsPage from './pages/Collections'
 import CollectionsViewerPage from './pages/CollectionsViewer'
-import ExtensionsPage from './pages/Extensions'
-import ExtensionCreatePage from './pages/ExtensionCreate'
-import ExtensionEditPage from './pages/ExtensionEdit'
 import FieldsPage from './pages/Fields'
+import ViewsPage from './pages/Views'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -29,7 +27,7 @@ if (appConfig.isWordPress) {
   }
 }
 
-const rootRoute = createRootRoute({ component: RootLayout })
+const rootRoute = createRootRoute({ component: Layout })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -63,12 +61,20 @@ const extensionsRoute = createRoute({
   component: GraphPage,
 })
 
+const viewsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections/$collectionKey/views',
+  component: ViewsPage,
+})
+
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   //collectionsRoute,
   collectionsViewerRoute,
   extensionsRoute,
   fieldsRoute,
+  viewsRoute,
 ])
 
 const history = appConfig.isWordPress

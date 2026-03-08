@@ -6,6 +6,7 @@ export const NODE_DIMS: Record<string, { w: number; h: number }> = {
   collectionsGroupNode:  { w: 110, h: 68 },
   collectionNode:       { w: 180, h: 70 },
   fieldsNode:           { w: 110, h: 90 },
+  viewsNode:            { w: 110, h: 90 },
 }
 
 export function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {

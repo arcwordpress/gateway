@@ -41,3 +41,11 @@ export type FieldsNodeType = Node<
   },
   'fieldsNode'
 >
+
+export type ViewsNodeType = Node<
+  {
+    collectionSlug: string
+    onNavigate?: (slug: string) => void
+  },
+  'viewsNode'
+>
