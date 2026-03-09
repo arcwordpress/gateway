@@ -89,6 +89,8 @@ class Plugin
         new Raptor\Endpoints\CollectionRoutes();
         new Raptor\Endpoints\FieldListRoutes();
         new Raptor\Endpoints\FieldRoutes();
+        new Raptor\Endpoints\FormListRoutes();
+        new Raptor\Endpoints\FormRoutes();
         new Raptor\Endpoints\ViewListRoutes();
         new Raptor\Endpoints\ViewRoutes();
         new Blocks\BlockRoutes();

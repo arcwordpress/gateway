@@ -9,6 +9,20 @@ export type Field = {
   config?: Record<string, unknown>
 }
 
+// ─── Form ────────────────────────────────────────────────────────────────────
+
+export type Form = {
+  id: number
+  form_key: string
+  title: string
+  description?: string
+  status: string
+  sort_order: number
+  form_config?: Record<string, unknown>
+  success_message?: string
+  notification_email?: string
+}
+
 // ─── View ────────────────────────────────────────────────────────────────────
 
 export type View = {
@@ -34,6 +48,7 @@ export type Collection = {
   description: string
   status: string
   field_list: { id: number; fields: Field[] } | null
+  form_list: { id: number; forms: Form[] } | null
   view_list: { id: number; views: View[] } | null
 }
 

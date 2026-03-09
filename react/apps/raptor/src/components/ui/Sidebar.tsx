@@ -31,6 +31,10 @@ export default function Sidebar() {
   return (
     <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
       <SectionLabel label="App" />
+      <NavLink to="/fields" label="Fields" />
+      <NavLink to="/forms" label="Forms" />
+      <NavLink to="/views" label="Views" />
+      <div className="my-3 border-t border-gray-800" />
       <NavLink to="/extensions" label="Extensions" />
       <NavLink to="/collections" label="Collections" />
 

@@ -69,4 +69,9 @@ class RaptorCollection extends \Gateway\Collection
     {
         return $this->hasOne(RaptorViewList::class, 'collection_id', 'id');
     }
+
+    public function formList(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RaptorFormList::class, 'collection_id', 'id');
+    }
 }

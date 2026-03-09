@@ -15,6 +15,10 @@ import CollectionsViewerPage from './pages/CollectionsViewer'
 import FieldsPage from './pages/Fields'
 import ViewsPage from './pages/Views'
 import ViewDesignPage from './pages/ViewDesign'
+import FormsPage from './pages/Forms'
+import FieldsTopLevelPage from './pages/FieldsTopLevel'
+import ViewsTopLevelPage from './pages/ViewsTopLevel'
+import FormsTopLevelPage from './pages/FormsTopLevel'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -50,6 +54,24 @@ const collectionsViewerRoute = createRoute({
   component: CollectionsViewerPage,
 })
 
+const fieldsTopLevelRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/fields',
+  component: FieldsTopLevelPage,
+})
+
+const viewsTopLevelRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/views',
+  component: ViewsTopLevelPage,
+})
+
+const formsTopLevelRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/forms',
+  component: FormsTopLevelPage,
+})
+
 export const fieldsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/collections/$collectionKey/fields',
@@ -74,12 +96,22 @@ export const viewDesignRoute = createRoute({
   component: ViewDesignPage,
 })
 
+export const formsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections/$collectionKey/forms',
+  component: FormsPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   //collectionsRoute,
   collectionsViewerRoute,
+  fieldsTopLevelRoute,
+  formsTopLevelRoute,
+  viewsTopLevelRoute,
   extensionsRoute,
   fieldsRoute,
+  formsRoute,
   viewsRoute,
   viewDesignRoute,
 ])

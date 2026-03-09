@@ -58,4 +58,9 @@ class RaptorField extends \Gateway\Collection
     {
         return $this->belongsTo(RaptorFieldList::class, 'field_list_id');
     }
+
+    public function forms(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorFormField::class, 'field_id', 'id');
+    }
 }
