@@ -137,8 +137,8 @@ class Plugin
         // Initialize experimental rendering system
         Render\Render::init();
 
-        // Initialize front-end views
-        // Views\Render::init();
+        // Initialize front-end views with Interactivity API
+        Raptor\ViewRenderer::init();
 
         // Initialize front-end filters
         Filters\Render::init();

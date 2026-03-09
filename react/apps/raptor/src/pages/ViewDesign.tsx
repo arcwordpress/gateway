@@ -51,10 +51,6 @@ function normalizeColumns(view: View, fields: Field[]): string[] {
   return fields.map((f) => f.name)
 }
 
-function toSchemaProps(columns: string[]) {
-  return columns.map((name) => ({ name, type: 'string', required: false }))
-}
-
 function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; viewKey: string }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -132,39 +128,11 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
           recentRecords.length === 0 ? 'empty' : 'loaded'
 
   const viewColumns = draftView ? normalizeColumns(draftView, allFields) : []
-  const schemaProps = toSchemaProps(viewColumns)
   const previewRows = recentRecords.map((row) =>
     Object.fromEntries(viewColumns.map((col) => [col, getRowValue(row, col)]))
   )
 
   const computedNodes: Node[] = [
-    {
-      id: 'collection',
-      type: 'collectionRootNode',
-      data: {
-        title: collection?.title ?? collectionKey,
-        collKey: collectionKey,
-        onManage: () => {
-          void navigate({ to: '/collections' })
-        },
-      },
-      position: { x: 250, y: 50 },
-    },
-    {
-      id: 'node-records',
-      type: 'recordsContainerNode',
-      data: { count: recentRecords.length },
-      position: { x: 250, y: 220 },
-    },
-    {
-      id: 'focused-view-schema',
-      type: 'jsonSchemaNode',
-      data: {
-        title: draftView?.title ?? viewKey,
-        properties: schemaProps,
-      },
-      position: { x: 250, y: 390 },
-    },
     {
       id: 'view-preview',
       type: 'viewPreviewNode',
@@ -173,16 +141,12 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         columns: viewColumns,
         rows: previewRows,
       },
-      position: { x: 250, y: 590 },
+      position: { x: 300, y: 200 },
+      style: { width: 720 },
     },
   ]
 
-  const computedEdges: Edge[] = [
-    { id: 'e-collection-records', source: 'collection', target: 'node-records' },
-    { id: 'e-records-schema', source: 'node-records', target: 'focused-view-schema' },
-    { id: 'e-schema-preview', source: 'focused-view-schema', target: 'view-preview' },
-    { id: 'e-records-preview', source: 'node-records', target: 'view-preview' },
-  ]
+  const computedEdges: Edge[] = []
 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
@@ -199,8 +163,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [selectedColumns, setSelectedColumns] = useState<string[]>([])
 
   useEffect(() => {
-    if (draftView) setSelectedColumns(draftView.columns ?? [])
-  }, [draftView])
+    if (view) setSelectedColumns(view.columns ?? [])
+  }, [view])
 
   const toggleColumn = (fieldName: string) => {
     setSelectedColumns((prev) =>
@@ -229,20 +193,29 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       if (!json.success) throw new Error(json.message ?? 'Failed to save view')
       return json.view as View
     },
-    onSuccess: (updated) => {
-      setDraftView(updated)
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-view', viewKey] })
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections', collectionKey] })
     },
   })
 
   useEffect(() => {
-    if (!draftView) return
+    if (!view || !draftView) return
+
+    // Check if there are actual changes compared to the original view
+    const hasChanges =
+      view.title !== draftView.title ||
+      view.description !== draftView.description ||
+      view.per_page !== draftView.per_page ||
+      JSON.stringify(view.columns ?? []) !== JSON.stringify(selectedColumns)
+
+    if (!hasChanges) return
+
     const timer = setTimeout(() => {
       saveMutation.mutate()
     }, 800)
     return () => clearTimeout(timer)
-  }, [selectedColumns, draftView?.title, draftView?.description, draftView?.per_page]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedColumns, draftView?.title, draftView?.description, draftView?.per_page, view, saveMutation]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (collLoading || viewLoading || !draftView) {
     return (
@@ -265,12 +238,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
               ← Back to Views
             </button>
             <span className="text-gray-600">|</span>
-            <input
-              type="text"
-              value={draftView.title}
-              onChange={(e) => setDraftView({ ...draftView, title: e.target.value })}
-              className="bg-transparent border-none text-white text-sm font-medium focus:outline-none focus:ring-0"
-            />
+            <h1 className="text-white text-sm font-medium">{draftView.title}</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-xs text-gray-500">

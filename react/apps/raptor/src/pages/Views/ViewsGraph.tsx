@@ -71,6 +71,21 @@ export function Graph() {
 
   const allFields = collection?.field_list?.fields ?? []
 
+  // Track which views are expanded
+  const [expandedViews, setExpandedViews] = useState<Set<string>>(new Set())
+
+  const toggleView = useCallback((viewKey: string) => {
+    setExpandedViews(prev => {
+      const next = new Set(prev)
+      if (next.has(viewKey)) {
+        next.delete(viewKey)
+      } else {
+        next.add(viewKey)
+      }
+      return next
+    })
+  }, [])
+
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collKey],
     queryFn: async () => {
@@ -125,69 +140,88 @@ export function Graph() {
       position: { x: 200, y: 0 },
     },
     {
-      id: 'node-records',
-      type: 'recordsContainerNode',
-      data: { count: recentRecords.length },
-      position: { x: 200, y: 170 },
+      id: 'view-list-label',
+      type: 'viewListLabel',
+      data: {},
+      position: { x: 200, y: 140 },
     },
   ]
 
   const viewNodes: Node[] = []
-  const viewEdges: Edge[] = []
+  const viewEdges: Edge[] = [{ id: 'e-collection-viewlist', source: 'collection', target: 'view-list-label' }]
 
   views.forEach((view, idx) => {
-    const viewColumns = normalizeColumns(view, allFields)
-    
-    const schemaProps = toSchemaProps(viewColumns)
-    const previewRows = recentRecords.map((row) =>
-      Object.fromEntries(viewColumns.map((col) => [col, getRowValue(row, col)]))
-    )
+    const viewNodeId = `view-${view.view_key}`
+    const isExpanded = expandedViews.has(view.view_key)
 
-    const xOffset = idx * 600
-    const schemaNodeId = `view-schema-${view.view_key}`
-    const previewNodeId = `view-preview-${view.view_key}`
-
-    viewNodes.push(
-      {
-        id: schemaNodeId,
-        type: 'jsonSchemaNode',
-        data: {
-          title: view.title || view.view_key,
-          properties: schemaProps,
+    // Each view gets its own ViewNode
+    viewNodes.push({
+      id: viewNodeId,
+      type: 'viewNode',
+      data: {
+        title: view.title || view.view_key,
+        viewKey: view.view_key,
+        isExpanded,
+        onToggle: () => toggleView(view.view_key),
+        onDesign: (vk: string) => {
+          void navigate({ to: `/collections/${collKey}/views/${vk}/design` })
         },
-        position: { x: xOffset, y: 340 },
       },
-      {
-        id: previewNodeId,
-        type: 'viewPreviewNode',
-        data: {
-          title: view.title || view.view_key,
-          columns: viewColumns,
-          rows: previewRows,
-        },
-        position: { x: xOffset, y: 540 },
-      }
-    )
+      position: { x: 200 + idx * 400, y: 260 },
+    })
 
-    viewEdges.push(
-      { id: `e-records-schema-${view.view_key}`, source: 'node-records', target: schemaNodeId },
-      { id: `e-schema-preview-${view.view_key}`, source: schemaNodeId, target: previewNodeId },
-      { id: `e-records-preview-${view.view_key}`, source: 'node-records', target: previewNodeId }
-    )
+    // Edge from View List to each View
+    viewEdges.push({ id: `e-viewlist-${view.view_key}`, source: 'view-list-label', target: viewNodeId })
+
+    // If expanded, show schema and preview
+    if (isExpanded) {
+      const viewColumns = normalizeColumns(view, allFields)
+      const schemaProps = toSchemaProps(viewColumns)
+      const previewRows = recentRecords.map((row) =>
+        Object.fromEntries(viewColumns.map((col) => [col, getRowValue(row, col)]))
+      )
+
+      const schemaNodeId = `view-schema-${view.view_key}`
+      const previewNodeId = `view-preview-${view.view_key}`
+
+      viewNodes.push(
+        {
+          id: schemaNodeId,
+          type: 'jsonSchemaNode',
+          data: {
+            title: view.title || view.view_key,
+            properties: schemaProps,
+          },
+          position: { x: 100 + idx * 400, y: 420 },
+        },
+        {
+          id: previewNodeId,
+          type: 'viewPreviewNode',
+          data: {
+            title: view.title || view.view_key,
+            columns: viewColumns,
+            rows: previewRows,
+          },
+          position: { x: 300 + idx * 400, y: 420 },
+        }
+      )
+
+      viewEdges.push(
+        { id: `e-view-schema-${view.view_key}`, source: viewNodeId, target: schemaNodeId },
+        { id: `e-view-preview-${view.view_key}`, source: viewNodeId, target: previewNodeId }
+      )
+    }
   })
 
   const computedNodes: Node[] = [...baseNodes, ...viewNodes]
 
-  const computedEdges: Edge[] = [
-    { id: 'e-collection-records', source: 'collection', target: 'node-records' },
-    ...viewEdges,
-  ]
+  const computedEdges: Edge[] = viewEdges
 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, views])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                     // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, views, expandedViews])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, expandedViews])                     // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 
@@ -200,12 +234,6 @@ export function Graph() {
           nodeTypes={FIELD_GRAPH_NODE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeDoubleClick={(_event, node) => {
-            if (node.id.startsWith('view-preview-')) {
-              const viewKey = node.id.replace('view-preview-', '')
-              void navigate({ to: `/collections/${collKey}/views/${viewKey}/design` })
-            }
-          }}
           fitView
           colorMode="dark"
           proOptions={{ hideAttribution: true }}

@@ -50,6 +50,12 @@ class ViewRoutes
                 'permission_callback' => [$this, 'checkPermissions'],
             ],
         ]);
+
+        register_rest_route('gateway/v1', '/raptor/view/(?P<view_key>[a-zA-Z0-9_\-]+)/preview', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'getViewPreview'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
     }
 
     public function checkPermissions(): bool
@@ -261,6 +267,69 @@ class ViewRoutes
         return new \WP_REST_Response([
             'success' => true,
             'message' => 'View deleted.',
+        ], 200);
+    }
+
+    public function getViewPreview(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $key = $request->get_param('view_key');
+        $view = ViewController::get($key);
+
+        if (!$view) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'View not found.',
+            ], 404);
+        }
+
+        $view = ViewController::withNested($view);
+
+        // Get sample records for preview if available
+        $records = [];
+        $collection = $view->viewList?->collection ?? null;
+        
+        if ($collection) {
+            $adminData = get_option('gateway_admin_data', []);
+            
+            if (isset($adminData['collections'])) {
+                foreach ($adminData['collections'] as $collData) {
+                    if ($collData['key'] === $collection->collection_key) {
+                        $getManyRoute = null;
+                        foreach ($collData['routes'] as $route) {
+                            if ($route['type'] === 'get_many') {
+                                $getManyRoute = $route['route'];
+                                break;
+                            }
+                        }
+                        
+                        if ($getManyRoute) {
+                            $apiUrl = rest_url($getManyRoute . '?per_page=5');
+                            $response = wp_remote_get($apiUrl, [
+                                'headers' => [
+                                    'X-WP-Nonce' => wp_create_nonce('wp_rest'),
+                                ],
+                            ]);
+                            
+                            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                                $body = wp_remote_retrieve_body($response);
+                                $data = json_decode($body, true);
+                                
+                                if (isset($data['data']['items'])) {
+                                    $records = $data['data']['items'];
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        $html = \Gateway\Raptor\ViewRenderer::renderViewPreview($view, $records);
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'html'    => $html,
         ], 200);
     }
 

@@ -5,6 +5,8 @@ import { RecordsContainerNode } from './RecordsContainerNode'
 import { RecordNode } from './RecordNode'
 import { JsonSchemaNode } from './JsonSchemaNode'
 import { ViewPreviewNode } from './ViewPreviewNode'
+import { ViewListLabelNode } from './ViewListLabelNode'
+import { ViewNode } from './ViewNode'
 
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
@@ -33,6 +35,8 @@ export type {
   FieldsNodeType,
   ViewsNodeType,
 } from './types'
+export type { ViewListLabelNodeType } from './ViewListLabelNode'
+export type { ViewNodeType } from './ViewNode'
 
 // Export context
 export { RecordsCtx } from './RecordsContext'
@@ -44,6 +48,8 @@ export { RecordsContainerNode } from './RecordsContainerNode'
 export { RecordNode } from './RecordNode'
 export { JsonSchemaNode } from './JsonSchemaNode'
 export { ViewPreviewNode } from './ViewPreviewNode'
+export { ViewListLabelNode } from './ViewListLabelNode'
+export { ViewNode } from './ViewNode'
 
 // Export Collections Viewer nodes
 export { CollectionsLabelNode } from './CollectionsRootNode'
@@ -61,6 +67,8 @@ export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
   recordNode:           RecordNode,
   jsonSchemaNode:       JsonSchemaNode,
   viewPreviewNode:      ViewPreviewNode,
+  viewListLabel:        ViewListLabelNode,
+  viewNode:             ViewNode,
 }
 
 // Export Collections Viewer node types registry
