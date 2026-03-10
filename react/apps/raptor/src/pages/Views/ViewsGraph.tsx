@@ -7,12 +7,12 @@ import {
   type Edge,
   ReactFlow,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
 import { useNavigate } from '@tanstack/react-router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../../components/graph_node_types'
+import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { useCollection, useViews } from './ViewsPageContext'
 import { Field, View } from '../../lib/object_types'
@@ -227,7 +227,7 @@ export function Graph() {
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <div style={{ width: '100%', height: 'min(72vh, 780px)', minHeight: 420 }}>
+      <div style={{ width: '100%', height: '100%' }}>
         <ReactFlow
           nodes={graphNodes}
           edges={graphEdges}
@@ -239,16 +239,8 @@ export function Graph() {
           proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-          <Controls position="top-right" style={{ marginTop: 8, marginRight: 8 }} />
-          <MiniMap
-            position="bottom-right"
-            nodeColor="#6b7280"
-            nodeStrokeColor="#9ca3af"
-            maskColor="rgba(17,24,39,0.45)"
-            zoomable
-            pannable
-            style={{ marginBottom: 10, marginRight: 8 }}
-          />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+          <SharedMiniMap />
         </ReactFlow>
       </div>
     </RecordsCtx.Provider>

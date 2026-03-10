@@ -5,7 +5,6 @@ import {
   Handle,
   Position,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
   useNodesState,
@@ -22,6 +21,7 @@ import '@xyflow/react/dist/style.css'
 import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
+import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -761,16 +761,8 @@ export default function Graph() {
           proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-          <Controls position="top-right" style={{ marginTop: 8, marginRight: 8 }} />
-          <MiniMap
-            position="bottom-right"
-            nodeColor="#6b7280"
-            nodeStrokeColor="#9ca3af"
-            maskColor="rgba(17,24,39,0.45)"
-            zoomable
-            pannable
-            style={{ marginBottom: 10, marginRight: 8 }}
-          />
+          <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
+          <SharedMiniMap />
         </ReactFlow>
         </div>,
         canvasHost

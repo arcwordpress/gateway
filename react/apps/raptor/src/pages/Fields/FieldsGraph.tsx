@@ -4,8 +4,9 @@ import {
   useNodesState, useEdgesState,
   type Node, type Edge,
 } from '@xyflow/react'
-import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xyflow/react'
+import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
 import { JsonSchemaProp, RecordsStatus, RecordsCtxValue, RecordsCtx, FIELD_GRAPH_NODE_TYPES, AdminCollectionInfo } from '../../components/graph_node_types'
+import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import { Field } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { useApp } from '../../context/app'
@@ -203,7 +204,7 @@ export function Graph() {
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <div ref={graphContainerRef} style={{ width: '100%', height: `${graphHeightPx}px` }}>
+      <div ref={graphContainerRef} style={{ width: '100%', height: '100%' }}>
         <ReactFlow
           nodes={graphNodes}
           edges={graphEdges}
@@ -214,9 +215,9 @@ export function Graph() {
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
-          <Controls />
-          <MiniMap zoomable pannable />
+          <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+          <SharedMiniMap />
         </ReactFlow>
       </div>
     </RecordsCtx.Provider>

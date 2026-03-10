@@ -5,7 +5,6 @@ import {
   Handle,
   Position,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
   useNodesState,
@@ -22,6 +21,7 @@ import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
+import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -973,13 +973,7 @@ export default function Collections() {
           >
             <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
             <Controls />
-            <MiniMap
-              nodeColor="#1e293b"
-              nodeStrokeColor="#334155"
-              maskColor="rgba(3,7,18,0.7)"
-              zoomable
-              pannable
-            />
+            <SharedMiniMap />
           </ReactFlow>
         </div>,
         canvasHost

@@ -8,12 +8,12 @@ import {
   type Edge,
   ReactFlow,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
 import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
+import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { apiUrl, authHeaders } from '../lib/api'
 import { Collection, Field, View } from '../lib/object_types'
 
@@ -261,7 +261,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
           >
             <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
             <Controls />
-            <MiniMap zoomable pannable />
+            <SharedMiniMap />
           </ReactFlow>
         </div>
 

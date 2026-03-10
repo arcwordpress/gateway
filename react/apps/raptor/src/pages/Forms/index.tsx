@@ -3,20 +3,15 @@ import { formsRoute } from '../../router'
 import { useCollection, CollectionProvider } from './FormsPageContext'
 import { FormsProvider, SurfaceState } from './FormsPageContext'
 import { Editor, FormEditForm, DeleteConfirmation, EditPanel } from './FormsEditor'
+import { Graph } from './FormsGraph'
+import { BuilderLayout } from '../Builders/BuilderLayout'
+import { BuilderTopBar } from '../Builders/BuilderTopBar'
+import { BuilderLeftPanel } from '../Builders/BuilderLeftPanel'
 
 function CollectionName() {
   const { collection, isLoading } = useCollection()
   if (isLoading) return <div className="h-5 w-32 rounded bg-gray-700 animate-pulse" />
   return <h1 className="!text-neutral-300 text-2xl font-bold">{collection?.title}</h1>
-}
-
-function TopBar() {
-  return (
-    <section className="flex gap-6 border border-neutral-600 px-6 py-3 rounded mb-12">
-      <a href="https://arcwp.ca/docs">DOCS</a>
-      <a href="https://arcwp.ca/support">SUPPORT</a>
-    </section>
-  )
 }
 
 function Files() {
@@ -47,17 +42,28 @@ function FormsContent({ editSurface, setEditSurface }: {
   if (isError) return <div className="p-8 text-red-400">Failed to load collection.</div>
 
   return (
-    <section className="text-white px-12">
-      <TopBar />
-      <div>
-        <h4 className="font-medium mb-2">COLLECTION</h4>
-        <CollectionName />
-      </div>
-      <div className="flex flex-col gap-8 mt-12">
-        <Editor setEditSurface={setEditSurface} />
-        <Files />
-      </div>
+    <BuilderLayout>
+      {/* Edge-to-edge graph background */}
+      <Graph />
 
+      {/* Floating top bar with collection switcher */}
+      <BuilderTopBar />
+
+      {/* Floating left panel with editor and files */}
+      <BuilderLeftPanel>
+        <div className="p-6">
+          <div className="mb-8">
+            <h4 className="font-medium text-sm text-gray-400 mb-2">COLLECTION</h4>
+            <CollectionName />
+          </div>
+          <div className="flex flex-col gap-8">
+            <Editor setEditSurface={setEditSurface} />
+            <Files />
+          </div>
+        </div>
+      </BuilderLeftPanel>
+
+      {/* Edit panel overlay */}
       {editSurface && (
         <EditPanel
           title={editSurface.mode === 'editForm' ? 'Edit Form' : 'Delete Form'}
@@ -72,7 +78,7 @@ function FormsContent({ editSurface, setEditSurface }: {
           )}
         </EditPanel>
       )}
-    </section>
+    </BuilderLayout>
   )
 }
 

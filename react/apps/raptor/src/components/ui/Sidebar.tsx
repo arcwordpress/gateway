@@ -1,19 +1,46 @@
-import { Link } from '@tanstack/react-router'
-import { Settings2 } from 'lucide-react'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { Maximize2, Minimize2, Settings2, type LucideIcon } from 'lucide-react'
+
+// ─── Helper function to determine if a link is active ─────────────────────
+function getIsActive(to: string, pathname: string): boolean {
+  // For /collections, match exactly (no nested paths)
+  if (to === '/collections') {
+    return pathname === '/collections'
+  }
+
+  // For /fields, /forms, /views, match either:
+  // 1. The exact path (e.g., /fields)
+  // 2. The nested path in builder (e.g., /collections/*/fields)
+  if (to === '/fields') {
+    return pathname === '/fields' || /^\/collections\/[^/]+\/fields/.test(pathname)
+  }
+  if (to === '/forms') {
+    return pathname === '/forms' || /^\/collections\/[^/]+\/forms/.test(pathname)
+  }
+  if (to === '/views') {
+    return pathname === '/views' || /^\/collections\/[^/]+\/views/.test(pathname)
+  }
+
+  // For other routes, use exact match
+  return pathname === to
+}
 
 // ─── Nav link ──────────────────────────────────────────────────────────────
-function NavLink({ to, label, icon: Icon }: { to: string; label: string; icon?: any }) {
+function NavLink({ to, label, icon: Icon }: { to: string; label: string; icon?: LucideIcon }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isActive = getIsActive(to, pathname)
+
   return (
     <Link
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       to={to as any}
-      className="flex items-center gap-2 px-3 py-2 rounded text-sm text-gray-400 hover:text-gray-100 hover:bg-gray-800 transition-colors"
-      activeProps={{
-        className:
-          'flex items-center gap-2 px-3 py-2 rounded text-sm text-blue-300 bg-blue-500/10 hover:text-blue-300 hover:bg-blue-500/10 transition-colors',
-      }}
+      className={
+        isActive
+          ? 'gateway-sidebar-link flex items-center gap-2 px-3 py-2 rounded text-sm !text-zinc-100 bg-zinc-700/35 hover:!text-zinc-100 hover:bg-zinc-700/35 transition-colors'
+          : 'gateway-sidebar-link flex items-center gap-2 px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors'
+      }
     >
-      {Icon && <Icon className="w-4 h-4" />}
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-current" />}
       {label}
     </Link>
   )
@@ -29,32 +56,36 @@ function SectionLabel({ label }: { label: string }) {
 }
 
 // ─── Sidebar ───────────────────────────────────────────────────────────────
-export default function Sidebar() {
+export default function Sidebar({
+  isExpanded,
+  onToggleExpand,
+}: {
+  isExpanded: boolean
+  onToggleExpand: () => void
+}) {
   return (
-    <nav className="flex-1 flex flex-col">
+    <nav className="flex-1 flex flex-col justify-between min-h-0">
       {/* Top navigation items - scrollable */}
       <div className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         <SectionLabel label="Structure" />
         <NavLink to="/" label="Dashboard" />
         <NavLink to="/extensions" label="Extensions" />
         <NavLink to="/collections" label="Collections" />
-        
-        <div className="my-3 border-t border-gray-800" />
-        
+
         <SectionLabel label="Builders" />
         <NavLink to="/fields" label="Fields" />
         <NavLink to="/forms" label="Forms" />
         <NavLink to="/views" label="Views" />
       </div>
-      
+
       {/* Bottom items - always visible at bottom */}
-      <div className="p-2 space-y-0.5 border-t border-gray-800">
+      <div className="p-2 space-y-0.5">
         <SectionLabel label="Help" />
         <a
           href="https://arcwp.ca/docs"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center px-3 py-2 rounded text-sm text-gray-400 hover:text-gray-100 hover:bg-gray-800 transition-colors"
+          className="gateway-sidebar-link flex items-center px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
         >
           Documentation
         </a>
@@ -62,14 +93,20 @@ export default function Sidebar() {
           href="https://arcwp.ca/support"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center px-3 py-2 rounded text-sm text-gray-400 hover:text-gray-100 hover:bg-gray-800 transition-colors"
+          className="gateway-sidebar-link flex items-center px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
         >
           Support
         </a>
-        
-        <div className="my-2 border-t border-gray-800" />
-        
+
         <NavLink to="/settings" label="Settings" icon={Settings2} />
+
+        <button
+          onClick={onToggleExpand}
+          className="gateway-sidebar-link w-full flex items-center gap-2 px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
+        >
+          {isExpanded ? <Minimize2 className="h-3.5 w-3.5 shrink-0" /> : <Maximize2 className="h-3.5 w-3.5 shrink-0" />}
+          {isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
+        </button>
       </div>
     </nav>
   )

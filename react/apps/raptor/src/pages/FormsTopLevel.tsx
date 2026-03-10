@@ -1,11 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
+import { GlobalFormsGraph } from './Forms/GlobalFormsGraph'
+import { BuilderLayout } from './Builders/BuilderLayout'
 import { apiUrl, authHeaders } from '../lib/api'
 import type { Collection } from '../lib/object_types'
 
 export default function FormsTopLevelPage() {
+  const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
   const navigate = useNavigate()
   const { activeCollectionKey, collections: workspaceCollections, isCollectionsLoading } = useWorkspace()
 
@@ -65,39 +68,100 @@ export default function FormsTopLevelPage() {
   const totalForms = groups.reduce((sum, g) => sum + g.forms.length, 0)
 
   return (
-    <section className="px-12 py-8 text-white">
-      <h1 className="text-2xl font-bold text-neutral-200">Forms</h1>
-      <p className="mt-2 text-sm text-gray-400">All Collections · {totalForms} forms</p>
-
-      {groups.length === 0 ? (
-        <div className="mt-8 rounded border border-gray-800 bg-gray-900/40 p-4 text-sm text-gray-400">
-          No forms found yet.
-        </div>
+    <BuilderLayout>
+      {/* Graph - edge to edge */}
+      {viewMode === 'graph' ? (
+        <GlobalFormsGraph />
       ) : (
-        <div className="mt-8 space-y-5">
-          {groups.map(({ collection, forms }) => (
-            <article key={collection.id} className="rounded border border-gray-800 bg-gray-900/40 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-200">{collection.title}</h2>
-                <Link
-                  to="/collections/$collectionKey/forms"
-                  params={{ collectionKey: collection.collection_key }}
-                  className="text-xs font-semibold uppercase tracking-wider text-cyan-300 hover:text-cyan-200"
-                >
-                  Open Builder
-                </Link>
-              </div>
-              <ul className="space-y-2">
-                {forms.map((form) => (
-                  <li key={`${collection.id}-${form.form_key}`} className="text-sm text-gray-300">
-                    {form.title || form.form_key}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
+        <div className="w-full h-full overflow-auto bg-gray-950 px-12 py-8 text-white">
+          <h1 className="text-2xl font-bold text-neutral-200 mb-2">Forms</h1>
+          <p className="text-sm text-gray-400 mb-8">All Collections · {totalForms} forms</p>
+          {groups.length === 0 ? (
+            <div className="rounded border border-gray-800 bg-gray-900/40 p-4 text-sm text-gray-400">
+              No forms found yet.
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {groups.map(({ collection, forms }) => (
+                <article key={collection.id} className="rounded border border-gray-800 bg-gray-900/40 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-200">{collection.title}</h2>
+                    <Link
+                      to="/collections/$collectionKey/forms"
+                      params={{ collectionKey: collection.collection_key }}
+                      className="text-xs font-semibold uppercase tracking-wider text-cyan-300 hover:text-cyan-200"
+                    >
+                      Open Builder
+                    </Link>
+                  </div>
+                  <ul className="space-y-2">
+                    {forms.map((form) => (
+                      <li key={`${collection.id}-${form.form_key}`} className="text-sm text-gray-300">
+                        {form.title || form.form_key}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </section>
+
+      {/* Floating topbar with collection selector and view toggle */}
+      <div
+        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-[#0f1216]/95 backdrop-blur-sm"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Collection</span>
+          <select
+            value={activeCollectionKey ?? ''}
+            onChange={(e) => {
+              const nextKey = e.target.value || null
+              navigate({
+                to: nextKey
+                  ? '/collections/$collectionKey/forms'
+                  : '/forms',
+                params: nextKey ? { collectionKey: nextKey } : undefined,
+              })
+            }}
+            className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            disabled={isCollectionsLoading}
+          >
+            <option value="">All Collections</option>
+            {workspaceCollections.map((c) => (
+              <option key={c.id} value={c.collection_key}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* View mode toggle on the right */}
+        <div className="flex gap-1 border border-gray-700 rounded p-1 bg-gray-900/50">
+          <button
+            onClick={() => setViewMode('graph')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              viewMode === 'graph'
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Graph
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              viewMode === 'list'
+                ? 'bg-gray-700 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            List
+          </button>
+        </div>
+      </div>
+    </BuilderLayout>
   )
 }

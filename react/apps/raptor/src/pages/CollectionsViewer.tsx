@@ -1,9 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import {
   ReactFlow,
   Controls,
-  MiniMap,
   Background,
   BackgroundVariant,
   useNodesState,
@@ -17,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
+import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
   layoutWithDagre,
@@ -692,11 +691,8 @@ export default function CollectionsViewer() {
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
-  const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null)
   const [activeExtensionId, setActiveExtensionId] = useState<number | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  
-  useEffect(() => { setCanvasHost(document.getElementById('gateway-raptor-canvas-host')) }, [])
 
   // Try to get active extension from URL params if available
   useEffect(() => {
@@ -891,34 +887,22 @@ export default function CollectionsViewer() {
 
   return (
     <>
-      {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
-      {canvasHost && createPortal(
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
-            fitView
-            fitViewOptions={{ padding: 0.25 }}
-            colorMode="dark"
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-            <Controls />
-            <MiniMap
-              nodeColor="#1e293b"
-              nodeStrokeColor="#334155"
-              maskColor="rgba(3,7,18,0.7)"
-              zoomable
-              pannable
-            />
-          </ReactFlow>
-        </div>,
-        canvasHost
-      )}
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
+        fitView
+        fitViewOptions={{ padding: 0.25 }}
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+        <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
+        <SharedMiniMap />
+      </ReactFlow>
 
       {panel?.mode === 'create'       && <CreatePanel activeExtensionId={activeExtensionId} onClose={closePanel} />}
       {panel?.mode === 'edit'         && <EditPanel   collKey={panel.key}   onClose={closePanel} />}

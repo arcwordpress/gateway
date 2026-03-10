@@ -2,8 +2,6 @@
 
 namespace Gateway\Admin;
 
-use Gateway\Plugin;
-
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
