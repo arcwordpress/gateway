@@ -69,11 +69,24 @@ export default function FieldsTopLevelPage() {
 
   return (
     <BuilderLayout>
-      {/* Graph - edge to edge */}
-      {viewMode === 'graph' ? (
+      <div
+        className={`absolute inset-0 transition-all duration-300 ease-out ${
+          viewMode === 'graph'
+            ? 'opacity-100 blur-0 pointer-events-auto'
+            : 'opacity-25 blur-[2px] pointer-events-none'
+        }`}
+      >
         <GlobalFieldsGraph />
-      ) : (
-        <div className="w-full h-full overflow-auto bg-gray-950 px-12 py-8 text-white">
+      </div>
+
+      <div
+        className={`absolute top-20 left-4 right-4 bottom-4 z-[5] transition-all duration-300 ease-out ${
+          viewMode === 'list'
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-1 pointer-events-none'
+        }`}
+      >
+        <div className="w-full h-full overflow-auto rounded border border-gray-800 bg-gray-950/70 backdrop-blur-sm px-8 py-6 text-white">
           <h1 className="text-2xl font-bold text-neutral-200 mb-2">Fields</h1>
           <p className="text-sm text-gray-400 mb-8">All Collections · {totalFields} fields</p>
           {groups.length === 0 ? (
@@ -106,11 +119,11 @@ export default function FieldsTopLevelPage() {
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* Floating topbar with collection selector and view toggle */}
       <div
-        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-[#0f1216]/95 backdrop-blur-sm"
+        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-dark backdrop-blur-sm"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
       >
         <div className="flex items-center gap-2">
@@ -126,7 +139,7 @@ export default function FieldsTopLevelPage() {
                 params: nextKey ? { collectionKey: nextKey } : undefined,
               })
             }}
-            className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className="h-8 min-w-[240px] rounded border border-gray-700 bg-dark px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
             disabled={isCollectionsLoading}
           >
             <option value="">All Collections</option>

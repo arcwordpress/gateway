@@ -40,14 +40,14 @@ export function BuilderTopBar() {
 
   return (
     <div
-      className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded border border-gray-700 bg-[#0f1216]/95 backdrop-blur-sm"
+      className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded border border-gray-700 bg-dark backdrop-blur-sm"
       style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
     >
-      <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Collection</span>
+      <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Active Collection</span>
       <select
         value={activeCollectionKey ?? ''}
         onChange={(e) => handleCollectionChange(e.target.value)}
-        className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+        className="h-8 min-w-[240px] rounded border border-zinc-400 bg-zinc-700 px-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
         disabled={isCollectionsLoading}
       >
         <option value="">All Collections</option>
@@ -57,9 +57,6 @@ export function BuilderTopBar() {
           </option>
         ))}
       </select>
-      <span className="text-[11px] text-gray-300">
-        {activeCollectionTitle ?? 'Global scope'}
-      </span>
     </div>
   )
 }

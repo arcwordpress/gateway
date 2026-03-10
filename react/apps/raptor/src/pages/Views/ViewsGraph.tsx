@@ -235,7 +235,6 @@ export function Graph() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           fitView
-          colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />

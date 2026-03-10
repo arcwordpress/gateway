@@ -69,7 +69,7 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
             value={localKey || ''}
             onChange={(e) => handleKeyChange(e.target.value)}
             placeholder={settings.has_anthropic_key ? '••••••••••••••••' : 'sk-ant-...'}
-            className="w-full bg-[#0f1216] text-gray-100 border border-gray-700 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+            className="w-full bg-zinc-700 text-gray-100 border border-gray-700 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
           />
           <button
             type="button"

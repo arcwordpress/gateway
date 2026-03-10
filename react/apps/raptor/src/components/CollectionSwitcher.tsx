@@ -9,7 +9,7 @@ export function CollectionSwitcher() {
       <select
         value={activeCollectionKey ?? ''}
         onChange={(e) => setActiveCollectionKey(e.target.value || null)}
-        className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+        className="h-8 min-w-[240px] rounded border border-gray-700 bg-zinc-700 px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
         disabled={isCollectionsLoading}
       >
         <option value="">All Collections</option>

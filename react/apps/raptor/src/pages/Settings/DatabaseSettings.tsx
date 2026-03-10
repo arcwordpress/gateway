@@ -56,7 +56,7 @@ export default function DatabaseSettings({ settings, onChange }: DatabaseSetting
         <select
           value={settings.db_driver}
           onChange={(e) => onChange('db_driver', e.target.value)}
-          className="w-full bg-[#0f1216] text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full bg-dark text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="mysql">MySQL</option>
           <option value="sqlite">SQLite</option>
@@ -78,7 +78,7 @@ export default function DatabaseSettings({ settings, onChange }: DatabaseSetting
           value={settings.connection_port}
           onChange={(e) => onChange('connection_port', e.target.value)}
           placeholder="Leave empty for default"
-          className="w-full bg-[#0f1216] text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+          className="w-full bg-dark text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
         />
         <p className="text-sm text-gray-400">
           Leave empty to use system default port (MySQL: 3306, SQLite: N/A)
@@ -96,7 +96,7 @@ export default function DatabaseSettings({ settings, onChange }: DatabaseSetting
             value={settings.sqlite_path}
             onChange={(e) => onChange('sqlite_path', e.target.value)}
             placeholder="e.g., /path/to/database.sqlite"
-            className="w-full bg-[#0f1216] text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+            className="w-full bg-dark text-gray-100 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
           />
           <p className="text-sm text-gray-400">
             Full path to your SQLite database file

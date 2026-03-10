@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
@@ -14,17 +14,31 @@ import { apiUrl, authHeaders } from '../../lib/api'
  * Global fields graph showing all fields from all collections
  */
 export function GlobalFieldsGraph() {
-  const graphContainerRef = useRef<HTMLDivElement | null>(null)
-  const [graphHeightPx, setGraphHeightPx] = useState(480)
-
   // Load all collections
   const { data: collections = [] } = useQuery<Collection[]>({
     queryKey: ['raptor-collections-global-graph'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
-      if (!res.ok) return []
-      const json = await res.json() as { collections?: Collection[] }
-      return json.collections ?? []
+      const listRoute = 'gateway/v1/raptor/collection'
+      const listRes = await fetch(apiUrl(listRoute), { headers: authHeaders() })
+      if (!listRes.ok) return []
+
+      const listJson = await listRes.json() as {
+        collections?: Array<{ collection_key: string }>
+      }
+      const items = listJson.collections ?? []
+      if (items.length === 0) return []
+
+      const details = await Promise.all(
+        items.map(async (item) => {
+          const detailRoute = `gateway/v1/raptor/collection/${item.collection_key}`
+          const detailRes = await fetch(apiUrl(detailRoute), { headers: authHeaders() })
+          if (!detailRes.ok) return null
+          const detailJson = await detailRes.json() as { collection?: Collection }
+          return detailJson.collection ?? null
+        }),
+      )
+
+      return details.filter((c): c is Collection => c !== null)
     },
   })
 
@@ -98,8 +112,8 @@ export function GlobalFieldsGraph() {
   console.log('[GlobalFieldsGraph] Computed nodes:', computedNodes.length, 'edges:', computedEdges.length)
 
   // Initialize with computed nodes (not empty!)
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(computedNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(computedEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(computedEdges)
 
   // Sync when collections change
   useEffect(() => {
@@ -108,49 +122,28 @@ export function GlobalFieldsGraph() {
     setEdges(computedEdges)
   }, [collections, setNodes, setEdges])
 
-  // Sync graph height with container
-  useEffect(() => {
-    const updateHeight = () => {
-      if (graphContainerRef.current) {
-        const rect = graphContainerRef.current.getBoundingClientRect()
-        const available = window.innerHeight - rect.top
-        setGraphHeightPx(Math.max(available, 400))
-      }
-    }
-
-    updateHeight()
-    const resizeObserver = new ResizeObserver(updateHeight)
-    if (graphContainerRef.current) {
-      resizeObserver.observe(graphContainerRef.current)
-    }
-
-    return () => resizeObserver.disconnect()
-  }, [])
-
   const recordsCtx: RecordsCtxValue = {
     status: 'loaded' as RecordsStatus,
-    recordList: [],
+    count: 0,
+    onRefresh: () => {},
   }
 
   return (
-    <div
-      ref={graphContainerRef}
-      className="w-full"
-      style={{ height: `${graphHeightPx}px` }}
-    >
-      <RecordsCtx.Provider value={recordsCtx}>
+    <RecordsCtx.Provider value={recordsCtx}>
+      <div style={{ width: '100%', height: '100%' }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           fitView
+          proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} />
-          <Controls />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
           <SharedMiniMap />
         </ReactFlow>
-      </RecordsCtx.Provider>
-    </div>
+      </div>
+    </RecordsCtx.Provider>
   )
 }

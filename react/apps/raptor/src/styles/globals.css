@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --app-bg: #1d2327; /* WordPress Admin dark background — single source of truth */
+  --app-bg: #1d2327;
+}
+
+.bg-dark {
+  background-color: var(--app-bg);
 }
 
 /* Scoped to the raptor root so WP admin styles don't leak in */
@@ -54,8 +58,8 @@
 /* Override WordPress core select styles for collection switcher */
 #gateway-raptor-canvas-host select,
 #gateway-raptor-root select {
-  background-color: #0f1216 !important;
-  background-image: none !important;
+  background-color: var(--app-bg) !important;
+  /* background-image: none !important; */
   color: #f3f4f6 !important;
   border-color: #374151 !important;
   border-radius: 0.375rem !important;

@@ -110,7 +110,7 @@ export default function FormsTopLevelPage() {
 
       {/* Floating topbar with collection selector and view toggle */}
       <div
-        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-[#0f1216]/95 backdrop-blur-sm"
+        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-dark backdrop-blur-sm"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
       >
         <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function FormsTopLevelPage() {
                 params: nextKey ? { collectionKey: nextKey } : undefined,
               })
             }}
-            className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className="h-8 min-w-[240px] rounded border border-gray-700 bg-dark px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
             disabled={isCollectionsLoading}
           >
             <option value="">All Collections</option>

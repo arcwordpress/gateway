@@ -896,7 +896,6 @@ export default function CollectionsViewer() {
         nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
         fitView
         fitViewOptions={{ padding: 0.25 }}
-        colorMode="dark"
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
