@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 
 // ─── Gateway icon (same SVG used for the WP admin menu entry) ──────────────
 
@@ -37,14 +38,14 @@ interface LogoProps {
 
 function Logo({ wordmark = true, className }: LogoProps) {
   return (
-    <div className={`flex items-center gap-2.5 ${className ?? ''}`}>
+    <Link to="/" className={`flex items-center gap-2.5 ${className ?? ''} hover:opacity-80 transition-opacity`}>
       <GatewayIcon className="w-5 h-4 text-gray-100 shrink-0" />
       {wordmark && (
         <span className="font-semibold text-gray-100 text-sm tracking-widest select-none uppercase">
           Gateway
         </span>
       )}
-    </div>
+    </Link>
   )
 }
 

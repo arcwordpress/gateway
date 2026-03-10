@@ -21,7 +21,6 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
-import { appConfig } from '../config'
 import { useApp } from '../context/app'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -224,11 +223,10 @@ function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
 // ─── Panel geometry ──────────────────────────────────────────────────────────
 
 function usePanelGeometry() {
-  const { isExpanded } = useApp()
-  const constrained = appConfig.isWordPress && !isExpanded
+  const { shellTopOffset, shellHeightCss } = useApp()
   return {
-    top:    constrained ? 32  : 0,
-    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+    top: shellTopOffset,
+    height: shellHeightCss,
   }
 }
 
@@ -973,7 +971,7 @@ export default function Collections() {
             colorMode="dark"
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
+            <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
             <Controls />
             <MiniMap
               nodeColor="#1e293b"

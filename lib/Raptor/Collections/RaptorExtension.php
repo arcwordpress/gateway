@@ -40,7 +40,7 @@ class RaptorExtension extends \Gateway\Collection
     // Internal Gateway table — excluded from public collection listings.
     protected $core = true;
 
-    // No public REST routes — managed exclusively via Exta\Routes.
+    // No public REST routes — managed exclusively via ExtensionCrudRoutes.
     protected $routes = [
         'enabled' => false,
     ];

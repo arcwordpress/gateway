@@ -19,6 +19,7 @@ import FormsPage from './pages/Forms'
 import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsTopLevelPage from './pages/ViewsTopLevel'
 import FormsTopLevelPage from './pages/FormsTopLevel'
+import SettingsPage from './pages/Settings'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -102,6 +103,12 @@ export const formsRoute = createRoute({
   component: FormsPage,
 })
 
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: SettingsPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   //collectionsRoute,
@@ -114,6 +121,7 @@ const routeTree = rootRoute.addChildren([
   formsRoute,
   viewsRoute,
   viewDesignRoute,
+  settingsRoute,
 ])
 
 const history = appConfig.isWordPress

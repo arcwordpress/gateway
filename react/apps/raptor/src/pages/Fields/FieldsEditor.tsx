@@ -10,7 +10,6 @@ import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { useApp } from '../../context/app'
-import { appConfig } from '../../config'
 import { HandleIcon } from '../../components/HandleIcon'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
 
@@ -81,11 +80,10 @@ const baseInput =
 // ─── Panel geometry ───────────────────────────────────────────────────────────
 
 function usePanelGeometry() {
-  const { isExpanded } = useApp()
-  const constrained = appConfig.isWordPress && !isExpanded
+  const { shellTopOffset, shellHeightCss } = useApp()
   return {
-    top:    constrained ? 32  : 0,
-    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+    top: shellTopOffset,
+    height: shellHeightCss,
   }
 }
 

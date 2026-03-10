@@ -1,13 +1,13 @@
 <?php
 
-namespace Gateway\Exta;
+namespace Gateway\Raptor\Endpoints;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class Routes
+class ExtensionCrudRoutes
 {
     /**
      * Initialize routes

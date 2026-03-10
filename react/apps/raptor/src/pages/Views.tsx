@@ -10,14 +10,7 @@ function CollectionName() {
   return <h1 className="!text-neutral-300 text-2xl font-bold">{collection?.title}</h1>
 }
 
-function TopBar() {
-  return (
-    <section className="flex gap-6 border border-neutral-600 px-6 py-3 rounded mb-12">
-      <a href="https://arcwp.ca/docs">DOCS</a>
-      <a href="https://arcwp.ca/support">SUPPORT</a>
-    </section>
-  )
-}
+
 
 function Files() {
   return (
@@ -48,7 +41,6 @@ function ViewsContent({ editSurface, setEditSurface }: {
 
   return (
     <section className="text-white px-12">
-      <TopBar />
       <div>
         <h4 className="font-medium mb-2">COLLECTION</h4>
         <CollectionName />

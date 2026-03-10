@@ -238,9 +238,17 @@ export function Graph() {
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
-          <Controls />
-          <MiniMap zoomable pannable />
+          <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+          <Controls position="top-right" style={{ marginTop: 8, marginRight: 8 }} />
+          <MiniMap
+            position="bottom-right"
+            nodeColor="#6b7280"
+            nodeStrokeColor="#9ca3af"
+            maskColor="rgba(17,24,39,0.45)"
+            zoomable
+            pannable
+            style={{ marginBottom: 10, marginRight: 8 }}
+          />
         </ReactFlow>
       </div>
     </RecordsCtx.Provider>

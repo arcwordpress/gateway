@@ -47,3 +47,31 @@
 #gateway-raptor-root .react-flow__controls-button svg {
   fill: currentColor;
 }
+
+/* Override WordPress core select styles for collection switcher */
+#gateway-raptor-canvas-host select,
+#gateway-raptor-root select {
+  background-color: #0f1216 !important;
+  background-image: none !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+  border-radius: 0.375rem !important;
+  padding: 0 0.5rem !important;
+  min-height: auto !important;
+  line-height: normal !important;
+  font-size: 0.75rem !important;
+  box-shadow: none !important;
+}
+
+#gateway-raptor-canvas-host select:focus,
+#gateway-raptor-root select:focus {
+  outline: none !important;
+  border-color: #6b7280 !important;
+  box-shadow: 0 0 0 1px #6b7280 !important;
+}
+
+#gateway-raptor-canvas-host select option,
+#gateway-raptor-root select option {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+}

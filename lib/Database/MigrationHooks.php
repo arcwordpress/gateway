@@ -108,6 +108,7 @@ class MigrationHooks
     {
         \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
         \Gateway\Migrations\GatewayCollectionUserMigration::create();
+        \Gateway\Migrations\GatewaySettingsMigration::create();
         \Gateway\Raptor\Migrations\RaptorExtensionMigration::create();
         \Gateway\Raptor\Migrations\RaptorCollectionMigration::create();
         \Gateway\Raptor\Migrations\RaptorFieldListMigration::create();
@@ -117,5 +118,8 @@ class MigrationHooks
         \Gateway\Raptor\Migrations\RaptorFormListMigration::create();
         \Gateway\Raptor\Migrations\RaptorFormMigration::create();
         \Gateway\Raptor\Migrations\RaptorFormFieldMigration::create();
+        
+        // Migrate existing WordPress options to the settings collection
+        \Gateway\Migrations\GatewaySettingsMigration::migrateFromOptions(false);
     }
 }

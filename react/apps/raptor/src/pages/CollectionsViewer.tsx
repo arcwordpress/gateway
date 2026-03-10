@@ -16,7 +16,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
-import { appConfig } from '../config'
 import { useApp } from '../context/app'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
@@ -71,11 +70,10 @@ function toKey(title: string): string {
 // ─── Panel geometry ──────────────────────────────────────────────────────────
 
 function usePanelGeometry() {
-  const { isExpanded } = useApp()
-  const constrained = appConfig.isWordPress && !isExpanded
+  const { shellTopOffset, shellHeightCss } = useApp()
   return {
-    top:    constrained ? 32  : 0,
-    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+    top: shellTopOffset,
+    height: shellHeightCss,
   }
 }
 
@@ -908,7 +906,7 @@ export default function CollectionsViewer() {
             colorMode="dark"
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Lines} gap={24} color="#1f2937" />
+            <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
             <Controls />
             <MiniMap
               nodeColor="#1e293b"

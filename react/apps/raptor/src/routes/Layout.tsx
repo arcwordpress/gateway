@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { appConfig } from '../config'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -22,20 +23,55 @@ import { apiUrl, authHeaders } from '../lib/api'
 export default function Layout() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeCollectionKey, setActiveCollectionKey] = useState<string | null>(null)
+  const [baseTopOffset, setBaseTopOffset] = useState(0)
+  const [baseShellHeightPx, setBaseShellHeightPx] = useState(0)
   const navigate = useNavigate()
   const toggleExpand = () => setIsExpanded((v) => !v)
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isDashboardRoute = pathname === '/'
 
   // In normal WP embed mode the host page provides a fixed 32 px admin bar.
   // When expanded we take over the full viewport with fixed positioning.
   const isWP = appConfig.isWordPress
-
   useEffect(() => {
-    if (!isWP) return
+    const updateShellGeometry = () => {
+      const wpAdminBar = document.getElementById('wpadminbar')
+      const topbarHeight = isWP ? (wpAdminBar ? wpAdminBar.offsetHeight : 32) : 0
+      const available = Math.max(window.innerHeight - topbarHeight, 0)
+      setBaseTopOffset(topbarHeight)
+      setBaseShellHeightPx(available)
+    }
+
+    updateShellGeometry()
+    window.addEventListener('resize', updateShellGeometry)
+
     const root = document.getElementById('gateway-raptor-root')
-    if (!root) return
-    root.style.marginLeft = '-20px'
+    if (root) {
+      root.style.marginLeft = '-20px'
+      root.style.boxSizing = 'border-box'
+      root.style.borderLeft = '1px solid #4b5563'
+    }
+
+    // Hide WordPress footer completely
+    const wpFooter = document.getElementById('wpfooter')
+    if (wpFooter) {
+      wpFooter.style.display = 'none'
+    }
+
+    // Remove all padding from wpbody-content
+    const wpBodyContent = document.querySelector('#wpbody-content') as HTMLElement
+    if (wpBodyContent) {
+      wpBodyContent.style.paddingBottom = '0'
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateShellGeometry)
+    }
   }, [isWP])
+
+  const shellTopOffset = isExpanded ? 0 : baseTopOffset
+  const shellHeightPx = isExpanded ? window.innerHeight : baseShellHeightPx
+  const shellHeightCss = isExpanded ? '100vh' : `${baseShellHeightPx}px`
 
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<WorkspaceCollection[]>({
     queryKey: ['raptor-collections'],
@@ -112,15 +148,15 @@ export default function Layout() {
   const activeCollectionTitle = collections.find((c) => c.collection_key === activeCollectionKey)?.title
 
   return (
-    <AppContext.Provider value={{ isExpanded, toggleExpand }}>
+    <AppContext.Provider value={{ isExpanded, toggleExpand, shellTopOffset, shellHeightCss, shellHeightPx }}>
       <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading }}>
       <div
         id="gateway-raptor-canvas-host"
-        className="flex text-gray-100 relative"
+        className="flex items-stretch text-gray-100 relative"
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
-            : { height: isWP ? 'calc(100vh - 32px)' : '100vh', backgroundColor: 'var(--app-bg)' }
+            : { height: shellHeightCss, backgroundColor: 'var(--app-bg)' }
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
@@ -130,41 +166,50 @@ export default function Layout() {
           </div>
 
           <Sidebar />
+
+          <div className="p-3">
+            <button
+              onClick={toggleExpand}
+              className="w-full flex items-center justify-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-gray-500 hover:text-gray-200 transition-colors px-2 py-1.5 rounded hover:bg-gray-800"
+            >
+              {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              {isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
+            </button>
+          </div>
         </aside>
 
         {/* ── Right column: HEADER + FOOTER only ─────────── */} 
         <div className="flex flex-col flex-1 min-w-0 min-h-0 relative">
           {/* HEADER */}
-          <div className="h-12 shrink-0 flex items-center justify-between px-4 relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-500">Collection</span>
-              <select
-                value={activeCollectionKey ?? ''}
-                onChange={(e) => handleCollectionChange(e.target.value)}
-                className="h-8 min-w-[240px] rounded border border-gray-700 bg-gray-900 px-2 text-xs text-gray-200"
-                disabled={isCollectionsLoading}
-              >
-                <option value="">All Collections</option>
-                {collections.map((c) => (
-                  <option key={c.id} value={c.collection_key}>
-                    {c.title}
-                  </option>
-                ))}
-              </select>
-              <span className="text-[11px] text-gray-500">
-                {activeCollectionTitle ?? 'Global scope'}
-              </span>
-            </div>
-            <button
-              onClick={toggleExpand}
-              className="text-[11px] font-semibold tracking-widest uppercase text-gray-500 hover:text-gray-200 transition-colors px-2 py-1"
-            >
-              {isExpanded ? 'Exit' : 'Expand'}
-            </button>
+          <div
+            className="h-12 shrink-0 flex items-center px-4 relative z-[1]"
+            style={{ backgroundColor: 'var(--app-bg)' }}
+          >
+            {!isDashboardRoute ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Collection</span>
+                <select
+                  value={activeCollectionKey ?? ''}
+                  onChange={(e) => handleCollectionChange(e.target.value)}
+                  className="h-8 min-w-[240px] rounded border border-gray-700 bg-[#0f1216] px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                  disabled={isCollectionsLoading}
+                >
+                  <option value="">All Collections</option>
+                  {collections.map((c) => (
+                    <option key={c.id} value={c.collection_key}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-[11px] text-gray-300">
+                  {activeCollectionTitle ?? 'Global scope'}
+                </span>
+              </div>
+            ) : null}
           </div>
 
           {/* Outlet for other pages, transparent so Graph canvas shows through */}
-          <div className="flex-1 min-h-0">
+          <div id="gateway-raptor-outlet" className="relative flex-1 overflow-y-auto min-h-0">
             <Outlet />
           </div>
 

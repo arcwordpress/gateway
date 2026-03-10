@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   ReactFlow,
@@ -12,14 +12,15 @@ import {
   useEdgesState,
   type Node,
   type Edge,
+  type ReactFlowInstance,
   type NodeProps,
   type NodeTypes,
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
-import { apiUrl, authHeaders } from '../lib/api'
 import { appConfig } from '../config'
+import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -197,11 +198,10 @@ function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
 // WP admin bar is always 32 px. In normal embed mode the panel must not
 // cover it. In expanded mode (app fills the full viewport) it can go full height.
 function usePanelGeometry() {
-  const { isExpanded } = useApp()
-  const constrained = appConfig.isWordPress && !isExpanded
+  const { shellTopOffset, shellHeightCss } = useApp()
   return {
-    top:    constrained ? 32  : 0,
-    height: constrained ? 'calc(100vh - 32px)' : '100vh',
+    top: shellTopOffset,
+    height: shellHeightCss,
   }
 }
 
@@ -633,8 +633,13 @@ export default function Graph() {
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<Node, Edge> | null>(null)
+  const lastFitSignatureRef = useRef('')
   const [canvasHost, setCanvasHost] = useState<HTMLElement | null>(null)
-  useEffect(() => { setCanvasHost(document.getElementById('gateway-raptor-canvas-host')) }, [])
+  useEffect(() => {
+    const outletHost = document.getElementById('gateway-raptor-outlet')
+    setCanvasHost(outletHost ?? document.getElementById('gateway-raptor-canvas-host'))
+  }, [])
 
   const { data: extensions } = useQuery<Extension[]>({
     queryKey: ['extensions'],
@@ -650,6 +655,7 @@ export default function Graph() {
   const openEdit   = useCallback((key: string) => setPanel({ mode: 'edit',   key }), [])
   const openDelete = useCallback((key: string) => setPanel({ mode: 'delete', key }), [])
   const closePanel = useCallback(() => setPanel(null), [])
+  const extensionsSignature = (extensions ?? []).map((ext) => ext.key).join('|')
 
   useEffect(() => {
     const exts = extensions ?? []
@@ -722,30 +728,48 @@ export default function Graph() {
     setEdges(rawEdges)
   }, [extensions, openCreate, openEdit, openDelete, setNodes, setEdges])
 
+  useEffect(() => {
+    if (!rfInstance || nodes.length === 0) return
+
+    const fitSignature = `${extensionsSignature}:${nodes.length}:${edges.length}`
+    if (lastFitSignatureRef.current === fitSignature) return
+    lastFitSignatureRef.current = fitSignature
+
+    // Run after the new node layout is committed so first render matches Fit View.
+    const frame = requestAnimationFrame(() => {
+      rfInstance.fitView({ padding: 0.25, duration: 0 })
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [rfInstance, extensionsSignature, nodes.length, edges.length])
+
   return (
     <>
       {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
       {canvasHost && createPortal(
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 5 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onInit={setRfInstance}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.25 }}
           colorMode="dark"
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
-          <Controls />
+          <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+          <Controls position="top-right" style={{ marginTop: 8, marginRight: 8 }} />
           <MiniMap
-            nodeColor="#1e293b"
-            nodeStrokeColor="#334155"
-            maskColor="rgba(3,7,18,0.7)"
+            position="bottom-right"
+            nodeColor="#6b7280"
+            nodeStrokeColor="#9ca3af"
+            maskColor="rgba(17,24,39,0.45)"
             zoomable
             pannable
+            style={{ marginBottom: 10, marginRight: 8 }}
           />
         </ReactFlow>
         </div>,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
@@ -8,6 +8,7 @@ import { ReactFlow, Controls, MiniMap, Background, BackgroundVariant } from '@xy
 import { JsonSchemaProp, RecordsStatus, RecordsCtxValue, RecordsCtx, FIELD_GRAPH_NODE_TYPES, AdminCollectionInfo } from '../../components/graph_node_types'
 import { Field } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
+import { useApp } from '../../context/app'
 import { useCollection, useFields } from './FieldsPageContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -63,9 +64,12 @@ function fieldsToSchemaProps(fields: Field[]): JsonSchemaProp[] {
 // ─── Graph component ──────────────────────────────────────────────────────────
 
 export function Graph() {
+  const { shellTopOffset } = useApp()
   const { collection } = useCollection()
   const { fields }     = useFields()
   const collKey = collection?.collection_key ?? ''
+  const graphContainerRef = useRef<HTMLDivElement | null>(null)
+  const [graphHeightPx, setGraphHeightPx] = useState(480)
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collKey],
@@ -175,9 +179,31 @@ export function Graph() {
 
   const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 
+  useEffect(() => {
+    const updateGraphHeight = () => {
+      const el = graphContainerRef.current
+      if (!el) return
+      const top = el.getBoundingClientRect().top
+      const available = Math.max(window.innerHeight - Math.max(top, shellTopOffset), 320)
+      setGraphHeightPx(available)
+    }
+
+    updateGraphHeight()
+    window.addEventListener('resize', updateGraphHeight)
+
+    const scrollParent = graphContainerRef.current?.closest('.overflow-y-auto')
+    const onScroll = () => updateGraphHeight()
+    if (scrollParent) scrollParent.addEventListener('scroll', onScroll)
+
+    return () => {
+      window.removeEventListener('resize', updateGraphHeight)
+      if (scrollParent) scrollParent.removeEventListener('scroll', onScroll)
+    }
+  }, [shellTopOffset])
+
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <div style={{ width: '100%', height: '100vh' }}>
+      <div ref={graphContainerRef} style={{ width: '100%', height: `${graphHeightPx}px` }}>
         <ReactFlow
           nodes={graphNodes}
           edges={graphEdges}

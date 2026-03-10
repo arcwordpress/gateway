@@ -84,7 +84,7 @@ class Plugin
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
-        new Exta\Routes();
+        new Raptor\Endpoints\ExtensionCrudRoutes();
         new Raptor\Endpoints\ExtensionRoutes();
         new Raptor\Endpoints\CollectionRoutes();
         new Raptor\Endpoints\FieldListRoutes();
@@ -128,8 +128,7 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\Records::init();
-        Admin\Builder::init(); // Restored Builder admin link
-        Admin\Raptor::init();  // Gateway 2 — Raptor node graph editor (Vite/React Flow)
+        Admin\Builder::init(); // Builder now runs the Raptor app
         Package\PackageMenus::init();
 
         // Initialize front-end forms
@@ -216,6 +215,7 @@ class Plugin
         // Always register internal structural collections first.
         Collections\Gateway\BlockTypeUser::register();
         Collections\Gateway\CollectionUser::register();
+        Collections\GatewaySettingsCollection::register();
 
         // Register core WP collections, gated by CollectionUser active flag.
         foreach (self::coreCollectionMap() as $key => $class) {

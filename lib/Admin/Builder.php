@@ -17,7 +17,7 @@ class Builder
     public static function init()
     {
         add_action('admin_menu', [__CLASS__, 'addBuilderMenu'], 20);
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueExtaApp']);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueRaptorApp']);
     }
 
     /**
@@ -36,53 +36,60 @@ class Builder
     }
 
     /**
-     * Enqueue the React exta app for builder page
+     * Enqueue the React Raptor app for builder page
      */
-    public static function enqueueExtaApp($hook)
+    public static function enqueueRaptorApp($hook)
     {
         // Only load on the builder page
         if ($hook !== 'gateway_page_gateway-builder') {
             return;
         }
 
-        $asset_file = GATEWAY_PATH . 'react/apps/exta/build/index.asset.php';
+        $build_path = GATEWAY_PATH . 'react/apps/raptor/build/';
+        $manifest_file = $build_path . '.vite/manifest.json';
 
-        if (!file_exists($asset_file)) {
+        if (!file_exists($manifest_file)) {
             return;
         }
 
-        $asset = require $asset_file;
-        $build_url = GATEWAY_URL . 'react/apps/exta/build/';
+        /** @var array<string, array{file: string, css?: string[]}> $manifest */
+        $manifest = json_decode((string) file_get_contents($manifest_file), true);
+        $entry = $manifest['src/main.tsx'] ?? null;
+
+        if (!$entry || empty($entry['file'])) {
+            return;
+        }
+
+        $build_url = GATEWAY_URL . 'react/apps/raptor/build/';
+        $version = $entry['file'];
 
         wp_enqueue_script(
-            'gateway-exta',
-            $build_url . 'index.js',
-            $asset['dependencies'],
-            $asset['version'],
+            'gateway-raptor-builder',
+            $build_url . $entry['file'],
+            [],
+            $version,
             true
         );
 
-        wp_enqueue_style(
-            'gateway-exta-index',
-            $build_url . 'index.css',
-            [],
-            $asset['version']
-        );
-
-        wp_enqueue_style(
-            'gateway-exta-style-index',
-            $build_url . 'style-index.css',
-            [],
-            $asset['version']
-        );
+        foreach ($entry['css'] ?? [] as $i => $css_file) {
+            wp_enqueue_style(
+                'gateway-raptor-builder-css-' . $i,
+                $build_url . $css_file,
+                [],
+                $version
+            );
+        }
 
         // Localize script with API settings and nonce
         wp_localize_script(
-            'gateway-exta',
-            'gatewayAdminScript',
+            'gateway-raptor-builder',
+            'raptorConfig',
             [
                 'apiUrl' => rest_url(),
                 'nonce' => wp_create_nonce('wp_rest'),
+                'version' => GATEWAY_VERSION,
+                'isWordPress' => true,
+                'schemaUrl' => GATEWAY_URL . 'schemas/raptor/extension.json',
             ]
         );
     }
@@ -93,7 +100,7 @@ class Builder
     public static function renderBuilderPage()
     {
         ?>
-        <div id="gateway-exta-root"></div>
+        <div id="gateway-raptor-root" data-route="/extensions"></div>
         <?php
     }
 }
