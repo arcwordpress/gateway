@@ -1,13 +1,12 @@
 import { createRoot } from '@wordpress/element';
 import App from './App';
 
-// Find all elements with data-gateway-grid attribute
-const gridElements = document.querySelectorAll('[data-gateway-grid]');
+// Mount on every [data-gateway-view] element on the page
+const viewElements = document.querySelectorAll('[data-gateway-view]');
 
-gridElements.forEach((element) => {
-  const collectionKey = element.getAttribute('data-collection');
+viewElements.forEach((element) => {
+  const viewKey = element.getAttribute('data-view');
 
-  // Read optional config from data-config attribute
   const configAttr = element.getAttribute('data-config');
   let config = {};
 
@@ -15,18 +14,16 @@ gridElements.forEach((element) => {
     try {
       config = JSON.parse(configAttr);
     } catch (e) {
-      console.error('Failed to parse grid config:', e);
+      console.error('Failed to parse view config:', e);
     }
   }
 
-  if (collectionKey) {
+  if (viewKey) {
     const root = createRoot(element);
     root.render(
       <App
-        collectionKey={collectionKey}
-        showFilters={config.showFilters !== false} // Default to true unless explicitly false
-        externalFilters={config.externalFilters || {}}
-        enabledViews={config.enabledViews}
+        viewKey={viewKey}
+        showFilters={config.showFilters !== false}
       />
     );
   }

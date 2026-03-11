@@ -5,9 +5,8 @@
   "title": "React View",
   "category": "gateway",
   "icon": "grid-view",
-  "description": "Embeds the Gateway React grid app and renders a collection using the configured view.",
+  "description": "Embeds the Gateway React view app and renders a registered view.",
   "keywords": [
-    "grid",
     "view",
     "collection",
     "react",
@@ -15,7 +14,7 @@
   ],
   "textdomain": "gateway",
   "attributes": {
-    "collectionKey": {
+    "viewKey": {
       "type": "string",
       "default": ""
     },

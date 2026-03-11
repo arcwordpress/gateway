@@ -3,22 +3,27 @@ import { Navigate } from 'react-router-dom';
 /**
  * Generate routes configuration
  * @param {Object} props - Route configuration props
- * @param {string} props.collectionKey - Collection identifier
+ * @param {string} props.viewKey - View identifier
+ * @param {string} props.collectionKey - Collection identifier (derived from view)
+ * @param {Array|null} props.viewColumns - Column definitions from the view
  * @param {boolean} props.showFilters - Whether to show filters
  * @param {Object} props.externalFilters - External filter values
  * @param {Array} props.enabledViews - Array of enabled view types
- * @param {Function} props.GridView - GridView component
+ * @param {Function} props.ViewGrid - ViewGrid component
  * @returns {Array} Array of route configurations
  */
-export const generateRoutes = ({ 
-  collectionKey, 
-  showFilters, 
-  externalFilters, 
-  enabledViews, 
-  GridView 
+export const generateRoutes = ({
+  viewKey,
+  collectionKey,
+  viewColumns,
+  showFilters,
+  externalFilters,
+  enabledViews,
+  ViewGrid,
 }) => {
   const sharedProps = {
     collectionKey,
+    viewColumns,
     showFilters,
     externalFilters,
     enabledViews,
@@ -27,11 +32,11 @@ export const generateRoutes = ({
   return [
     {
       path: '/:viewType/:recordId',
-      element: <GridView {...sharedProps} />,
+      element: <ViewGrid {...sharedProps} />,
     },
     {
       path: '/:viewType',
-      element: <GridView {...sharedProps} />,
+      element: <ViewGrid {...sharedProps} />,
     },
     {
       path: '/',
