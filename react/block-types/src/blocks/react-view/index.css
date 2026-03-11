@@ -1,0 +1,70 @@
+/**
+ * Gateway React View – editor styles
+ */
+
+.gateway-react-view {
+	border: 1px dashed #c3c4c7;
+	border-radius: 2px;
+	min-height: 80px;
+}
+
+/* Placeholder shown when no collection is selected */
+.gateway-react-view__placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 24px 16px;
+	color: #757575;
+	gap: 8px;
+}
+
+.gateway-react-view__placeholder .dashicons {
+	font-size: 32px;
+	width: 32px;
+	height: 32px;
+	color: #c3c4c7;
+}
+
+.gateway-react-view__placeholder p {
+	margin: 0;
+	font-size: 13px;
+}
+
+/* Preview shown when a collection is selected */
+.gateway-react-view__preview {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: #f6f7f7;
+}
+
+.gateway-react-view__preview-icon .dashicons {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+	color: #2271b1;
+}
+
+.gateway-react-view__preview-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.gateway-react-view__preview-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1e1e1e;
+}
+
+.gateway-react-view__preview-collection {
+	font-size: 12px;
+	color: #2271b1;
+}
+
+.gateway-react-view__preview-note {
+	font-size: 11px;
+	color: #757575;
+}
