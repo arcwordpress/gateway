@@ -25,6 +25,7 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
       }}
     >
       <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
 
       <div
         style={{

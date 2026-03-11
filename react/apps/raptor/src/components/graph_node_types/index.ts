@@ -7,6 +7,8 @@ import { JsonSchemaNode } from './JsonSchemaNode'
 import { ViewPreviewNode } from './ViewPreviewNode'
 import { ViewListLabelNode } from './ViewListLabelNode'
 import { ViewNode } from './ViewNode'
+import { RenderStrategyNode } from './RenderStrategyNode'
+import { RenderOutputNode } from './RenderOutputNode'
 
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
@@ -34,6 +36,8 @@ export type {
   CollNodeType,
   FieldsNodeType,
   ViewsNodeType,
+  RenderStrategyNodeType,
+  RenderOutputNodeType,
 } from './types'
 export type { ViewListLabelNodeType } from './ViewListLabelNode'
 export type { ViewNodeType } from './ViewNode'
@@ -50,6 +54,8 @@ export { JsonSchemaNode } from './JsonSchemaNode'
 export { ViewPreviewNode } from './ViewPreviewNode'
 export { ViewListLabelNode } from './ViewListLabelNode'
 export { ViewNode } from './ViewNode'
+export { RenderStrategyNode } from './RenderStrategyNode'
+export { RenderOutputNode } from './RenderOutputNode'
 
 // Export Collections Viewer nodes
 export { CollectionsLabelNode } from './CollectionsRootNode'
@@ -69,6 +75,8 @@ export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
   viewPreviewNode:      ViewPreviewNode,
   viewListLabel:        ViewListLabelNode,
   viewNode:             ViewNode,
+  renderStrategyNode:   RenderStrategyNode,
+  renderOutputNode:     RenderOutputNode,
 }
 
 // Export Collections Viewer node types registry

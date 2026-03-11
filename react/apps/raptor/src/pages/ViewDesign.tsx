@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import {
@@ -87,6 +87,22 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const allFields = collection?.field_list?.fields ?? []
 
+  const [activeRenderStrategy, setActiveRenderStrategy] = useState<string | null>(null)
+
+  const handleSelectStrategy = useRef((type: string) => {
+    setActiveRenderStrategy((prev) => (prev === type ? null : type))
+  })
+
+  const { data: renderStrategies } = useQuery<{ type: string }[]>({
+    queryKey: ['render-strategies'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/views/renders'), { headers: authHeaders() })
+      if (!res.ok) return []
+      return res.json() as Promise<{ type: string }[]>
+    },
+    staleTime: Infinity,
+  })
+
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collectionKey],
     queryFn: async () => {
@@ -132,6 +148,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     Object.fromEntries(viewColumns.map((col) => [col, getRowValue(row, col)]))
   )
 
+  const strategies = renderStrategies ?? []
+
   const computedNodes: Node[] = [
     {
       id: 'view-preview',
@@ -141,18 +159,60 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         columns: viewColumns,
         rows: previewRows,
       },
-      position: { x: 300, y: 200 },
+      position: { x: 50, y: 80 },
       style: { width: 720 },
     },
+    {
+      id: 'render-strategy',
+      type: 'renderStrategyNode',
+      data: {
+        strategies,
+        activeStrategy: activeRenderStrategy,
+        onSelect: handleSelectStrategy.current,
+      },
+      position: { x: 240, y: 520 },
+    },
+    ...(activeRenderStrategy
+      ? [
+          {
+            id: 'render-output',
+            type: 'renderOutputNode',
+            data: {
+              strategyType: activeRenderStrategy,
+              viewKey,
+            },
+            position: { x: 560, y: 660 },
+          },
+        ]
+      : []),
   ]
 
-  const computedEdges: Edge[] = []
+  const computedEdges: Edge[] = [
+    {
+      id: 'edge-preview-to-strategy',
+      source: 'view-preview',
+      target: 'render-strategy',
+      type: 'default',
+      style: { stroke: '#334155' },
+    },
+    ...(activeRenderStrategy
+      ? [
+          {
+            id: 'edge-strategy-to-output',
+            source: 'render-strategy',
+            target: 'render-output',
+            type: 'default',
+            style: { stroke: '#475569' },
+          },
+        ]
+      : []),
+  ]
 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView])              // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, activeRenderStrategy])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeRenderStrategy])                                 // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
     status: recordsStatus,
