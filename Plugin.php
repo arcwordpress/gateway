@@ -138,6 +138,9 @@ class Plugin
         // Initialize experimental rendering system
         Render\Render::init();
 
+        // Initialize stable view shortcode registry: [gateway_view key="..."]
+        Views\Render\Shortcode\Shortcode::init();
+
         // Initialize front-end views with Interactivity API
         Raptor\ViewRenderer::init();
 

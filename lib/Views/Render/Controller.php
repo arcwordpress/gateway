@@ -33,10 +33,8 @@ class Controller
         self::$instance = $instance;
     }
 
-    public function render(\Gateway\View $view, array $context = []): string
+    public function render(\Gateway\View $view, string $type, array $context = []): string
     {
-        $type = $view->getRenderType();
-
         if (!$this->register->has($type)) {
             throw new \InvalidArgumentException(
                 sprintf("No render strategy registered for view type '%s'", esc_html($type))
@@ -57,27 +55,6 @@ class Controller
     public function getRegister(): Register
     {
         return $this->register;
-    }
-
-    public function registerView(\Gateway\View $view): void
-    {
-        $type = $view->getRenderType();
-
-        if ($type === 'shortcode') {
-            $this->registerShortcode($view);
-        }
-    }
-
-    private function registerShortcode(\Gateway\View $view): void
-    {
-        $key = $view->getKey();
-        
-        add_shortcode($key, function($atts, $content = '') use ($view) {
-            return $this->render($view, [
-                'atts' => (array) $atts,
-                'content' => $content,
-            ]);
-        });
     }
 
     private function registerDefaultStrategies(): void

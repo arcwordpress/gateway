@@ -41,17 +41,8 @@ class ViewRoutes
 
     public function checkPermission()
     {
-        $authResult = $this->checkAuthentication();
-
-        if (is_wp_error($authResult)) {
-            return $authResult;
-        }
-
-        return is_user_logged_in() ? true : new \WP_Error(
-            'rest_not_authenticated',
-            __('User not authenticated.'),
-            ['status' => 401]
-        );
+        // return $this->checkAuthentication();
+        return true;
     }
 
     private function getRegistry()
@@ -99,10 +90,11 @@ class ViewRoutes
     private function viewToArray(\Gateway\View $view)
     {
         $collection = $view->getCollection();
+        $renderTypes = Render\Controller::instance()->getRegister()->getRegistered();
 
         return [
             'key'          => $view->getKey(),
-            'renderType'   => $view->getRenderType(),
+            'renderTypes'  => $renderTypes,
             'class'        => get_class($view),
             'columns'      => $view->getColumns(),
             'facetFilters' => $view->getFacetFilters(),

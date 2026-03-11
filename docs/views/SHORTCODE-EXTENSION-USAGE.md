@@ -2,7 +2,7 @@
 
 Minimal flow:
 
-1. Define a View with render type `shortcode`
+1. Define a View (data source, columns, facets, sort)
 2. Register the View once
 3. Render with WordPress shortcode (`do_shortcode` or `[orders]` in content)
 
@@ -16,11 +16,6 @@ class OrdersView extends \Gateway\View
     protected $key = 'orders';
     protected $source = \Gateway\Collections\WP\Post::class;
     protected $columns = ['ID', 'post_title', 'post_date'];
-
-    public function getRenderType(): string
-    {
-        return 'shortcode';
-    }
 }
 
 add_action('gateway_loaded', function () {
@@ -30,10 +25,12 @@ add_action('gateway_loaded', function () {
 
 ```php
 // PHP render
-echo do_shortcode('[orders]');
+echo do_shortcode('[gateway_view key="orders"]');
 ```
 
 Notes:
 
-- `OrdersView::register()` registers the View and wires shortcode handling.
-- Shortcode output is produced by the shortcode render strategy.
+- The View does not declare a render strategy.
+- The shortcode integration explicitly uses the `shortcode` render strategy.
+- The shortcode tag is always `gateway_view`; the `key` attribute matches `$key`.
+- `OrdersView::register()` adds the view to the registry so the shortcode can resolve it.

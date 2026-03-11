@@ -3,7 +3,6 @@
 namespace Gateway\Raptor;
 
 use Gateway\Raptor\Collections\RaptorView;
-use Gateway\Raptor\Collections\RaptorCollection;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -16,7 +15,6 @@ class ViewRenderer
      */
     public static function init()
     {
-        add_shortcode('gateway_view', [__CLASS__, 'renderViewShortcode']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueScripts']);
         add_action('wp_enqueue_scripts', [__CLASS__, 'enqueueStyles']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueAdminScripts']);
