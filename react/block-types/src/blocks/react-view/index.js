@@ -4,9 +4,9 @@
  * Block name: gateway/react-view
  * Title:      React View
  *
- * Embeds the Gateway React grid app and lets the editor pick a collection.
- * The frontend is rendered server-side (render.php) which outputs the
- * data-gateway-grid mount point and enqueues the grid app assets.
+ * Lets the editor pick a registered View.  The frontend is rendered
+ * server-side (render.php) which outputs the data-gateway-view mount point
+ * and enqueues the view app assets.
  */
 
 import { registerBlockType } from '@wordpress/blocks';
@@ -25,37 +25,35 @@ import metadata from './block.json';
 
 registerBlockType( metadata.name, {
 	edit: ( { attributes, setAttributes } ) => {
-		const { collectionKey, showFilters } = attributes;
+		const { viewKey, showFilters } = attributes;
 
-		const [ collections, setCollections ] = useState( [] );
+		const [ views, setViews ] = useState( [] );
 		const [ loading, setLoading ] = useState( true );
 		const [ error, setError ] = useState( null );
 
 		const blockProps = useBlockProps( { className: 'gateway-react-view' } );
 
 		useEffect( () => {
-			apiFetch( { path: '/gateway/v1/collections' } )
+			apiFetch( { path: '/gateway/v1/views' } )
 				.then( ( response ) => {
-					setCollections( response.data || response || [] );
+					setViews( Array.isArray( response ) ? response : [] );
 				} )
 				.catch( ( err ) => {
-					console.error( '[Gateway React View] Failed to load collections:', err );
+					console.error( '[Gateway React View] Failed to load views:', err );
 					setError( err.message );
 				} )
 				.finally( () => setLoading( false ) );
 		}, [] );
 
-		const collectionOptions = [
-			{ label: __( 'Select a collection…', 'gateway' ), value: '' },
-			...collections.map( ( col ) => ( {
-				label: col.titlePlural || col.title || col.key,
-				value: col.key,
+		const viewOptions = [
+			{ label: __( 'Select a view…', 'gateway' ), value: '' },
+			...views.map( ( view ) => ( {
+				label: view.key,
+				value: view.key,
 			} ) ),
 		];
 
-		const selectedCollection = collections.find(
-			( col ) => col.key === collectionKey
-		);
+		const selectedView = views.find( ( v ) => v.key === viewKey );
 
 		return (
 			<>
@@ -64,20 +62,20 @@ registerBlockType( metadata.name, {
 						{ loading ? (
 							<p>
 								<Spinner />{ ' ' }
-								{ __( 'Loading collections…', 'gateway' ) }
+								{ __( 'Loading views…', 'gateway' ) }
 							</p>
 						) : error ? (
 							<p style={ { color: '#cc1818' } }>{ error }</p>
 						) : (
 							<SelectControl
-								label={ __( 'Collection', 'gateway' ) }
-								value={ collectionKey }
-								options={ collectionOptions }
+								label={ __( 'View', 'gateway' ) }
+								value={ viewKey }
+								options={ viewOptions }
 								onChange={ ( value ) =>
-									setAttributes( { collectionKey: value } )
+									setAttributes( { viewKey: value } )
 								}
 								help={ __(
-									'Select the collection to display in the React grid.',
+									'Select the view to display.',
 									'gateway'
 								) }
 							/>
@@ -90,7 +88,7 @@ registerBlockType( metadata.name, {
 								setAttributes( { showFilters: value } )
 							}
 							help={ __(
-								'Display filter controls above the grid.',
+								'Display filter controls above the view.',
 								'gateway'
 							) }
 						/>
@@ -98,7 +96,7 @@ registerBlockType( metadata.name, {
 				</InspectorControls>
 
 				<div { ...blockProps }>
-					{ collectionKey ? (
+					{ viewKey ? (
 						<div className="gateway-react-view__preview">
 							<div className="gateway-react-view__preview-icon">
 								<span className="dashicons dashicons-grid-view" />
@@ -108,15 +106,13 @@ registerBlockType( metadata.name, {
 									{ __( 'React View', 'gateway' ) }
 								</strong>
 								<span className="gateway-react-view__preview-collection">
-									{ selectedCollection
-										? selectedCollection.titlePlural ||
-										  selectedCollection.title ||
-										  collectionKey
-										: collectionKey }
+									{ selectedView
+										? selectedView.key
+										: viewKey }
 								</span>
 								<span className="gateway-react-view__preview-note">
 									{ __(
-										'Renders as an interactive React grid on the frontend.',
+										'Renders as an interactive view on the frontend.',
 										'gateway'
 									) }
 								</span>
@@ -127,7 +123,7 @@ registerBlockType( metadata.name, {
 							<span className="dashicons dashicons-grid-view" />
 							<p>
 								{ __(
-									'Select a collection in the block settings →',
+									'Select a view in the block settings →',
 									'gateway'
 								) }
 							</p>

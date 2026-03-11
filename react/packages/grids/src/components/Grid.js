@@ -21,6 +21,7 @@ import ViewSwitcher from './ViewSwitcher';
 /**
  * @param {object} props
  * @param {string} props.collectionKey
+ * @param {Array} [props.viewColumns] - Column definitions from the View object (overrides auto-generation)
  * @param {function} [props.onEdit]
  * @param {function} [props.onDelete]
  * @param {function} [props.onView]
@@ -38,6 +39,7 @@ import ViewSwitcher from './ViewSwitcher';
  */
 const Grid = ({
   collectionKey,
+  viewColumns = null,
   onEdit,
   onDelete,
   onView,
@@ -159,11 +161,15 @@ const Grid = ({
     setDeleteConfirm(null);
   };
 
-  // Generate columns from collection configuration
+  // Generate columns: use view-defined columns if provided, otherwise auto-generate from collection
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
-    const baseColumns = generateColumns(collection);
+    // viewColumns are [{field, label, sortable}] — same shape as collection.grid.columns
+    const source = viewColumns
+      ? { ...collection, grid: { columns: viewColumns } }
+      : collection;
+    const baseColumns = generateColumns(source);
 
     if (showActions && (onEdit || onDelete || onView)) {
       baseColumns.push({
@@ -206,7 +212,7 @@ const Grid = ({
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit, onDelete, onView]);
+  }, [data, collection, viewColumns, showActions, onEdit, onDelete, onView]);
 
   // Context value for child components
   const gridContextValue = useMemo(() => ({

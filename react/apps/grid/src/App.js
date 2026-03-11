@@ -1,23 +1,19 @@
 import { useState, useEffect } from '@wordpress/element';
-import { HashRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Grid, ViewSwitcher, SingleView, Modal } from '@arcwp/gateway-grids';
+import { HashRouter as Router, Routes, Route, useParams, useNavigate } from 'react-router-dom';
+import { Grid, SingleView, Modal } from '@arcwp/gateway-grids';
+import { viewApi } from '@arcwp/gateway-data';
 import stateManager from './StateManager';
 import { generateRoutes, normalizeViews, navigationHelpers } from './router';
 import '@arcwp/gateway-grids/style.css';
 import '@arcwp/gateway-grids/board-styles.css';
 
-const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews }) => {
+const ViewGrid = ({ collectionKey, viewColumns, showFilters, enabledViews }) => {
   const { viewType = 'table', recordId } = useParams();
   const navigate = useNavigate();
 
-  // Ensure viewType is valid
   const validViewType = enabledViews && enabledViews.includes(viewType)
     ? viewType
     : (enabledViews && enabledViews[0]) || 'table';
-
-  const handleViewChange = (newViewType) => {
-    navigationHelpers.changeView(navigate, newViewType);
-  };
 
   const handleViewRecord = (record) => {
     navigationHelpers.viewRecord(navigate, validViewType, record);
@@ -28,59 +24,71 @@ const GridView = ({ collectionKey, showFilters, externalFilters, enabledViews })
   };
 
   return (
-    <>
-      <ViewSwitcher
-        currentView={validViewType}
-        onViewChange={handleViewChange}
-        enabledViews={enabledViews}
-      />
-      <Grid
-        collectionKey={collectionKey}
-        showActions={false}
-        showFilters={showFilters}
-        externalFilters={externalFilters}
-        viewType={validViewType}
-        onView={handleViewRecord}
-      >
-        {recordId && (
-          <Modal isOpen={true} onClose={handleCloseModal}>
-            <SingleView recordId={recordId} />
-          </Modal>
-        )}
-      </Grid>
-    </>
+    <Grid
+      collectionKey={collectionKey}
+      viewColumns={viewColumns}
+      showActions={false}
+      showFilters={showFilters}
+      viewType={validViewType}
+      onView={handleViewRecord}
+      enabledViews={enabledViews}
+    >
+      {recordId && (
+        <Modal isOpen={true} onClose={handleCloseModal}>
+          <SingleView recordId={recordId} />
+        </Modal>
+      )}
+    </Grid>
   );
 };
 
-const App = ({ 
-  collectionKey, 
-  showFilters = true, 
-  externalFilters: initialExternalFilters = {},
-  enabledViews = ['table', 'board'] // Can be false, true (all), or array of view types
-}) => {
-  const [externalFilters, setExternalFilters] = useState(initialExternalFilters);
+const App = ({ viewKey, showFilters = true }) => {
+  const [view, setView] = useState(null);
+  const [error, setError] = useState(null);
+  const [externalFilters, setExternalFilters] = useState({});
 
-  const normalizedViews = normalizeViews(enabledViews);
-
-  // Subscribe to external filter changes from filters app
+  // Fetch view metadata (columns, collection key, etc.)
   useEffect(() => {
-    if (!collectionKey) return;
+    if (!viewKey) return;
+    viewApi.fetchView(viewKey)
+      .then(setView)
+      .catch((err) => {
+        console.error('[Gateway View] Failed to load view:', err);
+        setError(err.message);
+      });
+  }, [viewKey]);
 
-    const unsubscribe = stateManager.subscribe(collectionKey, ({ type, value }) => {
+  // Subscribe to cross-component filter updates keyed by viewKey
+  useEffect(() => {
+    if (!viewKey) return;
+    const unsubscribe = stateManager.subscribe(viewKey, ({ type, value }) => {
       if (type === 'filters') {
         setExternalFilters(value);
       }
     });
-
     return unsubscribe;
-  }, [collectionKey]);
+  }, [viewKey]);
+
+  if (error) {
+    return <div className="gateway-view__error">View error: {error}</div>;
+  }
+
+  if (!view) {
+    return <div className="gateway-view__loading">Loading view…</div>;
+  }
+
+  const collectionKey = view.collection;
+  const viewColumns = view.columns && view.columns.length > 0 ? view.columns : null;
+  const enabledViews = normalizeViews(['table', 'board']);
 
   const routes = generateRoutes({
+    viewKey,
     collectionKey,
+    viewColumns,
     showFilters,
     externalFilters,
-    enabledViews: normalizedViews,
-    GridView,
+    enabledViews,
+    ViewGrid,
   });
 
   return (

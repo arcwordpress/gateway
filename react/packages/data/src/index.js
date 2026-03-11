@@ -14,4 +14,5 @@ export { default as RecordsContext } from './contexts/RecordsContext';
 
 // API services (for direct API calls without hooks)
 export * as collectionApi from './services/collectionApi';
+export * as viewApi from './services/viewApi';
 export { getApiClient } from './services/apiClient';

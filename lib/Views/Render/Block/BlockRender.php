@@ -38,10 +38,9 @@ class BlockRender extends \Gateway\Views\Render\Strategy
             return $output;
         }
 
-        $collection     = $view->getCollection();
-        $collection_key = $collection ? $collection->getKey() : '';
+        $view_key = $view->getKey();
 
-        if ( empty( $collection_key ) ) {
+        if ( empty( $view_key ) ) {
             return '';
         }
 
@@ -50,8 +49,8 @@ class BlockRender extends \Gateway\Views\Render\Strategy
         $block_markup = sprintf(
             '<!-- wp:gateway/react-view %s /-->',
             wp_json_encode( [
-                'collectionKey' => $collection_key,
-                'showFilters'   => $show_filters,
+                'viewKey'     => $view_key,
+                'showFilters' => $show_filters,
             ] )
         );
 
