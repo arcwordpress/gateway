@@ -1,36 +1,34 @@
 <?php
 
-namespace Gateway\Views;
+namespace Gateway\Views\Render;
 
 use Gateway\REST\RouteAuthenticationTrait;
-use Gateway\Plugin;
 
-class ViewRoutes
+class Endpoints
 {
     use RouteAuthenticationTrait;
 
-    private $registry = null;
+    private $register = null;
 
     public function __construct()
     {
-        new Render\Endpoints();
-        add_action('rest_api_init', [$this, 'registerRoutes']);
+        add_action('rest_api_init', [$this, 'registerEndpoints']);
     }
 
-    public function registerRoutes()
+    public function registerEndpoints()
     {
-        register_rest_route('gateway/v1', '/views', [
+        register_rest_route('gateway/v1', '/views/renders', [
             'methods' => 'GET',
             'callback' => [$this, 'getMany'],
             'permission_callback' => [$this, 'checkPermission'],
         ]);
 
-        register_rest_route('gateway/v1', '/views/(?P<key>[a-z_]+)', [
+        register_rest_route('gateway/v1', '/views/renders/(?P<type>[a-z_]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getOne'],
             'permission_callback' => [$this, 'checkPermission'],
             'args' => [
-                'key' => [
+                'type' => [
                     'required' => true,
                     'type' => 'string',
                     'pattern' => '^[a-z_]+$',
@@ -54,15 +52,15 @@ class ViewRoutes
         );
     }
 
-    private function getRegistry()
+    private function getRegister()
     {
-        if ($this->registry !== null) {
-            return $this->registry;
+        if ($this->register !== null) {
+            return $this->register;
         }
 
-        $this->registry = Plugin::getInstance()->getViewRegistry();
+        $this->register = Controller::instance()->getRegister();
 
-        return $this->registry;
+        return $this->register;
     }
 
     public function getMany(\WP_REST_Request $request)
@@ -70,8 +68,8 @@ class ViewRoutes
         try {
             $result = [];
 
-            foreach ($this->getRegistry()->getAll() as $view) {
-                $result[] = $this->viewToArray($view);
+            foreach ($this->getRegister()->getAll() as $strategy) {
+                $result[] = $this->strategyToArray($strategy);
             }
 
             return new \WP_REST_Response($result, 200);
@@ -83,32 +81,24 @@ class ViewRoutes
     public function getOne(\WP_REST_Request $request)
     {
         try {
-            $key = $request->get_param('key');
-            $registry = $this->getRegistry();
+            $type = $request->get_param('type');
+            $register = $this->getRegister();
 
-            if (!$registry->has($key)) {
-                return new \WP_REST_Response(['error' => 'View not found'], 404);
+            if (!$register->has($type)) {
+                return new \WP_REST_Response(['error' => 'Render strategy not found'], 404);
             }
 
-            return new \WP_REST_Response($this->viewToArray($registry->get($key)), 200);
+            return new \WP_REST_Response($this->strategyToArray($register->get($type)), 200);
         } catch (\Exception $e) {
             return new \WP_REST_Response(['error' => $e->getMessage()], 500);
         }
     }
 
-    private function viewToArray(\Gateway\View $view)
+    private function strategyToArray(Strategy $strategy): array
     {
-        $collection = $view->getCollection();
-
         return [
-            'key'          => $view->getKey(),
-            'renderType'   => $view->getRenderType(),
-            'class'        => get_class($view),
-            'columns'      => $view->getColumns(),
-            'facetFilters' => $view->getFacetFilters(),
-            'defaultSort'  => $view->getDefaultSort(),
-            'perPage'      => $view->getPerPage(),
-            'collection'   => $collection ? $collection->getKey() : null,
+            'type' => $strategy->getType(),
+            'class' => get_class($strategy),
         ];
     }
 }

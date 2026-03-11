@@ -74,9 +74,16 @@ abstract class View
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
     }
 
+    abstract public function getRenderType(): string;
+
     public static function register()
     {
         $instance = new static();
-        return \Gateway\Plugin::getInstance()->getViewRegistry()->register($instance);
+        
+        \Gateway\Plugin::getInstance()->getViewRegistry()->register($instance);
+        
+        \Gateway\Views\Render\Controller::instance()->registerView($instance);
+
+        return $instance;
     }
 }
