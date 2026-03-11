@@ -1,5 +1,7 @@
 <?php
 
+/* Marked for elimination - this class is an early experiment, it is deprecated in favor of View Renders. */
+
 namespace Gateway\Raptor;
 
 use Gateway\Raptor\Collections\RaptorView;
