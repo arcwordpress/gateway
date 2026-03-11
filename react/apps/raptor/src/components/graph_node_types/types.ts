@@ -62,3 +62,20 @@ export type ViewsNodeType = Node<
   },
   'viewsNode'
 >
+
+export type RenderStrategyNodeType = Node<
+  {
+    strategies: { type: string }[]
+    activeStrategy: string | null
+    onSelect: (type: string) => void
+  },
+  'renderStrategyNode'
+>
+
+export type RenderOutputNodeType = Node<
+  {
+    strategyType: string
+    viewKey: string
+  },
+  'renderOutputNode'
+>
