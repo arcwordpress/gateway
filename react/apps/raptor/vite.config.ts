@@ -6,6 +6,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@wordpress/element': 'react',
+      '@wordpress/i18n': new URL('./src/lib/wp-i18n-stub.js', import.meta.url).pathname,
     },
   },
   build: {
