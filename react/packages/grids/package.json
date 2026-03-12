@@ -11,7 +11,7 @@
       "require": "./dist/index.js"
     },
     "./style.css": "./dist/style.css",
-    "./board-styles.css": "./dist/board-styles.css"
+
   },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
@@ -41,7 +41,6 @@
     "@arcwp/gateway-data": "file:../data",
     "@arcwp/gateway-forms": "file:../forms",
     "@tanstack/react-table": "^8.20.5",
-    "@asseinfo/react-kanban": "^2.2.0",
     "axios": "^1.6.2"
   },
   "peerDependencies": {
