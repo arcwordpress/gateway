@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGridContext } from '../context/GridContext';
 import TableView from './view-types/TableView';
-import BoardView from './view-types/BoardView';
 import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
@@ -31,8 +30,7 @@ import ViewSwitcher from './ViewSwitcher';
  * @param {boolean} [props.showFilters]
  * @param {object} [props.externalFilters]
  * @param {string} [props.viewType]
- * @param {object} [props.boardConfig]
- * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
+ *@param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
  * @param {string} [props.title] - Title to display in the grid toolbar
  * @param {React.ReactNode} [props.toolbarActions] - Custom toolbar actions (e.g., create button)
  * @param {React.ReactNode} [props.children]
@@ -48,7 +46,6 @@ const Grid = ({
   showActions = true,
   showFilters = true,
   viewType = 'table',
-  boardConfig = {},
   singleViewComponent = SingleView,
   title = '',
   toolbarActions = null,
@@ -274,7 +271,7 @@ const Grid = ({
             <ViewSwitcher
               currentView={currentView}
               onViewChange={setCurrentView}
-              enabledViews={['table', 'board', 'list', 'cards']}
+              enabledViews={['table', 'list', 'cards']}
             />
             <input
               type="search"
@@ -302,10 +299,6 @@ const Grid = ({
           let ViewComponent;
           let viewProps;
           switch (currentView) {
-            case 'board':
-              ViewComponent = BoardView;
-              viewProps = { config: boardConfig, onView, singleViewComponent };
-              break;
             case 'list':
               ViewComponent = ListView;
               viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };

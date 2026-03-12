@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { router } from './router'
 import './styles/globals.css'
 import '@arcwp/gateway-grids/style.css'
-import '@arcwp/gateway-grids/board-styles.css'
 
 // Bridge raptorConfig → gatewayAdminScript so the studio packages
 // (@arcwp/gateway-data, gateway-forms, gateway-grids) can find auth config.
