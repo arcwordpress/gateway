@@ -126,11 +126,11 @@ export default function Layout() {
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
-            : { height: shellHeightCss, backgroundColor: 'var(--app-bg)' }
+            : { minHeight: shellHeightCss, backgroundColor: 'var(--app-bg)' }
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
-        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col h-full relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col self-stretch relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
           <div className="px-4 py-4 border-b border-gray-800">
             <Header.Logo />
           </div>
