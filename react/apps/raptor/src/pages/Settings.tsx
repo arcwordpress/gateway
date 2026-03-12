@@ -94,7 +94,7 @@ export default function Settings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-gray-400">Loading settings...</div>
+        <div className="text-zinc-400">Loading settings...</div>
       </div>
     )
   }
@@ -113,14 +113,14 @@ export default function Settings() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-        <h1 className="text-xl font-semibold text-gray-100">Settings</h1>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <h1 className="text-xl font-semibold text-zinc-100">Settings</h1>
         <div className="flex items-center gap-3">
           {updateMutation.isPending && (
-            <span className="text-sm text-blue-400">Saving...</span>
+            <span className="text-sm text-zinc-400">Saving...</span>
           )}
           {updateMutation.isSuccess && Object.keys(pendingChanges).length === 0 && (
-            <span className="text-sm text-green-400">Saved</span>
+            <span className="text-sm text-zinc-300">Saved</span>
           )}
           {updateMutation.isError && (
             <span className="text-sm text-red-400">Save failed</span>
@@ -129,15 +129,15 @@ export default function Settings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-6 pt-4 border-b border-gray-800">
+      <div className="flex gap-1 px-6 pt-4 border-b border-zinc-800">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 text-sm font-medium transition-colors rounded-t-md ${
               activeTab === tab.key
-                ? 'bg-gray-800 text-gray-100'
-                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
+                ? 'bg-zinc-800 text-zinc-100'
+                : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50'
             }`}
           >
             {tab.label}

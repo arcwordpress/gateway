@@ -7,7 +7,7 @@ export default function RecordsList() {
   const navigate = useNavigate()
 
   return (
-    <div className="h-full overflow-auto bg-white">
+    <div className="h-full overflow-auto bg-[var(--app-bg)]">
       <Grid
         collectionKey={collectionKey}
         showFilters

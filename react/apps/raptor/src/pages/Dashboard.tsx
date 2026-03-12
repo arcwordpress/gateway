@@ -47,7 +47,7 @@ const quickActions = [
 function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[260px] text-sm text-gray-600">
+      <div className="flex items-center justify-center h-[260px] text-sm text-zinc-600">
         No request data available
       </div>
     )
@@ -64,7 +64,7 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
         <XAxis
           dataKey="week"
           tickFormatter={(w: string) => w.slice(5).replace('-', '/')}
-          tick={{ fontSize: 11, fill: '#6b7280', angle: -35, textAnchor: 'end', dy: 16 } as React.SVGProps<SVGTextElement>}
+          tick={{ fontSize: 11, fill: '#71717a', angle: -35, textAnchor: 'end', dy: 16 } as React.SVGProps<SVGTextElement>}
           axisLine={false}
           tickLine={false}
           interval={0}
@@ -75,7 +75,7 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
             const { x, y, payload } = props
             if (payload.value === minVal || payload.value === maxVal || payload.value === midVal) {
               return (
-                <text x={x - 4} y={y} dy={4} textAnchor="end" fontSize={11} fill="#6b7280">
+                <text x={x - 4} y={y} dy={4} textAnchor="end" fontSize={11} fill="#71717a">
                   {payload.value}
                 </text>
               )
@@ -101,9 +101,9 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
         <Line
           type="monotone"
           dataKey="total"
-          stroke="#3b82f6"
+          stroke="#71717a"
           strokeWidth={2.5}
-          dot={{ r: 3, fill: '#3b82f6' }}
+          dot={{ r: 3, fill: '#71717a' }}
           activeDot={{ r: 5 }}
         />
       </LineChart>
@@ -226,19 +226,19 @@ export default function Dashboard() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="border border-gray-700 shadow-md rounded-xl p-5 flex flex-col gap-3"
+            className="border border-zinc-700 shadow-md rounded-xl p-5 flex flex-col gap-3"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
                 {stat.label}
               </span>
-              <div className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-700 text-gray-600">
+              <div className="w-8 h-8 flex items-center justify-center rounded-md border border-zinc-700 text-zinc-600">
                 {iconMap[stat.iconKey]}
               </div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-100">{stat.isLoading ? '...' : stat.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{stat.delta}</div>
+              <div className="text-3xl font-bold text-zinc-100">{stat.isLoading ? '...' : stat.value}</div>
+              <div className="text-xs text-zinc-500 mt-1">{stat.delta}</div>
             </div>
           </div>
         ))}
@@ -246,33 +246,33 @@ export default function Dashboard() {
 
       {/* Chart + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 border border-gray-700 shadow-md rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-300 mb-1">API Requests</h2>
-          <p className="text-xs text-gray-600 mb-4">Last 8 weeks</p>
+        <div className="lg:col-span-2 border border-zinc-700 shadow-md rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-1">API Requests</h2>
+          <p className="text-xs text-zinc-600 mb-4">Last 8 weeks</p>
           {isAdminStatsLoading ? (
-            <div className="h-[260px] rounded-lg bg-gray-800/40 animate-pulse" />
+            <div className="h-[260px] rounded-lg bg-zinc-800/40 animate-pulse" />
           ) : (
             <ApiRequestsChart data={adminStats?.weeklyRequestTotals ?? []} />
           )}
         </div>
 
-        <div className="border border-gray-700 shadow-md rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-300 mb-4">Quick Actions</h2>
+        <div className="border border-zinc-700 shadow-md rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-4">Quick Actions</h2>
           <div className="space-y-2">
             {quickActions.map((action) => (
               <Link
                 key={action.label}
                 to={action.to}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:border-gray-600 border border-transparent transition-colors group"
+                className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:border-zinc-600 border border-transparent transition-colors group"
               >
-                <span className="text-gray-500 group-hover:text-blue-400 transition-colors text-base">
+                <span className="text-zinc-500 group-hover:text-zinc-400 transition-colors text-base">
                   {action.icon}
                 </span>
                 <div>
-                  <div className="text-sm font-medium text-gray-300 group-hover:text-gray-100">
+                  <div className="text-sm font-medium text-zinc-300 group-hover:text-zinc-100">
                     {action.label}
                   </div>
-                  <div className="text-xs text-gray-600">{action.description}</div>
+                  <div className="text-xs text-zinc-600">{action.description}</div>
                 </div>
               </Link>
             ))}
@@ -281,18 +281,18 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Collections */}
-      <div className="border border-gray-700 shadow-md rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-gray-300 mb-4">Recent Collections</h2>
+      <div className="border border-zinc-700 shadow-md rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-zinc-300 mb-4">Recent Collections</h2>
         <div className="space-y-3">
           {recentCollections.length === 0 && (
-            <p className="text-sm text-gray-500">No collections available yet.</p>
+            <p className="text-sm text-zinc-500">No collections available yet.</p>
           )}
           {recentCollections.map((collection) => (
             <div key={collection.collection_key} className="flex gap-3 items-start">
-              <div className="shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-blue-500" />
+              <div className="shrink-0 w-1.5 h-1.5 mt-2 rounded-full bg-zinc-500" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-300 leading-snug">{collection.title || collection.collection_key}</p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-sm text-zinc-300 leading-snug">{collection.title || collection.collection_key}</p>
+                <p className="text-xs text-zinc-600 mt-0.5">
                   {collection.field_list?.fields.length ?? 0} fields · {collection.view_list?.views.length ?? 0} views · {collection.form_list?.forms.length ?? 0} forms
                 </p>
               </div>
@@ -302,10 +302,10 @@ export default function Dashboard() {
       </div>
 
       {/* Status bar */}
-      <div className="border border-gray-700 shadow-md rounded-xl p-4 flex items-center justify-between text-xs text-gray-500">
+      <div className="border border-zinc-700 shadow-md rounded-xl p-4 flex items-center justify-between text-xs text-zinc-500">
         <span>{`Gateway v${appConfig.version || '...'}`}</span>
         <span className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-pulse" />
           {syncedAt ? `No errors logged as of ${syncedAt}` : 'No errors logged as of --'}
         </span>
       </div>

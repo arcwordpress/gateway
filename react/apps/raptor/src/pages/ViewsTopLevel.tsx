@@ -74,7 +74,7 @@ export default function ViewsTopLevelPage() {
         <GlobalViewsGraph />
       ) : (
         <div className="w-full h-full overflow-auto bg-gray-950 px-12 py-8 text-white">
-          <h1 className="text-2xl font-bold text-neutral-200 mb-2">Views</h1>
+          <h1 className="text-2xl font-bold text-zinc-200 mb-2">Views</h1>
           <p className="text-sm text-gray-400 mb-8">All Collections · {totalViews} views</p>
           {groups.length === 0 ? (
             <div className="rounded border border-gray-800 bg-gray-900/40 p-4 text-sm text-gray-400">
@@ -89,7 +89,7 @@ export default function ViewsTopLevelPage() {
                     <Link
                       to="/collections/$collectionKey/views"
                       params={{ collectionKey: collection.collection_key }}
-                      className="text-xs font-semibold uppercase tracking-wider text-cyan-300 hover:text-cyan-200"
+                      className="text-xs font-semibold uppercase tracking-wider text-zinc-300 hover:text-zinc-200"
                     >
                       Open Builder
                     </Link>

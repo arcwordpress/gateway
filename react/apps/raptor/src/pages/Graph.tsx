@@ -56,11 +56,11 @@ function SiteNode(_: NodeProps<SiteNodeType>) {
   return (
     <div
       style={{
-        background: '#1e40af',
-        border: '1px solid #3b82f6',
+        background: '#3f3f46',
+        border: '1px solid #52525b',
         borderRadius: 10,
         padding: '10px 20px',
-        color: '#eff6ff',
+        color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
         letterSpacing: '0.04em',
@@ -81,18 +81,18 @@ function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
   return (
     <div
       style={{
-        background: '#1e293b',
+        background: '#27272a',
         border: '1px solid #334155',
         borderRadius: 8,
         padding: '8px 14px',
         width: 180,
-        color: '#e2e8f0',
+        color: '#e4e4e7',
         fontSize: 13,
       }}
     >
       <Handle type="target" position={Position.Top} />
       <div style={{ fontWeight: 500 }}>{data.title}</div>
-      <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', marginTop: 2 }}>
+      <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
         {data.extKey}
       </div>
       <Handle type="source" position={Position.Bottom} />
@@ -108,7 +108,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
   return (
     <div
       style={{
-        background: '#111',
+        background: '#18181b',
         border: '1px solid #1e1e1e',
         borderRadius: 8,
         minWidth: 140,
@@ -126,7 +126,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
-          color: '#f0f0f0',
+          color: '#e4e4e7',
           userSelect: 'none',
         }}
       >
@@ -147,7 +147,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#e8e8e8',
+              color: '#d4d4d8',
               fontSize: 12,
               fontFamily: 'inherit',
             }}
@@ -226,8 +226,8 @@ function PanelShell({
         top,
         height,
         width: 320,
-        background: '#000',
-        borderLeft: '1px solid #1e293b',
+        background: 'var(--app-bg)',
+        borderLeft: '1px solid #3f3f46',
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
@@ -237,7 +237,7 @@ function PanelShell({
       <div
         style={{
           padding: '16px 20px 12px',
-          borderBottom: '1px solid #1e293b',
+          borderBottom: '1px solid #3f3f46',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -245,9 +245,9 @@ function PanelShell({
         }}
       >
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#e4e4e7' }}>{title}</div>
           {sub && (
-            <div style={{ fontSize: 11, color: '#475569', fontFamily: 'monospace', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
               {sub}
             </div>
           )}
@@ -258,7 +258,7 @@ function PanelShell({
           style={{
             background: 'none',
             border: 'none',
-            color: '#64748b',
+            color: '#71717a',
             cursor: 'pointer',
             fontSize: 16,
             lineHeight: 1,
@@ -280,15 +280,15 @@ function PanelShell({
 // ─── Shared form helpers ─────────────────────────────────────────────────────
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
+  'placeholder-zinc-600 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
 function FieldSkeleton() {
   return (
     <div className="space-y-1.5">
-      <div className="h-3 w-20 rounded bg-gray-900 animate-pulse" />
-      <div className="h-8 rounded-lg bg-gray-900 animate-pulse" />
+      <div className="h-3 w-20 rounded bg-zinc-900 animate-pulse" />
+      <div className="h-8 rounded-lg bg-zinc-900 animate-pulse" />
     </div>
   )
 }
@@ -371,10 +371,10 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
           ? Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)
           : schemaEntries.map(([name, prop]) => (
               <div key={name}>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
                   {prop.title}
                   {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
-                  <span className="ml-1.5 text-gray-600 font-mono font-normal">{name}</span>
+                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{name}</span>
                 </label>
                 <input
                   type="text"
@@ -386,15 +386,15 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
                 />
                 {name === 'title' && (
                   <div className="mt-3">
-                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                    <label className="block text-xs font-medium text-zinc-400 mb-1">
                       Key
-                      <span className="ml-1.5 text-gray-600 font-normal">auto-generated</span>
+                      <span className="ml-1.5 text-zinc-600 font-normal">auto-generated</span>
                     </label>
                     <input
                       type="text"
                       value={key}
                       readOnly
-                      className="w-full px-3 py-2 rounded-lg bg-gray-900/50 border border-gray-800/50 text-gray-500 font-mono text-xs focus:outline-none cursor-default"
+                      className="w-full px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800/50 text-zinc-500 font-mono text-xs focus:outline-none cursor-default"
                     />
                   </div>
                 )}
@@ -411,14 +411,14 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
           <button
             type="submit"
             disabled={mutation.isPending || !fields.title?.trim() || isLoading}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Creating…' : 'Create'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -514,10 +514,10 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
           ? Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)
           : schemaEntries.map(([name, prop]) => (
               <div key={name}>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
                   {prop.title}
                   {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
-                  <span className="ml-1.5 text-gray-600 font-mono font-normal">{name}</span>
+                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{name}</span>
                 </label>
                 <input
                   type="text"
@@ -539,14 +539,14 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
           <button
             type="submit"
             disabled={updateMutation.isPending || !fields.title?.trim() || isLoading}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {updateMutation.isPending ? 'Saving…' : 'Save'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -592,11 +592,11 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
 
   return (
     <PanelShell title="Delete Extension" sub={extKey} onClose={onClose}>
-      <p className="text-sm text-gray-300 mb-1">
+      <p className="text-sm text-zinc-300 mb-1">
         You are about to delete{' '}
-        <span className="font-semibold text-gray-100">{existing?.title || extKey}</span>.
+        <span className="font-semibold text-zinc-100">{existing?.title || extKey}</span>.
       </p>
-      <p className="text-xs text-gray-500 mb-6">
+      <p className="text-xs text-zinc-500 mb-6">
         This removes the extension, its plugin files, and all associated data. This cannot be
         undone.
       </p>
@@ -618,7 +618,7 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
         <button
           onClick={onClose}
           disabled={deleteMutation.isPending}
-          className="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-sm font-medium transition-colors"
         >
           Cancel
         </button>
@@ -684,7 +684,7 @@ export default function Graph() {
         id: 'e-site-actions',
         source: 'site',
         target: 'site-actions',
-        style: { stroke: '#334155' },
+        style: { stroke: '#3f3f46' },
       },
     ]
 
@@ -714,13 +714,13 @@ export default function Graph() {
         id: `e-site-${ext.key}`,
         source: 'site',
         target: extId,
-        style: { stroke: '#3b82f6' },
+        style: { stroke: '#52525b' },
       })
       rawEdges.push({
         id: `e-${ext.key}-act`,
         source: extId,
         target: actId,
-        style: { stroke: '#334155' },
+        style: { stroke: '#3f3f46' },
       })
     }
 

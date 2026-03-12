@@ -32,9 +32,9 @@ type BuildResult = {
 }
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 ' +
-  'placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50'
+  'w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 ' +
+  'placeholder-zinc-600 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50'
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
@@ -137,13 +137,13 @@ export default function ExtensionEdit() {
   return (
     <div className="max-w-xl mx-auto">
       <div className="mb-6">
-        <Link to="/extensions" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+        <Link to="/extensions" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Extensions
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-100 mt-3">
+        <h1 className="text-2xl font-semibold text-zinc-100 mt-3">
           {extension?.title || key}
         </h1>
-        <p className="text-xs text-gray-600 font-mono mt-0.5">{key}</p>
+        <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
       </div>
 
       {isError && (
@@ -153,11 +153,11 @@ export default function ExtensionEdit() {
       )}
 
       {/* ── Collections ─────────────────────────────────────────────────── */}
-      <div className="mb-6 bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div className="mb-6 bg-zinc-900 border border-zinc-800 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-gray-400">Collections</h2>
+          <h2 className="text-sm font-medium text-zinc-400">Collections</h2>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Link to={`/extensions/${key}/collections` as any} className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+          <Link to={`/extensions/${key}/collections` as any} className="text-xs text-zinc-300 hover:text-zinc-100 transition-colors">
             Manage →
           </Link>
         </div>
@@ -168,23 +168,23 @@ export default function ExtensionEdit() {
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Link
                   to={`/extensions/${key}/collections/${c.collection_key}/fields` as any}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors text-sm text-gray-300 hover:text-gray-100"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-sm text-zinc-300 hover:text-zinc-100"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 flex-shrink-0" />
                   {c.title || c.collection_key}
-                  <span className="ml-auto text-xs text-gray-600 font-mono">{c.collection_key}</span>
+                  <span className="ml-auto text-xs text-zinc-600 font-mono">{c.collection_key}</span>
                 </Link>
               </li>
             ))}
           </ul>
         )}
         {!isLoading && collections.length === 0 && (
-          <p className="text-xs text-gray-600">No collections yet.</p>
+          <p className="text-xs text-zinc-600">No collections yet.</p>
         )}
       </div>
 
       {/* ── Edit form ────────────────────────────────────────────────────── */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
         <form
           onSubmit={(e) => { e.preventDefault(); updateMutation.mutate() }}
           className="space-y-5"
@@ -192,44 +192,44 @@ export default function ExtensionEdit() {
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="space-y-1.5">
-                <div className="h-4 w-28 rounded bg-gray-800 animate-pulse" />
-                <div className="h-9 rounded-lg bg-gray-800 animate-pulse" />
+                <div className="h-4 w-28 rounded bg-zinc-800 animate-pulse" />
+                <div className="h-9 rounded-lg bg-zinc-800 animate-pulse" />
               </div>
             ))
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Title <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title <span className="text-red-400">*</span></label>
                 <input type="text" value={title} disabled={isBusy} onChange={(e) => setTitle(e.target.value)} className={baseInput} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description</label>
                 <input type="text" value={description} disabled={isBusy} onChange={(e) => setDescription(e.target.value)} className={baseInput} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Version</label>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Version</label>
                   <input type="text" value={version} disabled={isBusy} onChange={(e) => setVersion(e.target.value)} className={baseInput} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Min WP Version</label>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Min WP Version</label>
                   <input type="text" value={minWpVersion} disabled={isBusy} onChange={(e) => setMinWpVersion(e.target.value)} className={baseInput} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Author</label>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author</label>
                   <input type="text" value={author} disabled={isBusy} onChange={(e) => setAuthor(e.target.value)} className={baseInput} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Author URI</label>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author URI</label>
                   <input type="text" value={authorUri} disabled={isBusy} onChange={(e) => setAuthorUri(e.target.value)} className={baseInput} placeholder="https://" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                   PHP Namespace
-                  <span className="ml-2 text-xs text-gray-600 font-normal">auto-derived if blank</span>
+                  <span className="ml-2 text-xs text-zinc-600 font-normal">auto-derived if blank</span>
                 </label>
                 <input type="text" value={namespace} disabled={isBusy} onChange={(e) => setNamespace(e.target.value)} className={baseInput} placeholder="MyExtension" />
               </div>
@@ -242,7 +242,7 @@ export default function ExtensionEdit() {
             </div>
           )}
           {updateMutation.isSuccess && (
-            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+            <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-zinc-300 text-sm">
               Saved.
             </div>
           )}
@@ -251,13 +251,13 @@ export default function ExtensionEdit() {
             <button
               type="submit"
               disabled={isBusy || !title.trim() || isLoading}
-              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              className="px-5 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
               {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
             </button>
             <Link
               to="/extensions"
-              className="px-5 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 text-sm font-medium transition-colors"
+              className="px-5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 text-sm font-medium transition-colors"
             >
               Cancel
             </Link>
@@ -266,18 +266,18 @@ export default function ExtensionEdit() {
       </div>
 
       {/* ── Build ────────────────────────────────────────────────────────── */}
-      <div className="mt-6 p-5 rounded-xl border border-gray-700 bg-gray-900">
-        <p className="text-sm font-medium text-gray-200 mb-1">Build Plugin</p>
-        <p className="text-xs text-gray-500 mb-4">
+      <div className="mt-6 p-5 rounded-xl border border-zinc-700 bg-zinc-900">
+        <p className="text-sm font-medium text-zinc-200 mb-1">Build Plugin</p>
+        <p className="text-xs text-zinc-500 mb-4">
           Generates PHP collection classes and database migrations for all collections in this
           extension, then writes them to{' '}
-          <code className="font-mono text-gray-400">wp-content/plugins/{key?.replace(/_/g, '-')}</code>.
+          <code className="font-mono text-zinc-400">wp-content/plugins/{key?.replace(/_/g, '-')}</code>.
         </p>
 
         {buildResult && (
           <div className={`mb-4 p-3 rounded-lg text-xs border ${
             buildResult.success
-              ? 'bg-green-500/10 border-green-500/20 text-green-400'
+              ? 'bg-zinc-800/50 border-zinc-700 text-zinc-300'
               : 'bg-red-500/10 border-red-500/20 text-red-400'
           }`}>
             {buildResult.success ? (
@@ -304,7 +304,7 @@ export default function ExtensionEdit() {
         <button
           onClick={() => { setBuildResult(null); buildMutation.mutate() }}
           disabled={isBusy}
-          className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
         >
           {buildMutation.isPending ? 'Building…' : 'Build Extension'}
         </button>
@@ -313,7 +313,7 @@ export default function ExtensionEdit() {
       {/* ── Delete ────────────────────────────────────────────────────────── */}
       <div className="mt-4 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
         <p className="text-sm font-medium text-red-400 mb-1">Danger zone</p>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs text-zinc-500 mb-3">
           Deletes this extension record and its generated plugin directory. This cannot be undone.
         </p>
 
@@ -333,7 +333,7 @@ export default function ExtensionEdit() {
             <button
               onClick={() => setConfirmDelete(false)}
               disabled={isBusy}
-              className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 text-sm transition-colors"
+              className="px-4 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-sm transition-colors"
             >
               Cancel
             </button>

@@ -60,7 +60,7 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
     <div className="space-y-6 max-w-2xl">
       {/* API Key Field */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-200">
+        <label className="block text-sm font-medium text-zinc-200">
           Anthropic API Key
         </label>
         <div className="relative">
@@ -69,27 +69,27 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
             value={localKey || ''}
             onChange={(e) => handleKeyChange(e.target.value)}
             placeholder={settings.has_anthropic_key ? '••••••••••••••••' : 'sk-ant-...'}
-            className="w-full bg-zinc-700 text-gray-100 border border-gray-700 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+            className="w-full bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-md px-3 py-2 pr-20 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent placeholder-zinc-500"
           />
           <button
             type="button"
             onClick={() => setShowKey(!showKey)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-gray-400 hover:text-gray-300"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-300"
           >
             {showKey ? 'Hide' : 'Show'}
           </button>
         </div>
         <div className="flex items-start gap-2 text-sm">
           {settings.has_anthropic_key && !localKey && (
-            <p className="text-green-400">✓ API key configured</p>
+            <p className="text-zinc-300">✓ API key configured</p>
           )}
-          <p className="text-gray-400">
+          <p className="text-zinc-400">
             Get your API key from{' '}
             <a
               href="https://console.anthropic.com/settings/keys"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 underline"
+              className="text-zinc-400 hover:text-zinc-300 underline"
             >
               Anthropic Console
             </a>
@@ -102,7 +102,7 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
         <button
           onClick={() => testApiKeyMutation.mutate()}
           disabled={testStatus === 'testing' || (!localKey && !settings.has_anthropic_key)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-md transition-colors"
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-md transition-colors"
         >
           {testStatus === 'testing' ? 'Testing...' : 'Test API Key'}
         </button>
@@ -111,7 +111,7 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
           <div
             className={`p-3 rounded-md ${
               testStatus === 'success'
-                ? 'bg-green-900/30 text-green-400 border border-green-700'
+                ? 'bg-zinc-800/50 text-zinc-300 border border-zinc-700'
                 : testStatus === 'error'
                 ? 'bg-red-900/30 text-red-400 border border-red-700'
                 : ''
@@ -123,13 +123,13 @@ export default function AISettings({ settings, onChange }: AISettingsProps) {
       </div>
 
       {/* Information Section */}
-      <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-md space-y-2">
-        <h3 className="text-sm font-medium text-gray-200">About Maze AI</h3>
-        <p className="text-sm text-gray-400">
+      <div className="p-4 bg-zinc-800/50 border border-zinc-700 rounded-md space-y-2">
+        <h3 className="text-sm font-medium text-zinc-200">About Maze AI</h3>
+        <p className="text-sm text-zinc-400">
           Gateway integrates with Anthropic's Claude AI models through the Maze AI feature.
           This enables intelligent code generation, analysis, and assistance capabilities.
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-zinc-400">
           Your API key is encrypted before being stored and never exposed in API responses.
         </p>
       </div>

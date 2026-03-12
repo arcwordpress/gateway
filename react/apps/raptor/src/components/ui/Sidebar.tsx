@@ -54,7 +54,7 @@ function NavLink({ to, label, icon: Icon }: { to: string; label: string; icon?: 
 // ─── Section divider ───────────────────────────────────────────────────────
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600 select-none">
+    <p className="px-3 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600 select-none">
       {label}
     </p>
   )

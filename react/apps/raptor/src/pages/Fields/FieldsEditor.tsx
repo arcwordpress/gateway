@@ -74,7 +74,7 @@ function TabbedFieldConfig({
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 // ─── Panel geometry ───────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
         </button>
         <button
           onClick={() => setEditSurface({ mode: 'editField', field })}
-          className="px-2 py-1 text-xs rounded bg-blue-700 hover:bg-blue-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
           Edit
         </button>
@@ -237,7 +237,7 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
         >+</button>
       </header>
       {!fieldListId && (
-        <p className="mb-6 text-xs text-amber-400">
+        <p className="mb-6 text-xs text-zinc-400">
           This is very unusual, this Collection does not have a Field List row associated with it.
         </p>
       )}
@@ -359,7 +359,7 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
       <div className="flex gap-2 mt-2">
         <button type="submit"
                 disabled={mutation.isPending}
-                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-zinc-100 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           {mutation.isPending ? 'Saving…' : 'Save'}
         </button>
         <button type="button" onClick={onClose}

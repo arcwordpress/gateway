@@ -45,7 +45,7 @@ export default function Extensions() {
 
         <Link
           to={"/extensions/create" as never}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm text-white font-medium transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-white font-medium transition-colors"
         >
           <span className="text-base leading-none">+</span>
           New Extension
@@ -72,7 +72,7 @@ export default function Extensions() {
           <p className="text-gray-500 text-sm mb-4">No extensions yet</p>
           <Link
             to={"/extensions/create" as never}
-            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm text-white transition-colors"
+            className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-sm text-white transition-colors"
           >
             Create your first extension
           </Link>

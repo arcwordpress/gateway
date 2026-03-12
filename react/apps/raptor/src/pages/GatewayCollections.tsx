@@ -92,8 +92,8 @@ function PanelShell({
         top,
         height,
         width,
-        background: '#000',
-        borderLeft: '1px solid #1e293b',
+        background: 'var(--app-bg)',
+        borderLeft: '1px solid #3f3f46',
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
@@ -102,7 +102,7 @@ function PanelShell({
       <div
         style={{
           padding: '16px 20px 12px',
-          borderBottom: '1px solid #1e293b',
+          borderBottom: '1px solid #3f3f46',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -110,9 +110,9 @@ function PanelShell({
         }}
       >
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#e4e4e7' }}>{title}</div>
           {sub && (
-            <div style={{ fontSize: 11, color: '#475569', fontFamily: 'monospace', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
               {sub}
             </div>
           )}
@@ -123,7 +123,7 @@ function PanelShell({
           style={{
             background: 'none',
             border: 'none',
-            color: '#64748b',
+            color: '#71717a',
             cursor: 'pointer',
             fontSize: 16,
             lineHeight: 1,
@@ -145,13 +145,13 @@ function PanelShell({
 
 function MethodBadge({ method }: { method: string }) {
   const colors: Record<string, string> = {
-    GET:    'bg-blue-900/60 text-blue-300 border-blue-700/50',
-    POST:   'bg-green-900/60 text-green-300 border-green-700/50',
-    PUT:    'bg-yellow-900/60 text-yellow-300 border-yellow-700/50',
-    PATCH:  'bg-orange-900/60 text-orange-300 border-orange-700/50',
+    GET:    'bg-zinc-800/60 text-zinc-300 border-zinc-700/50',
+    POST:   'bg-zinc-800/60 text-zinc-200 border-zinc-700/50',
+    PUT:    'bg-zinc-900/60 text-zinc-200 border-zinc-800/50',
+    PATCH:  'bg-zinc-900/60 text-zinc-400 border-zinc-700/50',
     DELETE: 'bg-red-900/60 text-red-300 border-red-700/50',
   }
-  const cls = colors[method] ?? 'bg-gray-900/60 text-gray-300 border-gray-700/50'
+  const cls = colors[method] ?? 'bg-zinc-900/60 text-zinc-300 border-zinc-700/50'
   return (
     <span className={`inline-flex items-center justify-center w-14 px-1.5 py-0.5 rounded text-[10px] font-bold border ${cls}`}>
       {method}
@@ -254,16 +254,16 @@ function MigrationPanel({
     <PanelShell title="Database Migration" sub={state.collectionKey} onClose={onClose} width={480}>
       {state.loading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Generating migration code…</p>
+          <p className="text-zinc-500 text-sm">Generating migration code…</p>
         </div>
       ) : state.migration ? (
         <div className="space-y-4">
           {/* Install success */}
           {state.installSuccess && (
-            <div className="p-3 rounded-lg bg-green-900/30 border border-green-700/40">
-              <p className="text-green-300 text-xs font-semibold mb-1">Migration Installed Successfully!</p>
-              <p className="text-green-400 text-xs">{state.installSuccess.message}</p>
-              <code className="text-[10px] text-green-600 font-mono block mt-2 bg-green-900/20 px-2 py-1 rounded">
+            <div className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-700/40">
+              <p className="text-zinc-200 text-xs font-semibold mb-1">Migration Installed Successfully!</p>
+              <p className="text-zinc-300 text-xs">{state.installSuccess.message}</p>
+              <code className="text-[10px] text-zinc-500 font-mono block mt-2 bg-zinc-900/30 px-2 py-1 rounded">
                 {state.installSuccess.filePath}
               </code>
             </div>
@@ -271,22 +271,22 @@ function MigrationPanel({
 
           {/* Install to extension */}
           {state.extensions.length > 0 && !state.installSuccess && (
-            <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-700/30">
-              <p className="text-blue-300 text-xs font-semibold mb-2">Install to Extension</p>
+            <div className="p-3 rounded-lg bg-zinc-900/30 border border-zinc-800/30">
+              <p className="text-zinc-300 text-xs font-semibold mb-2">Install to Extension</p>
               <div className="space-y-1.5">
                 {state.extensions.map((ext) => (
                   <div
                     key={ext.key}
-                    className="flex items-center justify-between p-2 rounded bg-gray-900/60 border border-gray-800/50"
+                    className="flex items-center justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800/50"
                   >
                     <div>
-                      <div className="text-gray-200 text-xs font-medium">{ext.slug}</div>
-                      <code className="text-[10px] text-gray-500 font-mono">{ext.databasePath}</code>
+                      <div className="text-zinc-200 text-xs font-medium">{ext.slug}</div>
+                      <code className="text-[10px] text-zinc-500 font-mono">{ext.databasePath}</code>
                     </div>
                     <button
                       onClick={() => void installMigration(ext.key)}
                       disabled={state.installing}
-                      className="px-2.5 py-1 text-xs rounded bg-blue-700 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-2.5 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {state.installing ? 'Installing…' : 'Install'}
                     </button>
@@ -298,19 +298,19 @@ function MigrationPanel({
 
           {/* Manual instructions */}
           {!state.installSuccess && (
-            <div className="p-3 rounded-lg bg-gray-900/60 border border-gray-700/40">
-              <p className="text-gray-300 text-xs font-semibold mb-1.5">Manual Installation</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs text-gray-400">
+            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-700/40">
+              <p className="text-zinc-300 text-xs font-semibold mb-1.5">Manual Installation</p>
+              <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
                 <li>
                   Save to{' '}
-                  <code className="text-gray-300 bg-gray-800/60 px-1 rounded">
+                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
                     /lib/Database/{state.migration.className}.php
                   </code>
                 </li>
                 <li>Require the file in your plugin</li>
                 <li>
                   Call{' '}
-                  <code className="text-gray-300 bg-gray-800/60 px-1 rounded">
+                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
                     {state.migration.className}::create()
                   </code>{' '}
                   from your activation hook
@@ -321,11 +321,11 @@ function MigrationPanel({
 
           {/* Notes */}
           {state.migration.notes.length > 0 && (
-            <div className="p-3 rounded-lg bg-yellow-900/20 border border-yellow-700/30">
-              <p className="text-yellow-300 text-xs font-semibold mb-1">Notes</p>
+            <div className="p-3 rounded-lg bg-zinc-900/20 border border-zinc-800/30">
+              <p className="text-zinc-200 text-xs font-semibold mb-1">Notes</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {state.migration.notes.map((note, i) => (
-                  <li key={i} className="text-yellow-400 text-xs">{note}</li>
+                  <li key={i} className="text-zinc-300 text-xs">{note}</li>
                 ))}
               </ul>
             </div>
@@ -334,15 +334,15 @@ function MigrationPanel({
           {/* Code */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-gray-300 text-xs font-semibold">Generated Code</span>
+              <span className="text-zinc-300 text-xs font-semibold">Generated Code</span>
               <button
                 onClick={() => void copyToClipboard(state.migration!.code)}
-                className="px-2.5 py-0.5 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-200 transition-colors"
+                className="px-2.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors"
               >
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <pre className="bg-gray-950 text-gray-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-64 overflow-y-auto">
+            <pre className="bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-64 overflow-y-auto">
               <code>{state.migration.code}</code>
             </pre>
           </div>
@@ -351,7 +351,7 @@ function MigrationPanel({
           <button
             onClick={() => void runMigration()}
             disabled={state.runningMigration}
-            className="w-full px-4 py-2 rounded-lg bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            className="w-full px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
           >
             {state.runningMigration ? 'Running Migration…' : 'Run Migration Now'}
           </button>
@@ -532,16 +532,16 @@ function RouteTestPanel({
     }
   }
 
-  const inputCls = 'w-full px-2.5 py-1.5 rounded bg-gray-900 border border-gray-700 text-gray-100 text-xs placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors'
+  const inputCls = 'w-full px-2.5 py-1.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-100 text-xs placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors'
   const tabCls = (active: boolean) =>
     active
-      ? 'px-3 py-1.5 text-xs font-medium border-b-2 border-blue-500 text-blue-400'
-      : 'px-3 py-1.5 text-xs font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-300'
+      ? 'px-3 py-1.5 text-xs font-medium border-b-2 border-zinc-400 text-zinc-200'
+      : 'px-3 py-1.5 text-xs font-medium border-b-2 border-transparent text-zinc-500 hover:text-zinc-300'
 
   return (
     <PanelShell title="Test Route" sub={`${route.method} ${route.displayRoute}`} onClose={onClose} width={480}>
       {/* Tabs */}
-      <div className="flex border-b border-gray-800 mb-4 -mx-5 px-5">
+      <div className="flex border-b border-zinc-800 mb-4 -mx-5 px-5">
         {(['request', 'response', 'code'] as RequestTab[]).map((tab) => (
           <button key={tab} onClick={() => { setActiveTab(tab); if (tab === 'code' && !codeExamples) generateCodeExamples() }} className={tabCls(activeTab === tab)}>
             {tab === 'request' ? 'Request' : tab === 'response' ? 'Response' : 'Code Examples'}
@@ -553,7 +553,7 @@ function RouteTestPanel({
         <div className="space-y-4">
           {/* Auth */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">Authentication</label>
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Authentication</label>
             <select value={authType} onChange={(e) => setAuthType(e.target.value as AuthType)} className={inputCls}>
               <option value="cookie">Cookie (logged-in user)</option>
               <option value="basic">Basic Auth (username + app password)</option>
@@ -562,13 +562,13 @@ function RouteTestPanel({
           </div>
 
           {authType === 'basic' && (
-            <div className="grid grid-cols-2 gap-2 p-3 bg-gray-900/60 rounded-lg border border-gray-800">
+            <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-900/60 rounded-lg border border-zinc-800">
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1">Username</label>
+                <label className="block text-[10px] text-zinc-500 mb-1">Username</label>
                 <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" className={inputCls} />
               </div>
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1">App Password</label>
+                <label className="block text-[10px] text-zinc-500 mb-1">App Password</label>
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="xxxx xxxx" className={inputCls} />
               </div>
             </div>
@@ -577,7 +577,7 @@ function RouteTestPanel({
           {/* URL params */}
           {(['get_one', 'update', 'delete'].includes(route.type)) && (
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-1">URL Parameters</label>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">URL Parameters</label>
               <div className="space-y-1.5">
                 {Object.keys(params).map((k) => (
                   <div key={k} className="flex gap-2">
@@ -593,15 +593,15 @@ function RouteTestPanel({
           {route.type === 'get_many' && (
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Query Parameters</label>
-                <button onClick={() => { const k = prompt('Parameter name:'); if (k) setParams({ ...params, [k]: '' }) }} className="text-[10px] text-blue-400 hover:text-blue-300">+ Add</button>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Query Parameters</label>
+                <button onClick={() => { const k = prompt('Parameter name:'); if (k) setParams({ ...params, [k]: '' }) }} className="text-[10px] text-zinc-300 hover:text-zinc-100">+ Add</button>
               </div>
               <div className="space-y-1.5">
                 {Object.keys(params).map((k) => (
                   <div key={k} className="flex gap-2">
                     <input type="text" value={k} disabled className={`${inputCls} flex-1 opacity-60`} />
                     <input type="text" value={params[k]} onChange={(e) => setParams({ ...params, [k]: e.target.value })} className={`${inputCls} flex-1`} placeholder="Value" />
-                    <button onClick={() => { const n = { ...params }; delete n[k]; setParams(n) }} className="px-2 py-1 text-xs bg-red-900/40 text-red-400 rounded hover:bg-red-900/60">×</button>
+                    <button onClick={() => { const n = { ...params }; delete n[k]; setParams(n) }} className="px-2 py-1 text-xs bg-zinc-900/60 text-zinc-400 rounded hover:bg-zinc-800">×</button>
                   </div>
                 ))}
               </div>
@@ -612,15 +612,15 @@ function RouteTestPanel({
           {['POST', 'PUT', 'PATCH'].includes(route.method) && (
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Request Body</label>
-                <button onClick={() => { const k = prompt('Field name:'); if (k) setBody({ ...body, [k]: '' }) }} className="text-[10px] text-blue-400 hover:text-blue-300">+ Add Field</button>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Request Body</label>
+                <button onClick={() => { const k = prompt('Field name:'); if (k) setBody({ ...body, [k]: '' }) }} className="text-[10px] text-zinc-300 hover:text-zinc-100">+ Add Field</button>
               </div>
               <div className="space-y-1.5">
                 {Object.keys(body).map((k) => (
                   <div key={k} className="flex gap-2">
                     <input type="text" value={k} disabled className={`${inputCls} flex-1 opacity-60`} />
                     <input type="text" value={body[k]} onChange={(e) => setBody({ ...body, [k]: e.target.value })} className={`${inputCls} flex-1`} placeholder="Value" />
-                    <button onClick={() => { const n = { ...body }; delete n[k]; setBody(n) }} className="px-2 py-1 text-xs bg-red-900/40 text-red-400 rounded hover:bg-red-900/60">×</button>
+                    <button onClick={() => { const n = { ...body }; delete n[k]; setBody(n) }} className="px-2 py-1 text-xs bg-zinc-900/60 text-zinc-400 rounded hover:bg-zinc-800">×</button>
                   </div>
                 ))}
               </div>
@@ -630,7 +630,7 @@ function RouteTestPanel({
           <button
             onClick={() => void testRoute()}
             disabled={loading}
-            className="w-full px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            className="w-full px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
           >
             {loading ? 'Sending…' : 'Send Request'}
           </button>
@@ -640,18 +640,18 @@ function RouteTestPanel({
       {activeTab === 'response' && (
         <div>
           {!response ? (
-            <div className="text-center py-12 text-gray-600 text-sm">Send a request to see the response</div>
+            <div className="text-center py-12 text-zinc-600 text-sm">Send a request to see the response</div>
           ) : response.success ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-3 p-2 rounded bg-green-900/20 border border-green-700/30">
-                <span className="text-green-300 text-xs font-medium">
+              <div className="flex items-center gap-3 p-2 rounded bg-zinc-800/30 border border-zinc-700/30">
+                <span className="text-zinc-200 text-xs font-medium">
                   {response.status} {response.statusText}
                 </span>
                 {response.duration && (
-                  <span className="text-green-600 text-[10px]">{response.duration}ms</span>
+                  <span className="text-zinc-500 text-[10px]">{response.duration}ms</span>
                 )}
               </div>
-              <pre className="bg-gray-950 text-gray-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-80 overflow-y-auto">
+              <pre className="bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-80 overflow-y-auto">
                 <code>{JSON.stringify(response.body, null, 2)}</code>
               </pre>
             </div>
@@ -667,15 +667,15 @@ function RouteTestPanel({
       {activeTab === 'code' && (
         <div>
           {!codeExamples ? (
-            <div className="text-center py-12 text-gray-600 text-sm">Configure your request first</div>
+            <div className="text-center py-12 text-zinc-600 text-sm">Configure your request first</div>
           ) : (
             <div className="space-y-3">
-              <div className="flex gap-1 border-b border-gray-800 pb-2">
+              <div className="flex gap-1 border-b border-zinc-800 pb-2">
                 {(['curl', 'fetch', 'axios', 'php_curl', 'php_guzzle'] as CodeTab[]).map((t) => (
                   <button
                     key={t}
                     onClick={() => setActiveCodeTab(t)}
-                    className={`px-2 py-1 text-[10px] rounded ${activeCodeTab === t ? 'bg-gray-700 text-gray-100' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`px-2 py-1 text-[10px] rounded ${activeCodeTab === t ? 'bg-zinc-700 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'}`}
                   >
                     {t === 'php_curl' ? 'PHP cURL' : t === 'php_guzzle' ? 'PHP Guzzle' : t === 'curl' ? 'cURL' : t === 'fetch' ? 'Fetch' : 'Axios'}
                   </button>
@@ -684,16 +684,16 @@ function RouteTestPanel({
               <div className="relative">
                 <button
                   onClick={() => void copyText(codeExamples[activeCodeTab])}
-                  className="absolute top-2 right-2 px-2 py-0.5 text-[10px] bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+                  className="absolute top-2 right-2 px-2 py-0.5 text-[10px] bg-zinc-700 hover:bg-zinc-600 text-zinc-300 rounded transition-colors"
                 >
                   {copied ? 'Copied!' : 'Copy'}
                 </button>
-                <pre className="bg-gray-950 text-gray-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-72 overflow-y-auto">
+                <pre className="bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-72 overflow-y-auto">
                   <code>{codeExamples[activeCodeTab]}</code>
                 </pre>
               </div>
               {authType === 'cookie' && (
-                <p className="text-[10px] text-yellow-600 p-2 bg-yellow-900/10 border border-yellow-900/30 rounded">
+                <p className="text-[10px] text-zinc-500 p-2 bg-zinc-900/10 border border-zinc-800/30 rounded">
                   Cookie auth requires the request to be from the same domain with a valid WordPress session. The nonce is temporary and will expire.
                 </p>
               )}
@@ -723,30 +723,30 @@ function CollectionCard({
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900/40 overflow-hidden">
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 overflow-hidden">
       {/* Card header */}
       <div className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
-            <h3 className="text-gray-100 font-semibold text-sm">{collection.title}</h3>
-            <code className="text-[11px] text-gray-500 font-mono">{collection.key}</code>
+            <h3 className="text-zinc-100 font-semibold text-sm">{collection.title}</h3>
+            <code className="text-[11px] text-zinc-500 font-mono">{collection.key}</code>
           </div>
           {collection.record_count !== undefined && (
             <div className="text-right">
-              <div className="text-xs text-gray-500">Records</div>
-              <div className="text-sm font-semibold text-gray-200">{collection.record_count.toLocaleString()}</div>
+              <div className="text-xs text-zinc-500">Records</div>
+              <div className="text-sm font-semibold text-zinc-200">{collection.record_count.toLocaleString()}</div>
             </div>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-2 mb-3">
           <div>
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider">Class</span>
-            <code className="block text-[11px] text-gray-400 font-mono truncate">{collection.fqcn}</code>
+            <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Class</span>
+            <code className="block text-[11px] text-zinc-400 font-mono truncate">{collection.fqcn}</code>
           </div>
           <div>
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider">Table</span>
-            <code className="block text-[11px] text-gray-400 font-mono">{collection.table}</code>
+            <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Table</span>
+            <code className="block text-[11px] text-zinc-400 font-mono">{collection.table}</code>
           </div>
         </div>
 
@@ -754,14 +754,14 @@ function CollectionCard({
         <div className="flex gap-2">
           <button
             onClick={onGenerateMigration}
-            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-gray-700 hover:bg-gray-600 text-gray-200 transition-colors"
+            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors"
           >
             Generate Migration
           </button>
           <button
             onClick={onRunMigration}
             disabled={isRunningMigration}
-            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
           >
             {isRunningMigration ? 'Running…' : 'Run Migration'}
           </button>
@@ -773,26 +773,26 @@ function CollectionCard({
         <>
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="w-full px-4 py-2 flex justify-between items-center border-t border-gray-800 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800/30 transition-colors"
+            className="w-full px-4 py-2 flex justify-between items-center border-t border-zinc-800 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors"
           >
             <span>{collection.routes.length} route{collection.routes.length !== 1 ? 's' : ''}</span>
             <span>{expanded ? '▲' : '▼'}</span>
           </button>
 
           {expanded && (
-            <div className="border-t border-gray-800/60 divide-y divide-gray-800/60">
+            <div className="border-t border-zinc-800/60 divide-y divide-gray-800/60">
               {collection.routes.map((route, idx) => (
                 <div key={idx} className="px-4 py-2.5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
                     <MethodBadge method={route.method} />
                     <div className="min-w-0">
-                      <code className="text-[11px] text-gray-300 block truncate">{route.displayRoute}</code>
-                      <span className="text-[10px] text-gray-600">{routeTypeLabel(route.type)}</span>
+                      <code className="text-[11px] text-zinc-300 block truncate">{route.displayRoute}</code>
+                      <span className="text-[10px] text-zinc-600">{routeTypeLabel(route.type)}</span>
                     </div>
                   </div>
                   <button
                     onClick={() => onTestRoute(route)}
-                    className="shrink-0 px-2.5 py-1 text-[10px] rounded bg-blue-900/50 hover:bg-blue-800/60 text-blue-300 border border-blue-800/40 transition-colors"
+                    className="shrink-0 px-2.5 py-1 text-[10px] rounded bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-300 border border-zinc-700/40 transition-colors"
                   >
                     Test
                   </button>
@@ -902,15 +902,15 @@ export default function GatewayCollections() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+      <div className="shrink-0 px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
         <div>
-          <h2 className="text-gray-100 font-semibold text-base">Registered Collections</h2>
-          <p className="text-gray-500 text-xs mt-0.5">
+          <h2 className="text-zinc-100 font-semibold text-base">Registered Collections</h2>
+          <p className="text-zinc-500 text-xs mt-0.5">
             Code-based Gateway collections — read-only, managed in PHP
           </p>
         </div>
         {!isLoading && !isError && (
-          <span className="text-[11px] text-gray-600 bg-gray-800/60 px-2.5 py-1 rounded-full">
+          <span className="text-[11px] text-zinc-600 bg-zinc-800/60 px-2.5 py-1 rounded-full">
             {collections.length} collection{collections.length !== 1 ? 's' : ''}
           </span>
         )}
@@ -920,7 +920,7 @@ export default function GatewayCollections() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {isLoading && (
           <div className="flex items-center justify-center py-16">
-            <p className="text-gray-600 text-sm">Loading collections…</p>
+            <p className="text-zinc-600 text-sm">Loading collections…</p>
           </div>
         )}
 
@@ -931,10 +931,10 @@ export default function GatewayCollections() {
         )}
 
         {!isLoading && !isError && collections.length === 0 && (
-          <div className="flex items-center justify-center py-16 border-2 border-dashed border-gray-800 rounded-lg">
+          <div className="flex items-center justify-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
             <div className="text-center">
-              <p className="text-gray-600 text-sm">No registered collections found</p>
-              <p className="text-gray-700 text-xs mt-1">Register collections using <code className="text-gray-500">YourCollection::register()</code></p>
+              <p className="text-zinc-600 text-sm">No registered collections found</p>
+              <p className="text-gray-700 text-xs mt-1">Register collections using <code className="text-zinc-500">YourCollection::register()</code></p>
             </div>
           </div>
         )}

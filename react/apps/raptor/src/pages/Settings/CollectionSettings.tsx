@@ -40,7 +40,7 @@ export default function CollectionSettings() {
     return (
       <div className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-12 rounded-lg bg-gray-900 animate-pulse" />
+          <div key={i} className="h-12 rounded-lg bg-zinc-900 animate-pulse" />
         ))}
       </div>
     )
@@ -59,14 +59,14 @@ export default function CollectionSettings() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-gray-100 font-semibold text-sm">Core Adaptor Collections</h2>
-        <p className="text-gray-500 text-xs mt-1">
+        <h2 className="text-zinc-100 font-semibold text-sm">Core Adaptor Collections</h2>
+        <p className="text-zinc-500 text-xs mt-1">
           Enable or disable the built-in WordPress data collections. Disabling a collection
           removes its REST API routes. Changes take effect on the next page load.
         </p>
       </div>
 
-      <div className="rounded-lg border border-gray-800 overflow-hidden">
+      <div className="rounded-lg border border-zinc-800 overflow-hidden">
         {collections.map((col, idx) => {
           const isPending =
             toggleMutation.isPending &&
@@ -76,12 +76,12 @@ export default function CollectionSettings() {
             <div
               key={col.key}
               className={`flex items-center justify-between px-4 py-3 ${
-                idx !== collections.length - 1 ? 'border-b border-gray-800' : ''
+                idx !== collections.length - 1 ? 'border-b border-zinc-800' : ''
               }`}
             >
               <div>
-                <div className="text-gray-200 text-sm font-medium">{col.title}</div>
-                <code className="text-[11px] text-gray-600 font-mono">{col.key}</code>
+                <div className="text-zinc-200 text-sm font-medium">{col.title}</div>
+                <code className="text-[11px] text-zinc-600 font-mono">{col.key}</code>
               </div>
 
               {/* Toggle */}
@@ -91,7 +91,7 @@ export default function CollectionSettings() {
                 disabled={isPending}
                 onClick={() => toggleMutation.mutate({ key: col.key, active: !col.active })}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
-                  col.active ? 'bg-blue-600' : 'bg-gray-700'
+                  col.active ? 'bg-zinc-400' : 'bg-zinc-700'
                 }`}
               >
                 <span

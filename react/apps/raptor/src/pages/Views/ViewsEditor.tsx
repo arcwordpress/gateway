@@ -12,12 +12,12 @@ import { EditPanel } from '../Fields/FieldsEditor'
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
 export function ViewsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
@@ -140,7 +140,7 @@ export function ViewsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       </header>
 
       {!viewListId && (
-        <p className="mb-6 text-xs text-amber-400">
+        <p className="mb-6 text-xs text-zinc-400">
           This is very unusual, this Collection does not have a View List row associated with it.
         </p>
       )}
@@ -222,7 +222,7 @@ function SortableViewItem({
         </button>
         <button
           onClick={() => setEditSurface({ mode: 'editView', view })}
-          className="px-2 py-1 text-xs rounded bg-blue-700 hover:bg-blue-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
           Edit
         </button>
@@ -230,7 +230,7 @@ function SortableViewItem({
           onClick={() => {
             void navigate({ to: `/collections/${collection?.collection_key}/views/${view.view_key}/design` })
           }}
-          className="px-2 py-1 text-xs rounded bg-green-700 hover:bg-green-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
           Design
         </button>
@@ -365,7 +365,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
                     checked={checked}
                     onChange={() => toggleColumn(field.name)}
                     disabled={mutation.isPending}
-                    className="h-4 w-4 rounded border-gray-600 bg-gray-900 text-blue-500"
+                    className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-zinc-400"
                   />
                 </label>
               )
@@ -383,7 +383,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {mutation.isPending ? 'Saving…' : 'Save'}
         </button>

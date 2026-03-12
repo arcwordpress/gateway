@@ -9,7 +9,7 @@ export default function CollectionsPage() {
 
   const tabCls = (tab: Tab) =>
     activeTab === tab
-      ? 'px-4 py-2.5 text-xs font-semibold border-b-2 border-blue-500 text-blue-400 transition-colors'
+      ? 'px-4 py-2.5 text-xs font-semibold border-b-2 border-zinc-400 text-zinc-200 transition-colors'
       : 'px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-300 transition-colors'
 
   return (
