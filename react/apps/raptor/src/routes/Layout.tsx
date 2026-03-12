@@ -47,7 +47,7 @@ export default function Layout() {
     if (root) {
       root.style.marginLeft = '-20px'
       root.style.boxSizing = 'border-box'
-      root.style.borderLeft = '1px solid #4b5563'
+      root.style.borderLeft = '1px solid #3f3f46'
     }
 
     // Hide WordPress footer completely
@@ -122,7 +122,7 @@ export default function Layout() {
       <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading }}>
       <div
         id="gateway-raptor-canvas-host"
-        className="flex items-stretch text-gray-100 relative"
+        className="flex items-stretch text-zinc-100 relative"
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
@@ -130,8 +130,8 @@ export default function Layout() {
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
-        <aside className="w-48 shrink-0 border-r border-gray-800 flex flex-col self-stretch relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
-          <div className="px-4 py-4 border-b border-gray-800">
+        <aside className="w-48 shrink-0 border-r border-zinc-800 flex flex-col self-stretch relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+          <div className="px-4 py-4 border-b border-zinc-800">
             <Header.Logo />
           </div>
 
@@ -146,7 +146,7 @@ export default function Layout() {
           </div>
 
           {/* FOOTER */}
-          <Footer className="px-6 py-2.5 border-t border-gray-800 justify-end shrink-0 relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+          <Footer className="px-6 py-2.5 border-t border-zinc-800 justify-end shrink-0 relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
             <Footer.Credit>Raptor v0.1.0</Footer.Credit>
           </Footer>
         </div>

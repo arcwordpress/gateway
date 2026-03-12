@@ -393,7 +393,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
                   type="text"
                   value={draftView.title}
                   onChange={(e) => setDraftView({ ...draftView, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-zinc-500"
                 />
               </div>
 
@@ -402,7 +402,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
                 <textarea
                   value={draftView.description}
                   onChange={(e) => setDraftView({ ...draftView, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-sm focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-zinc-500 resize-none"
                   rows={3}
                 />
               </div>
@@ -413,7 +413,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
                   type="number"
                   value={draftView.per_page}
                   onChange={(e) => setDraftView({ ...draftView, per_page: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm focus:outline-none focus:border-zinc-500"
                   min={1}
                 />
               </div>
@@ -440,7 +440,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleColumn(field.name)}
-                            className="h-4 w-4 rounded border-gray-600 bg-gray-900 text-blue-500"
+                            className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-zinc-400"
                           />
                         </label>
                       )

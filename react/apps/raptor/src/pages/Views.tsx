@@ -10,7 +10,7 @@ import { BuilderLeftPanel } from './Builders/BuilderLeftPanel'
 function CollectionName() {
   const { collection, isLoading } = useCollection()
   if (isLoading) return <div className="h-5 w-32 rounded bg-gray-700 animate-pulse" />
-  return <h1 className="!text-neutral-300 text-2xl font-bold">{collection?.title}</h1>
+  return <h1 className="!text-zinc-300 text-2xl font-bold">{collection?.title}</h1>
 }
 
 

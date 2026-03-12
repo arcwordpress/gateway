@@ -11,12 +11,12 @@ import { EditPanel } from '../Fields/FieldsEditor'
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
   'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
 export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
@@ -133,7 +133,7 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       </header>
 
       {!formListId && (
-        <p className="mb-6 text-xs text-amber-400">
+        <p className="mb-6 text-xs text-zinc-400">
           This is very unusual, this Collection does not have a Form List row associated with it.
         </p>
       )}
@@ -213,7 +213,7 @@ function SortableFormItem({
         </button>
         <button
           onClick={() => setEditSurface({ mode: 'editForm', form })}
-          className="px-2 py-1 text-xs rounded bg-blue-700 hover:bg-blue-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
           Edit
         </button>
@@ -302,7 +302,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
             disabled={mutation.isPending}
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               layout === 'single'
-                ? 'bg-blue-600 text-white border-blue-600'
+                ? 'bg-zinc-700 text-zinc-100 border-zinc-600'
                 : 'bg-gray-900 text-gray-300 border-gray-800 hover:bg-gray-800'
             } border`}
           >
@@ -314,7 +314,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
             disabled={mutation.isPending}
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               layout === '2-col'
-                ? 'bg-blue-600 text-white border-blue-600'
+                ? 'bg-zinc-700 text-zinc-100 border-zinc-600'
                 : 'bg-gray-900 text-gray-300 border-gray-800 hover:bg-gray-800'
             } border`}
           >
@@ -352,7 +352,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-zinc-100 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {mutation.isPending ? 'Saving…' : 'Save'}
         </button>

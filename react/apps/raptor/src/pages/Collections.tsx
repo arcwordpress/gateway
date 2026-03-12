@@ -69,11 +69,11 @@ function CollectionsRootNode(_: NodeProps<RootNodeType>) {
   return (
     <div
       style={{
-        background: '#14532d',
+        background: '#3f3f46',
         border: '1px solid #16a34a',
         borderRadius: 10,
         padding: '10px 20px',
-        color: '#f0fdf4',
+        color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
         letterSpacing: '0.04em',
@@ -97,12 +97,12 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onClick={() => void navigate({ to: '/extensions/$extKey/collections/$collKey/fields' as any, params: { extKey: data.extKey, collKey: data.collKey } as any })}
       style={{
-        background: '#1e293b',
+        background: '#27272a',
         border: '1px solid #334155',
         borderRadius: 8,
         padding: '8px 14px',
         width: 180,
-        color: '#e2e8f0',
+        color: '#e4e4e7',
         fontSize: 13,
         cursor: 'pointer',
       }}
@@ -116,17 +116,17 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
         id="left"
         type="source"
         position={Position.Left}
-        style={{ background: '#475569', width: 8, height: 8 }}
+        style={{ background: '#71717a', width: 8, height: 8 }}
       />
       <Handle
         id="right"
         type="source"
         position={Position.Right}
-        style={{ background: '#475569', width: 8, height: 8 }}
+        style={{ background: '#71717a', width: 8, height: 8 }}
       />
 
       <div style={{ fontWeight: 500 }}>{data.title}</div>
-      <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', marginTop: 2 }}>
+      <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
         {data.collKey}
       </div>
     </div>
@@ -139,7 +139,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
   return (
     <div
       style={{
-        background: '#111',
+        background: '#18181b',
         border: '1px solid #1e1e1e',
         borderRadius: 8,
         minWidth: 140,
@@ -155,7 +155,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
-          color: '#f0f0f0',
+          color: '#e4e4e7',
           userSelect: 'none',
         }}
       >
@@ -174,7 +174,7 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#e8e8e8',
+              color: '#d4d4d8',
               fontSize: 12,
               fontFamily: 'inherit',
             }}
@@ -253,8 +253,8 @@ function PanelShell({
         top,
         height,
         width: 320,
-        background: '#000',
-        borderLeft: '1px solid #1e293b',
+        background: 'var(--app-bg)',
+        borderLeft: '1px solid #3f3f46',
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
@@ -263,7 +263,7 @@ function PanelShell({
       <div
         style={{
           padding: '16px 20px 12px',
-          borderBottom: '1px solid #1e293b',
+          borderBottom: '1px solid #3f3f46',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -271,9 +271,9 @@ function PanelShell({
         }}
       >
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#e4e4e7' }}>{title}</div>
           {sub && (
-            <div style={{ fontSize: 11, color: '#475569', fontFamily: 'monospace', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
               {sub}
             </div>
           )}
@@ -284,7 +284,7 @@ function PanelShell({
           style={{
             background: 'none',
             border: 'none',
-            color: '#64748b',
+            color: '#71717a',
             cursor: 'pointer',
             fontSize: 16,
             lineHeight: 1,
@@ -305,14 +305,14 @@ function PanelShell({
 // ─── Shared input styles ─────────────────────────────────────────────────────
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
-  'placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
+  'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
 // ─── Create panel ─────────────────────────────────────────────────────────────
 
@@ -355,7 +355,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
         className="space-y-4"
       >
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
             Title <span className="text-red-400">*</span>
           </label>
           <input
@@ -368,21 +368,21 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
           />
           {key && (
             <div className="mt-2">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
-                Key <span className="text-gray-600 font-normal">auto-generated</span>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
+                Key <span className="text-zinc-600 font-normal">auto-generated</span>
               </label>
               <input
                 type="text"
                 value={key}
                 readOnly
-                className="w-full px-3 py-1.5 rounded-lg bg-gray-900/50 border border-gray-800/50 text-gray-500 font-mono text-xs focus:outline-none cursor-default"
+                className="w-full px-3 py-1.5 rounded-lg bg-zinc-900/50 border border-zinc-800/50 text-zinc-500 font-mono text-xs focus:outline-none cursor-default"
               />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Description</label>
           <textarea
             value={description}
             rows={3}
@@ -402,14 +402,14 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
           <button
             type="submit"
             disabled={mutation.isPending || !title.trim()}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Creating…' : 'Create'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -479,13 +479,13 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       >
         {isLoading ? (
           <>
-            <div className="h-8 rounded-lg bg-gray-900 animate-pulse" />
-            <div className="h-16 rounded-lg bg-gray-900 animate-pulse" />
+            <div className="h-8 rounded-lg bg-zinc-900 animate-pulse" />
+            <div className="h-16 rounded-lg bg-zinc-900 animate-pulse" />
           </>
         ) : (
           <>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
                 Title <span className="text-red-400">*</span>
               </label>
               <input
@@ -497,7 +497,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Description</label>
               <textarea
                 value={description}
                 rows={3}
@@ -519,14 +519,14 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
           <button
             type="submit"
             disabled={mutation.isPending || !title.trim() || isLoading}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Saving…' : 'Save'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -572,11 +572,11 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
 
   return (
     <PanelShell title="Delete Collection" sub={collKey} onClose={onClose}>
-      <p className="text-sm text-gray-300 mb-1">
+      <p className="text-sm text-zinc-300 mb-1">
         You are about to delete{' '}
-        <span className="font-semibold text-gray-100">{collection?.title || collKey}</span>.
+        <span className="font-semibold text-zinc-100">{collection?.title || collKey}</span>.
       </p>
-      <p className="text-xs text-gray-500 mb-6">
+      <p className="text-xs text-zinc-500 mb-6">
         This removes the collection record from the database. This cannot be undone.
       </p>
 
@@ -597,7 +597,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
         <button
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-sm font-medium transition-colors"
         >
           Cancel
         </button>
@@ -683,14 +683,14 @@ function RelationshipPanel({
           gap: 8,
           marginBottom: 20,
           padding: '8px 10px',
-          background: '#0f172a',
+          background: '#18181b',
           borderRadius: 6,
-          border: '1px solid #1e293b',
+          border: '1px solid #3f3f46',
         }}
       >
-        <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{sourceTitle}</span>
-        <span style={{ fontSize: 12, color: '#475569' }}>→</span>
-        <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{targetTitle}</span>
+        <span style={{ fontSize: 12, color: '#a1a1aa', fontWeight: 500 }}>{sourceTitle}</span>
+        <span style={{ fontSize: 12, color: '#71717a' }}>→</span>
+        <span style={{ fontSize: 12, color: '#a1a1aa', fontWeight: 500 }}>{targetTitle}</span>
       </div>
 
       <form
@@ -703,7 +703,7 @@ function RelationshipPanel({
       >
         {/* Relationship type */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-zinc-400 mb-2">
             Type <span className="text-red-400">*</span>
           </label>
           <div className="space-y-1.5">
@@ -716,8 +716,8 @@ function RelationshipPanel({
                   gap: 8,
                   padding: '7px 10px',
                   borderRadius: 6,
-                  border: `1px solid ${type === rt.value ? '#3b82f6' : '#1e293b'}`,
-                  background: type === rt.value ? '#1e3a5f' : '#0f172a',
+                  border: `1px solid ${type === rt.value ? '#52525b' : '#27272a'}`,
+                  background: type === rt.value ? '#1e3a5f' : '#18181b',
                   cursor: 'pointer',
                 }}
               >
@@ -727,11 +727,11 @@ function RelationshipPanel({
                   value={rt.value}
                   checked={type === rt.value}
                   onChange={() => setType(rt.value)}
-                  style={{ marginTop: 2, accentColor: '#3b82f6' }}
+                  style={{ marginTop: 2, accentColor: '#52525b' }}
                 />
                 <div>
-                  <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 500 }}>{rt.label}</div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 1 }}>{rt.hint}</div>
+                  <div style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 500 }}>{rt.label}</div>
+                  <div style={{ fontSize: 10, color: '#71717a', marginTop: 1 }}>{rt.hint}</div>
                 </div>
               </label>
             ))}
@@ -740,7 +740,7 @@ function RelationshipPanel({
 
         {/* Method name */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
             Method Name <span className="text-red-400">*</span>
           </label>
           <input
@@ -752,12 +752,12 @@ function RelationshipPanel({
             onChange={(e) => setMethodName(e.target.value)}
             className={baseInput}
           />
-          <p className="mt-1 text-[10px] text-gray-600">camelCase PHP method on the source model</p>
+          <p className="mt-1 text-[10px] text-zinc-600">camelCase PHP method on the source model</p>
         </div>
 
         {/* Foreign key */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Foreign Key</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Foreign Key</label>
           <input
             type="text"
             value={foreignKey}
@@ -770,7 +770,7 @@ function RelationshipPanel({
 
         {/* Owner key */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Owner Key</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Owner Key</label>
           <input
             type="text"
             value={ownerKey}
@@ -791,14 +791,14 @@ function RelationshipPanel({
           <button
             type="submit"
             disabled={mutation.isPending || !methodName.trim()}
-            className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Saving…' : 'Add Relationship'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -883,7 +883,7 @@ export default function Collections() {
         id: 'e-root-actions',
         source: 'collections-root',
         target: 'root-actions',
-        style: { stroke: '#334155' },
+        style: { stroke: '#3f3f46' },
       },
     ]
 
@@ -913,13 +913,13 @@ export default function Collections() {
         id: `e-root-${col.collection_key}`,
         source: 'collections-root',
         target: colId,
-        style: { stroke: '#16a34a' },
+        style: { stroke: '#52525b' },
       })
       hierarchyEdges.push({
         id: `e-${col.collection_key}-act`,
         source: colId,
         target: actId,
-        style: { stroke: '#334155' },
+        style: { stroke: '#3f3f46' },
       })
     }
 
@@ -935,8 +935,8 @@ export default function Collections() {
           target:         tgtId,
           sourceHandle:   'right',
           label:          `${rel.type}: ${rel.methodName}`,
-          labelStyle:     { fill: '#64748b', fontSize: 10 },
-          style:          { stroke: '#4f6a8a', strokeDasharray: '5 3' },
+          labelStyle:     { fill: '#71717a', fontSize: 10 },
+          style:          { stroke: '#52525b', strokeDasharray: '5 3' },
           type:           'straight',
         })
       }

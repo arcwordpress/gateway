@@ -12,7 +12,7 @@ function RecordViewContent({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-gray-400 text-sm">Loading record…</p>
+        <p className="text-zinc-500 text-sm">Loading record…</p>
       </div>
     )
   }
@@ -20,7 +20,7 @@ function RecordViewContent({ id }: { id: string }) {
   if (!record) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-gray-400 text-sm">Record not found.</p>
+        <p className="text-zinc-500 text-sm">Record not found.</p>
       </div>
     )
   }
@@ -36,8 +36,8 @@ export default function RecordView() {
   const navigate = useNavigate()
 
   return (
-    <div className="h-full overflow-auto bg-white">
-      <div className="border-b border-gray-200 px-6 py-3 flex items-center gap-3">
+    <div className="h-full overflow-auto bg-[var(--app-bg)]">
+      <div className="border-b border-zinc-800 px-6 py-3 flex items-center gap-3">
         <button
           onClick={() =>
             void navigate({
@@ -45,15 +45,15 @@ export default function RecordView() {
               params: { collectionKey } as never,
             })
           }
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-200 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to {collectionKey}
         </button>
-        <span className="text-gray-300">/</span>
-        <span className="text-sm font-medium text-gray-700">Record #{id}</span>
+        <span className="text-zinc-700">/</span>
+        <span className="text-sm font-medium text-zinc-300">Record #{id}</span>
       </div>
 
       <div className="px-6 py-4">
