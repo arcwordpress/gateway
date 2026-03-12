@@ -47,4 +47,9 @@ class RaptorView extends \Gateway\Collection
     {
         return $this->belongsTo(RaptorViewList::class, 'view_list_id', 'id');
     }
+
+    public function viewRenders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorViewRender::class, 'view_id', 'id');
+    }
 }

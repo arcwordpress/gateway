@@ -93,6 +93,7 @@ class Plugin
         new Raptor\Endpoints\FormRoutes();
         new Raptor\Endpoints\ViewListRoutes();
         new Raptor\Endpoints\ViewRoutes();
+        new Raptor\Endpoints\ViewRenderRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues

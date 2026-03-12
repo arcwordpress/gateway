@@ -36,11 +36,11 @@ export type {
   CollNodeType,
   FieldsNodeType,
   ViewsNodeType,
-  RenderStrategyNodeType,
-  RenderOutputNodeType,
 } from './types'
 export type { ViewListLabelNodeType } from './ViewListLabelNode'
 export type { ViewNodeType } from './ViewNode'
+export type { RenderStrategyNodeType } from './RenderStrategyNode'
+export type { RenderOutputNodeType } from './RenderOutputNode'
 
 // Export context
 export { RecordsCtx } from './RecordsContext'
