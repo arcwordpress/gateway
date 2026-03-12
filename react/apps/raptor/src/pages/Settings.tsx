@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 import DatabaseSettings from './Settings/DatabaseSettings'
 import AISettings from './Settings/AISettings'
+import CollectionSettings from './Settings/CollectionSettings'
 
 interface SettingsData {
   id: number
@@ -14,11 +15,12 @@ interface SettingsData {
   has_anthropic_key: boolean
 }
 
-type TabKey = 'database' | 'ai'
+type TabKey = 'database' | 'ai' | 'collections'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'database', label: 'Database' },
   { key: 'ai', label: 'AI' },
+  { key: 'collections', label: 'Collections' },
 ]
 
 export default function Settings() {
@@ -157,6 +159,7 @@ export default function Settings() {
             onChange={handleFieldChange}
           />
         )}
+        {activeTab === 'collections' && <CollectionSettings />}
       </div>
     </div>
   )

@@ -83,6 +83,7 @@ class Plugin
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
+        new Endpoints\CoreCollectionUserRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         new Raptor\Endpoints\ExtensionCrudRoutes();
         new Raptor\Endpoints\ExtensionRoutes();
@@ -187,7 +188,7 @@ class Plugin
      *
      * @return array<string, class-string>
      */
-    private static function coreCollectionMap(): array
+    public static function getCoreCollectionMap(): array
     {
         return [
             'wp_post'              => Collections\WP\Post::class,
@@ -222,7 +223,7 @@ class Plugin
         Collections\GatewaySettingsCollection::register();
 
         // Register core WP collections, gated by CollectionUser active flag.
-        foreach (self::coreCollectionMap() as $key => $class) {
+        foreach (self::getCoreCollectionMap() as $key => $class) {
             if (Collections\Gateway\CollectionUser::isActive($key)) {
                 $class::register();
             }
@@ -282,7 +283,7 @@ class Plugin
      */
     public function seedCollections()
     {
-        foreach (array_keys(self::coreCollectionMap()) as $key) {
+        foreach (array_keys(self::getCoreCollectionMap()) as $key) {
             Collections\Gateway\CollectionUser::seedOne($key);
         }
     }
