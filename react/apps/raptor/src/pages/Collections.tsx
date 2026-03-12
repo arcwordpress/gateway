@@ -95,7 +95,7 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
   return (
     <div
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onClick={() => void navigate({ to: '/extensions/$extKey/collections/$collKey/fields' as any, params: { extKey: data.extKey, collKey: data.collKey } })}
+      onClick={() => void navigate({ to: '/extensions/$extKey/collections/$collKey/fields' as any, params: { extKey: data.extKey, collKey: data.collKey } as any })}
       style={{
         background: '#1e293b',
         border: '1px solid #334155',

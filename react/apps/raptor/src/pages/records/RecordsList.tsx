@@ -15,13 +15,13 @@ export default function RecordsList() {
         onEdit={(id: number | string) =>
           void navigate({
             to: '/records/$collectionKey/edit/$id' as never,
-            params: { collectionKey, id: String(id) },
+            params: { collectionKey, id: String(id) } as never,
           })
         }
         onView={(record: { id: number | string }) =>
           void navigate({
             to: '/records/$collectionKey/view/$id' as never,
-            params: { collectionKey, id: String(record.id) },
+            params: { collectionKey, id: String(record.id) } as never,
           })
         }
         toolbarActions={
@@ -29,7 +29,7 @@ export default function RecordsList() {
             onClick={() =>
               void navigate({
                 to: '/records/$collectionKey/create' as never,
-                params: { collectionKey },
+                params: { collectionKey } as never,
               })
             }
             className="gty-dashboard__create-button"
