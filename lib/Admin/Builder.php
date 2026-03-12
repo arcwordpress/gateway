@@ -23,14 +23,7 @@ class Builder
      */
     public static function addBuilderMenu()
     {
-        add_submenu_page(
-            'gateway', // Parent slug
-            'Builder', // Page title
-            'Builder', // Menu title
-            'manage_options', // Capability
-            'gateway-builder', // Menu slug
-            [__CLASS__, 'renderBuilderPage']
-        );
+        // Sub-menu item removed — Raptor is now the primary app at ?page=gateway.
     }
 
     /**
