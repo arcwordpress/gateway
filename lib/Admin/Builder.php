@@ -98,7 +98,7 @@ class Builder
     public static function renderBuilderPage()
     {
         ?>
-        <div id="gateway-raptor-root" data-route="/extensions"></div>
+        <div id="gateway-raptor-root" data-route="/"></div>
         <?php
     }
 }
