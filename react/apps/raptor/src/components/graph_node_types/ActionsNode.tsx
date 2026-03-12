@@ -6,7 +6,7 @@ export function ActionsNode({ data }: NodeProps<ActNodeType>) {
   return (
     <div
       style={{
-        background: '#111',
+        background: '#18181b',
         border: '1px solid #1e1e1e',
         borderRadius: 8,
         minWidth: 140,
@@ -22,7 +22,7 @@ export function ActionsNode({ data }: NodeProps<ActNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
-          color: '#f0f0f0',
+          color: '#e4e4e7',
           userSelect: 'none',
         }}
       >
@@ -41,7 +41,7 @@ export function ActionsNode({ data }: NodeProps<ActNodeType>) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#e8e8e8',
+              color: '#d4d4d8',
               fontSize: 12,
               fontFamily: 'inherit',
             }}

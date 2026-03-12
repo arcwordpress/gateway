@@ -12,12 +12,12 @@ export function ViewsNode({ data }: NodeProps<ViewsNodeType>) {
   return (
     <div
       style={{
-        background: '#1e293b',
+        background: '#27272a',
         border: '1px solid #475569',
         borderRadius: 8,
         padding: '8px 12px',
         width: 110,
-        color: '#cbd5e1',
+        color: '#d4d4d8',
         fontSize: 13,
         cursor: 'pointer',
         fontWeight: 500,
@@ -41,7 +41,7 @@ export function ViewsNode({ data }: NodeProps<ViewsNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: '#94a3b8',
+          color: '#71717a',
           opacity: 0.7,
         }}
       >
@@ -57,7 +57,7 @@ export function ViewsNode({ data }: NodeProps<ViewsNodeType>) {
           padding: '4px 8px',
           fontSize: 11,
           fontWeight: 600,
-          background: '#64748b',
+          background: '#52525b',
           border: 'none',
           borderRadius: 4,
           color: '#fff',
@@ -66,10 +66,10 @@ export function ViewsNode({ data }: NodeProps<ViewsNodeType>) {
           marginTop: 4,
         }}
         onMouseEnter={(e) => {
-          (e.target as HTMLButtonElement).style.background = '#475569'
+          (e.target as HTMLButtonElement).style.background = '#3f3f46'
         }}
         onMouseLeave={(e) => {
-          (e.target as HTMLButtonElement).style.background = '#64748b'
+          (e.target as HTMLButtonElement).style.background = '#52525b'
         }}
       >
         Manage

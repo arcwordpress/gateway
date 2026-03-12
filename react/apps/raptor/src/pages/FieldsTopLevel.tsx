@@ -51,11 +51,11 @@ export default function FieldsTopLevelPage() {
   })
 
   if (activeCollectionKey) {
-    return <div className="p-8 text-gray-400">Opening active collection fields...</div>
+    return <div className="p-8 text-zinc-400">Opening active collection fields...</div>
   }
 
   if (isLoading) {
-    return <div className="p-8 text-gray-400">Loading fields...</div>
+    return <div className="p-8 text-zinc-400">Loading fields...</div>
   }
 
   const groups = collections
@@ -86,19 +86,19 @@ export default function FieldsTopLevelPage() {
             : 'opacity-0 translate-y-1 pointer-events-none'
         }`}
       >
-        <div className="w-full h-full overflow-auto rounded border border-gray-800 bg-gray-950/70 backdrop-blur-sm px-8 py-6 text-white">
+        <div className="w-full h-full overflow-auto rounded border border-zinc-800 bg-zinc-950/70 backdrop-blur-sm px-8 py-6 text-white">
           <h1 className="text-2xl font-bold text-zinc-200 mb-2">Fields</h1>
-          <p className="text-sm text-gray-400 mb-8">All Collections · {totalFields} fields</p>
+          <p className="text-sm text-zinc-400 mb-8">All Collections · {totalFields} fields</p>
           {groups.length === 0 ? (
-            <div className="rounded border border-gray-800 bg-gray-900/40 p-4 text-sm text-gray-400">
+            <div className="rounded border border-zinc-800 bg-zinc-900/40 p-4 text-sm text-zinc-400">
               No fields found yet.
             </div>
           ) : (
             <div className="space-y-5">
               {groups.map(({ collection, fields }) => (
-                <article key={collection.id} className="rounded border border-gray-800 bg-gray-900/40 p-4">
+                <article key={collection.id} className="rounded border border-zinc-800 bg-zinc-900/40 p-4">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-200">{collection.title}</h2>
+                    <h2 className="text-lg font-semibold text-zinc-200">{collection.title}</h2>
                     <Link
                       to="/collections/$collectionKey/fields"
                       params={{ collectionKey: collection.collection_key }}
@@ -109,7 +109,7 @@ export default function FieldsTopLevelPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {fields.map((field) => (
-                      <span key={`${collection.id}-${field.name}`} className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-300">
+                      <span key={`${collection.id}-${field.name}`} className="rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-300">
                         {field.label || field.name}
                       </span>
                     ))}
@@ -123,11 +123,11 @@ export default function FieldsTopLevelPage() {
 
       {/* Floating topbar with collection selector and view toggle */}
       <div
-        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-gray-700 bg-dark backdrop-blur-sm"
+        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-zinc-700 bg-dark backdrop-blur-sm"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Collection</span>
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-zinc-400">Collection</span>
           <select
             value={activeCollectionKey ?? ''}
             onChange={(e) => {
@@ -139,7 +139,7 @@ export default function FieldsTopLevelPage() {
                 params: nextKey ? { collectionKey: nextKey } : undefined,
               })
             }}
-            className="h-8 min-w-[240px] rounded border border-gray-700 bg-dark px-2 text-xs text-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            className="h-8 min-w-[240px] rounded border border-zinc-700 bg-dark px-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
             disabled={isCollectionsLoading}
           >
             <option value="">All Collections</option>
@@ -152,13 +152,13 @@ export default function FieldsTopLevelPage() {
         </div>
 
         {/* View mode toggle on the right */}
-        <div className="flex gap-1 border border-gray-700 rounded p-1 bg-gray-900/50">
+        <div className="flex gap-1 border border-zinc-700 rounded p-1 bg-zinc-900/50">
           <button
             onClick={() => setViewMode('graph')}
             className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
               viewMode === 'graph'
-                ? 'bg-gray-700 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-zinc-700 text-white'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             Graph
@@ -167,8 +167,8 @@ export default function FieldsTopLevelPage() {
             onClick={() => setViewMode('list')}
             className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
               viewMode === 'list'
-                ? 'bg-gray-700 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-zinc-700 text-white'
+                : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
             List

@@ -71,7 +71,7 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
     <div
       style={{
         background: '#18181b',
-        border: '1px solid #334155',
+        border: '1px solid #3f3f46',
         borderRadius: 10,
         color: '#e4e4e7',
         minWidth: 320,
@@ -82,7 +82,7 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
       <Handle type="source" position={Position.Bottom} />
 
       {/* Header */}
-      <div style={{ background: '#18181b', borderBottom: '1px solid #1f2937', padding: '8px 12px' }}>
+      <div style={{ background: '#18181b', borderBottom: '1px solid #27272a', padding: '8px 12px' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 2 }}>
           Render Options
         </div>
@@ -90,7 +90,7 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
       </div>
 
       {/* Saved Renders */}
-      <div style={{ padding: '10px 12px', borderBottom: '1px solid #1f2937' }}>
+      <div style={{ padding: '10px 12px', borderBottom: '1px solid #27272a' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#71717a', marginBottom: 6, fontWeight: 600 }}>
           Saved Renders
         </div>

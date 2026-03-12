@@ -10,12 +10,12 @@ import { useCollection, useForms, SurfaceState } from './FormsPageContext'
 import { EditPanel } from '../Fields/FieldsEditor'
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
@@ -160,7 +160,7 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       </DndContext>
 
       {forms.length === 0 && !addMutation.isPending && (
-        <div className="text-gray-500 text-sm italic">No forms yet. Add one above to get started.</div>
+        <div className="text-zinc-500 text-sm italic">No forms yet. Add one above to get started.</div>
       )}
     </section>
   )
@@ -188,26 +188,26 @@ function SortableFormItem({
       ref={setNodeRef}
       style={style}
       className={`group relative flex gap-4 items-center border border-white px-4 py-2 rounded transition-opacity ${
-        isDragging ? 'bg-gray-900/50' : 'hover:bg-gray-900/30'
+        isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
-      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-300">
+      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300">
         <HandleIcon />
       </div>
       <div className="flex-1">
         <h3 className="!text-white">{form.title}</h3>
-        <span className="text-xs text-gray-400 font-mono">{form.form_key}</span>
+        <span className="text-xs text-zinc-400 font-mono">{form.form_key}</span>
       </div>
       <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
         <button
           onClick={() => onMove('up')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↑
         </button>
         <button
           onClick={() => onMove('down')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↓
         </button>
@@ -273,7 +273,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Title</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title</label>
         <input
           type="text"
           value={title}
@@ -284,7 +284,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Description</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -294,7 +294,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Layout</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Layout</label>
         <div className="flex gap-2">
           <button
             type="button"
@@ -303,7 +303,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               layout === 'single'
                 ? 'bg-zinc-700 text-zinc-100 border-zinc-600'
-                : 'bg-gray-900 text-gray-300 border-gray-800 hover:bg-gray-800'
+                : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-800'
             } border`}
           >
             Single Column
@@ -315,7 +315,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               layout === '2-col'
                 ? 'bg-zinc-700 text-zinc-100 border-zinc-600'
-                : 'bg-gray-900 text-gray-300 border-gray-800 hover:bg-gray-800'
+                : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-800'
             } border`}
           >
             2 Columns
@@ -323,7 +323,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Success Message</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Success Message</label>
         <textarea
           value={successMessage}
           onChange={(e) => setSuccessMessage(e.target.value)}
@@ -333,7 +333,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Notification Email</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Notification Email</label>
         <input
           type="email"
           value={notificationEmail}
@@ -360,7 +360,7 @@ export function FormEditForm({ form, onClose }: { form: Form; onClose: () => voi
           type="button"
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
@@ -392,7 +392,7 @@ export function DeleteConfirmation({ form, onClose }: { form: Form; onClose: () 
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-gray-300 text-sm">
+      <p className="text-zinc-300 text-sm">
         Are you sure you want to delete the form <strong className="text-white">{form.title}</strong>?
         This action cannot be undone.
       </p>
@@ -412,7 +412,7 @@ export function DeleteConfirmation({ form, onClose }: { form: Form; onClose: () 
         <button
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50"
         >
           Cancel
         </button>

@@ -24,28 +24,28 @@ function getStrategyInfo(strategyType: string, viewKey: string): StrategyInfo {
         title: 'Shortcode',
         description: 'Paste this shortcode into any post, page, or widget area:',
         code: `[gateway_view key="${viewKey}"]`,
-        accent: '#a78bfa',
+        accent: '#a1a1aa',
       }
     case 'block':
       return {
         title: 'Block',
         description: 'Add a Gateway View block in the editor and set the key to:',
         code: viewKey,
-        accent: '#7dd3fc',
+        accent: '#a1a1aa',
       }
     case 'template':
       return {
         title: 'Template',
         description: 'Use the gateway_view_render_template filter with view key:',
         code: viewKey,
-        accent: '#6ee7b7',
+        accent: '#a1a1aa',
       }
     default:
       return {
         title: strategyType,
         description: 'Use this key to render the view:',
         code: viewKey,
-        accent: '#94a3b8',
+        accent: '#71717a',
       }
   }
 }
@@ -63,10 +63,10 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
   return (
     <div
       style={{
-        background: '#0b1220',
+        background: '#18181b',
         border: '1px solid #334155',
         borderRadius: 10,
-        color: '#e2e8f0',
+        color: '#e4e4e7',
         minWidth: 300,
         maxWidth: 420,
         overflow: 'hidden',
@@ -76,7 +76,7 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
 
       <div
         style={{
-          background: '#111827',
+          background: '#27272a',
           borderBottom: '1px solid #1f2937',
           padding: '8px 12px',
         }}
@@ -93,7 +93,7 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
         >
           {info.title}
         </div>
-        <div style={{ fontSize: 11, color: '#64748b' }}>{info.description}</div>
+        <div style={{ fontSize: 11, color: '#71717a' }}>{info.description}</div>
       </div>
 
       <div style={{ padding: '12px' }}>
@@ -102,7 +102,7 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            background: '#0f172a',
+            background: '#18181b',
             border: '1px solid #1e293b',
             borderRadius: 6,
             padding: '8px 10px',
@@ -126,10 +126,10 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
               padding: '4px 10px',
               fontSize: 10,
               fontWeight: 600,
-              background: copied ? '#065f46' : '#1e293b',
+              background: copied ? '#3f3f46' : '#27272a',
               border: '1px solid #334155',
               borderRadius: 4,
-              color: copied ? '#6ee7b7' : '#94a3b8',
+              color: copied ? '#a1a1aa' : '#71717a',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               whiteSpace: 'nowrap',

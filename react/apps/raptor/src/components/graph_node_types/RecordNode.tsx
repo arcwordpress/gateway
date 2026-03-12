@@ -6,11 +6,11 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
   return (
     <div
       style={{
-        background: '#0f172a',
+        background: '#18181b',
         border: '1px solid #334155',
         borderRadius: 8,
         padding: '8px 12px',
-        color: '#94a3b8',
+        color: '#71717a',
         fontSize: 11,
         minWidth: 110,
         maxWidth: 160,
@@ -18,10 +18,10 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
       }}
     >
       <Handle type="target" position={Position.Top} />
-      <div style={{ fontSize: 10, color: '#475569', marginBottom: 2 }}>
+      <div style={{ fontSize: 10, color: '#52525b', marginBottom: 2 }}>
         #{data.recordId}
       </div>
-      <div style={{ color: '#cbd5e1', wordBreak: 'break-word' }}>
+      <div style={{ color: '#d4d4d8', wordBreak: 'break-word' }}>
         {data.label}
       </div>
     </div>

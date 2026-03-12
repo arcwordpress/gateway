@@ -38,10 +38,10 @@ export function BuilderTopBar() {
 
   return (
     <div
-      className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded border border-gray-700 bg-dark backdrop-blur-sm"
+      className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded border border-zinc-700 bg-dark backdrop-blur-sm"
       style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
     >
-      <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400">Active Collection</span>
+      <span className="text-[10px] font-semibold tracking-widest uppercase text-zinc-400">Active Collection</span>
       <select
         value={activeCollectionKey ?? ''}
         onChange={(e) => handleCollectionChange(e.target.value)}

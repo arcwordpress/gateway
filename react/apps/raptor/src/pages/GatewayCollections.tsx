@@ -780,7 +780,7 @@ function CollectionCard({
           </button>
 
           {expanded && (
-            <div className="border-t border-zinc-800/60 divide-y divide-gray-800/60">
+            <div className="border-t border-zinc-800/60 divide-y divide-zinc-800/60">
               {collection.routes.map((route, idx) => (
                 <div key={idx} className="px-4 py-2.5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
@@ -934,7 +934,7 @@ export default function GatewayCollections() {
           <div className="flex items-center justify-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
             <div className="text-center">
               <p className="text-zinc-600 text-sm">No registered collections found</p>
-              <p className="text-gray-700 text-xs mt-1">Register collections using <code className="text-zinc-500">YourCollection::register()</code></p>
+              <p className="text-zinc-700 text-xs mt-1">Register collections using <code className="text-zinc-500">YourCollection::register()</code></p>
             </div>
           </div>
         )}

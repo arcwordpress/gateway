@@ -48,7 +48,7 @@ function TabbedFieldConfig({
   return (
     <ControlledForm values={values} onChange={onChange}>
       {groupKeys.length > 1 && (
-        <div className="flex gap-1 mb-4 border-b border-gray-700">
+        <div className="flex gap-1 mb-4 border-b border-zinc-700">
           {groupKeys.map(g => (
             <button
               key={g}
@@ -56,8 +56,8 @@ function TabbedFieldConfig({
               onClick={() => setActiveTab(g)}
               className={`px-3 py-1.5 text-xs font-medium rounded-t transition-colors ${
                 activeTab === g
-                  ? 'bg-gray-700 text-white'
-                  : 'text-gray-400 hover:text-gray-200'
+                  ? 'bg-zinc-700 text-white'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
               {g.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
@@ -73,7 +73,7 @@ function TabbedFieldConfig({
 }
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
@@ -99,7 +99,7 @@ function EditPanel({ title, sub, onClose, children }: {
   return (
     <div style={{
       position: 'fixed', right: 0, top, height, width: 320,
-      background: '#0f0f0f', borderLeft: '1px solid #1e293b',
+      background: '#18181b', borderLeft: '1px solid #1e293b',
       zIndex: 100000, display: 'flex', flexDirection: 'column', color: 'white',
     }}>
       <div style={{
@@ -107,11 +107,11 @@ function EditPanel({ title, sub, onClose, children }: {
         padding: '16px 20px', borderBottom: '1px solid #1e293b', flexShrink: 0,
       }}>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
-          {sub && <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{sub}</div>}
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#f4f4f5' }}>{title}</div>
+          {sub && <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{sub}</div>}
         </div>
         <button onClick={onClose} aria-label="Close panel" style={{
-          color: '#64748b', fontSize: 18, lineHeight: 1,
+          color: '#71717a', fontSize: 18, lineHeight: 1,
           background: 'none', border: 'none', cursor: 'pointer', padding: 4,
         }}>✕</button>
       </div>
@@ -139,24 +139,24 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
       ref={setNodeRef}
       style={style}
       className={`group relative flex gap-4 items-center border border-white px-4 py-2 rounded transition-opacity ${
-        isDragging ? 'bg-gray-900/50' : 'hover:bg-gray-900/30'
+        isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
-      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-300">
+      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300">
         <HandleIcon />
       </div>
       <h3 className="!text-white">{field.label}</h3>
-      <span className="text-xs text-gray-400 ml-auto">{field.type}</span>
+      <span className="text-xs text-zinc-400 ml-auto">{field.type}</span>
       <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
         <button
           onClick={() => moveField(field.name, 'up')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↑
         </button>
         <button
           onClick={() => moveField(field.name, 'down')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↓
         </button>
@@ -314,12 +314,12 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Name</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Name</label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
                className={baseInput} required disabled={mutation.isPending} />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Type</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Type</label>
         <select
           value={type}
           onChange={e => setType(e.target.value)}
@@ -333,14 +333,14 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Label</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Label</label>
         <input type="text" value={label} onChange={e => setLabel(e.target.value)}
                className={baseInput} required disabled={mutation.isPending} />
       </div>
 
       {selectedTypeDef && selectedTypeDef.fields.length > 0 && (
-        <div className="pt-3 border-t border-gray-800">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+        <div className="pt-3 border-t border-zinc-800">
+          <div className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-3">
             Field Configuration
           </div>
           <TabbedFieldConfig
@@ -364,7 +364,7 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
         </button>
         <button type="button" onClick={onClose}
                 disabled={mutation.isPending}
-                className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50">
+                className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50">
           Cancel
         </button>
       </div>
@@ -397,7 +397,7 @@ export function DeleteConfirmation({ field, onClose }: { field: Field; onClose: 
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-gray-300 text-sm">Delete <strong className="text-white">{field.label}</strong>?</p>
+      <p className="text-zinc-300 text-sm">Delete <strong className="text-white">{field.label}</strong>?</p>
       {mutation.isError && (
         <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           {(mutation.error as Error).message}
@@ -414,7 +414,7 @@ export function DeleteConfirmation({ field, onClose }: { field: Field; onClose: 
         <button
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50"
         >
           Cancel
         </button>

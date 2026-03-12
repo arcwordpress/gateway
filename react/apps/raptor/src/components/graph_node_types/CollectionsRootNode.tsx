@@ -6,11 +6,11 @@ export function CollectionsLabelNode({ data }: NodeProps<CollectionsLabelNodeTyp
   return (
     <div
       style={{
-        background: '#14532d',
+        background: '#3f3f46',
         border: '1px solid #16a34a',
         borderRadius: 10,
         padding: '10px 20px',
-        color: '#f0fdf4',
+        color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
         letterSpacing: '0.04em',
@@ -39,15 +39,15 @@ export function CollectionsLabelNode({ data }: NodeProps<CollectionsLabelNodeTyp
             fontWeight: 500,
             background: 'none',
             border: 'none',
-            color: '#86efac',
+            color: '#a1a1aa',
             cursor: 'pointer',
             transition: 'color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#bbf7d0'
+            (e.target as HTMLButtonElement).style.color = '#d4d4d8'
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#86efac'
+            (e.target as HTMLButtonElement).style.color = '#a1a1aa'
           }}
         >
           + Create

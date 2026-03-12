@@ -10,11 +10,11 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
   const { status, count, onRefresh } = useContext(RecordsCtx)
 
   const statusLine: { text: string; color: string } = {
-    idle:     { text: 'not loaded',      color: '#57534e' },
-    loading:  { text: 'loading…',        color: '#a8a29e' },
-    empty:    { text: '0 records found', color: '#78716c' },
-    loaded:   { text: `${count} loaded`, color: '#86efac' },
-    'no-route': { text: 'no API route',  color: '#b45309' },
+    idle:     { text: 'not loaded',      color: '#71717a' },
+    loading:  { text: 'loading…',        color: '#a1a1aa' },
+    empty:    { text: '0 records found', color: '#52525b' },
+    loaded:   { text: `${count} loaded`, color: '#a1a1aa' },
+    'no-route': { text: 'no API route',  color: '#71717a' },
   }[status]
 
   const isDisabled = status === 'loading' || status === 'no-route'
@@ -22,11 +22,11 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
   return (
     <div
       style={{
-        background: '#1c1917',
+        background: '#27272a',
         border: '1px solid #78716c',
         borderRadius: 10,
         padding: '10px 16px',
-        color: '#d6d3d1',
+        color: '#d4d4d8',
         fontSize: 12,
         minWidth: 150,
         textAlign: 'center',
@@ -34,7 +34,7 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8a29e', marginBottom: 4, fontWeight: 600 }}>
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 4, fontWeight: 600 }}>
         Records
       </div>
       <div style={{ fontSize: 11, color: statusLine.color, marginBottom: 8 }}>
@@ -45,9 +45,9 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
         disabled={isDisabled}
         style={{
           background: 'none',
-          border: `1px solid ${isDisabled ? '#3c3834' : '#57534e'}`,
+          border: `1px solid ${isDisabled ? '#3f3f46' : '#71717a'}`,
           borderRadius: 4,
-          color: isDisabled ? '#3c3834' : '#a8a29e',
+          color: isDisabled ? '#3f3f46' : '#a1a1aa',
           fontSize: 9,
           fontWeight: 700,
           letterSpacing: '0.08em',

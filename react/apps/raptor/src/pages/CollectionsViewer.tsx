@@ -117,9 +117,9 @@ function PanelShell({
         }}
       >
         <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f1f5f9' }}>{title}</div>
+          <div style={{ fontWeight: 600, fontSize: 15, color: '#f4f4f5' }}>{title}</div>
           {sub && (
-            <div style={{ fontSize: 11, color: '#475569', fontFamily: 'monospace', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#52525b', fontFamily: 'monospace', marginTop: 2 }}>
               {sub}
             </div>
           )}
@@ -130,7 +130,7 @@ function PanelShell({
           style={{
             background: 'none',
             border: 'none',
-            color: '#64748b',
+            color: '#71717a',
             cursor: 'pointer',
             fontSize: 16,
             lineHeight: 1,
@@ -151,12 +151,12 @@ function PanelShell({
 // ─── Shared input styles ─────────────────────────────────────────────────────
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
@@ -212,7 +212,7 @@ function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; acti
         className="space-y-4"
       >
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
             Extension <span className="text-red-400">*</span>
           </label>
           <select
@@ -231,7 +231,7 @@ function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; acti
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
             Title <span className="text-red-400">*</span>
           </label>
           <input
@@ -244,21 +244,21 @@ function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; acti
           />
           {key && (
             <div className="mt-2">
-              <label className="block text-xs font-medium text-gray-400 mb-1">
-                Key <span className="text-gray-600 font-normal">auto-generated</span>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
+                Key <span className="text-zinc-600 font-normal">auto-generated</span>
               </label>
               <input
                 type="text"
                 value={key}
                 readOnly
-                className="w-full px-3 py-1.5 rounded-lg bg-gray-900/50 border border-gray-800/50 text-gray-500 font-mono text-xs focus:outline-none cursor-default"
+                className="w-full px-3 py-1.5 rounded-lg bg-zinc-900/50 border border-zinc-800/50 text-zinc-500 font-mono text-xs focus:outline-none cursor-default"
               />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Description</label>
           <textarea
             value={description}
             rows={3}
@@ -285,7 +285,7 @@ function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; acti
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -355,13 +355,13 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       >
         {isLoading ? (
           <>
-            <div className="h-8 rounded-lg bg-gray-900 animate-pulse" />
-            <div className="h-16 rounded-lg bg-gray-900 animate-pulse" />
+            <div className="h-8 rounded-lg bg-zinc-900 animate-pulse" />
+            <div className="h-16 rounded-lg bg-zinc-900 animate-pulse" />
           </>
         ) : (
           <>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">
+              <label className="block text-xs font-medium text-zinc-400 mb-1">
                 Title <span className="text-red-400">*</span>
               </label>
               <input
@@ -373,7 +373,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Description</label>
               <textarea
                 value={description}
                 rows={3}
@@ -402,7 +402,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -448,11 +448,11 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
 
   return (
     <PanelShell title="Delete Collection" sub={collKey} onClose={onClose}>
-      <p className="text-sm text-gray-300 mb-1">
+      <p className="text-sm text-zinc-300 mb-1">
         You are about to delete{' '}
-        <span className="font-semibold text-gray-100">{collection?.title || collKey}</span>.
+        <span className="font-semibold text-zinc-100">{collection?.title || collKey}</span>.
       </p>
-      <p className="text-xs text-gray-500 mb-6">
+      <p className="text-xs text-zinc-500 mb-6">
         This removes the collection record from the database. This cannot be undone.
       </p>
 
@@ -473,7 +473,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
         <button
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-sm font-medium transition-colors"
         >
           Cancel
         </button>
@@ -559,14 +559,14 @@ function RelationshipPanel({
           gap: 8,
           marginBottom: 20,
           padding: '8px 10px',
-          background: '#0f172a',
+          background: '#18181b',
           borderRadius: 6,
           border: '1px solid #1e293b',
         }}
       >
-        <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{sourceTitle}</span>
-        <span style={{ fontSize: 12, color: '#475569' }}>→</span>
-        <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>{targetTitle}</span>
+        <span style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>{sourceTitle}</span>
+        <span style={{ fontSize: 12, color: '#52525b' }}>→</span>
+        <span style={{ fontSize: 12, color: '#71717a', fontWeight: 500 }}>{targetTitle}</span>
       </div>
 
       <form
@@ -579,7 +579,7 @@ function RelationshipPanel({
       >
         {/* Relationship type */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-2">
+          <label className="block text-xs font-medium text-zinc-400 mb-2">
             Type <span className="text-red-400">*</span>
           </label>
           <div className="space-y-1.5">
@@ -592,8 +592,8 @@ function RelationshipPanel({
                   gap: 8,
                   padding: '7px 10px',
                   borderRadius: 6,
-                  border: `1px solid ${type === rt.value ? '#3b82f6' : '#1e293b'}`,
-                  background: type === rt.value ? '#1e3a5f' : '#0f172a',
+                  border: `1px solid ${type === rt.value ? '#52525b' : '#27272a'}`,
+                  background: type === rt.value ? '#3f3f46' : '#18181b',
                   cursor: 'pointer',
                 }}
               >
@@ -603,11 +603,11 @@ function RelationshipPanel({
                   value={rt.value}
                   checked={type === rt.value}
                   onChange={() => setType(rt.value)}
-                  style={{ marginTop: 2, accentColor: '#3b82f6' }}
+                  style={{ marginTop: 2, accentColor: '#52525b' }}
                 />
                 <div>
-                  <div style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 500 }}>{rt.label}</div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 1 }}>{rt.hint}</div>
+                  <div style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 500 }}>{rt.label}</div>
+                  <div style={{ fontSize: 10, color: '#71717a', marginTop: 1 }}>{rt.hint}</div>
                 </div>
               </label>
             ))}
@@ -616,7 +616,7 @@ function RelationshipPanel({
 
         {/* Method name */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
+          <label className="block text-xs font-medium text-zinc-400 mb-1">
             Method Name <span className="text-red-400">*</span>
           </label>
           <input
@@ -628,12 +628,12 @@ function RelationshipPanel({
             onChange={(e) => setMethodName(e.target.value)}
             className={baseInput}
           />
-          <p className="mt-1 text-[10px] text-gray-600">camelCase PHP method on the source model</p>
+          <p className="mt-1 text-[10px] text-zinc-600">camelCase PHP method on the source model</p>
         </div>
 
         {/* Foreign key */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Foreign Key</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Foreign Key</label>
           <input
             type="text"
             value={foreignKey}
@@ -646,7 +646,7 @@ function RelationshipPanel({
 
         {/* Owner key */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">Owner Key</label>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Owner Key</label>
           <input
             type="text"
             value={ownerKey}
@@ -674,7 +674,7 @@ function RelationshipPanel({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-medium transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs font-medium transition-colors"
           >
             Cancel
           </button>
@@ -790,7 +790,7 @@ export default function CollectionsViewer() {
         id: `e-${extId}-coll-group`,
         source: extId,
         target: collGroupId,
-        style: { stroke: '#4b5563' },
+        style: { stroke: '#3f3f46' },
       })
 
       // Only add collections if group is expanded
@@ -840,7 +840,7 @@ export default function CollectionsViewer() {
             id: `e-coll-group-${col.collection_key}`,
             source: collGroupId,
             target: colId,
-            style: { stroke: colIsActive ? '#06b6d4' : '#16a34a' },
+            style: { stroke: colIsActive ? '#52525b' : '#52525b' },
           })
 
           // Edge from collection to fields
@@ -848,7 +848,7 @@ export default function CollectionsViewer() {
             id: `e-fields-${col.collection_key}`,
             source: colId,
             target: fieldsId,
-            style: { stroke: '#4b5563' },
+            style: { stroke: '#3f3f46' },
           })
 
           // Edge from collection to views
@@ -856,7 +856,7 @@ export default function CollectionsViewer() {
             id: `e-views-${col.collection_key}`,
             source: colId,
             target: viewsId,
-            style: { stroke: '#4b5563' },
+            style: { stroke: '#3f3f46' },
           })
         }
       }
@@ -874,8 +874,8 @@ export default function CollectionsViewer() {
           target:         tgtId,
           sourceHandle:   'right',
           label:          `${rel.type}: ${rel.methodName}`,
-          labelStyle:     { fill: '#64748b', fontSize: 10 },
-          style:          { stroke: '#4f6a8a', strokeDasharray: '5 3' },
+          labelStyle:     { fill: '#71717a', fontSize: 10 },
+          style:          { stroke: '#52525b', strokeDasharray: '5 3' },
           type:           'straight',
         })
       }

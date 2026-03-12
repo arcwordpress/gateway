@@ -26,7 +26,7 @@
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  background-color: #ffffff;
+  background-color: #27272a;
   border-radius: 8px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -51,7 +51,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #3f3f46;
 }
 
 /* Modal Title */
@@ -59,7 +59,7 @@
   font-size: 18px;
   font-weight: 600;
   line-height: 1.5;
-  color: #111827;
+  color: #e4e4e7;
   margin: 0;
 }
 
@@ -71,19 +71,19 @@
   cursor: pointer;
   font-size: 28px;
   line-height: 1;
-  color: #6b7280;
+  color: #71717a;
   padding: 4px 8px;
   border-radius: 4px;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: #3f3f46;
+  color: #e4e4e7;
 }
 
 .modal-close:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #52525b;
   outline-offset: 2px;
 }
 

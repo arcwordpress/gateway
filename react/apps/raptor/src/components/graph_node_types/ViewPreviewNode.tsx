@@ -15,10 +15,10 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
   return (
     <div
       style={{
-        background: '#0b1220',
+        background: '#18181b',
         border: '1px solid #334155',
         borderRadius: 10,
-        color: '#e2e8f0',
+        color: '#e4e4e7',
         minWidth: 420,
         maxWidth: 560,
         overflow: 'hidden',
@@ -29,19 +29,19 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
 
       <div
         style={{
-          background: '#111827',
+          background: '#27272a',
           borderBottom: '1px solid #1f2937',
           padding: '8px 12px',
         }}
       >
-        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', marginBottom: 2 }}>
+        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#71717a', marginBottom: 2 }}>
           View Preview
         </div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#f8fafc' }}>{data.title}</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5' }}>{data.title}</div>
       </div>
 
       {cols.length === 0 ? (
-        <div style={{ padding: '10px 12px', color: '#64748b', fontSize: 12, fontStyle: 'italic' }}>
+        <div style={{ padding: '10px 12px', color: '#71717a', fontSize: 12, fontStyle: 'italic' }}>
           No columns selected for this view.
         </div>
       ) : (
@@ -62,12 +62,12 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
                 style={{
                   padding: '6px 8px',
                   borderBottom: '1px solid #1e293b',
-                  background: '#0f172a',
+                  background: '#18181b',
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
-                  color: '#93c5fd',
+                  color: '#a1a1aa',
                   fontFamily: 'monospace',
                 }}
               >
@@ -82,9 +82,9 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
                   style={{
                     padding: '6px 8px',
                     borderBottom: rowIndex === rows.length - 1 ? 'none' : '1px solid #17202f',
-                    background: rowIndex % 2 === 0 ? '#0b1220' : '#0d1526',
+                    background: rowIndex % 2 === 0 ? '#18181b' : '#27272a',
                     fontSize: 11,
-                    color: '#cbd5e1',
+                    color: '#d4d4d8',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',

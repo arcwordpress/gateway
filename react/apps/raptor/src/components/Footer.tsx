@@ -4,7 +4,7 @@ import type { ReactNode, CSSProperties } from 'react'
 
 function Credit({ children }: { children: ReactNode }) {
   return (
-    <span className="text-[11px] text-gray-600 select-none font-mono">
+    <span className="text-[11px] text-zinc-600 select-none font-mono">
       {children}
     </span>
   )

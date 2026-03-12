@@ -6,11 +6,11 @@ export function ViewListLabelNode(_: NodeProps<ViewListLabelNodeType>) {
   return (
     <div
       style={{
-        background: '#0f172a',
+        background: '#18181b',
         border: '1px solid #1e293b',
         borderRadius: 6,
         padding: '6px 12px',
-        color: '#94a3b8',
+        color: '#71717a',
         fontSize: 11,
         fontWeight: 600,
         textTransform: 'uppercase',

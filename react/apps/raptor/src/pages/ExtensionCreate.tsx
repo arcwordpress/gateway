@@ -66,20 +66,20 @@ export default function ExtensionCreate() {
   return (
     <div className="max-w-xl mx-auto">
       <div className="mb-6">
-        <Link to="/extensions" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+        <Link to="/extensions" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Extensions
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-100 mt-3">New Extension</h1>
+        <h1 className="text-2xl font-semibold text-zinc-100 mt-3">New Extension</h1>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
         <form
           onSubmit={(e) => { e.preventDefault(); mutation.mutate() }}
           className="space-y-5"
         >
           {/* Title + auto-key */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
               Title <span className="text-red-400">*</span>
             </label>
             <input
@@ -92,22 +92,22 @@ export default function ExtensionCreate() {
               placeholder="Ticketify"
             />
             <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Key
-                <span className="ml-2 text-xs text-gray-600 font-normal">auto-generated · used as plugin slug</span>
+                <span className="ml-2 text-xs text-zinc-600 font-normal">auto-generated · used as plugin slug</span>
               </label>
               <input
                 type="text"
                 value={key}
                 readOnly
-                className="w-full px-3 py-2 rounded-lg bg-gray-800/50 border border-gray-700/50 text-gray-500 font-mono text-sm focus:outline-none cursor-default"
+                className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 font-mono text-sm focus:outline-none cursor-default"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description</label>
             <input
               type="text"
               value={description}
@@ -119,7 +119,7 @@ export default function ExtensionCreate() {
 
           {/* Version */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Version</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Version</label>
             <input
               type="text"
               value={version}
@@ -133,7 +133,7 @@ export default function ExtensionCreate() {
           {/* Author + Author URI */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Author</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author</label>
               <input
                 type="text"
                 value={author}
@@ -143,7 +143,7 @@ export default function ExtensionCreate() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Author URI</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author URI</label>
               <input
                 type="text"
                 value={authorUri}
@@ -157,7 +157,7 @@ export default function ExtensionCreate() {
 
           {/* Min WP Version */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Min WP Version</label>
+            <label className="block text-sm font-medium text-zinc-300 mb-1.5">Min WP Version</label>
             <input
               type="text"
               value={minWpVersion}
@@ -184,7 +184,7 @@ export default function ExtensionCreate() {
             </button>
             <Link
               to="/extensions"
-              className="px-5 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 text-sm font-medium transition-colors"
+              className="px-5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 text-sm font-medium transition-colors"
             >
               Cancel
             </Link>

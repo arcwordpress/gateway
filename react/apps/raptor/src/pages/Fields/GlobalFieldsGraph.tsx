@@ -62,13 +62,13 @@ export function GlobalFieldsGraph() {
       position: { x: 0, y: yOffset },
       type: 'default',
       style: {
-        background: '#1f2937',
+        background: '#27272a',
         border: '1px solid #4b5563',
         borderRadius: '6px',
         padding: '12px 16px',
         fontSize: '14px',
         fontWeight: '600',
-        color: '#e5e7eb',
+        color: '#e4e4e7',
         width: 'auto',
         minWidth: '200px',
       },
@@ -87,12 +87,12 @@ export function GlobalFieldsGraph() {
         position: { x: idx * 240, y: yOffset },
         type: 'default',
         style: {
-          background: '#111827',
+          background: '#18181b',
           border: '1px solid #374151',
           borderRadius: '4px',
           padding: '8px 12px',
           fontSize: '12px',
-          color: '#d1d5db',
+          color: '#d4d4d8',
           width: 'auto',
           minWidth: '150px',
         },
@@ -103,7 +103,7 @@ export function GlobalFieldsGraph() {
         source: collectionNodeId,
         target: nodeId,
         animated: false,
-        style: { stroke: '#4b5563' },
+        style: { stroke: '#3f3f46' },
       })
     })
     yOffset += 120
