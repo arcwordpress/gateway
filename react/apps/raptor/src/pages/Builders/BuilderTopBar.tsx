@@ -10,8 +10,6 @@ export function BuilderTopBar() {
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
-  const activeCollectionTitle = collections.find((c) => c.collection_key === activeCollectionKey)?.title
-
   const handleCollectionChange = (value: string) => {
     const nextKey = value || null
     setActiveCollectionKey(nextKey)

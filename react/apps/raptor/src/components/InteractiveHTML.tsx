@@ -21,7 +21,7 @@ export function InteractiveHTML({ html, className, style }: InteractiveHTMLProps
 
     // Check if WordPress Interactivity API is available and trigger hydration
     if (typeof window !== 'undefined' && (window as any).wp?.interactivity) {
-      const { store } = (window as any).wp.interactivity
+      void (window as any).wp.interactivity
       
       // The Interactivity API automatically watches for new elements
       // with data-wp-interactive attributes, but we can manually trigger

@@ -42,7 +42,7 @@ export default function RecordView() {
           onClick={() =>
             void navigate({
               to: '/records/$collectionKey' as never,
-              params: { collectionKey },
+              params: { collectionKey } as never,
             })
           }
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"

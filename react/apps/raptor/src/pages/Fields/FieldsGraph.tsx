@@ -70,7 +70,7 @@ export function Graph() {
   const { fields }     = useFields()
   const collKey = collection?.collection_key ?? ''
   const graphContainerRef = useRef<HTMLDivElement | null>(null)
-  const [graphHeightPx, setGraphHeightPx] = useState(480)
+  const [_graphHeightPx, setGraphHeightPx] = useState(480)
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collKey],

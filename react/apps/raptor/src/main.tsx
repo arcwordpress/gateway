@@ -10,7 +10,7 @@ import '@arcwp/gateway-grids/style.css'
 // Bridge raptorConfig → gatewayAdminScript so the studio packages
 // (@arcwp/gateway-data, gateway-forms, gateway-grids) can find auth config.
 if (window.raptorConfig && !(window as Window & { gatewayAdminScript?: unknown }).gatewayAdminScript) {
-  (window as Window & { gatewayAdminScript: { apiUrl: string; nonce: string } }).gatewayAdminScript = {
+  (window as unknown as Window & { gatewayAdminScript: { apiUrl: string; nonce: string } }).gatewayAdminScript = {
     apiUrl: window.raptorConfig.apiUrl,
     nonce: window.raptorConfig.nonce,
   }

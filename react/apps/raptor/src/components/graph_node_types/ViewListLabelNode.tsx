@@ -2,7 +2,7 @@ import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 
 export type ViewListLabelNodeType = Node<{}, 'viewListLabel'>
 
-export function ViewListLabelNode({ data }: NodeProps<ViewListLabelNodeType>) {
+export function ViewListLabelNode(_: NodeProps<ViewListLabelNodeType>) {
   return (
     <div
       style={{

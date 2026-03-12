@@ -377,14 +377,12 @@ function RouteTestPanel({
   const [authType, setAuthType] = useState<AuthType>('cookie')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [params, setParams] = useState<Record<string, string>>(() => {
-    if (['get_one', 'update', 'delete'].includes(route.type)) return { id: '1' }
-    return {}
-  })
-  const [body, setBody] = useState<Record<string, string>>(() => {
-    if (['create', 'update'].includes(route.type)) return { title: 'Test Item', status: 'active' }
-    return {}
-  })
+  const [params, setParams] = useState<Record<string, string>>(
+    ['get_one', 'update', 'delete'].includes(route.type) ? { id: '1' } : {}
+  )
+  const [body, setBody] = useState<Record<string, string>>(
+    ['create', 'update'].includes(route.type) ? { title: 'Test Item', status: 'active' } : {}
+  )
   const [response, setResponse] = useState<{
     success: boolean
     status?: number
