@@ -21,6 +21,9 @@ import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsTopLevelPage from './pages/ViewsTopLevel'
 import FormsTopLevelPage from './pages/FormsTopLevel'
 import SettingsPage from './pages/Settings'
+import RecordsListPage from './pages/records/RecordsList'
+import RecordFormPage from './pages/records/RecordForm'
+import RecordViewPage from './pages/records/RecordView'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -110,6 +113,32 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 })
 
+// ─── Records routes ───────────────────────────────────────────────────────────
+
+export const recordsListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/records/$collectionKey',
+  component: RecordsListPage,
+})
+
+export const recordCreateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/records/$collectionKey/create',
+  component: RecordFormPage,
+})
+
+export const recordEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/records/$collectionKey/edit/$id',
+  component: RecordFormPage,
+})
+
+export const recordViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/records/$collectionKey/view/$id',
+  component: RecordViewPage,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   //collectionsRoute,
@@ -123,6 +152,10 @@ const routeTree = rootRoute.addChildren([
   viewsRoute,
   viewDesignRoute,
   settingsRoute,
+  recordsListRoute,
+  recordCreateRoute,
+  recordEditRoute,
+  recordViewRoute,
 ])
 
 const history = appConfig.isWordPress
