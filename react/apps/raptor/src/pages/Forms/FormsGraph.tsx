@@ -18,8 +18,8 @@ const initialNodes: Node[] = [
     position: { x: 250, y: 150 },
     data: { label: 'Forms' },
     style: {
-      background: '#1f2937',
-      color: '#f3f4f6',
+      background: '#27272a',
+      color: '#f4f4f5',
       border: '1px solid #4b5563',
       borderRadius: '8px',
       padding: '12px 24px',

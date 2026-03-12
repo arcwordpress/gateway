@@ -9,7 +9,7 @@ import { BuilderLeftPanel } from './Builders/BuilderLeftPanel'
 
 function CollectionName() {
   const { collection, isLoading } = useCollection()
-  if (isLoading) return <div className="h-5 w-32 rounded bg-gray-700 animate-pulse" />
+  if (isLoading) return <div className="h-5 w-32 rounded bg-zinc-700 animate-pulse" />
   return <h1 className="!text-zinc-300 text-2xl font-bold">{collection?.title}</h1>
 }
 
@@ -39,7 +39,7 @@ function ViewsContent({ editSurface, setEditSurface }: {
 }) {
   const { isLoading, isError } = useCollection()
 
-  if (isLoading) return <div className="p-8 text-gray-400">Loading collection...</div>
+  if (isLoading) return <div className="p-8 text-zinc-400">Loading collection...</div>
   if (isError) return <div className="p-8 text-red-400">Failed to load collection.</div>
 
   return (
@@ -54,7 +54,7 @@ function ViewsContent({ editSurface, setEditSurface }: {
       <BuilderLeftPanel>
         <div className="p-6">
           <div className="mb-8">
-            <h4 className="font-medium text-sm text-gray-400 mb-2">COLLECTION</h4>
+            <h4 className="font-medium text-sm text-zinc-400 mb-2">COLLECTION</h4>
             <CollectionName />
           </div>
           <div className="flex flex-col gap-8">

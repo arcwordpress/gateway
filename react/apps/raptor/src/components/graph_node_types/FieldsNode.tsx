@@ -12,12 +12,12 @@ export function FieldsNode({ data }: NodeProps<FieldsNodeType>) {
   return (
     <div
       style={{
-        background: '#1e3a4a',
+        background: '#27272a',
         border: '1px solid #164e63',
         borderRadius: 8,
         padding: '8px 12px',
         width: 110,
-        color: '#a8d8ea',
+        color: '#d4d4d8',
         fontSize: 13,
         cursor: 'pointer',
         fontWeight: 500,
@@ -41,7 +41,7 @@ export function FieldsNode({ data }: NodeProps<FieldsNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: '#22d3ee',
+          color: '#71717a',
           opacity: 0.7,
         }}
       >
@@ -57,7 +57,7 @@ export function FieldsNode({ data }: NodeProps<FieldsNodeType>) {
           padding: '4px 8px',
           fontSize: 11,
           fontWeight: 600,
-          background: '#0891b2',
+          background: '#52525b',
           border: 'none',
           borderRadius: 4,
           color: '#fff',
@@ -66,10 +66,10 @@ export function FieldsNode({ data }: NodeProps<FieldsNodeType>) {
           marginTop: 4,
         }}
         onMouseEnter={(e) => {
-          (e.target as HTMLButtonElement).style.background = '#06b6d4'
+          (e.target as HTMLButtonElement).style.background = '#3f3f46'
         }}
         onMouseLeave={(e) => {
-          (e.target as HTMLButtonElement).style.background = '#0891b2'
+          (e.target as HTMLButtonElement).style.background = '#52525b'
         }}
       >
         Manage

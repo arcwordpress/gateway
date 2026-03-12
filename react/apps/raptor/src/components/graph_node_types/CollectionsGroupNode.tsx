@@ -7,11 +7,11 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
     <div
       onClick={data.onToggle}
       style={{
-        background: '#0f172a',
+        background: '#18181b',
         border: '1px solid #1e293b',
         borderRadius: 8,
         padding: '6px 12px',
-        color: '#64748b',
+        color: '#71717a',
         fontSize: 11,
         fontWeight: 500,
         letterSpacing: '0.05em',
@@ -24,8 +24,8 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
         justifyContent: 'center',
         gap: '6px',
         transition: 'all 0.2s ease',
-        borderColor: data.isExpanded ? '#475569' : '#1e293b',
-        backgroundColor: data.isExpanded ? '#1a202c' : '#0f172a',
+        borderColor: data.isExpanded ? '#3f3f46' : '#27272a',
+        backgroundColor: data.isExpanded ? '#27272a' : '#18181b',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -61,15 +61,15 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
             fontWeight: 500,
             background: 'none',
             border: 'none',
-            color: '#64748b',
+            color: '#71717a',
             cursor: 'pointer',
             transition: 'color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#94a3b8'
+            (e.target as HTMLButtonElement).style.color = '#71717a'
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#64748b'
+            (e.target as HTMLButtonElement).style.color = '#71717a'
           }}
         >
           + Create Collection

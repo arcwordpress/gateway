@@ -249,7 +249,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       source: 'view-preview',
       target: 'render-strategy',
       type: 'default',
-      style: { stroke: '#334155' },
+      style: { stroke: '#3f3f46' },
     },
     ...(activeEngine
       ? [
@@ -258,7 +258,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
             source: 'render-strategy',
             target: 'render-output',
             type: 'default',
-            style: { stroke: '#475569' },
+            style: { stroke: '#3f3f46' },
           },
         ]
       : []),
@@ -335,7 +335,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   if (collLoading || viewLoading || !draftView) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-400">
+      <div className="flex items-center justify-center h-screen text-zinc-400">
         Loading view designer...
       </div>
     )
@@ -345,19 +345,19 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     <RecordsCtx.Provider value={recordsCtxValue}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-gray-900/90 backdrop-blur border-b border-gray-800 flex items-center justify-between px-4">
+        <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate({ to: `/collections/${collectionKey}/views` })}
-              className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+              className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               ← Back to Views
             </button>
-            <span className="text-gray-600">|</span>
+            <span className="text-zinc-600">|</span>
             <h1 className="text-white text-sm font-medium">{draftView.title}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-zinc-500">
               {saveMutation.isPending ? 'Saving...' : saveMutation.isSuccess ? 'Saved' : ''}
             </div>
           </div>
@@ -381,14 +381,14 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         </div>
 
         {/* Right Panel */}
-        <div className="absolute top-12 right-0 bottom-0 w-96 bg-gray-900/95 backdrop-blur border-l border-gray-800 overflow-y-auto z-10">
+        <div className="absolute top-12 right-0 bottom-0 w-96 bg-zinc-900/95 backdrop-blur border-l border-zinc-800 overflow-y-auto z-10">
           <div className="p-6">
             <h2 className="text-white text-lg font-semibold mb-6">View Properties</h2>
 
             <div className="space-y-6">
               {/* Basic Settings */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Title</label>
                 <input
                   type="text"
                   value={draftView.title}
@@ -398,7 +398,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Description</label>
                 <textarea
                   value={draftView.description}
                   onChange={(e) => setDraftView({ ...draftView, description: e.target.value })}
@@ -408,7 +408,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Per Page</label>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Per Page</label>
                 <input
                   type="number"
                   value={draftView.per_page}
@@ -419,10 +419,10 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
               </div>
 
               {/* Columns */}
-              <div className="pt-6 border-t border-gray-800">
-                <h3 className="text-sm font-medium text-gray-300 mb-3">Columns</h3>
+              <div className="pt-6 border-t border-zinc-800">
+                <h3 className="text-sm font-medium text-zinc-300 mb-3">Columns</h3>
                 {allFields.length === 0 ? (
-                  <p className="text-xs text-gray-500">No fields available</p>
+                  <p className="text-xs text-zinc-500">No fields available</p>
                 ) : (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {allFields.map((field) => {
@@ -430,11 +430,11 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
                       return (
                         <label
                           key={field.name}
-                          className="flex items-center justify-between gap-3 rounded border border-gray-800 px-3 py-2 cursor-pointer hover:bg-gray-800/50"
+                          className="flex items-center justify-between gap-3 rounded border border-zinc-800 px-3 py-2 cursor-pointer hover:bg-zinc-800/50"
                         >
                           <div className="min-w-0">
-                            <div className="text-sm text-gray-200 truncate">{field.label || field.name}</div>
-                            <div className="text-xs text-gray-500 font-mono truncate">{field.name}</div>
+                            <div className="text-sm text-zinc-200 truncate">{field.label || field.name}</div>
+                            <div className="text-xs text-zinc-500 font-mono truncate">{field.name}</div>
                           </div>
                           <input
                             type="checkbox"

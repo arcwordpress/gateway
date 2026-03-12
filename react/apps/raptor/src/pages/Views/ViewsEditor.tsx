@@ -11,12 +11,12 @@ import { useCollection, useViews, SurfaceState } from './ViewsPageContext'
 import { EditPanel } from '../Fields/FieldsEditor'
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
-  'w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-800 text-gray-100 ' +
+  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
@@ -167,7 +167,7 @@ export function ViewsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       </DndContext>
 
       {views.length === 0 && !addMutation.isPending && (
-        <div className="text-gray-500 text-sm italic">No views yet. Add one above to get started.</div>
+        <div className="text-zinc-500 text-sm italic">No views yet. Add one above to get started.</div>
       )}
     </section>
   )
@@ -197,26 +197,26 @@ function SortableViewItem({
       ref={setNodeRef}
       style={style}
       className={`group relative flex gap-4 items-center border border-white px-4 py-2 rounded transition-opacity ${
-        isDragging ? 'bg-gray-900/50' : 'hover:bg-gray-900/30'
+        isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
-      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-gray-500 hover:text-gray-300">
+      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300">
         <HandleIcon />
       </div>
       <div className="flex-1">
         <h3 className="!text-white">{view.title}</h3>
-        <span className="text-xs text-gray-400 font-mono">{view.view_key}</span>
+        <span className="text-xs text-zinc-400 font-mono">{view.view_key}</span>
       </div>
       <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
         <button
           onClick={() => onMove('up')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↑
         </button>
         <button
           onClick={() => onMove('down')}
-          className="px-2 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↓
         </button>
@@ -296,7 +296,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Title</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title</label>
         <input
           type="text"
           value={title}
@@ -307,7 +307,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Description</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -317,7 +317,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Source Collection</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Source Collection</label>
         <input
           type="text"
           value={source}
@@ -327,7 +327,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">Per Page</label>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Per Page</label>
         <input
           type="number"
           value={perPage}
@@ -338,13 +338,13 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
         />
       </div>
 
-      <div className="pt-3 border-t border-gray-800">
-        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+      <div className="pt-3 border-t border-zinc-800">
+        <div className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-3">
           Fields In View
         </div>
 
         {availableFields.length === 0 ? (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-zinc-500">
             This collection has no fields yet.
           </p>
         ) : (
@@ -354,11 +354,11 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
               return (
                 <label
                   key={field.name}
-                  className="flex items-center justify-between gap-3 rounded border border-gray-800 px-3 py-2 cursor-pointer hover:bg-gray-900/40"
+                  className="flex items-center justify-between gap-3 rounded border border-zinc-800 px-3 py-2 cursor-pointer hover:bg-zinc-900/40"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm text-gray-200 truncate">{field.label || field.name}</div>
-                    <div className="text-xs text-gray-500 font-mono truncate">{field.name}</div>
+                    <div className="text-sm text-zinc-200 truncate">{field.label || field.name}</div>
+                    <div className="text-xs text-zinc-500 font-mono truncate">{field.name}</div>
                   </div>
                   <input
                     type="checkbox"
@@ -391,7 +391,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
           type="button"
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
@@ -423,7 +423,7 @@ export function DeleteConfirmation({ view, onClose }: { view: View; onClose: () 
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-gray-300 text-sm">
+      <p className="text-zinc-300 text-sm">
         Are you sure you want to delete the view <strong className="text-white">{view.title}</strong>?
         This action cannot be undone.
       </p>
@@ -443,7 +443,7 @@ export function DeleteConfirmation({ view, onClose }: { view: View; onClose: () 
         <button
           onClick={onClose}
           disabled={mutation.isPending}
-          className="px-4 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50"
         >
           Cancel
         </button>

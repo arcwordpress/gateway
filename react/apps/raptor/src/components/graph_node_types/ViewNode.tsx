@@ -16,11 +16,11 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
     <div
       onClick={data.onToggle}
       style={{
-        background: '#0f172a',
+        background: '#18181b',
         border: '1px solid #1e293b',
         borderRadius: 8,
         padding: '8px 12px',
-        color: '#cbd5e1',
+        color: '#d4d4d8',
         fontSize: 12,
         fontWeight: 500,
         minWidth: 140,
@@ -29,8 +29,8 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
         flexDirection: 'column',
         gap: 6,
         transition: 'all 0.2s ease',
-        borderColor: data.isExpanded ? '#475569' : '#1e293b',
-        backgroundColor: data.isExpanded ? '#1a202c' : '#0f172a',
+        borderColor: data.isExpanded ? '#3f3f46' : '#27272a',
+        backgroundColor: data.isExpanded ? '#27272a' : '#18181b',
         position: 'relative',
       }}
     >
@@ -46,7 +46,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: '#94a3b8',
+          color: '#71717a',
           opacity: 0.6,
         }}
       >
@@ -60,12 +60,12 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
             transition: 'transform 0.2s ease',
             transform: data.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
             fontSize: 9,
-            color: '#64748b',
+            color: '#71717a',
           }}
         >
           ▶
         </span>
-        <span style={{ flex: 1, color: '#e2e8f0' }}>{data.title}</span>
+        <span style={{ flex: 1, color: '#e4e4e7' }}>{data.title}</span>
       </div>
 
       {data.onDesign && (
@@ -79,7 +79,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
             padding: '4px 8px',
             fontSize: 10,
             fontWeight: 600,
-            background: '#10b981',
+            background: '#52525b',
             border: 'none',
             borderRadius: 4,
             color: '#fff',
@@ -87,10 +87,10 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
             transition: 'background 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.background = '#059669'
+            (e.target as HTMLButtonElement).style.background = '#3f3f46'
           }}
           onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.background = '#10b981'
+            (e.target as HTMLButtonElement).style.background = '#52525b'
           }}
         >
           Design
