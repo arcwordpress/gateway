@@ -11,7 +11,8 @@ import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import GraphPage from './pages/Graph'
 // import CollectionsPage from './pages/Collections'
-import CollectionsViewerPage from './pages/CollectionsViewer'
+// CollectionsViewer is now used inside CollectionsPage (tab wrapper)
+import CollectionsPageWithTabs from './pages/CollectionsPage'
 import FieldsPage from './pages/Fields'
 import ViewsPage from './pages/Views'
 import ViewDesignPage from './pages/ViewDesign'
@@ -52,7 +53,7 @@ const collectionsRoute = createRoute({
 const collectionsViewerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/collections',
-  component: CollectionsViewerPage,
+  component: CollectionsPageWithTabs,
 })
 
 const fieldsTopLevelRoute = createRoute({
