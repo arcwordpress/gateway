@@ -23,6 +23,15 @@ export type Form = {
   notification_email?: string
 }
 
+// ─── ViewRender ───────────────────────────────────────────────────────────────
+
+export type ViewRender = {
+  id: number
+  view_id: number
+  engine: string
+  js_type: string
+}
+
 // ─── View ────────────────────────────────────────────────────────────────────
 
 export type View = {

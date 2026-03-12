@@ -118,7 +118,8 @@ class MigrationHooks
         \Gateway\Raptor\Migrations\RaptorFormListMigration::create();
         \Gateway\Raptor\Migrations\RaptorFormMigration::create();
         \Gateway\Raptor\Migrations\RaptorFormFieldMigration::create();
-        
+        \Gateway\Raptor\Migrations\RaptorViewRenderMigration::create();
+
         // Migrate existing WordPress options to the settings collection
         \Gateway\Migrations\GatewaySettingsMigration::migrateFromOptions(false);
     }

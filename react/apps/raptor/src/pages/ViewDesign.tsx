@@ -15,7 +15,7 @@ import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { apiUrl, authHeaders } from '../lib/api'
-import { Collection, Field, View } from '../lib/object_types'
+import { Collection, Field, View, ViewRender } from '../lib/object_types'
 
 function getRowValue(row: Record<string, unknown>, column: string): unknown {
   if (column in row) return row[column]
@@ -87,12 +87,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const allFields = collection?.field_list?.fields ?? []
 
-  const [activeRenderStrategy, setActiveRenderStrategy] = useState<string | null>(null)
-
-  const handleSelectStrategy = useRef((type: string) => {
-    setActiveRenderStrategy((prev) => (prev === type ? null : type))
-  })
-
+  // ── Render strategies (engine types from API) ────────────────────────────
   const { data: renderStrategies } = useQuery<{ type: string }[]>({
     queryKey: ['render-strategies'],
     queryFn: async () => {
@@ -102,6 +97,63 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     },
     staleTime: Infinity,
   })
+
+  // ── ViewRender CRUD ───────────────────────────────────────────────────────
+  const { data: viewRenders, refetch: refetchRenders } = useQuery<ViewRender[]>({
+    queryKey: ['view-renders', viewKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/renders`), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json() as { renders?: ViewRender[] }
+      return json.renders ?? []
+    },
+    enabled: !!viewKey,
+  })
+
+  const [activeEngine, setActiveEngine] = useState<string | null>(null)
+  const [activeJsType, setActiveJsType] = useState<string>('react')
+
+  const handleSelectEngine = useCallback((type: string) => {
+    setActiveEngine((prev) => (prev === type ? null : type))
+  }, [])
+
+  const handleSelectJsType = useCallback((type: string) => {
+    setActiveJsType(type)
+  }, [])
+
+  const saveRenderMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeEngine) throw new Error('No engine selected')
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/renders`), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ engine: activeEngine, js_type: activeJsType }),
+      })
+      const json = await res.json() as { success: boolean; message?: string }
+      if (!json.success) throw new Error(json.message ?? 'Failed to save render')
+    },
+    onSuccess: () => { void refetchRenders() },
+  })
+
+  const deleteRenderMutation = useMutation({
+    mutationFn: async (renderId: number) => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/renders/${renderId}`), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const json = await res.json() as { success: boolean }
+      if (!json.success) throw new Error('Failed to delete render')
+    },
+    onSuccess: () => { void refetchRenders() },
+  })
+
+  const handleSaveRender = useCallback(() => {
+    saveRenderMutation.mutate()
+  }, [saveRenderMutation])
+
+  const handleDeleteRender = useCallback((id: number) => {
+    deleteRenderMutation.mutate(id)
+  }, [deleteRenderMutation])
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collectionKey],
@@ -149,6 +201,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   )
 
   const strategies = renderStrategies ?? []
+  const saves = viewRenders ?? []
 
   const computedNodes: Node[] = [
     {
@@ -167,21 +220,24 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       type: 'renderStrategyNode',
       data: {
         strategies,
-        activeStrategy: activeRenderStrategy,
-        onSelect: handleSelectStrategy.current,
+        viewRenders: saves,
+        activeEngine,
+        activeJsType,
+        onSelectEngine: handleSelectEngine,
+        onSelectJsType: handleSelectJsType,
+        onSaveRender: handleSaveRender,
+        onDeleteRender: handleDeleteRender,
+        isSaving: saveRenderMutation.isPending,
       },
       position: { x: 240, y: 520 },
     },
-    ...(activeRenderStrategy
+    ...(activeEngine
       ? [
           {
             id: 'render-output',
             type: 'renderOutputNode',
-            data: {
-              strategyType: activeRenderStrategy,
-              viewKey,
-            },
-            position: { x: 560, y: 660 },
+            data: { strategyType: activeEngine, viewKey },
+            position: { x: 600, y: 680 },
           },
         ]
       : []),
@@ -195,7 +251,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       type: 'default',
       style: { stroke: '#334155' },
     },
-    ...(activeRenderStrategy
+    ...(activeEngine
       ? [
           {
             id: 'edge-strategy-to-output',
@@ -211,8 +267,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, activeRenderStrategy])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeRenderStrategy])                                 // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
     status: recordsStatus,
