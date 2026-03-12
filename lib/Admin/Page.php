@@ -95,15 +95,9 @@ class Page
             76  // Position between Tools (75) and Settings (80)
         );
 
-        // Rename the first submenu item from "Gateway" to "Dashboard"
-        add_submenu_page(
-            'gateway',
-            'Dashboard',
-            'Dashboard',
-            'manage_options',
-            'gateway',
-            [__CLASS__, 'render_page']
-        );
+        // Remove the auto-created first submenu item — Raptor is self-contained,
+        // no sub-menu items are needed.
+        remove_submenu_page('gateway', 'gateway');
     }
 
     /**
