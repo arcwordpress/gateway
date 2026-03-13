@@ -7,18 +7,20 @@ type SharedMiniMapProps = Omit<MiniMapProps, 'style'> & {
 const defaultStyle: React.CSSProperties = {
   marginBottom: 10,
   marginRight: 16,
+  width: 154,
+  height: 88,
 }
 
 export function SharedMiniMap({ style, ...props }: SharedMiniMapProps) {
   return (
     <MiniMap
       position="bottom-right"
-      bgColor="#444"
-      nodeColor="#999"
-      nodeStrokeColor="#666"
+      bgColor="#27272a"
+      nodeColor="#52525b"
+      nodeStrokeColor="#3f3f46"
       nodeStrokeWidth={1}
-      maskColor="rgba(0, 0, 0, 0.28)"
-      maskStrokeColor="#666"
+      maskColor="rgba(0, 0, 0, 0.32)"
+      maskStrokeColor="#3f3f46"
       zoomable
       pannable
       style={{ ...defaultStyle, ...style }}
