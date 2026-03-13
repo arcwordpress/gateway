@@ -2,10 +2,10 @@ import { useState } from 'react'
 import CollectionsViewer from './CollectionsViewer'
 import GatewayCollections from './GatewayCollections'
 
-type Tab = 'raptor' | 'registered'
+type Tab = 'editable' | 'registered'
 
 export default function CollectionsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('raptor')
+  const [activeTab, setActiveTab] = useState<Tab>('editable')
 
   const tabCls = (tab: Tab) =>
     activeTab === tab
@@ -19,22 +19,28 @@ export default function CollectionsPage() {
         className="shrink-0 flex border-b border-zinc-800"
         style={{ backgroundColor: 'var(--app-bg)' }}
       >
-        <button className={tabCls('raptor')} onClick={() => setActiveTab('raptor')}>
-          Raptor Collections
+        <button className={tabCls('editable')} onClick={() => setActiveTab('editable')}>
+          Editable Collections
         </button>
         <button className={tabCls('registered')} onClick={() => setActiveTab('registered')}>
           Registered Collections
         </button>
       </div>
 
-      {/* Content — both mount but only one is visible so ReactFlow keeps its state */}
+      {/* Content — CollectionsViewer stays mounted so ReactFlow preserves pan/zoom/expand state.
+          When the registered tab is active we render GatewayCollections on top with a solid
+          background, fully covering the graph. Using visibility:hidden is not sufficient because
+          ReactFlow node containers explicitly set visibility:visible on their children, causing
+          nodes to bleed through at full opacity while the background fades. */}
       <div className="flex-1 overflow-hidden relative">
-        <div className={`absolute inset-0 ${activeTab === 'raptor' ? '' : 'invisible pointer-events-none'}`}>
+        <div className="absolute inset-0">
           <CollectionsViewer />
         </div>
-        <div className={`absolute inset-0 ${activeTab === 'registered' ? '' : 'invisible pointer-events-none'}`}>
-          <GatewayCollections />
-        </div>
+        {activeTab === 'registered' && (
+          <div className="absolute inset-0 z-10 overflow-auto" style={{ backgroundColor: 'var(--app-bg)' }}>
+            <GatewayCollections />
+          </div>
+        )}
       </div>
     </div>
   )
