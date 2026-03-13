@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { apiUrl, authHeaders } from '../lib/api'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-
-function toKey(title: string) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-}
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 ' +
@@ -29,12 +22,6 @@ export default function ExtensionCreate() {
   const [author, setAuthor]             = useState('')
   const [authorUri, setAuthorUri]       = useState('')
   const [minWpVersion, setMinWpVersion] = useState('6.0')
-  const [key, setKey]                   = useState('')
-
-  // Auto-generate key from title
-  useEffect(() => {
-    if (title) setKey(toKey(title))
-  }, [title])
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -43,7 +30,6 @@ export default function ExtensionCreate() {
         headers: authHeaders(),
         body: JSON.stringify({
           title,
-          extension_key: key,
           description,
           version,
           author,
@@ -77,7 +63,7 @@ export default function ExtensionCreate() {
           onSubmit={(e) => { e.preventDefault(); mutation.mutate() }}
           className="space-y-5"
         >
-          {/* Title + auto-key */}
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">
               Title <span className="text-red-400">*</span>
@@ -91,18 +77,6 @@ export default function ExtensionCreate() {
               className={baseInput}
               placeholder="Ticketify"
             />
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-                Key
-                <span className="ml-2 text-xs text-zinc-600 font-normal">auto-generated · used as plugin slug</span>
-              </label>
-              <input
-                type="text"
-                value={key}
-                readOnly
-                className="w-full px-3 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 font-mono text-sm focus:outline-none cursor-default"
-              />
-            </div>
           </div>
 
           {/* Description */}

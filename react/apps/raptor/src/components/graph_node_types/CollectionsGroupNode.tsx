@@ -7,42 +7,45 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
     <div
       onClick={data.onToggle}
       style={{
-        background: '#18181b',
-        border: '1px solid #1e293b',
+        background: data.isExpanded ? '#27272a' : '#18181b',
+        border: `1px solid ${data.isExpanded ? '#3f3f46' : '#27272a'}`,
         borderRadius: 8,
-        padding: '6px 12px',
         color: '#71717a',
         fontSize: 11,
         fontWeight: 500,
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
         minWidth: 110,
-        textAlign: 'center',
         cursor: 'pointer',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '6px',
+        flexDirection: 'column',
         transition: 'all 0.2s ease',
-        borderColor: data.isExpanded ? '#3f3f46' : '#27272a',
-        backgroundColor: data.isExpanded ? '#27272a' : '#18181b',
       }}
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
-      <span
-        style={{
+
+      {/* Toggle row: arrow + label */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        padding: '6px 12px',
+      }}>
+        <span style={{
           display: 'inline-block',
           transition: 'transform 0.2s ease',
           transform: data.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
           fontSize: 9,
-        }}
-      >
-        ▶
-      </span>
-      Collections
+          lineHeight: 1,
+        }}>
+          ▶
+        </span>
+        Collections
+      </div>
 
-      {/* Create Collection button */}
+      {/* Create button */}
       {data.onCreate && (
         <button
           onClick={(e) => {
@@ -50,27 +53,23 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
             data.onCreate?.()
           }}
           style={{
-            marginTop: 6,
-            paddingTop: 6,
             borderTop: '1px solid #1e293b',
-            width: 'calc(100% + 24px)',
-            marginLeft: '-12px',
-            marginRight: '-12px',
-            padding: '6px 12px',
+            width: '100%',
+            padding: '5px 12px',
             fontSize: 9,
             fontWeight: 500,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
             background: 'none',
             border: 'none',
-            color: '#71717a',
+            borderTop: '1px solid #27272a',
+            color: '#52525b',
             cursor: 'pointer',
             transition: 'color 0.2s',
+            textAlign: 'center',
           }}
-          onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#71717a'
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.color = '#71717a'
-          }}
+          onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.color = '#71717a' }}
+          onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.color = '#52525b' }}
         >
           + Create Collection
         </button>

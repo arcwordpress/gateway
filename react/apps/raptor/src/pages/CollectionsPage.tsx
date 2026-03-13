@@ -1,40 +1,38 @@
-import { useState } from 'react'
+import { Link, useRouterState } from '@tanstack/react-router'
 import CollectionsViewer from './CollectionsViewer'
-import GatewayCollections from './GatewayCollections'
 
-type Tab = 'raptor' | 'registered'
+// ─── Shared tab nav (used by both collections routes) ─────────────────────────
 
-export default function CollectionsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('raptor')
+export function CollectionsTabs() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
-  const tabCls = (tab: Tab) =>
-    activeTab === tab
+  const tabCls = (active: boolean) =>
+    active
       ? 'px-4 py-2.5 text-xs font-semibold border-b-2 border-zinc-400 text-zinc-200 transition-colors'
       : 'px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition-colors'
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Tab bar */}
-      <div
-        className="shrink-0 flex border-b border-zinc-800"
-        style={{ backgroundColor: 'var(--app-bg)' }}
-      >
-        <button className={tabCls('raptor')} onClick={() => setActiveTab('raptor')}>
-          Raptor Collections
-        </button>
-        <button className={tabCls('registered')} onClick={() => setActiveTab('registered')}>
-          Registered Collections
-        </button>
-      </div>
+    <div className="shrink-0 flex border-b border-zinc-800" style={{ backgroundColor: 'var(--app-bg)' }}>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Link to={'/collections' as any} className={tabCls(pathname === '/collections')}>
+        Editable Collections
+      </Link>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Link to={'/collections/registered' as any} className={tabCls(pathname === '/collections/registered')}>
+        Registered Collections
+      </Link>
+    </div>
+  )
+}
 
-      {/* Content — both mount but only one is visible so ReactFlow keeps its state */}
-      <div className="flex-1 overflow-hidden relative">
-        <div className={`absolute inset-0 ${activeTab === 'raptor' ? '' : 'invisible pointer-events-none'}`}>
-          <CollectionsViewer />
-        </div>
-        <div className={`absolute inset-0 ${activeTab === 'registered' ? '' : 'invisible pointer-events-none'}`}>
-          <GatewayCollections />
-        </div>
+// ─── /collections ─────────────────────────────────────────────────────────────
+
+export default function CollectionsPage() {
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <CollectionsTabs />
+      <div className="flex-1 overflow-hidden">
+        <CollectionsViewer />
       </div>
     </div>
   )

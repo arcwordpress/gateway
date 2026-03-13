@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -694,6 +694,11 @@ export default function CollectionsViewer() {
   const [activeExtensionId, setActiveExtensionId] = useState<number | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
+  // Remember every node position we've ever computed so that toggling a group
+  // doesn't re-run Dagre over already-positioned nodes.  Only genuinely new
+  // nodes (never seen before) get a fresh Dagre-computed position.
+  const rememberedPositions = useRef<Map<string, { x: number; y: number }>>(new Map())
+
   // Try to get active extension from URL params if available
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -881,7 +886,17 @@ export default function CollectionsViewer() {
       }
     }
 
-    setNodes(layoutWithDagre(hierarchyNodes, hierarchyEdges))
+    const laidOut = layoutWithDagre(hierarchyNodes, hierarchyEdges)
+    setNodes((current) => {
+      // Snapshot positions of currently-visible nodes into the ref
+      current.forEach((n) => rememberedPositions.current.set(n.id, n.position))
+      // Use remembered position for any node we've seen before; only new nodes
+      // get the Dagre-computed position.
+      return laidOut.map((n) => ({
+        ...n,
+        position: rememberedPositions.current.get(n.id) ?? n.position,
+      }))
+    })
     setEdges([...hierarchyEdges, ...relEdges])
   }, [collections, extensions, activeExtensionId, expandedGroups, openCreate, openEdit, openDelete, toggleGroup, setNodes, setEdges])
 

@@ -46,8 +46,65 @@ class RaptorExtension extends \Gateway\Collection
     ];
 
     /**
+     * Field definitions used by the Gateway forms system.
+     * These drive form rendering, validation, and labelling in the UI.
+     */
+    protected $fields = [
+        [
+            'name'        => 'title',
+            'type'        => 'text',
+            'label'       => 'Title',
+            'required'    => true,
+            'placeholder' => 'Ticketify',
+        ],
+        [
+            'name'        => 'description',
+            'type'        => 'textarea',
+            'label'       => 'Description',
+            'required'    => false,
+        ],
+        [
+            'name'        => 'version',
+            'type'        => 'text',
+            'label'       => 'Version',
+            'required'    => false,
+            'default'     => '1.0.0',
+            'placeholder' => '1.0.0',
+        ],
+        [
+            'name'        => 'author',
+            'type'        => 'text',
+            'label'       => 'Author',
+            'required'    => false,
+        ],
+        [
+            'name'        => 'author_uri',
+            'type'        => 'url',
+            'label'       => 'Author URI',
+            'required'    => false,
+            'placeholder' => 'https://',
+        ],
+        [
+            'name'        => 'min_wp_version',
+            'type'        => 'text',
+            'label'       => 'Min WP Version',
+            'required'    => false,
+            'default'     => '6.0',
+            'placeholder' => '6.0',
+        ],
+        [
+            'name'        => 'namespace',
+            'type'        => 'text',
+            'label'       => 'PHP Namespace',
+            'required'    => false,
+            'placeholder' => 'MyExtension',
+        ],
+    ];
+
+    /**
      * \Gateway\Collection::getFillable() derives from $fields, not $fillable.
-     * Override it here so Eloquent's mass-assignment guard uses our explicit list.
+     * Override it here so Eloquent's mass-assignment guard uses our explicit list
+     * (which includes non-form fields like extension_key, text_domain, status).
      */
     public function getFillable(): array
     {

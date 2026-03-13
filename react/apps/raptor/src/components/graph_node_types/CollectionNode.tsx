@@ -119,18 +119,18 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                 padding: '3px 6px',
                 fontSize: 10,
                 fontWeight: 500,
-                background: '#7f1d1d',
+                background: '#3f3f46',
                 border: 'none',
                 borderRadius: 4,
-                color: '#fca5a5',
+                color: '#a1a1aa',
                 cursor: 'pointer',
                 transition: 'background 0.2s',
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.background = '#991b1b'
+                (e.target as HTMLButtonElement).style.background = '#52525b'
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.background = '#7f1d1d'
+                (e.target as HTMLButtonElement).style.background = '#3f3f46'
               }}
             >
               Delete
