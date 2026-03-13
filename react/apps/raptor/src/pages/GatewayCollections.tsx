@@ -55,9 +55,20 @@ type RouteTestPanelState = {
   collectionKey: string
 }
 
+type RunMigrationPanelState = {
+  collectionKey: string
+  title: string
+  table: string
+  beforeRecordCount: number
+  running: boolean
+  result: { success: boolean; message: string } | null
+  afterRecordCount: number | null
+}
+
 type PanelState =
   | { mode: 'migration'; data: MigrationPanelState }
   | { mode: 'routeTest'; data: RouteTestPanelState }
+  | { mode: 'runMigration'; data: RunMigrationPanelState }
   | null
 
 // ─── Panel geometry ──────────────────────────────────────────────────────────
@@ -184,6 +195,7 @@ function MigrationPanel({
   onStateChange: (s: MigrationPanelState) => void
 }) {
   const [copied, setCopied] = useState(false)
+  const [runResult, setRunResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -233,7 +245,7 @@ function MigrationPanel({
   }
 
   const runMigration = async () => {
-    if (!confirm('Run this migration? This will create or update the database table.')) return
+    setRunResult(null)
     onStateChange({ ...state, runningMigration: true })
     try {
       const res = await fetch(
@@ -242,10 +254,10 @@ function MigrationPanel({
       )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? 'Failed to run migration')
-      alert(data.message ?? 'Migration executed successfully!')
-      onClose()
+      setRunResult({ success: true, message: data.message ?? 'Migration executed successfully!' })
+      onStateChange({ ...state, runningMigration: false })
     } catch (err) {
-      alert('Error running migration: ' + (err as Error).message)
+      setRunResult({ success: false, message: 'Error: ' + (err as Error).message })
       onStateChange({ ...state, runningMigration: false })
     }
   }
@@ -347,16 +359,150 @@ function MigrationPanel({
             </pre>
           </div>
 
+          {/* Run result */}
+          {runResult && (
+            <div
+              style={{
+                padding: '10px 12px',
+                borderRadius: 6,
+                background: runResult.success ? '#18181b' : '#18181b',
+                border: `1px solid ${runResult.success ? '#3f3f46' : '#52525b'}`,
+                fontSize: 12,
+                color: runResult.success ? '#a1a1aa' : '#e4e4e7',
+              }}
+            >
+              {runResult.message}
+            </div>
+          )}
+
           {/* Run button */}
           <button
             onClick={() => void runMigration()}
             disabled={state.runningMigration}
             className="w-full px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
           >
-            {state.runningMigration ? 'Running Migration…' : 'Run Migration Now'}
+            {state.runningMigration ? 'Running Migration…' : runResult?.success ? 'Run Again' : 'Run Migration Now'}
           </button>
         </div>
       ) : null}
+    </PanelShell>
+  )
+}
+
+// ─── Run Migration Panel ──────────────────────────────────────────────────────
+
+function RunMigrationPanel({
+  state,
+  onClose,
+  onStateChange,
+  onRefetch,
+}: {
+  state: RunMigrationPanelState
+  onClose: () => void
+  onStateChange: (s: RunMigrationPanelState) => void
+  onRefetch: () => void
+}) {
+  const runMigration = async () => {
+    onStateChange({ ...state, running: true, result: null })
+    try {
+      const res = await fetch(
+        apiUrl(`gateway/v1/migrations/${state.collectionKey}/run`),
+        { method: 'POST', headers: authHeaders() }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'Failed to run migration')
+      // Refetch to get updated record count for "after" snapshot
+      onRefetch()
+      onStateChange({
+        ...state,
+        running: false,
+        result: { success: true, message: data.message ?? 'Migration executed successfully!' },
+        afterRecordCount: null, // will be filled after refetch
+      })
+    } catch (err) {
+      onStateChange({
+        ...state,
+        running: false,
+        result: { success: false, message: (err as Error).message },
+      })
+    }
+  }
+
+  const rowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 12px',
+    borderRadius: 6,
+    background: '#18181b',
+    border: '1px solid #3f3f46',
+    marginBottom: 6,
+  }
+
+  return (
+    <PanelShell title="Run Migration" sub={state.collectionKey} onClose={onClose} width={400}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Before / After snapshots */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#71717a', marginBottom: 8 }}>
+            {state.afterRecordCount !== null ? 'Before / After' : 'Before'}
+          </div>
+          <div style={rowStyle}>
+            <span style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace' }}>{state.table}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: '#a1a1aa', fontWeight: 600 }}>{state.beforeRecordCount.toLocaleString()} rows</span>
+              {state.afterRecordCount !== null && (
+                <>
+                  <span style={{ fontSize: 11, color: '#52525b' }}>→</span>
+                  <span style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 600 }}>{state.afterRecordCount.toLocaleString()} rows</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p style={{ fontSize: 12, color: '#71717a', margin: 0 }}>
+          This will create or alter the <code style={{ fontFamily: 'monospace', color: '#a1a1aa' }}>{state.table}</code> database table to match the current collection schema.
+        </p>
+
+        {/* Result */}
+        {state.result && (
+          <div
+            style={{
+              padding: '10px 12px',
+              borderRadius: 6,
+              background: '#18181b',
+              border: `1px solid ${state.result.success ? '#3f3f46' : '#52525b'}`,
+              fontSize: 12,
+              color: state.result.success ? '#a1a1aa' : '#e4e4e7',
+            }}
+          >
+            {state.result.message}
+          </div>
+        )}
+
+        {/* Run button */}
+        <button
+          onClick={() => void runMigration()}
+          disabled={state.running}
+          style={{
+            width: '100%',
+            padding: '8px 16px',
+            borderRadius: 6,
+            background: state.running ? '#3f3f46' : '#52525b',
+            border: 'none',
+            color: '#e4e4e7',
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: state.running ? 'not-allowed' : 'pointer',
+            opacity: state.running ? 0.6 : 1,
+            transition: 'background 0.2s',
+          }}
+        >
+          {state.running ? 'Running…' : state.result?.success ? 'Run Again' : 'Confirm & Run Migration'}
+        </button>
+      </div>
     </PanelShell>
   )
 }
@@ -712,13 +858,11 @@ function CollectionCard({
   onGenerateMigration,
   onRunMigration,
   onTestRoute,
-  isRunningMigration,
 }: {
   collection: GatewayCollection
   onGenerateMigration: () => void
   onRunMigration: () => void
   onTestRoute: (route: RouteInfo) => void
-  isRunningMigration: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -760,10 +904,9 @@ function CollectionCard({
           </button>
           <button
             onClick={onRunMigration}
-            disabled={isRunningMigration}
-            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
           >
-            {isRunningMigration ? 'Running…' : 'Run Migration'}
+            Run Migration
           </button>
         </div>
       </div>
@@ -810,7 +953,6 @@ function CollectionCard({
 
 export default function GatewayCollections() {
   const [panel, setPanel] = useState<PanelState>(null)
-  const [runningMigrations, setRunningMigrations] = useState<Set<string>>(new Set())
 
   const { data, isLoading, isError, refetch } = useQuery<{ collections: GatewayCollection[] }>({
     queryKey: ['gateway-admin-data'],
@@ -872,27 +1014,19 @@ export default function GatewayCollections() {
     })
   }
 
-  const handleRunMigration = async (collectionKey: string) => {
-    if (!confirm('Run this migration? This will create or update the database table.')) return
-    setRunningMigrations((prev) => new Set(prev).add(collectionKey))
-    try {
-      const res = await fetch(apiUrl(`gateway/v1/migrations/${collectionKey}/run`), {
-        method: 'POST',
-        headers: authHeaders(),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? 'Failed to run migration')
-      alert(data.message ?? 'Migration executed successfully!')
-      void refetch()
-    } catch (err) {
-      alert('Error running migration: ' + (err as Error).message)
-    } finally {
-      setRunningMigrations((prev) => {
-        const s = new Set(prev)
-        s.delete(collectionKey)
-        return s
-      })
-    }
+  const handleRunMigration = (collection: GatewayCollection) => {
+    setPanel({
+      mode: 'runMigration',
+      data: {
+        collectionKey: collection.key,
+        title: collection.title,
+        table: collection.table,
+        beforeRecordCount: collection.record_count,
+        running: false,
+        result: null,
+        afterRecordCount: null,
+      },
+    })
   }
 
   const handleTestRoute = (route: RouteInfo, collectionKey: string) => {
@@ -946,9 +1080,8 @@ export default function GatewayCollections() {
                 key={col.key}
                 collection={col}
                 onGenerateMigration={() => void handleGenerateMigration(col)}
-                onRunMigration={() => void handleRunMigration(col.key)}
+                onRunMigration={() => handleRunMigration(col)}
                 onTestRoute={(route) => handleTestRoute(route, col.key)}
-                isRunningMigration={runningMigrations.has(col.key)}
               />
             ))}
           </div>
@@ -961,6 +1094,24 @@ export default function GatewayCollections() {
           state={panel.data}
           onClose={() => setPanel(null)}
           onStateChange={(s) => setPanel({ mode: 'migration', data: s })}
+        />
+      )}
+      {panel?.mode === 'runMigration' && (
+        <RunMigrationPanel
+          state={panel.data}
+          onClose={() => setPanel(null)}
+          onStateChange={(s) => setPanel({ mode: 'runMigration', data: s })}
+          onRefetch={() => {
+            void refetch().then((result) => {
+              const updated = result.data?.collections?.find((c) => c.key === (panel as { mode: 'runMigration'; data: RunMigrationPanelState }).data.collectionKey)
+              if (updated) {
+                setPanel((prev) => prev?.mode === 'runMigration'
+                  ? { ...prev, data: { ...prev.data, afterRecordCount: updated.record_count } }
+                  : prev
+                )
+              }
+            })
+          }}
         />
       )}
       {panel?.mode === 'routeTest' && (
