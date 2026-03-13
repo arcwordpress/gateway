@@ -7,14 +7,14 @@ export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
     <div
       style={{
         background: '#3f3f46',
-        border: '1px solid #3b82f6',
+        border: '1px solid #3f3f46',
         borderRadius: 10,
         padding: '10px 20px',
         color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
         minWidth: 160,
-        textAlign: 'center',
+        textAlign: 'right',
       }}
     >
       <Handle type="source" position={Position.Bottom} />
