@@ -6,6 +6,7 @@ import { Graph } from './Fields/FieldsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
 import { BuilderTopBar } from './Builders/BuilderTopBar'
 import { BuilderLeftPanel } from './Builders/BuilderLeftPanel'
+import { BuilderSkeleton } from './Builders/BuilderSkeleton'
 
 // ─── Collection name ──────────────────────────────────────────────────────────
 
@@ -43,31 +44,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
 }) {
   const { isLoading, isError } = useCollection()
 
-  if (isLoading) return (
-    <BuilderLayout>
-      <BuilderTopBar />
-      <BuilderLeftPanel>
-        <div className="p-6">
-          {/* Collection label + title */}
-          <div className="mb-8">
-            <div className="h-3 w-20 rounded bg-zinc-800 animate-pulse mb-2" />
-            <div className="h-7 w-36 rounded bg-zinc-700 animate-pulse" />
-          </div>
-          {/* Field list header */}
-          <div className="flex justify-between items-center mb-10">
-            <div className="h-6 w-24 rounded bg-zinc-700 animate-pulse" />
-            <div className="h-8 w-8 rounded bg-zinc-800 animate-pulse" />
-          </div>
-          {/* Field item skeletons */}
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 rounded bg-zinc-800 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </BuilderLeftPanel>
-    </BuilderLayout>
-  )
+  if (isLoading) return <BuilderSkeleton />
   if (isError)   return <div className="p-8 text-red-400">Failed to load collection.</div>
 
   return (

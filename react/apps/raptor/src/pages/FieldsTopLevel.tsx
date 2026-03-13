@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
 import { GlobalFieldsGraph } from './Fields/GlobalFieldsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
+import { BuilderSkeleton } from './Builders/BuilderSkeleton'
 import { apiUrl, authHeaders } from '../lib/api'
 import type { Collection } from '../lib/object_types'
 
@@ -50,12 +51,8 @@ export default function FieldsTopLevelPage() {
     enabled: !activeCollectionKey,
   })
 
-  if (activeCollectionKey) {
-    return <div className="p-8 text-zinc-400">Opening active collection fields...</div>
-  }
-
-  if (isLoading) {
-    return <div className="p-8 text-zinc-400">Loading fields...</div>
+  if (activeCollectionKey || isLoading) {
+    return <BuilderSkeleton />
   }
 
   const groups = collections
