@@ -90,6 +90,8 @@ export default function Layout() {
     const match = pathname.match(/^\/collections\/([^/]+)/)
     if (!match) return
     const fromRoute = decodeURIComponent(match[1])
+    // 'registered' is a route segment, not a collection key
+    if (fromRoute === 'registered') return
     setActiveCollectionKey(fromRoute)
   }, [pathname])
 
