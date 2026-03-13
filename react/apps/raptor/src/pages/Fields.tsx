@@ -57,7 +57,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
 
       {/* Floating left panel with editor and files */}
       <BuilderLeftPanel>
-        <div className="p-6">
+        <div className="p-4">
           <div className="mb-8">
             <h4 className="font-medium text-sm text-zinc-400 mb-2">COLLECTION</h4>
             <CollectionName />

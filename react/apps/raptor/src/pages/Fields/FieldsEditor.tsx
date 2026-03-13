@@ -9,6 +9,7 @@ import { ControlledForm, useFieldType } from '@arcwp/gateway-forms'
 import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
+import { Trash2 } from 'lucide-react'
 import { useApp } from '../../context/app'
 import { HandleIcon } from '../../components/HandleIcon'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
@@ -138,39 +139,40 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
     <li
       ref={setNodeRef}
       style={style}
-      className={`group relative flex gap-4 items-center border border-white px-4 py-2 rounded transition-opacity ${
+      className={`group relative flex gap-2 items-center border border-zinc-700 px-2 py-1.5 rounded transition-opacity ${
         isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
-      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300">
+      <div {...attributes} {...listeners} className="flex items-center cursor-grab active:cursor-grabbing text-zinc-600 hover:text-zinc-400 shrink-0">
         <HandleIcon />
       </div>
-      <h3 className="!text-white">{field.label}</h3>
-      <span className="text-xs text-zinc-400 ml-auto">{field.type}</span>
-      <div className="opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
+      <span className="text-xs text-zinc-200 truncate flex-1 min-w-0">{field.label}</span>
+      <span className="text-[10px] text-zinc-500 shrink-0">{field.type}</span>
+      <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity shrink-0">
         <button
           onClick={() => moveField(field.name, 'up')}
-          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
+          className="px-1.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↑
         </button>
         <button
           onClick={() => moveField(field.name, 'down')}
-          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
+          className="px-1.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
         >
           ↓
         </button>
         <button
           onClick={() => setEditSurface({ mode: 'editField', field })}
-          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
+          className="px-1.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
           Edit
         </button>
         <button
           onClick={() => setEditSurface({ mode: 'deleteConfirm', field })}
-          className="px-2 py-1 text-xs rounded bg-red-700 hover:bg-red-600 text-white transition-colors"
+          className="p-1 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-400 hover:text-zinc-200 transition-colors"
+          aria-label="Delete field"
         >
-          Delete
+          <Trash2 size={12} />
         </button>
       </div>
     </li>
@@ -228,8 +230,8 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
 
   return (
     <section>
-      <header className="flex justify-between items-center gap-6 mb-10">
-        <h2 className="!text-white text-xl font-medium">Field List</h2>
+      <header className="flex justify-between items-center gap-4 mb-6">
+        <h2 className="!text-white text-base font-semibold">Field List</h2>
         <button
           className="text-3xl disabled:opacity-50"
           disabled={addMutation.isPending || !fieldListId}
@@ -248,7 +250,7 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
       )}
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={fields.map(f => f.name)} strategy={verticalListSortingStrategy}>
-          <ul className="min-w-96 space-y-2">
+          <ul className="space-y-1.5">
             {fields.map((field) => (
               <SortableFieldItem key={field.name} field={field} setEditSurface={setEditSurface} />
             ))}
