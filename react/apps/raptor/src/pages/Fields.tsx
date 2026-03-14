@@ -43,6 +43,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
   setEditSurface: (s: SurfaceState) => void
 }) {
   const { isLoading, isError } = useCollection()
+  const [showPanel, setShowPanel] = useState(true)
 
   if (isLoading) return <BuilderSkeleton />
   if (isError)   return <div className="p-8 text-red-400">Failed to load collection.</div>
@@ -53,10 +54,10 @@ function FieldsContent({ editSurface, setEditSurface }: {
       <Graph />
 
       {/* Floating top bar with collection switcher */}
-      <BuilderTopBar />
+      <BuilderTopBar showPanel={showPanel} onTogglePanel={() => setShowPanel(p => !p)} />
 
       {/* Floating left panel with editor and files */}
-      <BuilderLeftPanel>
+      {showPanel && <BuilderLeftPanel>
         <div className="p-4">
           <div className="mb-8">
             <h4 className="font-medium text-sm text-zinc-400 mb-2">COLLECTION</h4>
@@ -67,7 +68,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
             <Files />
           </div>
         </div>
-      </BuilderLeftPanel>
+      </BuilderLeftPanel>}
 
       {/* Edit panel overlay */}
       {editSurface && (

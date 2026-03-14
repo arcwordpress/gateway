@@ -37,6 +37,7 @@ function FormsContent({ editSurface, setEditSurface }: {
   setEditSurface: (s: SurfaceState) => void
 }) {
   const { isLoading, isError } = useCollection()
+  const [showPanel, setShowPanel] = useState(true)
 
   if (isLoading) return <div className="p-8 text-zinc-400">Loading collection...</div>
   if (isError) return <div className="p-8 text-red-400">Failed to load collection.</div>
@@ -47,21 +48,23 @@ function FormsContent({ editSurface, setEditSurface }: {
       <Graph />
 
       {/* Floating top bar with collection switcher */}
-      <BuilderTopBar />
+      <BuilderTopBar showPanel={showPanel} onTogglePanel={() => setShowPanel(p => !p)} />
 
       {/* Floating left panel with editor and files */}
-      <BuilderLeftPanel>
-        <div className="p-6">
-          <div className="mb-8">
-            <h4 className="font-medium text-sm text-zinc-400 mb-2">COLLECTION</h4>
-            <CollectionName />
+      {showPanel && (
+        <BuilderLeftPanel>
+          <div className="p-6">
+            <div className="mb-8">
+              <h4 className="font-medium text-sm text-zinc-400 mb-2">COLLECTION</h4>
+              <CollectionName />
+            </div>
+            <div className="flex flex-col gap-8">
+              <Editor setEditSurface={setEditSurface} />
+              <Files />
+            </div>
           </div>
-          <div className="flex flex-col gap-8">
-            <Editor setEditSurface={setEditSurface} />
-            <Files />
-          </div>
-        </div>
-      </BuilderLeftPanel>
+        </BuilderLeftPanel>
+      )}
 
       {/* Edit panel overlay */}
       {editSurface && (
