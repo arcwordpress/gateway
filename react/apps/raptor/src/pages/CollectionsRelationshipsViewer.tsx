@@ -199,7 +199,7 @@ function PanelShell({
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
 // ─── Relationship type options ───────────────────────────────────────────────
 
@@ -633,11 +633,10 @@ export default function CollectionsRelationshipsViewer() {
         const srcId = `col-${rel.source}`
         const tgtId = `col-${rel.target}`
         relEdges.push({
-          id:           `rel-${rel.id}`,
-          source:       srcId,
-          target:       tgtId,
-          sourceHandle: 'right',
-          label:        `${rel.type}: ${rel.methodName}`,
+          id:        `rel-${rel.id}`,
+          source:    srcId,
+          target:    tgtId,
+          label:     `${rel.type}: ${rel.methodName}`,
           labelStyle:   { fill: '#a1a1aa', fontSize: 10 },
           style:        { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
           type:         'default',
