@@ -12,7 +12,7 @@ import {
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
-import { apiUrl, authHeaders } from '../lib/api'
+import { apiUrl, authHeaders, generateId } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { CollectionNode } from '../components/graph_node_types'
@@ -436,7 +436,7 @@ function CreatePanel({
       const existing: Relationship[] = json.collection?.relationships ?? []
 
       const newRel: Relationship = {
-        id:     crypto.randomUUID(),
+        id:     generateId(),
         source: sourceKey,
         target: targetKey,
         ...fields,

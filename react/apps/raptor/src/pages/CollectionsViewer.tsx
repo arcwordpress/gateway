@@ -13,7 +13,7 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
-import { apiUrl, authHeaders } from '../lib/api'
+import { apiUrl, authHeaders, generateId } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import {
@@ -521,7 +521,7 @@ function RelationshipPanel({
       const existing: Relationship[] = json.collection?.relationships ?? []
 
       const newRel: Relationship = {
-        id:         crypto.randomUUID(),
+        id:         generateId(),
         source:     sourceKey,
         target:     targetKey,
         type,
