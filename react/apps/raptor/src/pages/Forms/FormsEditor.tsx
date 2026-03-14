@@ -12,12 +12,12 @@ import { EditPanel } from '../Fields/FieldsEditor'
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm'
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
 const baseTextarea =
   'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50 text-sm resize-none'
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm resize-none'
 
 export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
   const { forms, addForm, moveForm } = useForms()

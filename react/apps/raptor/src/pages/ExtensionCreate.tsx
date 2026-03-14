@@ -8,7 +8,7 @@ import { apiUrl, authHeaders } from '../lib/api'
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 ' +
   'placeholder-zinc-600 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50'
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50'
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 

@@ -27,26 +27,8 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         position: 'relative',
       }}
     >
-      {/* Vertical hierarchy handles */}
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
-
-      {/* Action connection handle on left */}
-      <Handle id="action-target" type="target" position={Position.Left} />
-
-      {/* Relationship handles on sides */}
-      <Handle
-        id="left"
-        type="source"
-        position={Position.Left}
-        style={{ background: '#52525b', width: 8, height: 8, top: '65%' }}
-      />
-      <Handle
-        id="right"
-        type="source"
-        position={Position.Right}
-        style={{ background: '#52525b', width: 8, height: 8 }}
-      />
 
       <div
         style={{

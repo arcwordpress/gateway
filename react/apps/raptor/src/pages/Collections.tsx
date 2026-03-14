@@ -930,14 +930,13 @@ export default function Collections() {
         const srcId = `col-${rel.source}`
         const tgtId = `col-${rel.target}`
         relEdges.push({
-          id:             `rel-${rel.id}`,
-          source:         srcId,
-          target:         tgtId,
-          sourceHandle:   'right',
-          label:          `${rel.type}: ${rel.methodName}`,
-          labelStyle:     { fill: '#71717a', fontSize: 10 },
-          style:          { stroke: '#52525b', strokeDasharray: '5 3' },
-          type:           'straight',
+          id:          `rel-${rel.id}`,
+          source:      srcId,
+          target:      tgtId,
+          label:       `${rel.type}: ${rel.methodName}`,
+          labelStyle:  { fill: '#71717a', fontSize: 10 },
+          style:       { stroke: '#52525b', strokeDasharray: '5 3' },
+          type:        'straight',
         })
       }
     }

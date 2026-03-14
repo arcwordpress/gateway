@@ -1,11 +1,17 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router'
+import { List } from 'lucide-react'
 import { useWorkspace } from '../../context/workspace'
+
+interface BuilderTopBarProps {
+  showPanel?: boolean
+  onTogglePanel?: () => void
+}
 
 /**
  * Floating top bar for builder pages.
  * Contains collection switcher and floats above graph with margin from edges.
  */
-export function BuilderTopBar() {
+export function BuilderTopBar({ showPanel, onTogglePanel }: BuilderTopBarProps = {}) {
   const { activeCollectionKey, collections, isCollectionsLoading, setActiveCollectionKey } = useWorkspace()
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -55,6 +61,16 @@ export function BuilderTopBar() {
           </option>
         ))}
       </select>
+
+      {onTogglePanel && (
+        <button
+          onClick={onTogglePanel}
+          title={showPanel ? 'Hide panel' : 'Show panel'}
+          className="ml-auto flex items-center justify-center w-8 h-8 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 transition-colors"
+        >
+          <List size={14} />
+        </button>
+      )}
     </div>
   )
 }
