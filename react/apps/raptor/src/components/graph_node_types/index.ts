@@ -9,6 +9,8 @@ import { ViewListLabelNode } from './ViewListLabelNode'
 import { ViewNode } from './ViewNode'
 import { RenderStrategyNode } from './RenderStrategyNode'
 import { RenderOutputNode } from './RenderOutputNode'
+import { FormListLabelNode } from './FormListLabelNode'
+import { FormNode } from './FormNode'
 
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
@@ -38,6 +40,8 @@ export type {
   ViewsNodeType,
 } from './types'
 export type { ViewListLabelNodeType } from './ViewListLabelNode'
+export type { FormListLabelNodeType } from './FormListLabelNode'
+export type { FormNodeType } from './FormNode'
 export type { ViewNodeType } from './ViewNode'
 export type { RenderStrategyNodeType } from './RenderStrategyNode'
 export type { RenderOutputNodeType } from './RenderOutputNode'
@@ -53,6 +57,8 @@ export { RecordNode } from './RecordNode'
 export { JsonSchemaNode } from './JsonSchemaNode'
 export { ViewPreviewNode } from './ViewPreviewNode'
 export { ViewListLabelNode } from './ViewListLabelNode'
+export { FormListLabelNode } from './FormListLabelNode'
+export { FormNode } from './FormNode'
 export { ViewNode } from './ViewNode'
 export { RenderStrategyNode } from './RenderStrategyNode'
 export { RenderOutputNode } from './RenderOutputNode'
@@ -77,6 +83,8 @@ export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
   viewNode:             ViewNode,
   renderStrategyNode:   RenderStrategyNode,
   renderOutputNode:     RenderOutputNode,
+  formListLabel:        FormListLabelNode,
+  formNode:             FormNode,
 }
 
 // Export Collections Viewer node types registry

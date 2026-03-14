@@ -2,51 +2,73 @@ import { useEffect } from 'react'
 import {
   useNodesState,
   useEdgesState,
+  type Node,
+  type Edge,
   ReactFlow,
   Controls,
   Background,
   BackgroundVariant,
-  type Node,
 } from '@xyflow/react'
+import { FIELD_GRAPH_NODE_TYPES } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
+import { useCollection, useForms } from './FormsPageContext'
 import '@xyflow/react/dist/style.css'
 
-const initialNodes: Node[] = [
-  {
-    id: 'forms-root',
-    type: 'default',
-    position: { x: 250, y: 150 },
-    data: { label: 'Forms' },
-    style: {
-      background: '#27272a',
-      color: '#f4f4f5',
-      border: '1px solid #4b5563',
-      borderRadius: '8px',
-      padding: '12px 24px',
-      fontSize: '14px',
-      fontWeight: '500',
-    },
-  },
-]
-
 export function Graph() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState([])
+  const { collection } = useCollection()
+  const { forms } = useForms()
 
-  useEffect(() => {
-    setNodes(initialNodes)
-    setEdges([])
-  }, [setNodes, setEdges])
+  const baseNodes: Node[] = [
+    {
+      id: 'collection',
+      type: 'collectionRootNode',
+      data: {
+        title: collection?.title ?? collection?.collection_key ?? 'Collection',
+        collKey: collection?.collection_key ?? '',
+      },
+      position: { x: 200, y: 0 },
+    },
+    {
+      id: 'form-list-label',
+      type: 'formListLabel',
+      data: {},
+      position: { x: 200, y: 140 },
+    },
+  ]
+
+  const formNodes: Node[] = forms.map((form, idx) => ({
+    id: `form-${form.form_key}`,
+    type: 'formNode',
+    data: { title: form.title || form.form_key, formKey: form.form_key },
+    position: { x: 200 + idx * 220, y: 260 },
+  }))
+
+  const computedEdges: Edge[] = [
+    { id: 'e-collection-formlist', source: 'collection', target: 'form-list-label' },
+    ...forms.map((form) => ({
+      id: `e-formlist-${form.form_key}`,
+      source: 'form-list-label',
+      target: `form-${form.form_key}`,
+    })),
+  ]
+
+  const computedNodes: Node[] = [...baseNodes, ...formNodes]
+
+  const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
+  const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
+
+  useEffect(() => { setGraphNodes(computedNodes) }, [collection, forms])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [forms])               // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="w-full h-full">
+    <div style={{ width: '100%', height: '100%' }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={graphNodes}
+        edges={graphEdges}
+        nodeTypes={FIELD_GRAPH_NODE_TYPES}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
