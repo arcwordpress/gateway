@@ -25,6 +25,7 @@ import RecordsIndexPage from './pages/records/RecordsIndex'
 import RecordsListPage from './pages/records/RecordsList'
 import RecordFormPage from './pages/records/RecordForm'
 import RecordViewPage from './pages/records/RecordView'
+import CollectionsRelationshipsPage from './pages/CollectionsRelationshipsPage'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -64,6 +65,12 @@ const registeredCollectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/collections/registered',
   component: RegisteredCollectionsPage,
+})
+
+const collectionsRelationshipsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/collections/relationships',
+  component: CollectionsRelationshipsPage,
 })
 
 const fieldsTopLevelRoute = createRoute({
@@ -157,6 +164,7 @@ const routeTree = rootRoute.addChildren([
   //collectionsRoute,
   collectionsViewerRoute,
   registeredCollectionsRoute,
+  collectionsRelationshipsRoute,
   fieldsTopLevelRoute,
   formsTopLevelRoute,
   viewsTopLevelRoute,

@@ -21,6 +21,10 @@ export function CollectionsTabs() {
       <Link to={'/collections/registered' as any} className={tabCls(pathname === '/collections/registered')}>
         Registered Collections
       </Link>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Link to={'/collections/relationships' as any} className={tabCls(pathname === '/collections/relationships')}>
+        Relationships
+      </Link>
     </div>
   )
 }
