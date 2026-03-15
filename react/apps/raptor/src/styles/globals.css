@@ -8,6 +8,26 @@
   background-color: var(--app-bg);
 }
 
+/* ── Heading reset ────────────────────────────────────────────────────────── */
+/*                                                                             */
+/* WP Admin injects color, margin, padding, and font-size onto bare heading   */
+/* elements (specificity 0,0,1 – 0,1,1).  Our ID-scoped selector (1,0,1)     */
+/* wins without needing !important, so Tailwind !-utilities still work for    */
+/* the rare cases where you do want explicit values.                           */
+#gateway-raptor-canvas-host h1,
+#gateway-raptor-canvas-host h2,
+#gateway-raptor-canvas-host h3,
+#gateway-raptor-canvas-host h4,
+#gateway-raptor-canvas-host h5,
+#gateway-raptor-canvas-host h6 {
+  color: #d4d4d4; /* neutral-300 — soft default; override with !text-* when needed */
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
 /* Scoped to the raptor root so WP admin styles don't leak in */
 #gateway-raptor-root {
   font-family: system-ui, -apple-system, sans-serif;
