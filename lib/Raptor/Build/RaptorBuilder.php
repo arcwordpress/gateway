@@ -50,7 +50,7 @@ class RaptorBuilder
         );
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
-            ->with(['fieldList.fields', 'viewList.views'])
+            ->with(['fieldList.fields', 'viewList.views.viewRenders'])
             ->orderBy('id')
             ->get();
 
@@ -95,7 +95,7 @@ class RaptorBuilder
         RaptorExtension $extension
     ): array {
         // Create directory structure
-        foreach (['lib/Collections', 'lib/Views'] as $subDir) {
+        foreach (['lib/Collections', 'lib/Views', 'lib/Pages'] as $subDir) {
             if (!is_dir($pluginDir . '/' . $subDir)) {
                 if (!wp_mkdir_p($pluginDir . '/' . $subDir)) {
                     return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
@@ -199,9 +199,15 @@ class RaptorBuilder
 
         $classResult = \Gateway\Views\FileFromData::generateViewClass($viewData, $pluginSlug, $namespace);
 
+        $pageResult = null;
+        if ($view->viewRenders->contains('engine', 'page')) {
+            $pageResult = \Gateway\Views\FileFromData::generatePageClass($viewData, $pluginSlug, $namespace);
+        }
+
         return [
-            'view_key'       => $view->view_key,
+            'view_key'        => $view->view_key,
             'class_generated' => $classResult,
+            'page_generated'  => $pageResult,
         ];
     }
 

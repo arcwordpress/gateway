@@ -140,11 +140,23 @@ class Plugin {
     }
 
     /**
-     * Activation hook callback
+     * Activation hook callback — creates any registered pages if they don't exist.
      */
     public function activate() {
-        // TODO: Run migrations
-        // TODO: Set up initial data
+        $pages_dir = plugin_dir_path(__FILE__) . 'lib/Pages';
+
+        if (!is_dir($pages_dir)) {
+            return;
+        }
+
+        foreach (glob($pages_dir . '/*.php') as $file) {
+            $filename   = basename($file, '.php');
+            $class_name = '{{NAMESPACE}}\\Pages\\' . $filename;
+
+            if (class_exists($class_name)) {
+                (new $class_name())->create();
+            }
+        }
     }
 }
 

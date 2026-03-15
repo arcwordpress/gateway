@@ -92,6 +92,83 @@ class FileFromData
     }
 
     /**
+     * Generate page class file for a view that has a "page" render type.
+     *
+     * @param array  $viewData         Must contain: view_key, title
+     * @param string $pluginSlug       Plugin slug (e.g. 'horizon')
+     * @param string $pluginNamespace  Plugin namespace (e.g. 'Horizon')
+     * @return bool True on success, false on failure
+     */
+    public static function generatePageClass(array $viewData, string $pluginSlug, string $pluginNamespace): bool
+    {
+        if (empty($viewData['view_key'])) {
+            error_log('[Gateway] View key missing, cannot generate page class');
+            return false;
+        }
+
+        $pluginDir = WP_PLUGIN_DIR . '/' . $pluginSlug;
+
+        if (!is_dir($pluginDir)) {
+            error_log("[Gateway] Plugin directory does not exist: {$pluginDir}");
+            return false;
+        }
+
+        $pagesDir = $pluginDir . '/lib/Pages';
+        if (!is_dir($pagesDir)) {
+            if (!wp_mkdir_p($pagesDir)) {
+                error_log("[Gateway] Failed to create Pages directory: {$pagesDir}");
+                return false;
+            }
+        }
+
+        $templatePath = GATEWAY_PATH . 'templates/scaffold/page_class.php';
+        if (!file_exists($templatePath)) {
+            error_log("[Gateway] Page template not found: {$templatePath}");
+            return false;
+        }
+
+        $template = file_get_contents($templatePath);
+
+        $viewKey   = $viewData['view_key'];
+        $className = self::keyToClassName($viewKey) . 'Page';
+        $slug      = str_replace('_', '-', $viewKey);
+        $title     = !empty($viewData['title']) ? $viewData['title'] : self::keyToTitle($viewKey);
+        $content   = '[gateway_view key="' . $viewKey . '"]';
+
+        $replacements = [
+            '{{NAMESPACE}}'  => $pluginNamespace,
+            '{{CLASS_NAME}}' => $className,
+            '{{PAGE_TITLE}}' => addslashes($title),
+            '{{PAGE_SLUG}}'  => $slug,
+            '{{PAGE_CONTENT}}' => $content,
+        ];
+
+        $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);
+
+        $filePath = $pagesDir . '/' . $className . '.php';
+        $result   = file_put_contents($filePath, $classContent);
+
+        if ($result === false) {
+            error_log("[Gateway] Failed to write page class to: {$filePath}");
+            return false;
+        }
+
+        chmod($filePath, 0644);
+
+        error_log("[Gateway] Generated page class: {$filePath}");
+        return true;
+    }
+
+    /**
+     * Convert key to human-readable title.
+     * Example: article_list -> Article List
+     */
+    private static function keyToTitle(string $key): string
+    {
+        return ucwords(str_replace('_', ' ', $key));
+    }
+
+    /**
      * Format a PHP value as an inline literal suitable for class property assignment.
      * Uses var_export() for correctness, then normalises indentation.
      */
