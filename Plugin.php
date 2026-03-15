@@ -60,6 +60,7 @@ class Plugin
     private $mazeRoutes;
     private $patternRegistry;
     private $viewRegistry;
+    private $facetRegistry;
 
     public static function getInstance()
     {
@@ -73,6 +74,7 @@ class Plugin
     {
         $this->registry = new CollectionRegistry();
         $this->viewRegistry = new Views\ViewRegistry();
+        $this->facetRegistry = new Views\Facets\FacetRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
@@ -95,6 +97,7 @@ class Plugin
         new Raptor\Endpoints\ViewListRoutes();
         new Raptor\Endpoints\ViewRoutes();
         new Raptor\Endpoints\ViewRenderRoutes();
+        new Raptor\Endpoints\FacetRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues
@@ -300,6 +303,11 @@ class Plugin
     public function getViewRegistry()
     {
         return $this->viewRegistry;
+    }
+
+    public function getFacetRegistry(): Views\Facets\FacetRegistry
+    {
+        return $this->facetRegistry;
     }
 
     public function getPackageRegistry()

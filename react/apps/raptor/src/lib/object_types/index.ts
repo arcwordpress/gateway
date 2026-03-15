@@ -23,6 +23,18 @@ export type Form = {
   notification_email?: string
 }
 
+// ─── Facet ───────────────────────────────────────────────────────────────────
+
+export type Facet = {
+  id: number
+  facet_list_id: number
+  label: string
+  field_name: string
+  facet_type: string
+  config?: Record<string, unknown>
+  sort_order: number
+}
+
 // ─── ViewRender ───────────────────────────────────────────────────────────────
 
 export type ViewRender = {
@@ -46,6 +58,7 @@ export type View = {
   facet_filters: unknown[]
   default_sort: Record<string, unknown>
   per_page: number
+  facet_list?: { id: number; facets: Facet[] } | null
 }
 
 // ─── Collection ───────────────────────────────────────────────────────────────
