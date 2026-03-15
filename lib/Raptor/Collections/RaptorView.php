@@ -52,4 +52,9 @@ class RaptorView extends \Gateway\Collection
     {
         return $this->hasMany(RaptorViewRender::class, 'view_id', 'id');
     }
+
+    public function facetList(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RaptorFacetList::class, 'view_id', 'id');
+    }
 }

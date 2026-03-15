@@ -221,7 +221,7 @@ export function Graph() {
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
   useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, views, expandedViews])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, expandedViews])                     // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, views, expandedViews])               // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 

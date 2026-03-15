@@ -15,7 +15,7 @@ import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { apiUrl, authHeaders } from '../lib/api'
-import { Collection, Field, View, ViewRender } from '../lib/object_types'
+import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
 
 function getRowValue(row: Record<string, unknown>, column: string): unknown {
   if (column in row) return row[column]
@@ -155,6 +155,51 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     deleteRenderMutation.mutate(id)
   }, [deleteRenderMutation])
 
+  // ── Facets CRUD ───────────────────────────────────────────────────────────
+  const { data: facets, refetch: refetchFacets } = useQuery<Facet[]>({
+    queryKey: ['view-facets', viewKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json() as { facets?: Facet[] }
+      return json.facets ?? []
+    },
+    enabled: !!viewKey,
+  })
+
+  const addFacetMutation = useMutation({
+    mutationFn: async (data: { label: string; field_name: string; facet_type: string }) => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(data),
+      })
+      const json = await res.json() as { success: boolean; message?: string }
+      if (!json.success) throw new Error(json.message ?? 'Failed to save facet')
+    },
+    onSuccess: () => { void refetchFacets() },
+  })
+
+  const deleteFacetMutation = useMutation({
+    mutationFn: async (facetId: number) => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets/${facetId}`), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const json = await res.json() as { success: boolean }
+      if (!json.success) throw new Error('Failed to delete facet')
+    },
+    onSuccess: () => { void refetchFacets() },
+  })
+
+  const handleAddFacet = useCallback((data: { label: string; field_name: string; facet_type: string }) => {
+    addFacetMutation.mutate(data)
+  }, [addFacetMutation])
+
+  const handleDeleteFacet = useCallback((id: number) => {
+    deleteFacetMutation.mutate(id)
+  }, [deleteFacetMutation])
+
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collectionKey],
     queryFn: async () => {
@@ -202,6 +247,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const strategies = renderStrategies ?? []
   const saves = viewRenders ?? []
+  const savedFacets = facets ?? []
 
   const computedNodes: Node[] = [
     {
@@ -230,6 +276,18 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         isSaving: saveRenderMutation.isPending,
       },
       position: { x: 240, y: 520 },
+    },
+    {
+      id: 'facets-config',
+      type: 'facetsNode',
+      data: {
+        facets: savedFacets,
+        availableFields: allFields,
+        onAddFacet: handleAddFacet,
+        onDeleteFacet: handleDeleteFacet,
+        isSaving: addFacetMutation.isPending,
+      },
+      position: { x: 700, y: 520 },
     },
     ...(activeEngine
       ? [
@@ -267,7 +325,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
