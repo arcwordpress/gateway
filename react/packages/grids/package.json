@@ -2,13 +2,13 @@
   "name": "@arcwp/gateway-grids",
   "version": "1.2.4",
   "description": "Gateway Grid React component library with TanStack Table",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "src/index.js",
+  "module": "src/index.js",
   "style": "src/style.css",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": "./src/index.js",
+      "require": "./src/index.js"
     },
     "./style.css": "./src/style.css"
   },
