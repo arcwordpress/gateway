@@ -20,7 +20,7 @@
 #gateway-raptor-canvas-host h4,
 #gateway-raptor-canvas-host h5,
 #gateway-raptor-canvas-host h6 {
-  color: inherit;
+  color: #d4d4d4; /* neutral-300 — soft default; override with !text-* when needed */
   margin: 0;
   padding: 0;
   font-size: inherit;
