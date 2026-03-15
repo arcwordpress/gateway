@@ -66,7 +66,6 @@ function inferDefaults(
   sourceKey: string,
   targetKey: string,
 ): { methodName: string; foreignKey: string; ownerKey: string; pivotTable: string } {
-  const src = toCamel(sourceKey)
   const tgt = toCamel(targetKey)
 
   switch (type) {
@@ -112,7 +111,7 @@ function inferDefaults(
 // ─── Node type registry (only collectionNode needed here) ────────────────────
 
 const NODE_TYPES: NodeTypes = {
-  collectionNode: CollectionNode as React.ComponentType<never>,
+  collectionNode: CollectionNode as React.ComponentType<any>,
 }
 
 // ─── Panel geometry ──────────────────────────────────────────────────────────
