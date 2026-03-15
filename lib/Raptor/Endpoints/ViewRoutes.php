@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorView;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorViewList;
@@ -140,6 +141,8 @@ class ViewRoutes
             'per_page'      => isset($data['per_page']) ? (int) $data['per_page'] : 20,
         ]);
 
+        $this->triggerBuildFromView($view);
+
         return new \WP_REST_Response([
             'success' => true,
             'message' => 'View created.',
@@ -243,6 +246,8 @@ class ViewRoutes
 
         $view = ViewController::update($view, $updates);
 
+        $this->triggerBuildFromView($view);
+
         return new \WP_REST_Response([
             'success' => true,
             'message' => 'View updated.',
@@ -261,6 +266,8 @@ class ViewRoutes
                 'message' => 'View not found.',
             ], 404);
         }
+
+        $this->triggerBuildFromView($view);
 
         ViewController::delete($view);
 
@@ -331,6 +338,15 @@ class ViewRoutes
             'success' => true,
             'html'    => $html,
         ], 200);
+    }
+
+    private function triggerBuildFromView(RaptorView $view): void
+    {
+        $view->loadMissing('viewList.collection.extension');
+        $extension = $view->viewList?->collection?->extension ?? null;
+        if ($extension) {
+            (new RaptorBuilder())->build($extension->extension_key);
+        }
     }
 
     private function sanitizeKey(string $key): string
