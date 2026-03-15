@@ -53,7 +53,6 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
             data.onCreate?.()
           }}
           style={{
-            borderTop: '1px solid #1e293b',
             width: '100%',
             padding: '5px 12px',
             fontSize: 9,
