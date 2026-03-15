@@ -342,11 +342,28 @@ class ViewRoutes
 
     private function triggerBuildFromView(RaptorView $view): void
     {
+        error_log("[Gateway] triggerBuildFromView called for view_key={$view->view_key} view_list_id=" . ($view->view_list_id ?? 'NULL'));
+
         $view->loadMissing('viewList.collection.extension');
-        $extension = $view->viewList?->collection?->extension ?? null;
-        if ($extension) {
-            (new RaptorBuilder())->build($extension->extension_key);
+
+        if (!$view->viewList) {
+            error_log("[Gateway] triggerBuildFromView: viewList is NULL for view_key={$view->view_key} — build skipped");
+            return;
         }
+
+        if (!$view->viewList->collection) {
+            error_log("[Gateway] triggerBuildFromView: collection is NULL for viewList id={$view->viewList->id} — build skipped");
+            return;
+        }
+
+        if (!$view->viewList->collection->extension) {
+            error_log("[Gateway] triggerBuildFromView: extension is NULL for collection_key={$view->viewList->collection->collection_key} — build skipped");
+            return;
+        }
+
+        $extension = $view->viewList->collection->extension;
+        error_log("[Gateway] triggerBuildFromView: firing build for extension_key={$extension->extension_key}");
+        (new RaptorBuilder())->build($extension->extension_key);
     }
 
     private function sanitizeKey(string $key): string
