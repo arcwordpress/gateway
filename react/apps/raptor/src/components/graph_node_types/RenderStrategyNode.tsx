@@ -21,6 +21,7 @@ const ENGINE_META: Record<string, { label: string; activeBg: string }> = {
   shortcode: { label: 'Shortcode', activeBg: '#52525b' },
   block:     { label: 'Block',     activeBg: '#52525b' },
   template:  { label: 'Template',  activeBg: '#52525b' },
+  page:      { label: 'Page',      activeBg: '#52525b' },
 }
 
 const JS_TYPE_META: Record<string, { label: string; activeBg: string }> = {

@@ -62,5 +62,6 @@ class Controller
         $this->register->register(new Shortcode\ShortcodeRender());
         $this->register->register(new Block\BlockRender());
         $this->register->register(new Template\TemplateRender());
+        $this->register->register(new Page\PageRender());
     }
 }
