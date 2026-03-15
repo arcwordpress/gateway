@@ -86,8 +86,9 @@ class Plugin {
         // Register activation hook
         register_activation_hook(__FILE__, [$this, 'activate']);
         
-        // Register collections when Gateway is loaded
+        // Register collections and views when Gateway is loaded
         add_action('gateway_loaded', [$this, 'register_collections']);
+        add_action('gateway_loaded', [$this, 'register_views']);
     }
     
     /**
@@ -118,6 +119,26 @@ class Plugin {
         }
     }
     
+    /**
+     * Register all views from lib/Views directory
+     */
+    public function register_views() {
+        $views_dir = plugin_dir_path(__FILE__) . 'lib/Views';
+
+        if (!is_dir($views_dir)) {
+            return;
+        }
+
+        foreach (glob($views_dir . '/*.php') as $file) {
+            $filename   = basename($file, '.php');
+            $class_name = '{{NAMESPACE}}\\Views\\' . $filename;
+
+            if (class_exists($class_name) && method_exists($class_name, 'register')) {
+                $class_name::register();
+            }
+        }
+    }
+
     /**
      * Activation hook callback
      */

@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Build;
 
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
+use Gateway\Raptor\Collections\RaptorView;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -49,7 +50,7 @@ class RaptorBuilder
         );
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
-            ->with('fieldList.fields')
+            ->with(['fieldList.fields', 'viewList.views'])
             ->orderBy('id')
             ->get();
 
@@ -58,14 +59,26 @@ class RaptorBuilder
             $collectionResults[] = $this->buildCollection($collection, $pluginSlug, $namespace);
         }
 
+        $viewResults = [];
+        foreach ($collections as $collection) {
+            if (!$collection->viewList) {
+                continue;
+            }
+            foreach ($collection->viewList->views as $view) {
+                $viewResults[] = $this->buildView($view, $collection, $pluginSlug, $namespace);
+            }
+        }
+
         return [
-            'success'            => true,
-            'plugin_slug'        => $pluginSlug,
-            'plugin_dir'         => $pluginDir,
-            'namespace'          => $namespace,
-            'scaffold'           => $scaffoldResult,
-            'collections'        => $collectionResults,
-            'collection_count'   => count($collectionResults),
+            'success'          => true,
+            'plugin_slug'      => $pluginSlug,
+            'plugin_dir'       => $pluginDir,
+            'namespace'        => $namespace,
+            'scaffold'         => $scaffoldResult,
+            'collections'      => $collectionResults,
+            'collection_count' => count($collectionResults),
+            'views'            => $viewResults,
+            'view_count'       => count($viewResults),
         ];
     }
 
@@ -82,17 +95,15 @@ class RaptorBuilder
         RaptorExtension $extension
     ): array {
         // Create directory structure
-        if (!is_dir($pluginDir . '/lib/Collections')) {
-            if (!wp_mkdir_p($pluginDir . '/lib/Collections')) {
-                return ['success' => false, 'error' => 'Failed to create plugin directory structure.'];
+        foreach (['lib/Collections', 'lib/Views'] as $subDir) {
+            if (!is_dir($pluginDir . '/' . $subDir)) {
+                if (!wp_mkdir_p($pluginDir . '/' . $subDir)) {
+                    return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
+                }
             }
         }
 
         $pluginFile = $pluginDir . '/' . $pluginSlug . '.php';
-
-        if (file_exists($pluginFile)) {
-            return ['success' => true, 'skipped' => true, 'plugin_file' => $pluginFile];
-        }
 
         $templatePath = GATEWAY_PATH . 'templates/scaffold/plugin_main.php';
         if (!file_exists($templatePath)) {
@@ -168,6 +179,29 @@ class RaptorBuilder
             'class_generated' => $classResult,
             'migration'       => $migrationResult,
             'warnings'        => $warnings,
+        ];
+    }
+
+    /**
+     * Build a single view: generate the PHP class file in lib/Views/.
+     */
+    private function buildView(RaptorView $view, RaptorCollection $collection, string $pluginSlug, string $namespace): array
+    {
+        $viewData = [
+            'view_key'       => $view->view_key,
+            'title'          => $view->title,
+            'collection_key' => $collection->collection_key,
+            'columns'        => $view->columns ?? [],
+            'facet_filters'  => $view->facet_filters ?? [],
+            'default_sort'   => $view->default_sort ?? [],
+            'per_page'       => $view->per_page ?? 20,
+        ];
+
+        $classResult = \Gateway\Views\FileFromData::generateViewClass($viewData, $pluginSlug, $namespace);
+
+        return [
+            'view_key'       => $view->view_key,
+            'class_generated' => $classResult,
         ];
     }
 
