@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 
 class ViewRenderRoutes
 {
-    const VALID_ENGINES  = ['shortcode', 'block', 'template'];
+    const VALID_ENGINES  = ['shortcode', 'block', 'template', 'page'];
     const VALID_JS_TYPES = ['react', 'preact', 'wpia'];
 
     public function __construct()

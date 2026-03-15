@@ -40,6 +40,13 @@ function getStrategyInfo(strategyType: string, viewKey: string): StrategyInfo {
         code: viewKey,
         accent: '#a1a1aa',
       }
+    case 'page':
+      return {
+        title: 'Page',
+        description: 'A standalone page will be registered for this view when the extension is built. Page slug:',
+        code: viewKey,
+        accent: '#a1a1aa',
+      }
     default:
       return {
         title: strategyType,
