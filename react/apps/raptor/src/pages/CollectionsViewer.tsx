@@ -52,7 +52,7 @@ type Collection = {
 }
 
 type PanelState =
-  | { mode: 'create' }
+  | { mode: 'create'; extensionId: number }
   | { mode: 'edit';         key: string }
   | { mode: 'delete';       key: string }
   | { mode: 'relationship'; sourceKey: string; targetKey: string }
@@ -162,22 +162,11 @@ const baseTextarea =
 
 // ─── Create panel ─────────────────────────────────────────────────────────────
 
-function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; activeExtensionId: number | null }) {
+function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionId: number }) {
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [description, setDesc] = useState('')
-  const [extensionId, setExtensionId] = useState<number | null>(activeExtensionId)
   const key = toKey(title)
-
-  const { data: extensions } = useQuery<Extension[]>({
-    queryKey: ['raptor-extensions'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) return []
-      const json = await res.json()
-      return json.extensions as Extension[]
-    },
-  })
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -211,25 +200,6 @@ function CreatePanel({ onClose, activeExtensionId }: { onClose: () => void; acti
         }}
         className="space-y-4"
       >
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1">
-            Extension <span className="text-red-400">*</span>
-          </label>
-          <select
-            value={extensionId ?? ''}
-            onChange={(e) => setExtensionId(e.target.value ? Number(e.target.value) : null)}
-            disabled={mutation.isPending}
-            className={baseInput}
-          >
-            <option value="">Select an extension...</option>
-            {extensions?.map((ext) => (
-              <option key={ext.id} value={ext.id}>
-                {ext.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div>
           <label className="block text-xs font-medium text-zinc-400 mb-1">
             Title <span className="text-red-400">*</span>
@@ -737,8 +707,8 @@ export default function CollectionsViewer() {
       return newSet
     })
   }, [])
-  const openCreate = useCallback(() => {
-    setPanel({ mode: 'create' })
+  const openCreate = useCallback((extensionId: number) => {
+    setPanel({ mode: 'create', extensionId })
   }, [])
   const openEdit   = useCallback((key: string) => setPanel({ mode: 'edit',   key }), [])
   const openDelete = useCallback((key: string) => setPanel({ mode: 'delete', key }), [])
@@ -787,7 +757,7 @@ export default function CollectionsViewer() {
         data: {
           isExpanded: expandedGroups.has(collGroupId),
           onToggle: () => toggleGroup(collGroupId),
-          onCreate: () => openCreate(),
+          onCreate: () => openCreate(ext.id),
         },
         position: { x: 0, y: 0 },
       })
@@ -917,7 +887,7 @@ export default function CollectionsViewer() {
         <SharedMiniMap />
       </ReactFlow>
 
-      {panel?.mode === 'create'       && <CreatePanel activeExtensionId={activeExtensionId} onClose={closePanel} />}
+      {panel?.mode === 'create'       && <CreatePanel extensionId={panel.extensionId} onClose={closePanel} />}
       {panel?.mode === 'edit'         && <EditPanel   collKey={panel.key}   onClose={closePanel} />}
       {panel?.mode === 'delete'       && <DeletePanel collKey={panel.key}   onClose={closePanel} />}
       {panel?.mode === 'relationship' && (
