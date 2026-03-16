@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { appConfig } from '../config'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -8,6 +8,7 @@ import Sidebar from '../components/ui/Sidebar'
 import { AppContext } from '../context/app'
 import { WorkspaceContext, WorkspaceCollection } from '../context/workspace'
 import { apiUrl, authHeaders } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 
 // ─── Root layout ───────────────────────────────────────────────────────────
 //
@@ -25,6 +26,7 @@ export default function Layout() {
   const [baseTopOffset, setBaseTopOffset] = useState(0)
   const [baseShellHeightPx, setBaseShellHeightPx] = useState(0)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const toggleExpand = () => setIsExpanded((v) => !v)
   const pathname = useRouterState({ select: (s) => s.location.pathname })
 
@@ -80,6 +82,18 @@ export default function Layout() {
       return json.collections ?? []
     },
   })
+
+  // Once the stub list is loaded, warm the nested-collections cache in the background.
+  // prefetchQuery is a no-op if the data is already fresh (staleTime: 30s).
+  useEffect(() => {
+    if (collections.length > 0) {
+      void queryClient.prefetchQuery({
+        queryKey: COLLECTIONS_NESTED_KEY,
+        queryFn: fetchCollectionsWithNested,
+        staleTime: 30_000,
+      })
+    }
+  }, [collections.length, queryClient])
 
   useEffect(() => {
     const saved = window.localStorage.getItem('raptor.activeCollectionKey')
