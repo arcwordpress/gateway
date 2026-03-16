@@ -172,7 +172,10 @@ class CollectionRoutes
 
         return new \WP_REST_Response([
             'success'    => true,
-            'collection' => CollectionController::withNested($collection)->toArray(),
+            'collection' => array_merge(
+                CollectionController::withNested($collection)->toArray(),
+                ['fields' => $collection->getFields()],
+            ),
         ], 200);
     }
 

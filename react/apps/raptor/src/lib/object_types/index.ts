@@ -63,6 +63,16 @@ export type View = {
 
 // ─── Collection ───────────────────────────────────────────────────────────────
 
+export type CollectionFieldDef = {
+  name: string
+  type: string
+  label?: string
+  required?: boolean
+  default?: string
+  placeholder?: string
+  options?: { value: string; label: string }[]
+}
+
 export type Collection = {
   id: number
   collection_key: string
@@ -72,6 +82,7 @@ export type Collection = {
   field_list: { id: number; fields: Field[] } | null
   form_list: { id: number; forms: Form[] } | null
   view_list: { id: number; views: View[] } | null
+  fields?: Record<string, CollectionFieldDef>
 }
 
 // ─── Field Type Definition ────────────────────────────────────────────────────

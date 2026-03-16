@@ -836,6 +836,7 @@ class ExtensionCrudRoutes
                 'min_wp_version'  => $extension->min_wp_version,
                 'namespace'       => $extension->namespace,
                 'status'          => $extension->status,
+                'fields'          => $extension->getFields(),
             ],
         ], 200);
     }

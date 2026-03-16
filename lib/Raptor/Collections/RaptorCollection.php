@@ -43,6 +43,38 @@ class RaptorCollection extends \Gateway\Collection
         'relationships' => 'array',
     ];
 
+    /**
+     * Field definitions used by the Gateway forms system.
+     * These drive form rendering, validation, and labelling in the Raptor UI.
+     * collection_key is intentionally excluded — set on create, not editable.
+     * extension_id and relationships are managed via dedicated UI interactions.
+     */
+    protected $fields = [
+        [
+            'name'        => 'title',
+            'type'        => 'text',
+            'label'       => 'Title',
+            'required'    => true,
+            'placeholder' => 'My Collection',
+        ],
+        [
+            'name'     => 'description',
+            'type'     => 'textarea',
+            'label'    => 'Description',
+            'required' => false,
+        ],
+        [
+            'name'    => 'status',
+            'type'    => 'select',
+            'label'   => 'Status',
+            'default' => 'active',
+            'options' => [
+                ['value' => 'active',   'label' => 'Active'],
+                ['value' => 'inactive', 'label' => 'Inactive'],
+            ],
+        ],
+    ];
+
     public function getFillable(): array
     {
         return [
