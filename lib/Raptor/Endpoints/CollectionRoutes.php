@@ -84,6 +84,10 @@ class CollectionRoutes
 
         $collections = $query->get();
 
+        if ($request->get_param('with_nested')) {
+            $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+        }
+
         return new \WP_REST_Response([
             'success'     => true,
             'collections' => $collections->toArray(),

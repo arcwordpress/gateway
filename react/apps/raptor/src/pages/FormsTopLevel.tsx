@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
 import { GlobalFormsGraph } from './Forms/GlobalFormsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
-import { apiUrl, authHeaders } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
 
 export default function FormsTopLevelPage() {
@@ -23,30 +23,9 @@ export default function FormsTopLevelPage() {
   }, [activeCollectionKey, isCollectionsLoading, navigate, workspaceCollections])
 
   const { data: collections = [], isLoading } = useQuery<Collection[]>({
-    queryKey: ['raptor-collections-with-nested', 'forms'],
-    queryFn: async () => {
-      const listRes = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
-      if (!listRes.ok) return []
-      const listJson = await listRes.json() as {
-        collections?: Array<{ collection_key: string }>
-      }
-      const items = listJson.collections ?? []
-      if (items.length === 0) return []
-
-      const details = await Promise.all(
-        items.map(async (item) => {
-          const detailRes = await fetch(
-            apiUrl(`gateway/v1/raptor/collection/${item.collection_key}`),
-            { headers: authHeaders() },
-          )
-          if (!detailRes.ok) return null
-          const detailJson = await detailRes.json() as { collection?: Collection }
-          return detailJson.collection ?? null
-        }),
-      )
-
-      return details.filter((c): c is Collection => c !== null)
-    },
+    queryKey: COLLECTIONS_NESTED_KEY,
+    queryFn: fetchCollectionsWithNested,
+    staleTime: 30_000,
     enabled: !activeCollectionKey,
   })
 

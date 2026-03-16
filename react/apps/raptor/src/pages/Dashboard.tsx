@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
 
 type WeeklyTotal = { week: string; total: number }
@@ -136,32 +137,9 @@ export default function Dashboard() {
   })
 
   const { data: collections = [], isLoading, dataUpdatedAt } = useQuery<Collection[]>({
-    queryKey: ['raptor-dashboard-summary'],
-    queryFn: async () => {
-      const listRes = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
-      if (!listRes.ok) return []
-
-      const listJson = await listRes.json() as {
-        collections?: Array<{ collection_key: string }>
-      }
-
-      const items = listJson.collections ?? []
-      if (items.length === 0) return []
-
-      const details = await Promise.all(
-        items.map(async (item) => {
-          const detailRes = await fetch(
-            apiUrl(`gateway/v1/raptor/collection/${item.collection_key}`),
-            { headers: authHeaders() },
-          )
-          if (!detailRes.ok) return null
-          const detailJson = await detailRes.json() as { collection?: Collection }
-          return detailJson.collection ?? null
-        }),
-      )
-
-      return details.filter((c): c is Collection => c !== null)
-    },
+    queryKey: COLLECTIONS_NESTED_KEY,
+    queryFn: fetchCollectionsWithNested,
+    staleTime: 30_000,
   })
 
   const totalFields = collections.reduce((sum, collection) => sum + (collection.field_list?.fields.length ?? 0), 0)
