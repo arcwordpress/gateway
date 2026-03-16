@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { PlusCircle } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import {
   ReactFlow,
@@ -42,8 +42,7 @@ type PanelState =
   | null
 
 type SiteNodeType = Node<{ onCreateExtension: () => void }, 'siteNode'>
-type ExtNodeType  = Node<{ title: string; extKey: string }, 'extensionNode'>
-type ActNodeType  = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
+type ExtNodeType  = Node<{ title: string; extKey: string; onEdit: () => void; onDelete: () => void }, 'extensionNode'>
 
 function toKey(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
@@ -74,83 +73,29 @@ function SiteNode({ data }: NodeProps<SiteNodeType>) {
 
 function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
   return (
-    <div
-      style={{
-        background: '#27272a',
-        border: '1px solid #334155',
-        borderRadius: 8,
-        padding: '8px 14px',
-        width: 180,
-        color: '#e4e4e7',
-        fontSize: 13,
-      }}
-    >
+    <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-3 pt-3 pb-3 flex flex-col gap-2.5 w-[180px]">
       <Handle type="target" position={Position.Top} />
-      <div style={{ fontWeight: 500 }}>{data.title}</div>
-      <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
-        {data.extKey}
+      <div>
+        <div className="text-neutral-200 text-sm font-medium leading-snug">{data.title}</div>
+        <div className="text-neutral-500 text-[11px] font-mono mt-0.5">{data.extKey}</div>
+      </div>
+      <div className="flex gap-1.5">
+        <button
+          onClick={data.onEdit}
+          className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-300 text-xs font-medium transition-colors cursor-pointer"
+        >
+          <Pencil size={11} strokeWidth={2} />
+          Edit
+        </button>
+        <button
+          onClick={data.onDelete}
+          className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-300 text-xs font-medium transition-colors cursor-pointer"
+        >
+          <Trash2 size={11} strokeWidth={2} />
+          Delete
+        </button>
       </div>
       <Handle type="source" position={Position.Bottom} />
-    </div>
-  )
-}
-
-// ─── Custom node: Actions ────────────────────────────────────────────────────
-// Generic node for any list of clickable actions.
-// No colours — only near-black and near-white.
-
-function ActionsNode({ data }: NodeProps<ActNodeType>) {
-  return (
-    <div
-      style={{
-        background: '#18181b',
-        border: '1px solid #1e1e1e',
-        borderRadius: 8,
-        minWidth: 140,
-        overflow: 'hidden',
-      }}
-    >
-      <Handle type="target" position={Position.Top} />
-
-      {/* Heading */}
-      <div
-        style={{
-          padding: '5px 10px',
-          borderBottom: '1px solid #1e1e1e',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: '#e4e4e7',
-          userSelect: 'none',
-        }}
-      >
-        Actions
-      </div>
-
-      {/* Links */}
-      <div>
-        {data.actions.map((action) => (
-          <button
-            key={action.label}
-            onClick={action.onClick}
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '5px 10px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#d4d4d8',
-              fontSize: 12,
-              fontFamily: 'inherit',
-            }}
-          >
-            {action.label}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
@@ -158,15 +103,13 @@ function ActionsNode({ data }: NodeProps<ActNodeType>) {
 const nodeTypes: NodeTypes = {
   siteNode:      SiteNode      as React.ComponentType<NodeProps>,
   extensionNode: ExtensionNode as React.ComponentType<NodeProps>,
-  actionsNode:   ActionsNode   as React.ComponentType<NodeProps>,
 }
 
 // ─── Dagre layout ───────────────────────────────────────────────────────────
 
 const NODE_DIMS: Record<string, { w: number; h: number }> = {
   siteNode:      { w: 170, h: 90 },
-  extensionNode: { w: 180, h: 54 },
-  actionsNode:   { w: 140, h: 80 },
+  extensionNode: { w: 180, h: 88 },
 }
 
 function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
@@ -696,22 +639,15 @@ export default function Graph() {
 
     for (const ext of exts) {
       const extId = `ext-${ext.key}`
-      const actId = `act-${ext.key}`
 
       rawNodes.push({
         id: extId,
         type: 'extensionNode',
-        data: { title: ext.title, extKey: ext.key },
-        position: { x: 0, y: 0 },
-      })
-      rawNodes.push({
-        id: actId,
-        type: 'actionsNode',
         data: {
-          actions: [
-            { label: 'Edit',   onClick: () => openEdit(ext.key) },
-            { label: 'Delete', onClick: () => openDelete(ext.key) },
-          ],
+          title: ext.title,
+          extKey: ext.key,
+          onEdit:   () => openEdit(ext.key),
+          onDelete: () => openDelete(ext.key),
         },
         position: { x: 0, y: 0 },
       })
@@ -721,12 +657,6 @@ export default function Graph() {
         source: 'site',
         target: extId,
         style: { stroke: '#52525b' },
-      })
-      rawEdges.push({
-        id: `e-${ext.key}-act`,
-        source: extId,
-        target: actId,
-        style: { stroke: '#3f3f46' },
       })
     }
 
