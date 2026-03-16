@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { PlusCircle } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import {
   ReactFlow,
@@ -40,7 +41,7 @@ type PanelState =
   | { mode: 'delete'; key: string }
   | null
 
-type SiteNodeType = Node<Record<string, never>, 'siteNode'>
+type SiteNodeType = Node<{ onCreateExtension: () => void }, 'siteNode'>
 type ExtNodeType  = Node<{ title: string; extKey: string }, 'extensionNode'>
 type ActNodeType  = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
 
@@ -52,24 +53,19 @@ const fieldGroupSchemaUrl = appConfig.schemaUrl.replace(/[^/]+$/, 'field-group.j
 
 // ─── Custom node: Site ──────────────────────────────────────────────────────
 
-function SiteNode(_: NodeProps<SiteNodeType>) {
+function SiteNode({ data }: NodeProps<SiteNodeType>) {
   return (
-    <div
-      style={{
-        background: '#3f3f46',
-        border: '1px solid #52525b',
-        borderRadius: 10,
-        padding: '10px 20px',
-        color: '#e4e4e7',
-        fontSize: 13,
-        fontWeight: 600,
-        letterSpacing: '0.04em',
-        textTransform: 'uppercase',
-        minWidth: 100,
-        textAlign: 'center',
-      }}
-    >
-      Site
+    <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 pt-3 pb-3 flex flex-col items-center gap-3 min-w-[170px]">
+      <span className="text-neutral-300 text-xs font-semibold tracking-[0.12em] uppercase select-none">
+        Site
+      </span>
+      <button
+        onClick={data.onCreateExtension}
+        className="flex items-center gap-2 w-full justify-center px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-200 text-sm font-medium transition-colors cursor-pointer"
+      >
+        <PlusCircle size={15} strokeWidth={2} />
+        Create Extension
+      </button>
       <Handle type="source" position={Position.Bottom} />
     </div>
   )
@@ -169,7 +165,7 @@ const nodeTypes: NodeTypes = {
 // ─── Dagre layout ───────────────────────────────────────────────────────────
 
 const NODE_DIMS: Record<string, { w: number; h: number }> = {
-  siteNode:      { w: 100, h: 42 },
+  siteNode:      { w: 170, h: 90 },
   extensionNode: { w: 180, h: 54 },
   actionsNode:   { w: 140, h: 80 },
 }
@@ -665,28 +661,12 @@ export default function Graph() {
       {
         id: 'site',
         type: 'siteNode',
-        data: {},
-        position: { x: 0, y: 0 },
-      },
-      // Site-level actions node
-      {
-        id: 'site-actions',
-        type: 'actionsNode',
-        data: {
-          actions: [{ label: 'Create Extension', onClick: openCreate }],
-        },
+        data: { onCreateExtension: openCreate },
         position: { x: 0, y: 0 },
       },
     ]
 
-    const rawEdges: Edge[] = [
-      {
-        id: 'e-site-actions',
-        source: 'site',
-        target: 'site-actions',
-        style: { stroke: '#3f3f46' },
-      },
-    ]
+    const rawEdges: Edge[] = []
 
     for (const ext of exts) {
       const extId = `ext-${ext.key}`
