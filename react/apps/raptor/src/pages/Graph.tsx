@@ -19,7 +19,6 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
-import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
@@ -27,12 +26,13 @@ import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 type Extension = { key: string; title: string }
-type SchemaProperty = { type: string; title: string; description?: string; default?: string }
-type FieldGroupSchema = {
-  title: string
-  description?: string
-  required: string[]
-  properties: Record<string, SchemaProperty>
+type ExtensionField = {
+  name: string
+  type: string
+  label: string
+  required?: boolean
+  placeholder?: string
+  default?: string
 }
 
 type PanelState =
@@ -49,7 +49,6 @@ function toKey(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
 }
 
-const fieldGroupSchemaUrl = appConfig.schemaUrl.replace(/[^/]+$/, 'field-group.json')
 
 // ─── Custom node: Site ──────────────────────────────────────────────────────
 
@@ -289,42 +288,83 @@ function FieldSkeleton() {
   )
 }
 
+// ─── Shared field input renderer ─────────────────────────────────────────────
+
+function FieldInput({
+  field,
+  value,
+  disabled,
+  autoFocus,
+  onChange,
+}: {
+  field: ExtensionField
+  value: string
+  disabled: boolean
+  autoFocus?: boolean
+  onChange: (val: string) => void
+}) {
+  if (field.type === 'textarea') {
+    return (
+      <textarea
+        value={value}
+        disabled={disabled}
+        autoFocus={autoFocus}
+        placeholder={field.placeholder}
+        rows={3}
+        onChange={(e) => onChange(e.target.value)}
+        className={baseInput + ' resize-none'}
+      />
+    )
+  }
+  return (
+    <input
+      type={field.type === 'url' ? 'url' : 'text'}
+      value={value}
+      disabled={disabled}
+      autoFocus={autoFocus}
+      placeholder={field.placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      className={baseInput}
+    />
+  )
+}
+
 // ─── Create panel ────────────────────────────────────────────────────────────
 
 function CreatePanel({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [fields, setFields] = useState<Record<string, string>>({})
+  const [values, setValues] = useState<Record<string, string>>({})
   const [key, setKey] = useState('')
 
-  const { data: schema, isLoading, isError } = useQuery<FieldGroupSchema>({
-    queryKey: ['schema', 'field-group'],
+  const { data: fieldsData, isLoading, isError } = useQuery<Record<string, ExtensionField>>({
+    queryKey: ['extension-fields'],
     queryFn: async () => {
-      const res = await fetch(fieldGroupSchemaUrl)
-      if (!res.ok) throw new Error(`Failed to load schema (HTTP ${res.status})`)
-      return res.json() as Promise<FieldGroupSchema>
+      const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.fields as Record<string, ExtensionField>
     },
     staleTime: Infinity,
     retry: 2,
   })
 
   useEffect(() => {
-    if (!schema) return
-    setFields((prev) => {
+    if (!fieldsData) return
+    setValues((prev) => {
       const seeded: Record<string, string> = {}
-      for (const [name, prop] of Object.entries(schema.properties)) {
-        seeded[name] = prev[name] ?? (prop.default !== undefined ? String(prop.default) : '')
+      for (const [name, field] of Object.entries(fieldsData)) {
+        seeded[name] = prev[name] ?? (field.default !== undefined ? String(field.default) : '')
       }
       return seeded
     })
-  }, [schema])
+  }, [fieldsData])
 
   useEffect(() => {
-    if (fields.title) setKey(toKey(fields.title))
-    else setKey('')
-  }, [fields.title])
+    setKey(values.title ? toKey(values.title) : '')
+  }, [values.title])
 
-  const setField = (name: string, val: string) =>
-    setFields((prev) => ({ ...prev, [name]: val }))
+  const setValue = (name: string, val: string) =>
+    setValues((prev) => ({ ...prev, [name]: val }))
 
   const mutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
@@ -343,44 +383,42 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
     },
   })
 
-  const required: string[] = schema?.required ?? []
-  const schemaEntries = schema ? Object.entries(schema.properties) : []
+  const fieldList = fieldsData ? Object.values(fieldsData) : []
 
   return (
     <PanelShell title="New Extension" onClose={onClose}>
       {isError && (
         <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
-          Could not load schema.
+          Could not load field definitions.
         </div>
       )}
 
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          const title = fields.title?.trim()
+          const title = values.title?.trim()
           if (!title || !key.trim()) return
-          mutation.mutate({ ...fields, title, key: key.trim() })
+          mutation.mutate({ ...values, title, key: key.trim() })
         }}
         className="space-y-4"
       >
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)
-          : schemaEntries.map(([name, prop]) => (
-              <div key={name}>
+          : fieldList.map((field, idx) => (
+              <div key={field.name}>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">
-                  {prop.title}
-                  {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
-                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{name}</span>
+                  {field.label}
+                  {field.required && <span className="ml-1 text-red-400">*</span>}
+                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{field.name}</span>
                 </label>
-                <input
-                  type="text"
-                  value={fields[name] ?? ''}
+                <FieldInput
+                  field={field}
+                  value={values[field.name] ?? ''}
                   disabled={mutation.isPending}
-                  autoFocus={name === 'title'}
-                  onChange={(e) => setField(name, e.target.value)}
-                  className={baseInput}
+                  autoFocus={idx === 0}
+                  onChange={(val) => setValue(field.name, val)}
                 />
-                {name === 'title' && (
+                {field.name === 'title' && (
                   <div className="mt-3">
                     <label className="block text-xs font-medium text-zinc-400 mb-1">
                       Key
@@ -406,7 +444,7 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
         <div className="flex gap-2 pt-1">
           <button
             type="submit"
-            disabled={mutation.isPending || !fields.title?.trim() || isLoading}
+            disabled={mutation.isPending || !values.title?.trim() || isLoading}
             className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Creating…' : 'Create'}
@@ -426,48 +464,41 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
 
 // ─── Edit panel ──────────────────────────────────────────────────────────────
 
+type ExtensionRecord = Record<string, string> & { fields?: Record<string, ExtensionField> }
+
 function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [fields, setFields] = useState<Record<string, string>>({})
+  const [values, setValues] = useState<Record<string, string>>({})
 
-  const { data: schema, isLoading: schemaLoading } = useQuery<FieldGroupSchema>({
-    queryKey: ['schema', 'field-group'],
+  const { data: existing, isLoading, isError } = useQuery<ExtensionRecord>({
+    queryKey: ['extensions', extKey],
     queryFn: async () => {
-      const res = await fetch(fieldGroupSchemaUrl)
-      if (!res.ok) throw new Error(`Failed to load schema (HTTP ${res.status})`)
-      return res.json() as Promise<FieldGroupSchema>
+      const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.extension as ExtensionRecord
     },
-    staleTime: Infinity,
-    retry: 2,
+    enabled: !!extKey,
   })
 
-  const { data: existing, isLoading: extLoading, isError: extError } =
-    useQuery<Record<string, string>>({
-      queryKey: ['extensions', extKey],
-      queryFn: async () => {
-        const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
-          headers: authHeaders(),
-        })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const json = await res.json()
-        return json.extension as Record<string, string>
-      },
-      enabled: !!extKey,
-    })
+  const fieldList: ExtensionField[] = existing?.fields ? Object.values(existing.fields) : []
 
   useEffect(() => {
-    if (!schema || !existing) return
-    setFields(() => {
+    if (!existing || fieldList.length === 0) return
+    setValues(() => {
       const seeded: Record<string, string> = {}
-      for (const name of Object.keys(schema.properties)) {
-        seeded[name] = existing[name] ?? ''
+      for (const field of fieldList) {
+        seeded[field.name] = existing[field.name] ?? ''
       }
       return seeded
     })
-  }, [schema, existing])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existing])
 
-  const setField = (name: string, val: string) =>
-    setFields((prev) => ({ ...prev, [name]: val }))
+  const setValue = (name: string, val: string) =>
+    setValues((prev) => ({ ...prev, [name]: val }))
 
   const updateMutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
@@ -486,13 +517,9 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
     },
   })
 
-  const isLoading = schemaLoading || extLoading
-  const required: string[] = schema?.required ?? []
-  const schemaEntries = schema ? Object.entries(schema.properties) : []
-
   return (
     <PanelShell title={existing?.title || extKey} sub={extKey} onClose={onClose}>
-      {extError && (
+      {isError && (
         <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           Could not load extension data.
         </div>
@@ -501,26 +528,25 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          if (!fields.title?.trim()) return
-          updateMutation.mutate({ ...fields })
+          if (!values.title?.trim()) return
+          updateMutation.mutate({ ...values })
         }}
         className="space-y-4"
       >
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)
-          : schemaEntries.map(([name, prop]) => (
-              <div key={name}>
+          : fieldList.map((field) => (
+              <div key={field.name}>
                 <label className="block text-xs font-medium text-zinc-400 mb-1">
-                  {prop.title}
-                  {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
-                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{name}</span>
+                  {field.label}
+                  {field.required && <span className="ml-1 text-red-400">*</span>}
+                  <span className="ml-1.5 text-zinc-600 font-mono font-normal">{field.name}</span>
                 </label>
-                <input
-                  type="text"
-                  value={fields[name] ?? ''}
+                <FieldInput
+                  field={field}
+                  value={values[field.name] ?? ''}
                   disabled={updateMutation.isPending}
-                  onChange={(e) => setField(name, e.target.value)}
-                  className={baseInput}
+                  onChange={(val) => setValue(field.name, val)}
                 />
               </div>
             ))}
@@ -534,7 +560,7 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
         <div className="flex gap-2 pt-1">
           <button
             type="submit"
-            disabled={updateMutation.isPending || !fields.title?.trim() || isLoading}
+            disabled={updateMutation.isPending || !values.title?.trim() || isLoading}
             className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {updateMutation.isPending ? 'Saving…' : 'Save'}
