@@ -20,6 +20,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders, generateId } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 
@@ -423,8 +424,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
 
 function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [title, setTitle] = useState('')
-  const [description, setDesc] = useState('')
+  const [formData, setFormData] = useState<Record<string, string>>({})
 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
@@ -441,26 +441,37 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
 
   useEffect(() => {
     if (!collection) return
-    setTitle(collection.title ?? '')
-    setDesc(collection.description ?? '')
+    const initial: Record<string, string> = {}
+    for (const field of Object.values(collection.fields ?? {})) {
+      initial[field.name] = String((collection as Record<string, unknown>)[field.name] ?? field.default ?? '')
+    }
+    setFormData(initial)
   }, [collection])
 
   const mutation = useMutation({
     mutationFn: async () => {
+      const trimmed: Record<string, string> = {}
+      for (const [k, v] of Object.entries(formData)) {
+        trimmed[k] = v.trim()
+      }
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
+        body: JSON.stringify(trimmed),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update')
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       onClose()
     },
   })
+
+  const fieldDefs = Object.values(collection?.fields ?? {})
+  const isTitleEmpty = 'title' in (collection?.fields ?? {}) && !formData.title?.trim()
 
   return (
     <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose}>
@@ -473,7 +484,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          if (title.trim()) mutation.mutate()
+          if (!isTitleEmpty) mutation.mutate()
         }}
         className="space-y-4"
       >
@@ -483,30 +494,44 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
             <div className="h-16 rounded-lg bg-zinc-900 animate-pulse" />
           </>
         ) : (
-          <>
-            <div>
+          fieldDefs.map((field) => (
+            <div key={field.name}>
               <label className="block text-xs font-medium text-zinc-400 mb-1">
-                Title <span className="text-red-400">*</span>
+                {field.label ?? field.name}
+                {field.required && <span className="text-red-400 ml-0.5">*</span>}
               </label>
-              <input
-                type="text"
-                value={title}
-                disabled={mutation.isPending}
-                onChange={(e) => setTitle(e.target.value)}
-                className={baseInput}
-              />
+              {field.type === 'textarea' ? (
+                <textarea
+                  value={formData[field.name] ?? ''}
+                  rows={3}
+                  placeholder={field.placeholder}
+                  disabled={mutation.isPending}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                  className={baseTextarea}
+                />
+              ) : field.type === 'select' ? (
+                <select
+                  value={formData[field.name] ?? field.default ?? ''}
+                  disabled={mutation.isPending}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                  className={baseInput}
+                >
+                  {(field.options ?? []).map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={field.type === 'url' ? 'url' : 'text'}
+                  value={formData[field.name] ?? ''}
+                  placeholder={field.placeholder}
+                  disabled={mutation.isPending}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                  className={baseInput}
+                />
+              )}
             </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Description</label>
-              <textarea
-                value={description}
-                rows={3}
-                disabled={mutation.isPending}
-                onChange={(e) => setDesc(e.target.value)}
-                className={baseTextarea}
-              />
-            </div>
-          </>
+          ))
         )}
 
         {mutation.isError && (
@@ -518,7 +543,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
         <div className="flex gap-2 pt-1">
           <button
             type="submit"
-            disabled={mutation.isPending || !title.trim() || isLoading}
+            disabled={mutation.isPending || isTitleEmpty || isLoading}
             className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {mutation.isPending ? 'Saving…' : 'Save'}
