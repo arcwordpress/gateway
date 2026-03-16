@@ -51,6 +51,12 @@ class ExtensionCrudRoutes
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
+        register_rest_route('gateway/v1', '/extensions/fields', [
+            'methods' => 'GET',
+            'callback' => [$this, 'getFields'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
+
         register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-z0-9_]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getExtension'],
@@ -802,6 +808,22 @@ class ExtensionCrudRoutes
                 'file_path' => null,
             ];
         }
+    }
+
+    /**
+     * Return the RaptorExtension field definitions (from $fields).
+     * Used by the React form to render the correct inputs for create/edit.
+     *
+     * @return \WP_REST_Response
+     */
+    public function getFields()
+    {
+        $extension = new \Gateway\Raptor\Collections\RaptorExtension();
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'fields'  => $extension->getFields(),
+        ], 200);
     }
 
     /**
