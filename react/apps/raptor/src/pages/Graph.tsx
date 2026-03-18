@@ -22,6 +22,7 @@ import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
+import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -637,7 +638,7 @@ export default function Graph() {
     })
   }, [queryClient])
 
-  const { data: extensions } = useQuery<Extension[]>({
+  const { data: extensions, isLoading: isExtensionsLoading } = useQuery<Extension[]>({
     queryKey: ['extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/extensions'), { headers: authHeaders() })
@@ -735,21 +736,24 @@ export default function Graph() {
       {/* Surface: portaled into the app container, absolute inset-0, beneath all chrome */}
       {canvasHost && createPortal(
         <div style={{ position: 'absolute', inset: 0, zIndex: 5 }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onInit={setRfInstance}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.25 }}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-          <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
-          <SharedMiniMap />
-        </ReactFlow>
+        {isExtensionsLoading
+          ? <GraphSkeleton />
+          : <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onInit={setRfInstance}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ padding: 0.25 }}
+              proOptions={{ hideAttribution: true }}
+            >
+              <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+              <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
+              <SharedMiniMap />
+            </ReactFlow>
+        }
         </div>,
         canvasHost
       )}

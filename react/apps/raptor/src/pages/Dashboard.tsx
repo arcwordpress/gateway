@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { LayoutGrid, ArrowLeftRight, Database, Layers, Eye, FileText } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -113,6 +114,33 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
 }
 
 export default function Dashboard() {
+  const queryClient = useQueryClient()
+
+  // Warm the extensions cache so /extensions opens without a loading state
+  // for users who follow the typical dashboard → extensions flow.
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ['extensions'],
+      queryFn: async () => {
+        const res = await fetch(apiUrl('gateway/v1/extensions'), { headers: authHeaders() })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const json = await res.json()
+        return json.extensions
+      },
+      staleTime: 30_000,
+    })
+    void queryClient.prefetchQuery({
+      queryKey: ['extension-fields'],
+      queryFn: async () => {
+        const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const json = await res.json()
+        return json.fields
+      },
+      staleTime: Infinity,
+    })
+  }, [queryClient])
+
   const { data: adminStats, isLoading: isAdminStatsLoading } = useQuery<AdminStats>({
     queryKey: ['raptor-admin-stats'],
     queryFn: async () => {
