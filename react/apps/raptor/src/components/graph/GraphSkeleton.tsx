@@ -1,89 +1,70 @@
 // ─── GraphSkeleton ──────────────────────────────────────────────────────────
-// Shown inside the canvas portal while the extensions list is loading.
-// Mirrors the real graph layout (site node → extension nodes) with pulsing
-// placeholder content so the UI feels structured rather than blank.
+// Single generic skeleton used across all graph routes while data is loading.
+// Renders a centred 2-tier tree of pulsing placeholder nodes with SVG edges.
 
-const SITE_W = 170
-const SITE_H = 90
-const EXT_W  = 180
-const EXT_H  = 88
-const H_GAP  = 60   // horizontal gap between sibling extension nodes
-const V_GAP  = 60   // vertical gap between the two tiers
-const N_EXT  = 3    // number of skeleton extension nodes to show
+const ROOT_W = 200, ROOT_H = 64
+const CHILD_W = 160, CHILD_H = 64
+const H_GAP   = 60   // horizontal gap between sibling nodes
+const V_GAP   = 60   // vertical gap between tiers
+const N       = 3    // number of child nodes
+
+const totalChildW = N * CHILD_W + (N - 1) * H_GAP   // 600
+const canvasW     = totalChildW                       // 600
+const cx          = canvasW / 2                       // 300
+
+const rootX  = cx - ROOT_W / 2                        // 200
+const rootBY = ROOT_H                                 // 64
+const childY = ROOT_H + V_GAP                         // 124
+
+const children = Array.from({ length: N }, (_, i) => {
+  const childCX = (i - (N - 1) / 2) * (CHILD_W + H_GAP) + cx
+  return { x: childCX - CHILD_W / 2, cx: childCX }
+})
+
+const canvasH = childY + CHILD_H   // 188
 
 export function GraphSkeleton() {
-  const totalExtW = N_EXT * EXT_W + (N_EXT - 1) * H_GAP
-  const canvasW   = Math.max(totalExtW, SITE_W)
-  const canvasH   = SITE_H + V_GAP + EXT_H
-  const siteCX    = canvasW / 2
-  const siteX     = siteCX - SITE_W / 2
-  const extY      = SITE_H + V_GAP
-  const startX    = siteCX - totalExtW / 2
-
-  const exts = Array.from({ length: N_EXT }, (_, i) => ({
-    x:  startX + i * (EXT_W + H_GAP),
-    cx: startX + i * (EXT_W + H_GAP) + EXT_W / 2,
-  }))
-
   return (
     <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-      }}
+      className="absolute inset-0 flex items-center justify-center pointer-events-none"
     >
       <div style={{ position: 'relative', width: canvasW, height: canvasH }}>
 
-        {/* ── Edges (SVG) ──────────────────────────────────────────── */}
+        {/* ── Edges ────────────────────────────────────────────────── */}
         <svg
           width={canvasW}
           height={canvasH}
-          style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+          className="absolute inset-0 overflow-visible"
         >
-          {exts.map((ext, i) => (
+          {children.map((c, i) => (
             <line
               key={i}
-              x1={siteCX}
-              y1={SITE_H}
-              x2={ext.cx}
-              y2={extY}
-              stroke="#3f3f46"
+              x1={cx}   y1={rootBY}
+              x2={c.cx} y2={childY}
+              className="stroke-zinc-700"
               strokeWidth={1.5}
             />
           ))}
         </svg>
 
-        {/* ── Site node ────────────────────────────────────────────── */}
+        {/* ── Root node ────────────────────────────────────────────── */}
         <div
-          style={{ position: 'absolute', left: siteX, top: 0, width: SITE_W, height: SITE_H }}
-          className="rounded-xl bg-neutral-800 border border-neutral-700 px-4 pt-3 pb-3 flex flex-col items-center gap-3"
+          style={{ position: 'absolute', left: rootX, top: 0, width: ROOT_W, height: ROOT_H }}
+          className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 flex flex-col gap-2"
         >
-          {/* "Site" label */}
-          <div className="h-2.5 w-8 rounded bg-neutral-700 animate-pulse" />
-          {/* "Create Extension" button */}
-          <div className="h-8 w-full rounded-lg bg-neutral-700 animate-pulse" />
+          <div className="h-2.5 w-2/3 rounded bg-zinc-700 animate-pulse" />
+          <div className="h-2 w-1/2 rounded bg-zinc-700/60 animate-pulse" />
         </div>
 
-        {/* ── Extension nodes ──────────────────────────────────────── */}
-        {exts.map((ext, i) => (
+        {/* ── Child nodes ──────────────────────────────────────────── */}
+        {children.map((c, i) => (
           <div
             key={i}
-            style={{ position: 'absolute', left: ext.x, top: extY, width: EXT_W, height: EXT_H }}
-            className="rounded-xl bg-neutral-800 border border-neutral-700 px-3 pt-3 pb-3 flex flex-col gap-2.5"
+            style={{ position: 'absolute', left: c.x, top: childY, width: CHILD_W, height: CHILD_H }}
+            className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 flex flex-col gap-2"
           >
-            {/* Title */}
-            <div className="h-3 w-3/4 rounded bg-neutral-700 animate-pulse" />
-            {/* Key (monospace, narrower) */}
-            <div className="h-2 w-1/2 rounded bg-neutral-700/70 animate-pulse" />
-            {/* Edit / Delete buttons */}
-            <div className="flex gap-1.5">
-              <div className="h-6 w-12 rounded-md bg-neutral-700 animate-pulse" />
-              <div className="h-6 w-14 rounded-md bg-neutral-700 animate-pulse" />
-            </div>
+            <div className="h-2.5 w-3/4 rounded bg-zinc-700 animate-pulse" />
+            <div className="h-2 w-1/2 rounded bg-zinc-700/60 animate-pulse" />
           </div>
         ))}
 

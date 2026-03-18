@@ -33,10 +33,6 @@ export default function ViewsTopLevelPage() {
     return <div className="p-8 text-zinc-400">Opening active collection views...</div>
   }
 
-  if (isLoading) {
-    return <div className="p-8 text-zinc-400">Loading views...</div>
-  }
-
   const groups = collections
     .map((collection) => ({
       collection,
