@@ -407,13 +407,25 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
 
 // ─── Edit panel ──────────────────────────────────────────────────────────────
 
-type ExtensionRecord = Record<string, string> & { fields?: Record<string, ExtensionField> }
+type ExtensionRecord = Record<string, string>
 
 function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [values, setValues] = useState<Record<string, string>>({})
 
-  const { data: existing, isLoading, isError } = useQuery<ExtensionRecord>({
+  // Shared field definitions – same query as CreatePanel, already preloaded at route mount
+  const { data: fieldsData, isLoading: fieldsLoading } = useQuery<Record<string, ExtensionField>>({
+    queryKey: ['extension-fields'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.fields as Record<string, ExtensionField>
+    },
+    staleTime: Infinity,
+  })
+
+  const { data: existing, isLoading: extLoading, isError } = useQuery<ExtensionRecord>({
     queryKey: ['extensions', extKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
@@ -424,9 +436,11 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
       return json.extension as ExtensionRecord
     },
     enabled: !!extKey,
+    staleTime: 30_000,
   })
 
-  const fieldList: ExtensionField[] = existing?.fields ? Object.values(existing.fields) : []
+  const isLoading = fieldsLoading || extLoading
+  const fieldList: ExtensionField[] = fieldsData ? Object.values(fieldsData) : []
 
   useEffect(() => {
     if (!existing || fieldList.length === 0) return
@@ -438,7 +452,7 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
       return seeded
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existing])
+  }, [existing, fieldsData])
 
   const setValue = (name: string, val: string) =>
     setValues((prev) => ({ ...prev, [name]: val }))
@@ -537,6 +551,7 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
       return json.extension as Record<string, string>
     },
     enabled: !!extKey,
+    staleTime: 30_000,
   })
 
   const deleteMutation = useMutation({
@@ -595,6 +610,7 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
 // ─── Graph ───────────────────────────────────────────────────────────────────
 
 export default function Graph() {
+  const queryClient = useQueryClient()
   const [panel, setPanel] = useState<PanelState>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -606,6 +622,21 @@ export default function Graph() {
     setCanvasHost(outletHost ?? document.getElementById('gateway-raptor-canvas-host'))
   }, [])
 
+  // Preload field definitions as soon as the route mounts so create/edit panels
+  // open instantly without waiting for the fetch.
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ['extension-fields'],
+      queryFn: async () => {
+        const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const json = await res.json()
+        return json.fields as Record<string, ExtensionField>
+      },
+      staleTime: Infinity,
+    })
+  }, [queryClient])
+
   const { data: extensions } = useQuery<Extension[]>({
     queryKey: ['extensions'],
     queryFn: async () => {
@@ -615,6 +646,26 @@ export default function Graph() {
       return json.extensions as Extension[]
     },
   })
+
+  // Preload each extension's full data as soon as the list is available so
+  // edit/delete panels open without a loading skeleton.
+  useEffect(() => {
+    if (!extensions) return
+    for (const ext of extensions) {
+      queryClient.prefetchQuery({
+        queryKey: ['extensions', ext.key],
+        queryFn: async () => {
+          const res = await fetch(apiUrl(`gateway/v1/extensions/${ext.key}`), {
+            headers: authHeaders(),
+          })
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const json = await res.json()
+          return json.extension as ExtensionRecord
+        },
+        staleTime: 30_000,
+      })
+    }
+  }, [extensions, queryClient])
 
   const openCreate = useCallback(() => setPanel({ mode: 'create' }), [])
   const openEdit   = useCallback((key: string) => setPanel({ mode: 'edit',   key }), [])
