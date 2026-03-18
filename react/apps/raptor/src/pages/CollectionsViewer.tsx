@@ -16,6 +16,7 @@ import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders, generateId } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
+import { CollectionsGraphSkeleton } from '../components/graph/CollectionsGraphSkeleton'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
   layoutWithDagre,
@@ -676,7 +677,7 @@ export default function CollectionsViewer() {
     if (extId) setActiveExtensionId(Number(extId))
   }, [])
 
-  const { data: extensions } = useQuery<Extension[]>({
+  const { data: extensions, isLoading: isExtLoading } = useQuery<Extension[]>({
     queryKey: ['raptor-extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
@@ -686,7 +687,7 @@ export default function CollectionsViewer() {
     },
   })
 
-  const { data: collections } = useQuery<Collection[]>({
+  const { data: collections, isLoading: isCollLoading } = useQuery<Collection[]>({
     queryKey: ['raptor-collections'],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection`), { headers: authHeaders() })
@@ -695,6 +696,8 @@ export default function CollectionsViewer() {
       return json.collections as Collection[]
     },
   })
+
+  const isLoading = isExtLoading || isCollLoading
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
@@ -871,21 +874,24 @@ export default function CollectionsViewer() {
 
   return (
     <>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
-        fitView
-        fitViewOptions={{ padding: 0.25 }}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-        <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
-        <SharedMiniMap />
-      </ReactFlow>
+      {isLoading
+        ? <CollectionsGraphSkeleton />
+        : <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
+            fitView
+            fitViewOptions={{ padding: 0.25 }}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
+            <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
+            <SharedMiniMap />
+          </ReactFlow>
+      }
 
       {panel?.mode === 'create'       && <CreatePanel extensionId={panel.extensionId} onClose={closePanel} />}
       {panel?.mode === 'edit'         && <EditPanel   collKey={panel.key}   onClose={closePanel} />}
