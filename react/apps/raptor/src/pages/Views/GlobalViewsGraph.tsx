@@ -1,49 +1,18 @@
 import { useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
   type Node, type Edge,
 } from '@xyflow/react'
 import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
-import { RecordsStatus, RecordsCtxValue, RecordsCtx } from '../../components/graph_node_types'
+import { RecordsStatus, RecordsCtxValue, RecordsCtx, GLOBAL_OVERVIEW_NODE_TYPES } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
-import { GraphSkeleton } from '../../components/graph/GraphSkeleton'
 import type { Collection } from '../../lib/object_types'
-import { apiUrl, authHeaders } from '../../lib/api'
 
 /**
- * Global views graph showing all views from all collections
+ * Global views graph — collections data passed in from ViewsTopLevel
+ * (already fetched via the single ?with_nested=true bulk request).
  */
-export function GlobalViewsGraph() {
-  // Load all collections
-  const { data: collections = [], isLoading } = useQuery<Collection[]>({
-    queryKey: ['raptor-collections-global-graph-views'],
-    queryFn: async () => {
-      const listRoute = 'gateway/v1/raptor/collection'
-      const listRes = await fetch(apiUrl(listRoute), { headers: authHeaders() })
-      if (!listRes.ok) return []
-
-      const listJson = await listRes.json() as {
-        collections?: Array<{ collection_key: string }>
-      }
-      const items = listJson.collections ?? []
-      if (items.length === 0) return []
-
-      const details = await Promise.all(
-        items.map(async (item) => {
-          const detailRoute = `gateway/v1/raptor/collection/${item.collection_key}`
-          const detailRes = await fetch(apiUrl(detailRoute), { headers: authHeaders() })
-          if (!detailRes.ok) return null
-          const detailJson = await detailRes.json() as { collection?: Collection }
-          return detailJson.collection ?? null
-        }),
-      )
-
-      return details.filter((c): c is Collection => c !== null)
-    },
-  })
-
-  // Build nodes from all collections' views - COMPUTED DIRECTLY
+export function GlobalViewsGraph({ collections }: { collections: Collection[] }) {
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
   let yOffset = 0
@@ -52,73 +21,42 @@ export function GlobalViewsGraph() {
     const views = collection.view_list?.views ?? []
     if (views.length === 0) return
 
-    // Collection group header
     const collectionNodeId = `collection-${collection.id}`
     computedNodes.push({
       id: collectionNodeId,
-      data: {
-        label: collection.title,
-        type: 'collection',
-      },
+      type: 'collectionRootNode',
+      data: { title: collection.title, collKey: collection.collection_key },
       position: { x: 0, y: yOffset },
-      type: 'default',
-      style: {
-        background: 'var(--node-bg)',
-        border: '1px solid #4b5563',
-        borderRadius: '6px',
-        padding: '12px 16px',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#e4e4e7',
-        width: 'auto',
-        minWidth: '200px',
-      },
     })
     yOffset += 80
 
-    // Views in this collection
-    views.forEach((view: any, idx: number) => {
+    views.forEach((view: { view_key: string; title?: string }, idx: number) => {
       const nodeId = `view-${collection.id}-${view.view_key}`
       computedNodes.push({
         id: nodeId,
+        type: 'viewNode',
         data: {
-          label: view.view_key,
-          type: 'view',
+          title: view.title || view.view_key,
+          viewKey: view.view_key,
+          isExpanded: false,
+          onToggle: () => {},
         },
-        position: { x: idx * 240, y: yOffset },
-        type: 'default',
-        style: {
-          background: 'var(--node-bg)',
-          border: '1px solid #374151',
-          borderRadius: '4px',
-          padding: '8px 12px',
-          fontSize: '12px',
-          color: '#d4d4d8',
-          width: 'auto',
-          minWidth: '150px',
-        },
+        position: { x: idx * 200, y: yOffset },
       })
-
       computedEdges.push({
         id: `edge-${collectionNodeId}-${nodeId}`,
         source: collectionNodeId,
         target: nodeId,
-        animated: false,
         style: { stroke: '#3f3f46' },
       })
     })
-    yOffset += 120
+    yOffset += 140
   })
 
-  console.log('[GlobalViewsGraph] Computed nodes:', computedNodes.length, 'edges:', computedEdges.length)
-
-  // Initialize with computed nodes (not empty!)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(computedEdges)
 
-  // Sync when collections change
   useEffect(() => {
-    console.log('[GlobalViewsGraph] useEffect called, syncing computed nodes')
     setNodes(computedNodes)
     setEdges(computedEdges)
   }, [collections, setNodes, setEdges])
@@ -132,20 +70,19 @@ export function GlobalViewsGraph() {
   return (
     <RecordsCtx.Provider value={recordsCtx}>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        {isLoading ? <GraphSkeleton /> : (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            fitView
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background variant={BackgroundVariant.Dots} />
-            <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
-            <SharedMiniMap />
-          </ReactFlow>
-        )}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={GLOBAL_OVERVIEW_NODE_TYPES}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background variant={BackgroundVariant.Dots} />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+          <SharedMiniMap />
+        </ReactFlow>
       </div>
     </RecordsCtx.Provider>
   )

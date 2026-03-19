@@ -52,7 +52,7 @@ export default function FieldsTopLevelPage() {
             : 'opacity-25 blur-[2px] pointer-events-none'
         }`}
       >
-        <GlobalFieldsGraph />
+        <GlobalFieldsGraph collections={collections} />
       </div>
 
       <div
