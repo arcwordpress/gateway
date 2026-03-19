@@ -779,7 +779,6 @@ export default function CollectionsViewer() {
     laidOut.forEach((n) => { posMap[n.id] = n.position })
 
     // Relationship edges — pick handles based on relative position for clean routing
-    const NODE_BG = '#27272a'
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
@@ -798,7 +797,7 @@ export default function CollectionsViewer() {
           targetHandle,
           label:                REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
           labelStyle:           { fill: '#a1a1aa', fontSize: 10 },
-          labelBgStyle:         { fill: NODE_BG, fillOpacity: 1 },
+          labelBgStyle:         { fill: 'var(--node-bg)', fillOpacity: 1 },
           labelBgPadding:       [4, 3] as [number, number],
           labelBgBorderRadius:  3,
           style:                { stroke: '#52525b', strokeDasharray: '5 3' },
