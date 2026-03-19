@@ -12,7 +12,7 @@ export function FieldsNode({ data }: NodeProps<FieldsNodeType>) {
   return (
     <div
       style={{
-        background: '#27272a',
+        background: 'var(--node-bg)',
         border: '1px solid #164e63',
         borderRadius: 8,
         padding: '8px 12px',

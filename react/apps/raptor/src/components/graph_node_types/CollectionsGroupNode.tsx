@@ -7,7 +7,7 @@ export function CollectionsGroupNode({ data }: NodeProps<CollGroupNodeType>) {
     <div
       onClick={data.onToggle}
       style={{
-        background: data.isExpanded ? '#27272a' : '#18181b',
+        background: 'var(--node-bg)',
         border: `1px solid ${data.isExpanded ? '#3f3f46' : '#27272a'}`,
         borderRadius: 8,
         color: '#71717a',

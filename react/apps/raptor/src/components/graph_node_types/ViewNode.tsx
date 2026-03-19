@@ -16,7 +16,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
     <div
       onClick={data.onToggle}
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #1e293b',
         borderRadius: 8,
         padding: '8px 12px',
@@ -30,7 +30,6 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
         gap: 6,
         transition: 'all 0.2s ease',
         borderColor: data.isExpanded ? '#3f3f46' : '#27272a',
-        backgroundColor: data.isExpanded ? '#27272a' : '#18181b',
         position: 'relative',
       }}
     >

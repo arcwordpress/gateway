@@ -6,7 +6,7 @@ export function CollectionsLabelNode({ data }: NodeProps<CollectionsLabelNodeTyp
   return (
     <div
       style={{
-        background: '#3f3f46',
+        background: 'var(--node-bg)',
         border: '1px solid #16a34a',
         borderRadius: 10,
         padding: '10px 20px',

@@ -59,7 +59,7 @@ export function FacetsNode({ data }: NodeProps<FacetsNodeType>) {
   return (
     <div
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
         color: '#e4e4e7',

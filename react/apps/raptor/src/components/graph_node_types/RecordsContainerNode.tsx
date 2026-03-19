@@ -22,7 +22,7 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
   return (
     <div
       style={{
-        background: '#27272a',
+        background: 'var(--node-bg)',
         border: '1px solid #78716c',
         borderRadius: 10,
         padding: '10px 16px',

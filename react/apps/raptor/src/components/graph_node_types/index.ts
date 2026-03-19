@@ -1,4 +1,6 @@
 import { type NodeTypes } from '@xyflow/react'
+import { SiteNode } from './SiteNode'
+import { ExtensionsGraphNode } from './ExtensionsGraphNode'
 import { CollectionRootNode } from './CollectionRootNode'
 import { DatabaseNode } from './DatabaseNode'
 import { RecordsContainerNode } from './RecordsContainerNode'
@@ -51,6 +53,12 @@ export type { FacetsNodeType } from './FacetsNode'
 // Export context
 export { RecordsCtx } from './RecordsContext'
 
+// Export Extensions graph nodes
+export { SiteNode } from './SiteNode'
+export type { SiteNodeType } from './SiteNode'
+export { ExtensionsGraphNode } from './ExtensionsGraphNode'
+export type { ExtensionsGraphNodeType } from './ExtensionsGraphNode'
+
 // Export node components
 export { CollectionRootNode } from './CollectionRootNode'
 export { DatabaseNode } from './DatabaseNode'
@@ -73,6 +81,12 @@ export { CollectionsGroupNode } from './CollectionsGroupNode'
 export { CollectionNode } from './CollectionNode'
 export { FieldsNode } from './FieldsNode'
 export { ViewsNode } from './ViewsNode'
+
+// Extensions graph node types registry (used by pages/Graph.tsx)
+export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
+  siteNode:      SiteNode,
+  extensionNode: ExtensionsGraphNode,
+}
 
 // Export node types registry
 export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
