@@ -2,11 +2,8 @@ import Dagre from '@dagrejs/dagre'
 import { type Node, type Edge } from '@xyflow/react'
 
 export const NODE_DIMS: Record<string, { w: number; h: number }> = {
-  extensionNode:        { w: 160, h: 95 },
-  collectionsGroupNode:  { w: 110, h: 68 },
-  collectionNode:       { w: 180, h: 70 },
-  fieldsNode:           { w: 110, h: 90 },
-  viewsNode:            { w: 110, h: 90 },
+  extensionNode: { w: 160, h: 130 },
+  collectionNode: { w: 180, h: 120 },
 }
 
 export function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {

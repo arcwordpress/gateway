@@ -7,6 +7,8 @@ export type CollNodeType = Node<
     isActive: boolean
     onEdit?: () => void
     onDelete?: () => void
+    onNavigateFields?: () => void
+    onNavigateViews?: () => void
   },
   'collectionNode'
 >
@@ -39,7 +41,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: data.isActive ? '#71717a' : '#71717a',
+          color: '#71717a',
           opacity: 0.7,
         }}
       >
@@ -51,51 +53,97 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         {data.collKey}
       </div>
 
-      {/* Action buttons */}
-      {(data.onEdit || data.onDelete) && (
+      {/* Navigate buttons: Fields and Views */}
+      {(data.onNavigateFields || data.onNavigateViews) && (
         <div
           style={{
             display: 'flex',
             gap: 4,
             marginTop: 6,
             paddingTop: 6,
-            borderTop: `1px solid ${data.isActive ? '#3f3f46' : '#3f3f46'}`,
+            borderTop: '1px solid #3f3f46',
+          }}
+        >
+          {data.onNavigateFields && (
+            <button
+              onClick={(e) => { e.stopPropagation(); data.onNavigateFields?.() }}
+              style={{
+                flex: 1,
+                padding: '3px 6px',
+                fontSize: 10,
+                fontWeight: 600,
+                background: '#3f3f46',
+                border: 'none',
+                borderRadius: 4,
+                color: '#a1a1aa',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
+            >
+              Fields
+            </button>
+          )}
+          {data.onNavigateViews && (
+            <button
+              onClick={(e) => { e.stopPropagation(); data.onNavigateViews?.() }}
+              style={{
+                flex: 1,
+                padding: '3px 6px',
+                fontSize: 10,
+                fontWeight: 600,
+                background: '#3f3f46',
+                border: 'none',
+                borderRadius: 4,
+                color: '#a1a1aa',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
+            >
+              Views
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* CRUD buttons: Edit and Delete */}
+      {(data.onEdit || data.onDelete) && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 4,
+            marginTop: 4,
+            paddingTop: 4,
+            borderTop: '1px solid #3f3f46',
           }}
         >
           {data.onEdit && (
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                data.onEdit?.()
-              }}
+              onClick={(e) => { e.stopPropagation(); data.onEdit?.() }}
               style={{
                 flex: 1,
                 padding: '3px 6px',
                 fontSize: 10,
                 fontWeight: 500,
-                background: data.isActive ? '#52525b' : '#3f3f46',
+                background: '#3f3f46',
                 border: 'none',
                 borderRadius: 4,
                 color: '#fff',
                 cursor: 'pointer',
                 transition: 'background 0.2s',
               }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.background = data.isActive ? '#52525b' : '#52525b'
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.background = data.isActive ? '#52525b' : '#3f3f46'
-              }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
             >
               Edit
             </button>
           )}
           {data.onDelete && (
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                data.onDelete?.()
-              }}
+              onClick={(e) => { e.stopPropagation(); data.onDelete?.() }}
               style={{
                 flex: 1,
                 padding: '3px 6px',
@@ -108,12 +156,8 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                 cursor: 'pointer',
                 transition: 'background 0.2s',
               }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.background = '#52525b'
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.background = '#3f3f46'
-              }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
             >
               Delete
             </button>
