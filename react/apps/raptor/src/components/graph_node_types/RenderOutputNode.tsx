@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { type Node } from '@xyflow/react'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type RenderOutputNodeType = Node<
   {
@@ -77,33 +78,15 @@ export function RenderOutputNode({ data }: NodeProps<RenderOutputNodeType>) {
         minWidth: 300,
         maxWidth: 420,
         overflow: 'hidden',
+        padding: '8px 10px',
       }}
     >
       <Handle type="target" position={Position.Top} />
 
-      <div
-        style={{
-          background: '#27272a',
-          borderBottom: '1px solid #1f2937',
-          padding: '8px 12px',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 10,
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            color: info.accent,
-            marginBottom: 2,
-            fontWeight: 700,
-          }}
-        >
-          {info.title}
-        </div>
-        <div style={{ fontSize: 11, color: '#71717a' }}>{info.description}</div>
-      </div>
+      <NodeTypeHeader label={info.title} />
+      <div style={{ fontSize: 11, color: '#71717a', marginBottom: 8 }}>{info.description}</div>
 
-      <div style={{ padding: '12px' }}>
+      <div style={{ padding: '0' }}>
         <div
           style={{
             display: 'flex',

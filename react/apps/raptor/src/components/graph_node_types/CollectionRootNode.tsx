@@ -1,6 +1,7 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { type CollRootNodeData } from './types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
   return (
@@ -9,18 +10,15 @@ export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
         background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
-        padding: '10px 20px',
+        padding: '8px 10px',
         color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
         minWidth: 160,
-        textAlign: 'right',
       }}
     >
       <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 4 }}>
-        Collection
-      </div>
+      <NodeTypeHeader label="Collection" />
       <div>{data.title}</div>
       <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#71717a', marginTop: 3, fontWeight: 400 }}>
         {data.collKey}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { type NodeProps } from '@xyflow/react'
 import { type Node } from '@xyflow/react'
 import { type Facet, type Field } from '../../lib/object_types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type FacetsNodeType = Node<
   {
@@ -65,18 +66,14 @@ export function FacetsNode({ data }: NodeProps<FacetsNodeType>) {
         color: '#e4e4e7',
         minWidth: 300,
         overflow: 'hidden',
+        padding: '8px 10px',
       }}
     >
-      {/* Header */}
-      <div style={{ background: '#18181b', borderBottom: '1px solid #27272a', padding: '8px 12px' }}>
-        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 2 }}>
-          Facet Filters
-        </div>
-        <div style={{ fontSize: 11, color: '#71717a' }}>Configure search &amp; filter controls</div>
-      </div>
+      <NodeTypeHeader label="Facet Filters" />
+      <div style={{ fontSize: 11, color: '#71717a', marginBottom: 8 }}>Configure search &amp; filter controls</div>
 
       {/* Saved facets */}
-      <div style={{ padding: '10px 12px', borderBottom: '1px solid #27272a' }}>
+      <div style={{ padding: '10px 0', borderBottom: '1px solid #27272a' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#71717a', marginBottom: 6, fontWeight: 600 }}>
           Saved Facets
         </div>
@@ -131,7 +128,7 @@ export function FacetsNode({ data }: NodeProps<FacetsNodeType>) {
       </div>
 
       {/* New facet form */}
-      <div style={{ padding: '10px 12px' }}>
+      <div style={{ padding: '10px 0' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#71717a', marginBottom: 8, fontWeight: 600 }}>
           + New Facet
         </div>
