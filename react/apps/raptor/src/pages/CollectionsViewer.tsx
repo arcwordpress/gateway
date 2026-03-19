@@ -19,7 +19,7 @@ import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
-  layoutWithDagre,
+  layoutCollectionsLR,
 } from '../components/graph_node_types'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -42,6 +42,8 @@ type Relationship = {
   ownerKey: string
 }
 
+type CollectionField = { name: string; label?: string; type?: string }
+
 type Collection = {
   id: number
   collection_key: string
@@ -50,6 +52,7 @@ type Collection = {
   status: string
   extension_id: number | null
   relationships: Relationship[] | null
+  field_list: { id: number; fields: CollectionField[] } | null
 }
 
 type PanelState =
@@ -749,10 +752,10 @@ export default function CollectionsViewer() {
             title: col.title,
             collKey: col.collection_key,
             isActive: colIsActive,
-            onEdit: () => openEdit(col.collection_key),
-            onDelete: () => openDelete(col.collection_key),
+            fields: col.field_list?.fields ?? [],
             onNavigateFields: () => navigate({ to: `/collections/${col.collection_key}/fields` }),
-            onNavigateViews: () => navigate({ to: `/collections/${col.collection_key}/views` }),
+            onNavigateViews:  () => navigate({ to: `/collections/${col.collection_key}/views` }),
+            onNavigateForms:  () => navigate({ to: `/collections/${col.collection_key}/forms` }),
           },
           position: { x: 0, y: 0 },
         })
@@ -761,6 +764,7 @@ export default function CollectionsViewer() {
           id: `e-${extId}-${col.collection_key}`,
           source: extId,
           target: colId,
+          type: 'straight',
           style: { stroke: '#3f3f46' },
         })
       }
@@ -782,7 +786,7 @@ export default function CollectionsViewer() {
       }
     }
 
-    setNodes(layoutWithDagre(hierarchyNodes, hierarchyEdges))
+    setNodes(layoutCollectionsLR(hierarchyNodes, hierarchyEdges))
     setEdges([...hierarchyEdges, ...relEdges])
   }, [collections, extensions, activeExtensionId, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
 

@@ -40,10 +40,10 @@ export type CollNodeType = Node<
     title: string
     collKey: string
     isActive: boolean
-    onEdit?: () => void
-    onDelete?: () => void
+    fields?: Array<{ name: string; label?: string; type?: string }>
     onNavigateFields?: () => void
     onNavigateViews?: () => void
+    onNavigateForms?: () => void
   },
   'collectionNode'
 >
