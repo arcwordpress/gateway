@@ -1,4 +1,5 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type CollectionsLabelNodeType = Node<{ onCreate?: () => void }, 'collectionsLabelNode'>
 
@@ -9,20 +10,17 @@ export function CollectionsLabelNode({ data }: NodeProps<CollectionsLabelNodeTyp
         background: 'var(--node-bg)',
         border: '1px solid #16a34a',
         borderRadius: 10,
-        padding: '10px 20px',
+        padding: '8px 10px',
         color: '#e4e4e7',
         fontSize: 13,
         fontWeight: 600,
-        letterSpacing: '0.04em',
-        textTransform: 'uppercase',
         minWidth: 130,
         textAlign: 'center',
       }}
     >
-      Collections
+      <NodeTypeHeader label="Collections" />
       <Handle type="source" position={Position.Bottom} />
 
-      {/* Create Collection button */}
       {data.onCreate && (
         <button
           onClick={(e) => {
