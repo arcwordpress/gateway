@@ -63,7 +63,7 @@ export function GlobalViewsGraph() {
       position: { x: 0, y: yOffset },
       type: 'default',
       style: {
-        background: '#27272a',
+        background: 'var(--node-bg)',
         border: '1px solid #4b5563',
         borderRadius: '6px',
         padding: '12px 16px',
@@ -88,7 +88,7 @@ export function GlobalViewsGraph() {
         position: { x: idx * 240, y: yOffset },
         type: 'default',
         style: {
-          background: '#18181b',
+          background: 'var(--node-bg)',
           border: '1px solid #374151',
           borderRadius: '4px',
           padding: '8px 12px',
