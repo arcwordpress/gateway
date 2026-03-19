@@ -74,6 +74,7 @@ export { CollectionsLabelNode } from './CollectionsRootNode'
 export { ExtensionNode } from './ExtensionNode'
 export { CollectionNode } from './CollectionNode'
 export { BusEdge } from './BusEdge'
+export { NodeTypeHeader } from './NodeTypeHeader'
 
 // Extensions graph node types registry (used by pages/Graph.tsx)
 export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
