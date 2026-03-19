@@ -16,7 +16,6 @@ import { apiUrl, authHeaders, generateId } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { CollectionNode } from '../components/graph_node_types'
-import { layoutWithDagre } from '../components/graph_node_types'
 import type { NodeTypes } from '@xyflow/react'
 import type { CollNodeType } from '../components/graph_node_types'
 
@@ -602,7 +601,17 @@ export default function CollectionsRelationshipsViewer() {
   useEffect(() => {
     const cols = collections ?? []
 
-    const rawNodes: Node[] = cols.map((col) => ({
+    // Grid layout: square-ish grid with enough horizontal space for edge labels
+    const COLS      = Math.max(1, Math.ceil(Math.sqrt(cols.length)))
+    const COL_STRIDE = 340   // 200px node + 140px gap for edge labels
+    const ROW_STRIDE = 280   // 200px node height estimate + 80px gap
+
+    const gridPos = (i: number) => ({
+      x: (i % COLS) * COL_STRIDE,
+      y: Math.floor(i / COLS) * ROW_STRIDE,
+    })
+
+    const rawNodes: Node[] = cols.map((col, i) => ({
       id:       `col-${col.collection_key}`,
       type:     'collectionNode',
       data:     {
@@ -610,36 +619,47 @@ export default function CollectionsRelationshipsViewer() {
         collKey:  col.collection_key,
         isActive: false,
       } satisfies CollNodeType['data'],
-      position: { x: 0, y: 0 },
+      position: gridPos(i),
     }))
 
-    // Use a sparse layout — only hierarchy edges drive Dagre, then relationship
-    // edges are overlaid separately so they don't distort the layout.
-    const laidOut = layoutWithDagre(rawNodes, [])
+    // Build position map for handle selection (use remembered positions if user moved nodes)
+    const posMap: Record<string, { x: number; y: number }> = {}
+    rawNodes.forEach((n) => {
+      posMap[n.id] = rememberedPositions.current.get(n.id) ?? n.position
+    })
 
     setNodes((current) => {
       current.forEach((n) => rememberedPositions.current.set(n.id, n.position))
-      return laidOut.map((n) => ({
+      return rawNodes.map((n) => ({
         ...n,
         position: rememberedPositions.current.get(n.id) ?? n.position,
       }))
     })
 
-    // Build relationship edges
+    // Build relationship edges with position-based handle routing (right→left when source is left of target)
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId = `col-${rel.source}`
-        const tgtId = `col-${rel.target}`
+        const srcId   = `col-${rel.source}`
+        const tgtId   = `col-${rel.target}`
+        const srcX    = posMap[srcId]?.x ?? 0
+        const tgtX    = posMap[tgtId]?.x ?? 0
+        const srcHandle = srcX <= tgtX ? 'h-right' : 'h-left'
+        const tgtHandle = srcX <= tgtX ? 'h-left'  : 'h-right'
         relEdges.push({
-          id:        `rel-${rel.id}`,
-          source:    srcId,
-          target:    tgtId,
-          label:     `${rel.type}: ${rel.methodName}`,
-          labelStyle:   { fill: '#a1a1aa', fontSize: 10 },
-          style:        { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
-          type:         'default',
-          data:         rel,
+          id:                  `rel-${rel.id}`,
+          source:              srcId,
+          target:              tgtId,
+          sourceHandle:        srcHandle,
+          targetHandle:        tgtHandle,
+          label:               `${rel.type}: ${rel.methodName}`,
+          labelStyle:          { fill: '#a1a1aa', fontSize: 10 },
+          labelBgStyle:        { fill: 'var(--node-bg)', fillOpacity: 1 },
+          labelBgPadding:      [4, 3] as [number, number],
+          labelBgBorderRadius: 3,
+          style:               { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
+          type:                'straight',
+          data:                rel,
         })
       }
     }
@@ -701,6 +721,7 @@ export default function CollectionsRelationshipsViewer() {
         onConnect={onConnect}
         onEdgeClick={onEdgeClick}
         nodeTypes={NODE_TYPES}
+        connectionMode="loose"
         fitView
         fitViewOptions={{ padding: 0.25 }}
         proOptions={{ hideAttribution: true }}

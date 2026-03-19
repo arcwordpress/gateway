@@ -767,7 +767,7 @@ export default function CollectionsViewer() {
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
           target:       colId,
-          targetHandle: 'top',
+          targetHandle: 'h-top',
           type:         'busEdge',
         })
       }
@@ -787,8 +787,8 @@ export default function CollectionsViewer() {
         const srcX = posMap[srcId]?.x ?? 0
         const tgtX = posMap[tgtId]?.x ?? 0
         // Source is left of target → right→left; otherwise left→right
-        const sourceHandle = srcX <= tgtX ? 'right' : 'left'
-        const targetHandle = srcX <= tgtX ? 'left'  : 'right'
+        const sourceHandle = srcX <= tgtX ? 'h-right' : 'h-left'
+        const targetHandle = srcX <= tgtX ? 'h-left'  : 'h-right'
         relEdges.push({
           id:                   `rel-${rel.id}`,
           source:               srcId,
