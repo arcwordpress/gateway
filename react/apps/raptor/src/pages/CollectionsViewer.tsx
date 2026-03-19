@@ -754,6 +754,8 @@ export default function CollectionsViewer() {
             collKey: col.collection_key,
             isActive: colIsActive,
             fields: col.field_list?.fields ?? [],
+            onEdit:   () => openEdit(col.collection_key),
+            onDelete: () => openDelete(col.collection_key),
             onNavigateFields: () => navigate({ to: `/collections/${col.collection_key}/fields` }),
             onNavigateViews:  () => navigate({ to: `/collections/${col.collection_key}/views` }),
             onNavigateForms:  () => navigate({ to: `/collections/${col.collection_key}/forms` }),
