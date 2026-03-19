@@ -36,6 +36,16 @@ type Relationship = {
   ownerKey: string
 }
 
+type FieldDef = {
+  name: string
+  label?: string
+  type?: 'textarea' | 'select' | 'url' | 'text' | string
+  required?: boolean
+  placeholder?: string
+  default?: string
+  options?: { value: string; label: string }[]
+}
+
 type Collection = {
   id: number
   collection_key: string
@@ -43,6 +53,7 @@ type Collection = {
   description: string
   status: string
   relationships: Relationship[] | null
+  fields?: Record<string, FieldDef>
 }
 
 type PanelState =

@@ -23,7 +23,7 @@ export default function FieldsTopLevelPage() {
     })
   }, [activeCollectionKey, isCollectionsLoading, navigate, workspaceCollections])
 
-  const { data: collections = [], isLoading } = useQuery<Collection[]>({
+  const { data: collections = [] } = useQuery<Collection[]>({
     queryKey: COLLECTIONS_NESTED_KEY,
     queryFn: fetchCollectionsWithNested,
     staleTime: 30_000,
