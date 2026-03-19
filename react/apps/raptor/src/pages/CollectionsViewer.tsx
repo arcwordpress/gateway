@@ -778,7 +778,7 @@ export default function CollectionsViewer() {
           id:         `rel-${rel.id}`,
           source:     `col-${rel.source}`,
           target:     `col-${rel.target}`,
-          label:      `${rel.type}: ${rel.methodName}`,
+          label:      REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
           labelStyle: { fill: '#71717a', fontSize: 10 },
           style:      { stroke: '#52525b', strokeDasharray: '5 3' },
           type:       'straight',
