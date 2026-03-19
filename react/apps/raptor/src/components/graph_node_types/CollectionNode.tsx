@@ -38,9 +38,11 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
     >
       {/* Hierarchy bus edge target (top center) */}
       <Handle id="top" type="target" position={Position.Top} style={{ left: '50%' }} />
-      {/* Relationship handles */}
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      {/* Relationship handles — all 4 sides; connectionMode=loose lets any connect to any */}
+      <Handle id="left"   type="target" position={Position.Left} />
+      <Handle id="right"  type="source" position={Position.Right} />
+      <Handle id="bottom" type="source" position={Position.Bottom} />
+      <Handle id="btgt"   type="target" position={Position.Bottom} style={{ left: '60%' }} />
 
       {/* Header row: title + key + dots menu */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>

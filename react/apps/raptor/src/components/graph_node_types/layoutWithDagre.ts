@@ -15,9 +15,9 @@ const EXT_W      = 200
 const EXT_H      = 140   // rough estimate
 const COLL_W     = 200
 const COLL_H     = 180   // rough estimate (taller with fields list)
-const H_GAP      = 60    // gap between extension right edge and first collection
-const COLL_GAP   = 20    // gap between adjacent collections in a row
-const ROW_GAP    = 40    // vertical gap between extension rows
+const H_GAP      = 80    // gap between extension right edge and first collection
+const COLL_GAP   = 100   // gap between adjacent collections — wide enough for relationship edge labels
+const ROW_GAP    = 60    // vertical gap between extension rows
 const COLL_DY    = 70    // how much lower collections start vs extension top (below ext mid-point)
 
 export function layoutCollectionsLR(nodes: Node[], edges: Edge[]): Node[] {
