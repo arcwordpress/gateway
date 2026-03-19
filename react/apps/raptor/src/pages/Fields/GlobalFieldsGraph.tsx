@@ -4,17 +4,15 @@ import {
   type Node, type Edge,
 } from '@xyflow/react'
 import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
-import { RecordsStatus, RecordsCtxValue, RecordsCtx } from '../../components/graph_node_types'
+import { RecordsStatus, RecordsCtxValue, RecordsCtx, GLOBAL_OVERVIEW_NODE_TYPES } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import type { Collection } from '../../lib/object_types'
 
 /**
- * Global fields graph showing all fields from all collections.
- * Collections data is passed in from the parent (FieldsTopLevel) which
- * already fetches it via the efficient ?with_nested=true bulk endpoint.
+ * Global fields graph — collections data passed in from FieldsTopLevel
+ * (already fetched via the single ?with_nested=true bulk request).
  */
 export function GlobalFieldsGraph({ collections }: { collections: Collection[] }) {
-  // Build nodes from all collections' fields
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
   let yOffset = 0
@@ -26,23 +24,9 @@ export function GlobalFieldsGraph({ collections }: { collections: Collection[] }
     const collectionNodeId = `collection-${collection.id}`
     computedNodes.push({
       id: collectionNodeId,
-      data: {
-        label: collection.title,
-        type: 'collection',
-      },
+      type: 'collectionRootNode',
+      data: { title: collection.title, collKey: collection.collection_key },
       position: { x: 0, y: yOffset },
-      type: 'default',
-      style: {
-        background: 'var(--node-bg)',
-        border: '1px solid #4b5563',
-        borderRadius: '6px',
-        padding: '12px 16px',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#e4e4e7',
-        width: 'auto',
-        minWidth: '200px',
-      },
     })
     yOffset += 80
 
@@ -50,33 +34,18 @@ export function GlobalFieldsGraph({ collections }: { collections: Collection[] }
       const nodeId = `field-${collection.id}-${field.name}`
       computedNodes.push({
         id: nodeId,
-        data: {
-          label: field.label || field.name,
-          type: field.type,
-        },
-        position: { x: idx * 240, y: yOffset },
-        type: 'default',
-        style: {
-          background: 'var(--node-bg)',
-          border: '1px solid #374151',
-          borderRadius: '4px',
-          padding: '8px 12px',
-          fontSize: '12px',
-          color: '#d4d4d8',
-          width: 'auto',
-          minWidth: '150px',
-        },
+        type: 'fieldNode',
+        data: { label: field.label || field.name, fieldType: field.type },
+        position: { x: idx * 200, y: yOffset },
       })
-
       computedEdges.push({
         id: `edge-${collectionNodeId}-${nodeId}`,
         source: collectionNodeId,
         target: nodeId,
-        animated: false,
         style: { stroke: '#3f3f46' },
       })
     })
-    yOffset += 120
+    yOffset += 140
   })
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
@@ -99,6 +68,7 @@ export function GlobalFieldsGraph({ collections }: { collections: Collection[] }
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          nodeTypes={GLOBAL_OVERVIEW_NODE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           fitView

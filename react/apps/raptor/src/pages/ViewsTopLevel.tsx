@@ -46,7 +46,7 @@ export default function ViewsTopLevelPage() {
     <BuilderLayout>
       {/* Graph - edge to edge */}
       {viewMode === 'graph' ? (
-        <GlobalViewsGraph />
+        <GlobalViewsGraph collections={collections} />
       ) : (
         <div className="w-full h-full overflow-auto bg-zinc-950 px-12 py-8 text-white">
           <h1 className="text-2xl font-bold text-zinc-200 mb-2">Views</h1>
