@@ -8,6 +8,8 @@ export type CollNodeType = Node<
     collKey: string
     isActive: boolean
     fields?: Array<{ name: string; label?: string; type?: string }>
+    onEdit?: () => void
+    onDelete?: () => void
     onNavigateFields?: () => void
     onNavigateViews?: () => void
     onNavigateForms?: () => void
@@ -18,7 +20,7 @@ export type CollNodeType = Node<
 export function CollectionNode({ data }: NodeProps<CollNodeType>) {
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const hasMenu = data.onNavigateFields || data.onNavigateViews || data.onNavigateForms
+  const hasMenu = data.onEdit || data.onDelete || data.onNavigateFields || data.onNavigateViews || data.onNavigateForms
 
   return (
     <div
@@ -103,6 +105,8 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                   }}
                 >
                   {[
+                    { label: 'Edit',          fn: data.onEdit },
+                    { label: 'Delete',        fn: data.onDelete },
                     { label: 'Manage Fields', fn: data.onNavigateFields },
                     { label: 'Manage Views',  fn: data.onNavigateViews },
                     { label: 'Manage Forms',  fn: data.onNavigateForms },
