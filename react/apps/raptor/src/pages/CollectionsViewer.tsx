@@ -773,23 +773,41 @@ export default function CollectionsViewer() {
       }
     }
 
-    // Relationship edges — drawn between collection nodes via side handles
+    // Lay out first so we know positions for handle selection
+    const laidOut = layoutCollectionsLR(hierarchyNodes, hierarchyEdges)
+    const posMap: Record<string, { x: number; y: number }> = {}
+    laidOut.forEach((n) => { posMap[n.id] = n.position })
+
+    // Relationship edges — pick handles based on relative position for clean routing
+    const NODE_BG = '#27272a'
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
+        const srcId = `col-${rel.source}`
+        const tgtId = `col-${rel.target}`
+        const srcX = posMap[srcId]?.x ?? 0
+        const tgtX = posMap[tgtId]?.x ?? 0
+        // Source is left of target → right→left; otherwise left→right
+        const sourceHandle = srcX <= tgtX ? 'right' : 'left'
+        const targetHandle = srcX <= tgtX ? 'left'  : 'right'
         relEdges.push({
-          id:         `rel-${rel.id}`,
-          source:     `col-${rel.source}`,
-          target:     `col-${rel.target}`,
-          label:      REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
-          labelStyle: { fill: '#71717a', fontSize: 10 },
-          style:      { stroke: '#52525b', strokeDasharray: '5 3' },
-          type:       'straight',
+          id:                   `rel-${rel.id}`,
+          source:               srcId,
+          target:               tgtId,
+          sourceHandle,
+          targetHandle,
+          label:                REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
+          labelStyle:           { fill: '#a1a1aa', fontSize: 10 },
+          labelBgStyle:         { fill: NODE_BG, fillOpacity: 1 },
+          labelBgPadding:       [4, 3] as [number, number],
+          labelBgBorderRadius:  3,
+          style:                { stroke: '#52525b', strokeDasharray: '5 3' },
+          type:                 'straight',
         })
       }
     }
 
-    setNodes(layoutCollectionsLR(hierarchyNodes, hierarchyEdges))
+    setNodes(laidOut)
     setEdges([...hierarchyEdges, ...relEdges])
   }, [collections, extensions, activeExtensionId, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
 
@@ -805,6 +823,7 @@ export default function CollectionsViewer() {
             onConnect={onConnect}
             nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
             edgeTypes={COLLECTIONS_GRAPH_EDGE_TYPES}
+            connectionMode="loose"
             fitView
             fitViewOptions={{ padding: 0.25 }}
             proOptions={{ hideAttribution: true }}
