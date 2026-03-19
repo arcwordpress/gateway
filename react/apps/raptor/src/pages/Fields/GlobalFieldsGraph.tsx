@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
   type Node, type Edge,
@@ -7,43 +6,15 @@ import {
 import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
 import { RecordsStatus, RecordsCtxValue, RecordsCtx } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
-import { GraphSkeleton } from '../../components/graph/GraphSkeleton'
 import type { Collection } from '../../lib/object_types'
-import { apiUrl, authHeaders } from '../../lib/api'
 
 /**
- * Global fields graph showing all fields from all collections
+ * Global fields graph showing all fields from all collections.
+ * Collections data is passed in from the parent (FieldsTopLevel) which
+ * already fetches it via the efficient ?with_nested=true bulk endpoint.
  */
-export function GlobalFieldsGraph() {
-  // Load all collections
-  const { data: collections = [], isLoading } = useQuery<Collection[]>({
-    queryKey: ['raptor-collections-global-graph'],
-    queryFn: async () => {
-      const listRoute = 'gateway/v1/raptor/collection'
-      const listRes = await fetch(apiUrl(listRoute), { headers: authHeaders() })
-      if (!listRes.ok) return []
-
-      const listJson = await listRes.json() as {
-        collections?: Array<{ collection_key: string }>
-      }
-      const items = listJson.collections ?? []
-      if (items.length === 0) return []
-
-      const details = await Promise.all(
-        items.map(async (item) => {
-          const detailRoute = `gateway/v1/raptor/collection/${item.collection_key}`
-          const detailRes = await fetch(apiUrl(detailRoute), { headers: authHeaders() })
-          if (!detailRes.ok) return null
-          const detailJson = await detailRes.json() as { collection?: Collection }
-          return detailJson.collection ?? null
-        }),
-      )
-
-      return details.filter((c): c is Collection => c !== null)
-    },
-  })
-
-  // Build nodes from all collections' fields - COMPUTED DIRECTLY
+export function GlobalFieldsGraph({ collections }: { collections: Collection[] }) {
+  // Build nodes from all collections' fields
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
   let yOffset = 0
@@ -52,7 +23,6 @@ export function GlobalFieldsGraph() {
     const fields = collection.field_list?.fields ?? []
     if (fields.length === 0) return
 
-    // Collection group header
     const collectionNodeId = `collection-${collection.id}`
     computedNodes.push({
       id: collectionNodeId,
@@ -76,7 +46,6 @@ export function GlobalFieldsGraph() {
     })
     yOffset += 80
 
-    // Fields in this collection
     fields.forEach((field, idx) => {
       const nodeId = `field-${collection.id}-${field.name}`
       computedNodes.push({
@@ -110,15 +79,10 @@ export function GlobalFieldsGraph() {
     yOffset += 120
   })
 
-  console.log('[GlobalFieldsGraph] Computed nodes:', computedNodes.length, 'edges:', computedEdges.length)
-
-  // Initialize with computed nodes (not empty!)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(computedEdges)
 
-  // Sync when collections change
   useEffect(() => {
-    console.log('[GlobalFieldsGraph] useEffect called, syncing computed nodes')
     setNodes(computedNodes)
     setEdges(computedEdges)
   }, [collections, setNodes, setEdges])
@@ -132,20 +96,18 @@ export function GlobalFieldsGraph() {
   return (
     <RecordsCtx.Provider value={recordsCtx}>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        {isLoading ? <GraphSkeleton /> : (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            fitView
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background variant={BackgroundVariant.Dots} />
-            <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
-            <SharedMiniMap />
-          </ReactFlow>
-        )}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background variant={BackgroundVariant.Dots} />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+          <SharedMiniMap />
+        </ReactFlow>
       </div>
     </RecordsCtx.Provider>
   )
