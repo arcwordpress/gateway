@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -663,12 +663,6 @@ export default function CollectionsViewer() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [activeExtensionId, setActiveExtensionId] = useState<number | null>(null)
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-
-  // Remember every node position we've ever computed so that toggling a group
-  // doesn't re-run Dagre over already-positioned nodes.  Only genuinely new
-  // nodes (never seen before) get a fresh Dagre-computed position.
-  const rememberedPositions = useRef<Map<string, { x: number; y: number }>>(new Map())
 
   // Try to get active extension from URL params if available
   useEffect(() => {
@@ -699,17 +693,6 @@ export default function CollectionsViewer() {
 
   const isLoading = isExtLoading || isCollLoading
 
-  const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(groupId)) {
-        newSet.delete(groupId)
-      } else {
-        newSet.add(groupId)
-      }
-      return newSet
-    })
-  }, [])
   const openCreate = useCallback((extensionId: number) => {
     setPanel({ mode: 'create', extensionId })
   }, [])
@@ -735,108 +718,51 @@ export default function CollectionsViewer() {
     const cols = collections ?? []
     const exts = extensions ?? []
 
-    // Hierarchy nodes / edges (used for Dagre layout)
     const hierarchyNodes: Node[] = []
     const hierarchyEdges: Edge[] = []
 
-    // Add extension nodes as root nodes, then their collections below
     for (const ext of exts) {
       const extId = `ext-${ext.id}`
       const isActive = activeExtensionId === ext.id
-      const collGroupId = `coll-group-${ext.id}`
 
-      // Add extension as root
       hierarchyNodes.push({
         id: extId,
         type: 'extensionNode',
-        data: { title: ext.title, extKey: ext.key, isActive, onManage: () => navigate({ to: '/extensions' }) },
-        position: { x: 0, y: 0 },
-      })
-
-      // Add collections group node
-      hierarchyNodes.push({
-        id: collGroupId,
-        type: 'collectionsGroupNode',
         data: {
-          isExpanded: expandedGroups.has(collGroupId),
-          onToggle: () => toggleGroup(collGroupId),
+          title: ext.title,
+          extKey: ext.key,
+          isActive,
+          onManage: () => navigate({ to: '/extensions' }),
           onCreate: () => openCreate(ext.id),
         },
         position: { x: 0, y: 0 },
       })
-      hierarchyEdges.push({
-        id: `e-${extId}-coll-group`,
-        source: extId,
-        target: collGroupId,
-        style: { stroke: '#3f3f46' },
-      })
 
-      // Only add collections if group is expanded
-      if (expandedGroups.has(collGroupId)) {
-        for (const col of cols.filter((c) => c.extension_id === ext.id)) {
-          const colId = `col-${col.collection_key}`
-          const fieldsId = `fields-${col.collection_key}`
-          const colIsActive = activeExtensionId === col.extension_id
+      for (const col of cols.filter((c) => c.extension_id === ext.id)) {
+        const colId = `col-${col.collection_key}`
+        const colIsActive = activeExtensionId === col.extension_id
 
-          hierarchyNodes.push({
-            id: colId,
-            type: 'collectionNode',
-            data: {
-              title: col.title,
-              collKey: col.collection_key,
-              isActive: colIsActive,
-              onEdit: () => openEdit(col.collection_key),
-              onDelete: () => openDelete(col.collection_key),
-            },
-            position: { x: 0, y: 0 },
-          })
+        hierarchyNodes.push({
+          id: colId,
+          type: 'collectionNode',
+          data: {
+            title: col.title,
+            collKey: col.collection_key,
+            isActive: colIsActive,
+            onEdit: () => openEdit(col.collection_key),
+            onDelete: () => openDelete(col.collection_key),
+            onNavigateFields: () => navigate({ to: `/collections/${col.collection_key}/fields` }),
+            onNavigateViews: () => navigate({ to: `/collections/${col.collection_key}/views` }),
+          },
+          position: { x: 0, y: 0 },
+        })
 
-          // Add Fields node as child of collection
-          hierarchyNodes.push({
-            id: fieldsId,
-            type: 'fieldsNode',
-            data: {
-              collectionSlug: col.collection_key,
-              onNavigate: (slug: string) => navigate({ to: `/collections/${slug}/fields` }),
-            },
-            position: { x: 0, y: 0 },
-          })
-
-          // Add Views node as child of collection
-          const viewsId = `views-${col.collection_key}`
-          hierarchyNodes.push({
-            id: viewsId,
-            type: 'viewsNode',
-            data: {
-              collectionSlug: col.collection_key,
-              onNavigate: (slug: string) => navigate({ to: `/collections/${slug}/views` }),
-            },
-            position: { x: 0, y: 0 },
-          })
-
-          hierarchyEdges.push({
-            id: `e-coll-group-${col.collection_key}`,
-            source: collGroupId,
-            target: colId,
-            style: { stroke: colIsActive ? '#52525b' : '#52525b' },
-          })
-
-          // Edge from collection to fields
-          hierarchyEdges.push({
-            id: `e-fields-${col.collection_key}`,
-            source: colId,
-            target: fieldsId,
-            style: { stroke: '#3f3f46' },
-          })
-
-          // Edge from collection to views
-          hierarchyEdges.push({
-            id: `e-views-${col.collection_key}`,
-            source: colId,
-            target: viewsId,
-            style: { stroke: '#3f3f46' },
-          })
-        }
+        hierarchyEdges.push({
+          id: `e-${extId}-${col.collection_key}`,
+          source: extId,
+          target: colId,
+          style: { stroke: '#3f3f46' },
+        })
       }
     }
 
@@ -844,33 +770,21 @@ export default function CollectionsViewer() {
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId = `col-${rel.source}`
-        const tgtId = `col-${rel.target}`
         relEdges.push({
-          id:          `rel-${rel.id}`,
-          source:      srcId,
-          target:      tgtId,
-          label:       `${rel.type}: ${rel.methodName}`,
-          labelStyle:  { fill: '#71717a', fontSize: 10 },
-          style:       { stroke: '#52525b', strokeDasharray: '5 3' },
-          type:        'straight',
+          id:         `rel-${rel.id}`,
+          source:     `col-${rel.source}`,
+          target:     `col-${rel.target}`,
+          label:      `${rel.type}: ${rel.methodName}`,
+          labelStyle: { fill: '#71717a', fontSize: 10 },
+          style:      { stroke: '#52525b', strokeDasharray: '5 3' },
+          type:       'straight',
         })
       }
     }
 
-    const laidOut = layoutWithDagre(hierarchyNodes, hierarchyEdges)
-    setNodes((current) => {
-      // Snapshot positions of currently-visible nodes into the ref
-      current.forEach((n) => rememberedPositions.current.set(n.id, n.position))
-      // Use remembered position for any node we've seen before; only new nodes
-      // get the Dagre-computed position.
-      return laidOut.map((n) => ({
-        ...n,
-        position: rememberedPositions.current.get(n.id) ?? n.position,
-      }))
-    })
+    setNodes(layoutWithDagre(hierarchyNodes, hierarchyEdges))
     setEdges([...hierarchyEdges, ...relEdges])
-  }, [collections, extensions, activeExtensionId, expandedGroups, openCreate, openEdit, openDelete, toggleGroup, setNodes, setEdges])
+  }, [collections, extensions, activeExtensionId, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
 
   return (
     <>

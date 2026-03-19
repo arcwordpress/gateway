@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 
-export type ExtNodeType = Node<{ title: string; extKey: string; isActive: boolean; onManage?: () => void }, 'extensionNode'>
+export type ExtNodeType = Node<{ title: string; extKey: string; isActive: boolean; onManage?: () => void; onCreate?: () => void }, 'extensionNode'>
 
 export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
   return (
@@ -35,41 +35,59 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
       >
         Extension
       </div>
-      <div style={{ fontSize: 11, fontFamily: 'monospace', color: data.isActive ? '#a1a1aa' : '#a1a1aa', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: 4 }}>
         {data.extKey}
       </div>
       <div>{data.title}</div>
 
-      {/* Manage Extension link */}
-      {data.onManage && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            data.onManage?.()
-          }}
-          style={{
-            marginTop: 8,
-            paddingTop: 8,
-            borderTop: `1px solid ${data.isActive ? '#3f3f46' : '#3f3f46'}`,
-            width: '100%',
-            padding: '6px 0',
-            fontSize: 10,
-            fontWeight: 500,
-            background: 'none',
-            border: 'none',
-            color: data.isActive ? '#71717a' : '#a1a1aa',
-            cursor: 'pointer',
-            transition: 'color 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            (e.target as HTMLButtonElement).style.color = data.isActive ? '#a1a1aa' : '#d4d4d8'
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLButtonElement).style.color = data.isActive ? '#71717a' : '#a1a1aa'
-          }}
-        >
-          Manage Extension
-        </button>
+      {(data.onCreate || data.onManage) && (
+        <div style={{ marginTop: 8, borderTop: '1px solid #3f3f46' }}>
+          {data.onCreate && (
+            <button
+              onClick={(e) => { e.stopPropagation(); data.onCreate?.() }}
+              style={{
+                width: '100%',
+                padding: '6px 0',
+                fontSize: 10,
+                fontWeight: 500,
+                background: 'none',
+                border: 'none',
+                color: '#a1a1aa',
+                cursor: 'pointer',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.color = '#d4d4d8' }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.color = '#a1a1aa' }}
+            >
+              + Create Collection
+            </button>
+          )}
+          {data.onManage && (
+            <button
+              onClick={(e) => { e.stopPropagation(); data.onManage?.() }}
+              style={{
+                width: '100%',
+                padding: '6px 0',
+                fontSize: 10,
+                fontWeight: 500,
+                background: 'none',
+                border: 'none',
+                borderTop: data.onCreate ? '1px solid #3f3f46' : 'none',
+                color: data.isActive ? '#71717a' : '#a1a1aa',
+                cursor: 'pointer',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.color = data.isActive ? '#a1a1aa' : '#d4d4d8'
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.color = data.isActive ? '#71717a' : '#a1a1aa'
+              }}
+            >
+              Manage Extension
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

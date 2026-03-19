@@ -18,10 +18,7 @@ import { FormNode } from './FormNode'
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
 import { ExtensionNode } from './ExtensionNode'
-import { CollectionsGroupNode } from './CollectionsGroupNode'
 import { CollectionNode } from './CollectionNode'
-import { FieldsNode } from './FieldsNode'
-import { ViewsNode } from './ViewsNode'
 
 // Export all types
 export type {
@@ -37,10 +34,7 @@ export type {
   ViewPreviewNodeType,
   CollectionsLabelNodeType,
   ExtNodeType,
-  CollGroupNodeType,
   CollNodeType,
-  FieldsNodeType,
-  ViewsNodeType,
 } from './types'
 export type { ViewListLabelNodeType } from './ViewListLabelNode'
 export type { FormListLabelNodeType } from './FormListLabelNode'
@@ -77,10 +71,7 @@ export { FacetsNode } from './FacetsNode'
 // Export Collections Viewer nodes
 export { CollectionsLabelNode } from './CollectionsRootNode'
 export { ExtensionNode } from './ExtensionNode'
-export { CollectionsGroupNode } from './CollectionsGroupNode'
 export { CollectionNode } from './CollectionNode'
-export { FieldsNode } from './FieldsNode'
-export { ViewsNode } from './ViewsNode'
 
 // Extensions graph node types registry (used by pages/Graph.tsx)
 export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
@@ -107,12 +98,9 @@ export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
 
 // Export Collections Viewer node types registry
 export const COLLECTIONS_GRAPH_NODE_TYPES: NodeTypes = {
-  collectionsLabelNode:  CollectionsLabelNode,
-  extensionNode:         ExtensionNode,
-  collectionsGroupNode:  CollectionsGroupNode,
-  collectionNode:        CollectionNode,
-  fieldsNode:            FieldsNode,
-  viewsNode:             ViewsNode,
+  collectionsLabelNode: CollectionsLabelNode,
+  extensionNode:        ExtensionNode,
+  collectionNode:       CollectionNode,
 }
 
 // Export Collections Viewer layout utilities

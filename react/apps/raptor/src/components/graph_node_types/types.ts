@@ -34,8 +34,7 @@ export type ViewPreviewNodeType = Node<
 
 // Collections Viewer node types
 export type CollectionsLabelNodeType = Node<{ onCreate?: () => void }, 'collectionsLabelNode'>
-export type ExtNodeType = Node<{ title: string; extKey: string; isActive: boolean; onManage?: () => void }, 'extensionNode'>
-export type CollGroupNodeType = Node<{ isExpanded: boolean; onToggle: () => void; onCreate?: () => void }, 'collectionsGroupNode'>
+export type ExtNodeType = Node<{ title: string; extKey: string; isActive: boolean; onManage?: () => void; onCreate?: () => void }, 'extensionNode'>
 export type CollNodeType = Node<
   {
     title: string
@@ -43,23 +42,9 @@ export type CollNodeType = Node<
     isActive: boolean
     onEdit?: () => void
     onDelete?: () => void
+    onNavigateFields?: () => void
+    onNavigateViews?: () => void
   },
   'collectionNode'
->
-
-export type FieldsNodeType = Node<
-  {
-    collectionSlug: string
-    onNavigate?: (slug: string) => void
-  },
-  'fieldsNode'
->
-
-export type ViewsNodeType = Node<
-  {
-    collectionSlug: string
-    onNavigate?: (slug: string) => void
-  },
-  'viewsNode'
 >
 
