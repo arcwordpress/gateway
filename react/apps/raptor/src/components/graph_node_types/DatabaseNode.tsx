@@ -1,6 +1,7 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { type DbNodeData } from './types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
   return (
@@ -9,7 +10,7 @@ export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
         background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
-        padding: '10px 16px',
+        padding: '8px 10px',
         color: '#e4e4e7',
         fontSize: 12,
         minWidth: 200,
@@ -17,9 +18,7 @@ export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#71717a', marginBottom: 6, fontWeight: 600 }}>
-        Database Table
-      </div>
+      <NodeTypeHeader label="Database Table" />
       <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#a1a1aa', wordBreak: 'break-all' }}>
         {data.tableName}
       </div>
