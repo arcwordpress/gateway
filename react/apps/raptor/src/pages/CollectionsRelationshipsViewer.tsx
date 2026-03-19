@@ -4,6 +4,7 @@ import {
   Controls,
   Background,
   BackgroundVariant,
+  ConnectionMode,
   useNodesState,
   useEdgesState,
   type Node,
@@ -721,7 +722,7 @@ export default function CollectionsRelationshipsViewer() {
         onConnect={onConnect}
         onEdgeClick={onEdgeClick}
         nodeTypes={NODE_TYPES}
-        connectionMode="loose"
+        connectionMode={ConnectionMode.Loose}
         fitView
         fitViewOptions={{ padding: 0.25 }}
         proOptions={{ hideAttribution: true }}

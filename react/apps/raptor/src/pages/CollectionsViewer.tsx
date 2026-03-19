@@ -4,6 +4,7 @@ import {
   Controls,
   Background,
   BackgroundVariant,
+  ConnectionMode,
   useNodesState,
   useEdgesState,
   type Node,
@@ -822,7 +823,7 @@ export default function CollectionsViewer() {
             onConnect={onConnect}
             nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
             edgeTypes={COLLECTIONS_GRAPH_EDGE_TYPES}
-            connectionMode="loose"
+            connectionMode={ConnectionMode.Loose}
             fitView
             fitViewOptions={{ padding: 0.25 }}
             proOptions={{ hideAttribution: true }}
