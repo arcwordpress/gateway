@@ -1,0 +1,33 @@
+import { type NodeProps } from '@xyflow/react'
+import { Handle, Position } from '@xyflow/react'
+import { type DbNodeData } from './types'
+
+export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
+  return (
+    <div
+      style={{
+        background: 'var(--node-bg)',
+        border: '1px solid #3f3f46',
+        borderRadius: 10,
+        padding: '10px 16px',
+        color: '#e4e4e7',
+        fontSize: 12,
+        minWidth: 200,
+      }}
+    >
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#71717a', marginBottom: 6, fontWeight: 600 }}>
+        Database Table
+      </div>
+      <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#a1a1aa', wordBreak: 'break-all' }}>
+        {data.tableName}
+      </div>
+      {data.recordCount !== null && (
+        <div style={{ marginTop: 6, fontSize: 11, color: '#71717a' }}>
+          {data.recordCount.toLocaleString()} record{data.recordCount !== 1 ? 's' : ''}
+        </div>
+      )}
+    </div>
+  )
+}

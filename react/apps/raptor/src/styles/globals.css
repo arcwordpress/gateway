@@ -1,46 +1,160 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+:root {
+  --app-bg: #1d2327;
+  --node-bg: #27272a;
+}
+
+.bg-dark {
+  background-color: var(--app-bg);
+}
+
+/* ── Heading reset ────────────────────────────────────────────────────────── */
+/*                                                                             */
+/* WP Admin injects color, margin, padding, and font-size onto bare heading   */
+/* elements (specificity 0,0,1 – 0,1,1).  Our ID-scoped selector (1,0,1)     */
+/* wins without needing !important, so Tailwind !-utilities still work for    */
+/* the rare cases where you do want explicit values.                           */
+#gateway-raptor-canvas-host h1,
+#gateway-raptor-canvas-host h2,
+#gateway-raptor-canvas-host h3,
+#gateway-raptor-canvas-host h4,
+#gateway-raptor-canvas-host h5,
+#gateway-raptor-canvas-host h6 {
+  color: #d4d4d4; /* neutral-300 — soft default; override with !text-* when needed */
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
 
 /* Scoped to the raptor root so WP admin styles don't leak in */
 #gateway-raptor-root {
-  --app-bg: #1d2327; /* WP Admin dark background — single source of truth */
   font-family: system-ui, -apple-system, sans-serif;
-  background: var(--app-bg);
+  background-color: var(--app-bg);
 }
 
 /* React Flow dark-mode overrides scoped to the graph page */
 #gateway-raptor-root .react-flow__background {
-  background-color: #030712;
+  background-color: var(--app-bg);
 }
 
 #gateway-raptor-root .react-flow__minimap {
-  background-color: #111827;
-  border: 1px solid #1f2937;
+  background-color: #27272a;
+  border: 1px solid #3f3f46;
   border-radius: 0.375rem;
 }
 
+#gateway-raptor-root .react-flow__minimap-svg {
+  display: block;
+}
+
 #gateway-raptor-root .react-flow__minimap-mask {
-  fill: rgba(59, 130, 246, 0.1);
+  fill: rgba(0, 0, 0, 0.28) !important;
+  stroke: #3f3f46 !important;
 }
 
 #gateway-raptor-root .react-flow__controls {
-  border: 1px solid #1f2937;
+  border: 1px solid #27272a;
   border-radius: 0.375rem;
   overflow: hidden;
 }
 
 #gateway-raptor-root .react-flow__controls-button {
-  background-color: #1f2937;
-  border-bottom: 1px solid #374151;
-  color: #9ca3af;
+  background-color: #27272a;
+  border-bottom: 1px solid #3f3f46;
+  color: #a1a1aa;
 }
 
 #gateway-raptor-root .react-flow__controls-button:hover {
-  background-color: #374151;
-  color: #f9fafb;
+  background-color: #3f3f46;
+  color: #f4f4f5;
 }
 
 #gateway-raptor-root .react-flow__controls-button svg {
   fill: currentColor;
+}
+
+/* Override WordPress core select styles for collection switcher */
+#gateway-raptor-canvas-host select,
+#gateway-raptor-root select {
+  background-color: var(--app-bg) !important;
+  /* background-image: none !important; */
+  color: #f4f4f5 !important;
+  border-color: #3f3f46 !important;
+  border-radius: 0.375rem !important;
+  padding: 0 0.5rem !important;
+  min-height: auto !important;
+  line-height: normal !important;
+  font-size: 0.75rem !important;
+  box-shadow: none !important;
+}
+
+#gateway-raptor-canvas-host select:focus,
+#gateway-raptor-root select:focus {
+  outline: none !important;
+  border-color: #71717a !important;
+  box-shadow: 0 0 0 1px #71717a !important;
+}
+
+#gateway-raptor-canvas-host select option,
+#gateway-raptor-root select option {
+  background-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+/* Keep sidebar links controlled by app classes, not WP admin active/pressed link styles. */
+#gateway-raptor-root .gateway-sidebar-link,
+#gateway-raptor-root .gateway-sidebar-link:visited,
+#gateway-raptor-root .gateway-sidebar-link:hover,
+#gateway-raptor-root .gateway-sidebar-link:focus,
+#gateway-raptor-root .gateway-sidebar-link:active {
+  text-decoration: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 1 !important;
+}
+
+#gateway-raptor-root .gateway-sidebar-link:focus-visible {
+  outline: 1px solid #52525b !important;
+  outline-offset: 1px;
+}
+
+/* Defeat WP admin global anchor hover/active blue color across the Raptor app. */
+#gateway-raptor-root a:hover,
+#gateway-raptor-root a:active {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+
+/* Webkit (Chrome, Safari, Edge) */
+#gateway-raptor-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#gateway-raptor-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#gateway-raptor-root ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+#gateway-raptor-root ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+#gateway-raptor-root ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+#gateway-raptor-root * {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
 }

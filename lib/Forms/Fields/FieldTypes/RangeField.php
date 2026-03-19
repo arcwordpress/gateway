@@ -37,6 +37,7 @@ class RangeField extends \Gateway\Field {
             'required'    => false,
             'placeholder' => '$',
             'description' => 'Symbol shown before the value, e.g. $',
+            'group'       => 'display',
         ],
         [
             'name'        => 'append',
@@ -45,13 +46,15 @@ class RangeField extends \Gateway\Field {
             'required'    => false,
             'placeholder' => 'kg',
             'description' => 'Symbol shown after the value, e.g. kg or %',
+            'group'       => 'display',
         ],
         [
             'name'        => 'showMinMax',
             'label'       => 'Show Min/Max Labels',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
+            'group'       => 'display',
         ],
     ];
 

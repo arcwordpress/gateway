@@ -9,7 +9,7 @@ class ButtonGroupField extends \Gateway\Field {
         [
             'name'        => 'options',
             'label'       => 'Options',
-            'type'        => 'array',
+            'type'        => 'textarea',
             'required'    => true,
             'placeholder' => 'Option 1' . "\n" . 'Option 2' . "\n" . 'Option 3',
             'description' => 'One option per line',

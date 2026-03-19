@@ -1,0 +1,13 @@
+{
+  "$id": "https://gateway.dev/schemas/collection-view",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Collection View",
+  "version": "1.0",
+  "type": "object",
+  "required": ["collection", "view"],
+  "properties": {
+    "collection": { "type": "string", "description": "Collection key" },
+    "view": { "type": "string", "description": "View key" },
+    "order": { "type": "integer" }
+  }
+}

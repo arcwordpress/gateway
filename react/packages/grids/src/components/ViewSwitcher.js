@@ -25,24 +25,6 @@ const VIEW_CONFIGS = {
       </svg>
     )
   },
-  board: {
-    label: __('Board', 'gateway'),
-    icon: (
-      <svg height="32" viewBox="0 0 123 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
-        <g clipPath="url(#clip0_1_14)">
-          <rect width="123" height="100" fill="white"/>
-          <path d="M0 0H34.562V100H0V0Z" fill="#1D2327"/>
-          <path d="M44.7273 0H78.2727V68.3673H44.7273V0Z" fill="#1D2327"/>
-          <path d="M89.4545 0H123V100H89.4545V0Z" fill="#1D2327"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_1_14">
-            <rect width="123" height="100" fill="white"/>
-          </clipPath>
-        </defs>
-      </svg>
-    )
-  },
   list: {
     label: __('List', 'gateway'),
     icon: (
@@ -85,7 +67,7 @@ const VIEW_CONFIGS = {
 const ViewSwitcher = ({
   currentView,
   onViewChange,
-  enabledViews = ['table', 'board', 'list', 'cards']
+  enabledViews = ['table', 'list', 'cards']
 }) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);

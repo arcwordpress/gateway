@@ -4,14 +4,13 @@
   "description": "Gateway Grid React component library with TanStack Table",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "style": "dist/style.css",
+  "style": "src/style.css",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css",
-    "./board-styles.css": "./dist/board-styles.css"
+    "./style.css": "./src/style.css"
   },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
@@ -41,7 +40,6 @@
     "@arcwp/gateway-data": "file:../data",
     "@arcwp/gateway-forms": "file:../forms",
     "@tanstack/react-table": "^8.20.5",
-    "@asseinfo/react-kanban": "^2.2.0",
     "axios": "^1.6.2"
   },
   "peerDependencies": {

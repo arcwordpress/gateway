@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/react-view",
+  "title": "React View",
+  "category": "gateway",
+  "icon": "grid-view",
+  "description": "Embeds the Gateway React view app and renders a registered view.",
+  "keywords": [
+    "view",
+    "collection",
+    "react",
+    "gateway"
+  ],
+  "textdomain": "gateway",
+  "attributes": {
+    "viewKey": {
+      "type": "string",
+      "default": ""
+    },
+    "showFilters": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": [
+      "wide",
+      "full"
+    ],
+    "className": true,
+    "anchor": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "render": "file:./render.php"
+}

@@ -59,7 +59,8 @@ class Plugin
     private $migrationRunnerRoute;
     private $mazeRoutes;
     private $patternRegistry;
-    private $gridRegistry;
+    private $viewRegistry;
+    private $facetRegistry;
 
     public static function getInstance()
     {
@@ -72,19 +73,31 @@ class Plugin
     private function __construct()
     {
         $this->registry = new CollectionRegistry();
-        $this->gridRegistry = new Grids\GridRegistry();
+        $this->viewRegistry = new Views\ViewRegistry();
+        $this->facetRegistry = new Views\Facets\FacetRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
-        new Grids\GridRoutes();
+        new Views\ViewRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
+        new Endpoints\CoreCollectionUserRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
-        new Exta\Routes();
+        new Raptor\Endpoints\ExtensionCrudRoutes();
+        new Raptor\Endpoints\ExtensionRoutes();
+        new Raptor\Endpoints\CollectionRoutes();
+        new Raptor\Endpoints\FieldListRoutes();
+        new Raptor\Endpoints\FieldRoutes();
+        new Raptor\Endpoints\FormListRoutes();
+        new Raptor\Endpoints\FormRoutes();
+        new Raptor\Endpoints\ViewListRoutes();
+        new Raptor\Endpoints\ViewRoutes();
+        new Raptor\Endpoints\ViewRenderRoutes();
+        new Raptor\Endpoints\FacetRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         // Defer FieldTypeRoutes to onInit to avoid early initialization issues
@@ -105,6 +118,12 @@ class Plugin
         register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
         register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
 
+        // Re-run core migrations whenever the plugin version changes.
+        // register_activation_hook only fires on manual (de)activate, not on updates,
+        // so schema changes added after the initial install would never be applied.
+        // dbDelta() is idempotent — it only adds missing columns/keys, never drops them.
+        $this->maybeRunMigrations();
+
         // Boot Eloquent on plugins_loaded
         $this->bootEloquent();
 
@@ -114,16 +133,21 @@ class Plugin
         // Initialize admin pages
         Admin\Page::init();
         Admin\Records::init();
-        Admin\Builder::init(); // Restored Builder admin link
-        Admin\Raptor::init();  // Gateway 2 — Raptor node graph editor (Vite/React Flow)
+        Admin\Builder::init(); // Builder now runs the Raptor app
         Package\PackageMenus::init();
 
         // Initialize front-end forms
         Forms\Render::init();
         Forms\Shortcode::init();
 
-        // Initialize front-end grids
-        Grids\Render::init();
+        // Initialize experimental rendering system
+        Render\Render::init();
+
+        // Initialize stable view shortcode registry: [gateway_view key="..."]
+        Views\Render\Shortcode\Shortcode::init();
+
+        // Initialize front-end views with Interactivity API
+        Raptor\ViewRenderer::init();
 
         // Initialize front-end filters
         Filters\Render::init();
@@ -167,7 +191,7 @@ class Plugin
      *
      * @return array<string, class-string>
      */
-    private static function coreCollectionMap(): array
+    public static function getCoreCollectionMap(): array
     {
         return [
             'wp_post'              => Collections\WP\Post::class,
@@ -199,9 +223,10 @@ class Plugin
         // Always register internal structural collections first.
         Collections\Gateway\BlockTypeUser::register();
         Collections\Gateway\CollectionUser::register();
+        Collections\GatewaySettingsCollection::register();
 
         // Register core WP collections, gated by CollectionUser active flag.
-        foreach (self::coreCollectionMap() as $key => $class) {
+        foreach (self::getCoreCollectionMap() as $key => $class) {
             if (Collections\Gateway\CollectionUser::isActive($key)) {
                 $class::register();
             }
@@ -261,7 +286,7 @@ class Plugin
      */
     public function seedCollections()
     {
-        foreach (array_keys(self::coreCollectionMap()) as $key) {
+        foreach (array_keys(self::getCoreCollectionMap()) as $key) {
             Collections\Gateway\CollectionUser::seedOne($key);
         }
     }
@@ -275,9 +300,14 @@ class Plugin
         return $this->registry;
     }
 
-    public function getGridRegistry()
+    public function getViewRegistry()
     {
-        return $this->gridRegistry;
+        return $this->viewRegistry;
+    }
+
+    public function getFacetRegistry(): Views\Facets\FacetRegistry
+    {
+        return $this->facetRegistry;
     }
 
     public function getPackageRegistry()
@@ -331,6 +361,21 @@ class Plugin
     public static function findSQLiteDatabase()
     {
         return Database\DatabaseConnection::findSQLiteDatabase();
+    }
+
+    /**
+     * Run core migrations if the stored schema version differs from the current
+     * plugin version.  Called on every request but exits immediately when the
+     * version matches, so the overhead is a single get_option() call.
+     */
+    private function maybeRunMigrations(): void
+    {
+        $stored = get_option('gateway_schema_version', '');
+        if ($stored === GATEWAY_VERSION) {
+            return;
+        }
+        Database\MigrationHooks::runCoreMigrations();
+        update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
     /**

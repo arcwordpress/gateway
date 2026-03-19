@@ -1,0 +1,55 @@
+<?php
+
+namespace Gateway\Raptor\Collections;
+
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Eloquent model for field lists managed through the Raptor field editor.
+ *
+ * Records are stored in {prefix}gateway_raptor_field_list
+ * (e.g. wp_gateway_raptor_field_list).
+ *
+ * Each collection has exactly one field list (one-to-one).
+ *
+ * @property int $id
+ * @property int $collection_id  FK to gateway_raptor_collection.id
+ */
+class RaptorFieldList extends \Gateway\Collection
+{
+    protected $key = 'raptor_field_list';
+
+    // WP prefix is prepended automatically, giving wp_gateway_raptor_field_list.
+    protected $table = 'gateway_raptor_field_list';
+
+    // Internal Gateway table — excluded from public collection listings.
+    protected $core = true;
+
+    // Managed exclusively via Raptor\Endpoints\FieldListRoutes, not via standard REST.
+    protected $routes = [
+        'enabled' => false,
+    ];
+
+    // Hide the legacy collection_key column — superseded by collection_id.
+    protected $hidden = ['collection_key'];
+
+    public function getFillable(): array
+    {
+        return [
+            'collection_id',
+        ];
+    }
+
+    public function collection(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RaptorCollection::class, 'collection_id', 'id');
+    }
+
+    public function fields(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorField::class, 'field_list_id');
+    }
+}

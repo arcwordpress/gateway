@@ -1,0 +1,23 @@
+{
+  "$id": "https://gateway.dev/schemas/view",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "View",
+  "version": "1.0",
+  "type": "object",
+  "required": ["key", "type"],
+  "properties": {
+    "key": { "type": "string" },
+    "title": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["grid", "list", "kanban", "single"],
+      "description": "View type"
+    },
+    "fields": {
+      "type": "array",
+      "description": "Field keys visible in this view",
+      "items": { "type": "string" }
+    },
+    "default": { "type": "boolean", "default": false }
+  }
+}

@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
 
 // ─── Footer.Credit ──────────────────────────────────────────────────────────
 
 function Credit({ children }: { children: ReactNode }) {
   return (
-    <span className="text-[11px] text-gray-600 select-none font-mono">
+    <span className="text-[11px] text-zinc-600 select-none font-mono">
       {children}
     </span>
   )
@@ -15,11 +15,12 @@ function Credit({ children }: { children: ReactNode }) {
 interface FooterProps {
   children: ReactNode
   className?: string
+  style?: CSSProperties
 }
 
-function FooterRoot({ children, className }: FooterProps) {
+function FooterRoot({ children, className, style }: FooterProps) {
   return (
-    <div className={`flex items-center ${className ?? ''}`}>
+    <div className={`flex items-center ${className ?? ''}`} style={style}>
       {children}
     </div>
   )

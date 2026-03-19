@@ -1,44 +1,40 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link, useParams } from '@tanstack/react-router'
-import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
 
-// ─── Schema types ──────────────────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────────────────────────────
 
-type SchemaProperty = {
-  type: string
+type Extension = {
+  extension_key: string
   title: string
-  description?: string
-  default?: string
+  description: string
+  version: string
+  author: string
+  author_uri: string
+  min_wp_version: string
+  namespace: string
+  status: string
 }
 
-type FieldGroupSchema = {
+type Collection = {
+  id: number
+  collection_key: string
   title: string
-  description?: string
-  required: string[]
-  properties: Record<string, SchemaProperty>
 }
 
-type ExtensionData = Record<string, string>
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
-
-const fieldGroupSchemaUrl = appConfig.schemaUrl.replace(/[^/]+$/, 'field-group.json')
+type BuildResult = {
+  success: boolean
+  plugin_slug?: string
+  collection_count?: number
+  collections?: { collection_key: string; class_generated: boolean; migration: { success: boolean } }[]
+  error?: string
+}
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 ' +
-  'placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 ' +
-  'focus:ring-blue-500 transition-colors disabled:opacity-50'
-
-function FieldSkeleton() {
-  return (
-    <div className="space-y-1.5">
-      <div className="h-4 w-28 rounded bg-gray-800 animate-pulse" />
-      <div className="h-9 rounded-lg bg-gray-800 animate-pulse" />
-    </div>
-  )
-}
+  'w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 ' +
+  'placeholder-zinc-600 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'focus:ring-zinc-500 transition-colors disabled:opacity-50'
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
@@ -47,56 +43,52 @@ export default function ExtensionEdit() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [fields, setFields] = useState<Record<string, string>>({})
+  const [title, setTitle]               = useState('')
+  const [description, setDescription]   = useState('')
+  const [version, setVersion]           = useState('')
+  const [author, setAuthor]             = useState('')
+  const [authorUri, setAuthorUri]       = useState('')
+  const [minWpVersion, setMinWpVersion] = useState('')
+  const [namespace, setNamespace]       = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [buildResult, setBuildResult]   = useState<BuildResult | null>(null)
 
-  // Load field-group schema
-  const { data: schema, isLoading: schemaLoading } = useQuery<FieldGroupSchema>({
-    queryKey: ['schema', 'field-group'],
-    queryFn: async () => {
-      const res = await fetch(fieldGroupSchemaUrl)
-      if (!res.ok) throw new Error(`Failed to load schema (HTTP ${res.status})`)
-      return res.json() as Promise<FieldGroupSchema>
-    },
-    staleTime: Infinity,
-    retry: 2,
-  })
+  // ── Load extension + collections ──────────────────────────────────────
 
-  // Load existing extension data
-  const { data: existing, isLoading: extLoading, isError: extError } = useQuery<ExtensionData>({
+  const { data: extensionData, isLoading, isError } = useQuery<{
+    extension: Extension
+    collections: Collection[]
+  }>({
     queryKey: ['extensions', key],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), { headers: authHeaders() })
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${key}`), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return json.extension as ExtensionData
+      return res.json()
     },
     enabled: !!key,
   })
 
-  // Seed form fields from existing extension data once both schema and data are ready
-  useEffect(() => {
-    if (!schema || !existing) return
-    setFields(() => {
-      const seeded: Record<string, string> = {}
-      for (const name of Object.keys(schema.properties)) {
-        seeded[name] = existing[name] ?? ''
-      }
-      return seeded
-    })
-  }, [schema, existing])
+  const { extension, collections = [] } = extensionData ?? {}
 
-  const setField = (name: string, val: string) =>
-    setFields((prev) => ({ ...prev, [name]: val }))
+  useEffect(() => {
+    if (!extension) return
+    setTitle(extension.title ?? '')
+    setDescription(extension.description ?? '')
+    setVersion(extension.version ?? '')
+    setAuthor(extension.author ?? '')
+    setAuthorUri(extension.author_uri ?? '')
+    setMinWpVersion(extension.min_wp_version ?? '')
+    setNamespace(extension.namespace ?? '')
+  }, [extension])
 
   // ── Update ────────────────────────────────────────────────────────────
 
   const updateMutation = useMutation({
-    mutationFn: async (data: Record<string, string>) => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), {
+    mutationFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${key}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify(data),
+        body: JSON.stringify({ title, description, version, author, author_uri: authorUri, min_wp_version: minWpVersion, namespace }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update extension')
@@ -104,21 +96,29 @@ export default function ExtensionEdit() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['extensions'] })
-      void navigate({ to: '/extensions' })
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fields.title?.trim()) return
-    updateMutation.mutate({ ...fields })
-  }
+  // ── Build ─────────────────────────────────────────────────────────────
+
+  const buildMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${key}/build`), {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      return res.json() as Promise<BuildResult>
+    },
+    onSuccess: (result) => {
+      setBuildResult(result)
+    },
+  })
 
   // ── Delete ────────────────────────────────────────────────────────────
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${key}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${key}`), {
         method: 'DELETE',
         headers: authHeaders(),
       })
@@ -132,68 +132,132 @@ export default function ExtensionEdit() {
     },
   })
 
-  const isBusy = updateMutation.isPending || deleteMutation.isPending
-  const isLoading = schemaLoading || extLoading
-  const required: string[] = schema?.required ?? []
-  const schemaEntries = schema ? Object.entries(schema.properties) : []
+  const isBusy = updateMutation.isPending || deleteMutation.isPending || buildMutation.isPending
 
   return (
     <div className="max-w-xl mx-auto">
       <div className="mb-6">
-        <Link to="/extensions" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+        <Link to="/extensions" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Extensions
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-100 mt-3">
-          {existing?.title || key}
+        <h1 className="text-2xl font-semibold text-zinc-100 mt-3">
+          {extension?.title || key}
         </h1>
-        <p className="text-xs text-gray-600 font-mono mt-0.5">{key}</p>
+        <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
       </div>
 
-      {extError && (
+      {isError && (
         <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
           Could not load extension data.
         </div>
       )}
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {isLoading
-            ? Array.from({ length: 7 }).map((_, i) => <FieldSkeleton key={i} />)
-            : schemaEntries.map(([name, prop]) => (
-                <div key={name}>
-                  <label htmlFor={`field-${name}`} className="block text-sm font-medium text-gray-300 mb-1.5">
-                    {prop.title}
-                    {required.includes(name) && <span className="ml-1 text-red-400">*</span>}
-                    <span className="ml-2 text-xs text-gray-600 font-normal font-mono">{name}</span>
-                  </label>
-                  <input
-                    id={`field-${name}`}
-                    type="text"
-                    value={fields[name] ?? ''}
-                    disabled={isBusy}
-                    onChange={(e) => setField(name, e.target.value)}
-                    className={baseInput}
-                  />
+      {/* ── Collections ─────────────────────────────────────────────────── */}
+      <div className="mb-6 bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium text-zinc-400">Collections</h2>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Link to={`/extensions/${key}/collections` as any} className="text-xs text-zinc-300 hover:text-zinc-100 transition-colors">
+            Manage →
+          </Link>
+        </div>
+        {!isLoading && collections.length > 0 && (
+          <ul className="space-y-1">
+            {collections.map((c) => (
+              <li key={c.collection_key}>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                <Link
+                  to={`/extensions/${key}/collections/${c.collection_key}/fields` as any}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-sm text-zinc-300 hover:text-zinc-100"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-600 flex-shrink-0" />
+                  {c.title || c.collection_key}
+                  <span className="ml-auto text-xs text-zinc-600 font-mono">{c.collection_key}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!isLoading && collections.length === 0 && (
+          <p className="text-xs text-zinc-600">No collections yet.</p>
+        )}
+      </div>
+
+      {/* ── Edit form ────────────────────────────────────────────────────── */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <form
+          onSubmit={(e) => { e.preventDefault(); updateMutation.mutate() }}
+          className="space-y-5"
+        >
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="h-4 w-28 rounded bg-zinc-800 animate-pulse" />
+                <div className="h-9 rounded-lg bg-zinc-800 animate-pulse" />
+              </div>
+            ))
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title <span className="text-red-400">*</span></label>
+                <input type="text" value={title} disabled={isBusy} onChange={(e) => setTitle(e.target.value)} className={baseInput} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description</label>
+                <input type="text" value={description} disabled={isBusy} onChange={(e) => setDescription(e.target.value)} className={baseInput} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Version</label>
+                  <input type="text" value={version} disabled={isBusy} onChange={(e) => setVersion(e.target.value)} className={baseInput} />
                 </div>
-              ))}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Min WP Version</label>
+                  <input type="text" value={minWpVersion} disabled={isBusy} onChange={(e) => setMinWpVersion(e.target.value)} className={baseInput} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author</label>
+                  <input type="text" value={author} disabled={isBusy} onChange={(e) => setAuthor(e.target.value)} className={baseInput} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1.5">Author URI</label>
+                  <input type="text" value={authorUri} disabled={isBusy} onChange={(e) => setAuthorUri(e.target.value)} className={baseInput} placeholder="https://" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                  PHP Namespace
+                  <span className="ml-2 text-xs text-zinc-600 font-normal">auto-derived if blank</span>
+                </label>
+                <input type="text" value={namespace} disabled={isBusy} onChange={(e) => setNamespace(e.target.value)} className={baseInput} placeholder="MyExtension" />
+              </div>
+            </>
+          )}
 
           {updateMutation.isError && (
             <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
               {(updateMutation.error as Error).message}
             </div>
           )}
+          {updateMutation.isSuccess && (
+            <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-zinc-300 text-sm">
+              Saved.
+            </div>
+          )}
 
           <div className="flex gap-3 pt-1">
             <button
               type="submit"
-              disabled={isBusy || !fields.title?.trim() || isLoading}
-              className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              disabled={isBusy || !title.trim() || isLoading}
+              className="px-5 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
               {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
             </button>
             <Link
               to="/extensions"
-              className="px-5 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 text-sm font-medium transition-colors"
+              className="px-5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 text-sm font-medium transition-colors"
             >
               Cancel
             </Link>
@@ -201,11 +265,56 @@ export default function ExtensionEdit() {
         </form>
       </div>
 
-      {/* ── Delete ─────────────────────────────────────────────────────── */}
-      <div className="mt-6 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
+      {/* ── Build ────────────────────────────────────────────────────────── */}
+      <div className="mt-6 p-5 rounded-xl border border-zinc-700 bg-zinc-900">
+        <p className="text-sm font-medium text-zinc-200 mb-1">Build Plugin</p>
+        <p className="text-xs text-zinc-500 mb-4">
+          Generates PHP collection classes and database migrations for all collections in this
+          extension, then writes them to{' '}
+          <code className="font-mono text-zinc-400">wp-content/plugins/{key?.replace(/_/g, '-')}</code>.
+        </p>
+
+        {buildResult && (
+          <div className={`mb-4 p-3 rounded-lg text-xs border ${
+            buildResult.success
+              ? 'bg-zinc-800/50 border-zinc-700 text-zinc-300'
+              : 'bg-red-500/10 border-red-500/20 text-red-400'
+          }`}>
+            {buildResult.success ? (
+              <>
+                <p className="font-medium mb-1">Build successful — {buildResult.collection_count} collection(s) compiled.</p>
+                {buildResult.collections?.map((c) => (
+                  <p key={c.collection_key} className="opacity-80">
+                    {c.collection_key}: class {c.class_generated ? '✓' : '✗'} · migration {c.migration?.success ? '✓' : '✗'}
+                  </p>
+                ))}
+              </>
+            ) : (
+              <p>{buildResult.error ?? 'Build failed.'}</p>
+            )}
+          </div>
+        )}
+
+        {buildMutation.isError && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+            {(buildMutation.error as Error).message}
+          </div>
+        )}
+
+        <button
+          onClick={() => { setBuildResult(null); buildMutation.mutate() }}
+          disabled={isBusy}
+          className="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+        >
+          {buildMutation.isPending ? 'Building…' : 'Build Extension'}
+        </button>
+      </div>
+
+      {/* ── Delete ────────────────────────────────────────────────────────── */}
+      <div className="mt-4 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
         <p className="text-sm font-medium text-red-400 mb-1">Danger zone</p>
-        <p className="text-xs text-gray-500 mb-3">
-          Deletes the extension, its plugin files, and all associated data. This cannot be undone.
+        <p className="text-xs text-zinc-500 mb-3">
+          Deletes this extension record and its generated plugin directory. This cannot be undone.
         </p>
 
         {deleteMutation.isError && (
@@ -224,7 +333,7 @@ export default function ExtensionEdit() {
             <button
               onClick={() => setConfirmDelete(false)}
               disabled={isBusy}
-              className="px-4 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 text-sm transition-colors"
+              className="px-4 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-sm transition-colors"
             >
               Cancel
             </button>

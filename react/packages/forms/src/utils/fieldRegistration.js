@@ -22,6 +22,37 @@
  * });
  */
 export const createFieldRegister = (registerFn) => {
+  // Fast-path: already a wrapped controlled register — build handler without probing
+  if (registerFn?.__isControlledRegister) {
+    return (name, options = {}) => ({
+      name,
+      onChange: (e) => {
+        let value;
+        if (e && typeof e === 'object') {
+          if (e.target) {
+            const target = e.target;
+            if (target.type === 'checkbox') {
+              value = target.checked;
+            } else if (target.type === 'number') {
+              value = target.valueAsNumber || parseFloat(target.value) || 0;
+            } else if (target.type === 'file') {
+              value = target.files;
+            } else {
+              value = target.value;
+            }
+          } else {
+            value = e.value !== undefined ? e.value : e;
+          }
+        } else {
+          value = e;
+        }
+        registerFn(name, value, options);
+      },
+      onBlur: (e) => { if (options.onBlur) options.onBlur(e); },
+      ref: (el) => { if (options.ref) options.ref(el); },
+    });
+  }
+
   // If it's already RHF's register function, return as-is
   // RHF's register returns an object with { name, onChange, onBlur, ref }
   // We detect this by testing if calling it returns an object with the expected shape
@@ -158,7 +189,9 @@ export const createGutenbergRegister = (setAttributes) => {
  * });
  */
 export const createControlledRegister = (onChange) => {
-  return (name, value) => {
+  const fn = (name, value) => {
     onChange(name, value);
   };
+  fn.__isControlledRegister = true;
+  return fn;
 };

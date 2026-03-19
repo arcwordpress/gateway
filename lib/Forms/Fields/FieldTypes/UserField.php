@@ -27,7 +27,7 @@ class UserField extends \Gateway\Field {
         [
             'name'        => 'multiple',
             'label'       => 'Allow Multiple',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => false,
             'description' => 'Allow selecting multiple users.',

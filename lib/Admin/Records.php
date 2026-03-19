@@ -16,8 +16,8 @@ class Records
      */
     public static function init()
     {
-        // Hook into admin_menu with priority 20 to ensure collections are registered first
-        add_action('admin_menu', [__CLASS__, 'addRecordsMenu'], 20);
+        // Menu item removed — Records are now managed within the Raptor app (?page=gateway).
+        // The studio page (?page=gateway-collections) remains accessible directly.
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueueStudioApp']);
     }
 

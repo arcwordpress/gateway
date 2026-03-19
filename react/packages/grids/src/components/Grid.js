@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useGridContext } from '../context/GridContext';
 import TableView from './view-types/TableView';
-import BoardView from './view-types/BoardView';
 import ListView from './view-types/ListView';
 import CardsView from './view-types/CardsView';
 import GridFilters from './GridFilters';
@@ -21,6 +20,7 @@ import ViewSwitcher from './ViewSwitcher';
 /**
  * @param {object} props
  * @param {string} props.collectionKey
+ * @param {Array} [props.viewColumns] - Column definitions from the View object (overrides auto-generation)
  * @param {function} [props.onEdit]
  * @param {function} [props.onDelete]
  * @param {function} [props.onView]
@@ -30,14 +30,14 @@ import ViewSwitcher from './ViewSwitcher';
  * @param {boolean} [props.showFilters]
  * @param {object} [props.externalFilters]
  * @param {string} [props.viewType]
- * @param {object} [props.boardConfig]
- * @param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
+ *@param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
  * @param {string} [props.title] - Title to display in the grid toolbar
  * @param {React.ReactNode} [props.toolbarActions] - Custom toolbar actions (e.g., create button)
  * @param {React.ReactNode} [props.children]
  */
 const Grid = ({
   collectionKey,
+  viewColumns = null,
   onEdit,
   onDelete,
   onView,
@@ -46,7 +46,6 @@ const Grid = ({
   showActions = true,
   showFilters = true,
   viewType = 'table',
-  boardConfig = {},
   singleViewComponent = SingleView,
   title = '',
   toolbarActions = null,
@@ -159,11 +158,15 @@ const Grid = ({
     setDeleteConfirm(null);
   };
 
-  // Generate columns from collection configuration
+  // Generate columns: use view-defined columns if provided, otherwise auto-generate from collection
   const columns = useMemo(() => {
     if (!data || data.length === 0) return [];
 
-    const baseColumns = generateColumns(collection);
+    // viewColumns are [{field, label, sortable}] — same shape as collection.grid.columns
+    const source = viewColumns
+      ? { ...collection, grid: { columns: viewColumns } }
+      : collection;
+    const baseColumns = generateColumns(source);
 
     if (showActions && (onEdit || onDelete || onView)) {
       baseColumns.push({
@@ -206,7 +209,7 @@ const Grid = ({
     }
 
     return baseColumns;
-  }, [data, collection, showActions, onEdit, onDelete, onView]);
+  }, [data, collection, viewColumns, showActions, onEdit, onDelete, onView]);
 
   // Context value for child components
   const gridContextValue = useMemo(() => ({
@@ -268,7 +271,7 @@ const Grid = ({
             <ViewSwitcher
               currentView={currentView}
               onViewChange={setCurrentView}
-              enabledViews={['table', 'board', 'list', 'cards']}
+              enabledViews={['table', 'list', 'cards']}
             />
             <input
               type="search"
@@ -296,10 +299,6 @@ const Grid = ({
           let ViewComponent;
           let viewProps;
           switch (currentView) {
-            case 'board':
-              ViewComponent = BoardView;
-              viewProps = { config: boardConfig, onView, singleViewComponent };
-              break;
             case 'list':
               ViewComponent = ListView;
               viewProps = { onView, selectedRecord, onCloseView, singleViewComponent };

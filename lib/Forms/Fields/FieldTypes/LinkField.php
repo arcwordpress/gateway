@@ -25,16 +25,18 @@ class LinkField extends \Gateway\Field {
         [
             'name'        => 'requireTitle',
             'label'       => 'Require Link Text',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => false,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'enableTarget',
             'label'       => 'Enable Target Selection',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'addButtonText',

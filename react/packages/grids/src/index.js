@@ -1,7 +1,6 @@
 // Library entry point for using Grid as a package
 export { default as Grid } from './components/Grid';
 export { default as TableView } from './components/view-types/TableView';
-export { default as BoardView } from './components/view-types/BoardView';
 export { default as ListView } from './components/view-types/ListView';
 export { default as CardsView } from './components/view-types/CardsView';
 export { default as SingleView } from './components/SingleView';

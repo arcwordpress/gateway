@@ -18,17 +18,19 @@ class ColorPickerField extends \Gateway\Field {
         [
             'name'        => 'showSwatches',
             'label'       => 'Show Swatches',
-            'type'        => 'boolean',
+            'type'        => 'checkbox',
             'required'    => false,
             'default'     => true,
+            'group'       => 'advanced',
         ],
         [
             'name'        => 'swatches',
             'label'       => 'Custom Swatches',
-            'type'        => 'array',
+            'type'        => 'textarea',
             'required'    => false,
             'placeholder' => '#000000' . "\n" . '#FFFFFF' . "\n" . '#EF4444',
             'description' => 'One hex color per line',
+            'group'       => 'advanced',
         ],
     ];
 

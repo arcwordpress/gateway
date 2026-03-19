@@ -1,0 +1,26 @@
+{
+  "$id": "https://gateway.dev/schemas/facet-type",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Facet Type",
+  "type": "object",
+  "required": ["name", "type"],
+  "properties": {
+    "name": { "type": "string" },
+    "type": { "type": "string" },
+    "label": { "type": "string" },
+    "hint": { "type": "string" },
+    "required": { "type": "boolean", "default": false },
+    "multiple": { "type": "boolean", "default": false },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "label"],
+        "properties": {
+          "value": { "type": "string" },
+          "label": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gateway://raptor/relationship-types/has-one",
+  "title": "Has One",
+  "description": "The target model has a foreign key pointing to the source model's primary key. Returns a single model. Example: a User has one Profile — profiles.user_id → users.id.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "hasOne"
+    },
+    "methodName": {
+      "type": "string",
+      "title": "Method Name",
+      "description": "camelCase PHP method on the source model returning the single related instance. E.g. 'profile' for $user->profile().",
+      "ui": {
+        "placeholder": "profile"
+      }
+    },
+    "foreignKey": {
+      "type": "string",
+      "title": "Foreign Key",
+      "description": "Column on the target model's table that references the source. E.g. 'user_id'.",
+      "ui": {
+        "placeholder": "user_id"
+      }
+    },
+    "ownerKey": {
+      "type": "string",
+      "title": "Owner Key",
+      "description": "Primary key column on the source model's table. Usually 'id'.",
+      "ui": {
+        "placeholder": "id"
+      }
+    }
+  }
+}

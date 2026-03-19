@@ -1,0 +1,27 @@
+{
+  "$id": "https://gateway.dev/schemas/form-web",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Web Form",
+  "version": "1.0",
+  "allOf": [
+    { "$ref": "https://gateway.dev/schemas/form" },
+    {
+      "type": "object",
+      "properties": {
+        "submit": {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string", "default": "Submit" },
+            "redirect": { "type": "string", "description": "URL to redirect after submit" },
+            "success_message": { "type": "string" }
+          }
+        },
+        "validation": {
+          "type": "string",
+          "enum": ["on_submit", "on_blur"],
+          "default": "on_submit"
+        }
+      }
+    }
+  ]
+}

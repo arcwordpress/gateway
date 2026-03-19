@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "parent": 0,
+    "position": 1,
+    "type": "container"
+  },
+  {
+    "id": 2,
+    "parent": 1,
+    "position": 1,
+    "type": "container"
+  },
+  {
+    "id": 3,
+    "parent": 0,
+    "position": 2,
+    "type": "container"
+  },
+  {
+    "id": 4,
+    "parent": 0,
+    "position": 3,
+    "type": "loop",
+    "markup": "<div data-wp-interactive=\"gateway/forest\"><template data-wp-each=\"state.records\"><li data-wp-text=\"context.item.title\">ITEM TITLE</li></template></div>"
+  },
+  {
+    "id": 5,
+    "parent": 0,
+    "position": 2,
+    "type": "loop",
+    "markup": "<h2>Event List</h2>"
+  },
+  {
+    "id": 6,
+    "parent": 0,
+    "position": 4,
+    "type": "count",
+    "markup": "<div data-wp-interactive=\"gateway/forest\"><p>Total records: <strong data-wp-text=\"state.records.length\">0</strong></p></div>"
+  }
+]
