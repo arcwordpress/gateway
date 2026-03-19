@@ -34,6 +34,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         position: 'relative',
       }}
     >
+      <Handle id="top" type="target" position={Position.Top} style={{ left: '50%' }} />
       <Handle type="target" position={Position.Left} />
 
       {/* Header row: title + key + dots menu */}

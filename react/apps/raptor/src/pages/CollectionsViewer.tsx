@@ -19,6 +19,7 @@ import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
+  COLLECTIONS_GRAPH_EDGE_TYPES,
   layoutCollectionsLR,
 } from '../components/graph_node_types'
 
@@ -761,11 +762,11 @@ export default function CollectionsViewer() {
         })
 
         hierarchyEdges.push({
-          id: `e-${extId}-${col.collection_key}`,
-          source: extId,
-          target: colId,
-          type: 'straight',
-          style: { stroke: '#3f3f46' },
+          id:           `e-${extId}-${col.collection_key}`,
+          source:       extId,
+          target:       colId,
+          targetHandle: 'top',
+          type:         'busEdge',
         })
       }
     }
@@ -778,7 +779,7 @@ export default function CollectionsViewer() {
           id:         `rel-${rel.id}`,
           source:     `col-${rel.source}`,
           target:     `col-${rel.target}`,
-          label:      `${rel.type}: ${rel.methodName}`,
+          label:      REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
           labelStyle: { fill: '#71717a', fontSize: 10 },
           style:      { stroke: '#52525b', strokeDasharray: '5 3' },
           type:       'straight',
@@ -801,6 +802,7 @@ export default function CollectionsViewer() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
+            edgeTypes={COLLECTIONS_GRAPH_EDGE_TYPES}
             fitView
             fitViewOptions={{ padding: 0.25 }}
             proOptions={{ hideAttribution: true }}

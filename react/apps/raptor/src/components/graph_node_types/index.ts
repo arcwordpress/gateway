@@ -1,4 +1,4 @@
-import { type NodeTypes } from '@xyflow/react'
+import { type NodeTypes, type EdgeTypes } from '@xyflow/react'
 import { SiteNode } from './SiteNode'
 import { ExtensionsGraphNode } from './ExtensionsGraphNode'
 import { CollectionRootNode } from './CollectionRootNode'
@@ -19,6 +19,7 @@ import { FormNode } from './FormNode'
 import { CollectionsLabelNode } from './CollectionsRootNode'
 import { ExtensionNode } from './ExtensionNode'
 import { CollectionNode } from './CollectionNode'
+import { BusEdge } from './BusEdge'
 
 // Export all types
 export type {
@@ -72,6 +73,7 @@ export { FacetsNode } from './FacetsNode'
 export { CollectionsLabelNode } from './CollectionsRootNode'
 export { ExtensionNode } from './ExtensionNode'
 export { CollectionNode } from './CollectionNode'
+export { BusEdge } from './BusEdge'
 
 // Extensions graph node types registry (used by pages/Graph.tsx)
 export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
@@ -101,6 +103,11 @@ export const COLLECTIONS_GRAPH_NODE_TYPES: NodeTypes = {
   collectionsLabelNode: CollectionsLabelNode,
   extensionNode:        ExtensionNode,
   collectionNode:       CollectionNode,
+}
+
+// Export Collections Viewer edge types registry
+export const COLLECTIONS_GRAPH_EDGE_TYPES: EdgeTypes = {
+  busEdge: BusEdge,
 }
 
 // Export Collections Viewer layout utilities
