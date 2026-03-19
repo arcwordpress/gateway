@@ -33,10 +33,6 @@ export default function FormsTopLevelPage() {
     return <div className="p-8 text-zinc-400">Opening active collection forms...</div>
   }
 
-  if (isLoading) {
-    return <div className="p-8 text-zinc-400">Loading forms...</div>
-  }
-
   const groups = collections
     .map((collection) => ({
       collection,

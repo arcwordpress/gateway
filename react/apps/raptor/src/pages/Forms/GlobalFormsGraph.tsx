@@ -7,6 +7,7 @@ import {
 import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
 import { RecordsStatus, RecordsCtxValue, RecordsCtx } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
+import { GraphSkeleton } from '../../components/graph/GraphSkeleton'
 import type { Collection } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 
@@ -15,7 +16,7 @@ import { apiUrl, authHeaders } from '../../lib/api'
  */
 export function GlobalFormsGraph() {
   // Load all collections
-  const { data: collections = [] } = useQuery<Collection[]>({
+  const { data: collections = [], isLoading } = useQuery<Collection[]>({
     queryKey: ['raptor-collections-global-graph-forms'],
     queryFn: async () => {
       const listRoute = 'gateway/v1/raptor/collection'
@@ -130,19 +131,21 @@ export function GlobalFormsGraph() {
 
   return (
     <RecordsCtx.Provider value={recordsCtx}>
-      <div style={{ width: '100%', height: '100%' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          fitView
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Dots} />
-          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
-          <SharedMiniMap />
-        </ReactFlow>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {isLoading ? <GraphSkeleton /> : (
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            fitView
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background variant={BackgroundVariant.Dots} />
+            <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+            <SharedMiniMap />
+          </ReactFlow>
+        )}
       </div>
     </RecordsCtx.Provider>
   )

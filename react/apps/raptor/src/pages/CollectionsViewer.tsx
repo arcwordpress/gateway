@@ -16,7 +16,7 @@ import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders, generateId } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
-import { CollectionsGraphSkeleton } from '../components/graph/CollectionsGraphSkeleton'
+import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
   layoutWithDagre,
@@ -875,7 +875,7 @@ export default function CollectionsViewer() {
   return (
     <>
       {isLoading
-        ? <CollectionsGraphSkeleton />
+        ? <GraphSkeleton />
         : <ReactFlow
             nodes={nodes}
             edges={edges}

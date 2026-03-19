@@ -30,7 +30,7 @@ export default function FieldsTopLevelPage() {
     enabled: !activeCollectionKey,
   })
 
-  if (activeCollectionKey || isLoading) {
+  if (activeCollectionKey) {
     return <BuilderSkeleton />
   }
 
