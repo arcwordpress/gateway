@@ -1,6 +1,7 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { type RecordNodeData } from './types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export function RecordNode({ data }: NodeProps<RecordNodeData>) {
   return (
@@ -9,7 +10,7 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
         background: 'var(--node-bg)',
         border: '1px solid #334155',
         borderRadius: 8,
-        padding: '8px 12px',
+        padding: '8px 10px',
         color: '#71717a',
         fontSize: 11,
         minWidth: 110,
@@ -18,9 +19,7 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
       }}
     >
       <Handle type="target" position={Position.Top} />
-      <div style={{ fontSize: 10, color: '#52525b', marginBottom: 2 }}>
-        #{data.recordId}
-      </div>
+      <NodeTypeHeader label={`#${data.recordId}`} />
       <div style={{ color: '#d4d4d8', wordBreak: 'break-word' }}>
         {data.label}
       </div>
