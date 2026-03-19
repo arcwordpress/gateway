@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { MoreVertical } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 
 export type CollNodeType = Node<
@@ -5,162 +7,169 @@ export type CollNodeType = Node<
     title: string
     collKey: string
     isActive: boolean
-    onEdit?: () => void
-    onDelete?: () => void
+    fields?: Array<{ name: string; label?: string; type?: string }>
     onNavigateFields?: () => void
     onNavigateViews?: () => void
+    onNavigateForms?: () => void
   },
   'collectionNode'
 >
 
 export function CollectionNode({ data }: NodeProps<CollNodeType>) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const hasMenu = data.onNavigateFields || data.onNavigateViews || data.onNavigateForms
+
   return (
     <div
       style={{
         background: 'var(--node-bg)',
         border: `1px solid ${data.isActive ? '#52525b' : '#3f3f46'}`,
         borderRadius: 8,
-        padding: '8px 14px',
-        width: 180,
-        color: data.isActive ? '#e4e4e7' : '#e4e4e7',
-        fontSize: 13,
-        cursor: 'pointer',
+        padding: '8px 10px',
+        width: 200,
+        color: '#e4e4e7',
+        fontSize: 12,
         fontWeight: data.isActive ? 600 : 400,
         position: 'relative',
       }}
     >
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="target" position={Position.Left} />
 
-      <div
-        style={{
-          position: 'absolute',
-          top: 2,
-          right: 6,
-          fontSize: 8,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: '#71717a',
-          opacity: 0.7,
-        }}
-      >
-        Collection
-      </div>
-
-      <div style={{ fontWeight: data.isActive ? 600 : 500 }}>{data.title}</div>
-      <div style={{ fontSize: 11, color: data.isActive ? '#a1a1aa' : '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
-        {data.collKey}
-      </div>
-
-      {/* Navigate buttons: Fields and Views */}
-      {(data.onNavigateFields || data.onNavigateViews) && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            marginTop: 6,
-            paddingTop: 6,
-            borderTop: '1px solid #3f3f46',
-          }}
-        >
-          {data.onNavigateFields && (
-            <button
-              onClick={(e) => { e.stopPropagation(); data.onNavigateFields?.() }}
-              style={{
-                flex: 1,
-                padding: '3px 6px',
-                fontSize: 10,
-                fontWeight: 600,
-                background: '#3f3f46',
-                border: 'none',
-                borderRadius: 4,
-                color: '#a1a1aa',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
-            >
-              Fields
-            </button>
-          )}
-          {data.onNavigateViews && (
-            <button
-              onClick={(e) => { e.stopPropagation(); data.onNavigateViews?.() }}
-              style={{
-                flex: 1,
-                padding: '3px 6px',
-                fontSize: 10,
-                fontWeight: 600,
-                background: '#3f3f46',
-                border: 'none',
-                borderRadius: 4,
-                color: '#a1a1aa',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
-            >
-              Views
-            </button>
-          )}
+      {/* Header row: title + key + dots menu */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 8,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#52525b',
+              marginBottom: 3,
+            }}
+          >
+            Collection
+          </div>
+          <div style={{ fontWeight: data.isActive ? 600 : 500, color: '#e4e4e7', lineHeight: 1.2 }}>
+            {data.title}
+          </div>
+          <div style={{ fontSize: 10, color: '#52525b', fontFamily: 'monospace', marginTop: 2 }}>
+            {data.collKey}
+          </div>
         </div>
-      )}
 
-      {/* CRUD buttons: Edit and Delete */}
-      {(data.onEdit || data.onDelete) && (
+        {hasMenu && (
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o) }}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '2px 3px',
+                cursor: 'pointer',
+                color: '#52525b',
+                borderRadius: 4,
+                display: 'flex',
+                alignItems: 'center',
+                lineHeight: 1,
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}
+            >
+              <MoreVertical size={13} strokeWidth={2} />
+            </button>
+
+            {menuOpen && (
+              <>
+                {/* Backdrop to close on outside click */}
+                <div
+                  style={{ position: 'fixed', inset: 0, zIndex: 999 }}
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    zIndex: 1000,
+                    background: '#1c1c1f',
+                    border: '1px solid #3f3f46',
+                    borderRadius: 6,
+                    overflow: 'hidden',
+                    minWidth: 140,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {[
+                    { label: 'Manage Fields', fn: data.onNavigateFields },
+                    { label: 'Manage Views',  fn: data.onNavigateViews },
+                    { label: 'Manage Forms',  fn: data.onNavigateForms },
+                  ].map(({ label, fn }) =>
+                    fn ? (
+                      <button
+                        key={label}
+                        onClick={(e) => { e.stopPropagation(); fn(); setMenuOpen(false) }}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '7px 12px',
+                          background: 'none',
+                          border: 'none',
+                          borderBottom: '1px solid #27272a',
+                          color: '#d4d4d8',
+                          fontSize: 11,
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#27272a' }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
+                      >
+                        {label}
+                      </button>
+                    ) : null
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Fields list */}
+      {data.fields && data.fields.length > 0 && (
         <div
           style={{
-            display: 'flex',
-            gap: 4,
-            marginTop: 4,
-            paddingTop: 4,
-            borderTop: '1px solid #3f3f46',
+            marginTop: 8,
+            paddingTop: 6,
+            borderTop: '1px solid #27272a',
           }}
         >
-          {data.onEdit && (
-            <button
-              onClick={(e) => { e.stopPropagation(); data.onEdit?.() }}
+          {data.fields.slice(0, 10).map((field) => (
+            <div
+              key={field.name}
               style={{
-                flex: 1,
-                padding: '3px 6px',
-                fontSize: 10,
-                fontWeight: 500,
-                background: '#3f3f46',
-                border: 'none',
-                borderRadius: 4,
-                color: '#fff',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '1px 0',
               }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
             >
-              Edit
-            </button>
-          )}
-          {data.onDelete && (
-            <button
-              onClick={(e) => { e.stopPropagation(); data.onDelete?.() }}
-              style={{
-                flex: 1,
-                padding: '3px 6px',
-                fontSize: 10,
-                fontWeight: 500,
-                background: '#3f3f46',
-                border: 'none',
-                borderRadius: 4,
-                color: '#a1a1aa',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = '#52525b' }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = '#3f3f46' }}
-            >
-              Delete
-            </button>
+              <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#71717a' }}>
+                {field.label || field.name}
+              </span>
+              {field.type && (
+                <span style={{ fontSize: 9, color: '#3f3f46', fontFamily: 'monospace' }}>
+                  {field.type}
+                </span>
+              )}
+            </div>
+          ))}
+          {data.fields.length > 10 && (
+            <div style={{ fontSize: 9, color: '#3f3f46', marginTop: 2 }}>
+              +{data.fields.length - 10} more
+            </div>
           )}
         </div>
       )}

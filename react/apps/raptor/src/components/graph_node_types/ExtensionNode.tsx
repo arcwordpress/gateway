@@ -18,7 +18,7 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
         position: 'relative',
       }}
     >
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Right} />
       <Handle id="action-target" type="target" position={Position.Left} />
       <div
         style={{

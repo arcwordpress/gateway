@@ -104,4 +104,4 @@ export const COLLECTIONS_GRAPH_NODE_TYPES: NodeTypes = {
 }
 
 // Export Collections Viewer layout utilities
-export { NODE_DIMS, layoutWithDagre } from './layoutWithDagre'
+export { NODE_DIMS, layoutWithDagre, layoutCollectionsLR } from './layoutWithDagre'
