@@ -20,7 +20,7 @@ export type CollNodeType = Node<
 export function CollectionNode({ data }: NodeProps<CollNodeType>) {
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const hasMenu = data.onEdit || data.onDelete || data.onNavigateFields || data.onNavigateViews || data.onNavigateForms
+  const hasMenu = data.onEdit || data.onDelete
 
   return (
     <div
@@ -36,8 +36,11 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         position: 'relative',
       }}
     >
+      {/* Hierarchy bus edge target (top center) */}
       <Handle id="top" type="target" position={Position.Top} style={{ left: '50%' }} />
+      {/* Relationship handles */}
       <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
 
       {/* Header row: title + key + dots menu */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
@@ -85,7 +88,6 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
 
             {menuOpen && (
               <>
-                {/* Backdrop to close on outside click */}
                 <div
                   style={{ position: 'fixed', inset: 0, zIndex: 999 }}
                   onClick={() => setMenuOpen(false)}
@@ -100,16 +102,13 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                     border: '1px solid #3f3f46',
                     borderRadius: 6,
                     overflow: 'hidden',
-                    minWidth: 140,
+                    minWidth: 120,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
                   }}
                 >
                   {[
-                    { label: 'Edit',          fn: data.onEdit },
-                    { label: 'Delete',        fn: data.onDelete },
-                    { label: 'Manage Fields', fn: data.onNavigateFields },
-                    { label: 'Manage Views',  fn: data.onNavigateViews },
-                    { label: 'Manage Forms',  fn: data.onNavigateForms },
+                    { label: 'Edit',   fn: data.onEdit },
+                    { label: 'Delete', fn: data.onDelete },
                   ].map(({ label, fn }) =>
                     fn ? (
                       <button
@@ -175,6 +174,56 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
             <div style={{ fontSize: 9, color: '#3f3f46', marginTop: 2 }}>
               +{data.fields.length - 10} more
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Navigation buttons */}
+      {(data.onNavigateFields || data.onNavigateViews || data.onNavigateForms) && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 4,
+            marginTop: 8,
+            paddingTop: 6,
+            borderTop: '1px solid #27272a',
+          }}
+        >
+          {[
+            { label: 'Fields', fn: data.onNavigateFields },
+            { label: 'Views',  fn: data.onNavigateViews },
+            { label: 'Forms',  fn: data.onNavigateForms },
+          ].map(({ label, fn }) =>
+            fn ? (
+              <button
+                key={label}
+                onClick={(e) => { e.stopPropagation(); fn() }}
+                style={{
+                  flex: 1,
+                  padding: '3px 0',
+                  fontSize: 9,
+                  fontWeight: 500,
+                  background: 'none',
+                  border: '1px solid #3f3f46',
+                  borderRadius: 4,
+                  color: '#71717a',
+                  cursor: 'pointer',
+                  transition: 'color 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  const b = e.currentTarget as HTMLButtonElement
+                  b.style.color = '#a1a1aa'
+                  b.style.borderColor = '#52525b'
+                }}
+                onMouseLeave={(e) => {
+                  const b = e.currentTarget as HTMLButtonElement
+                  b.style.color = '#71717a'
+                  b.style.borderColor = '#3f3f46'
+                }}
+              >
+                {label}
+              </button>
+            ) : null
           )}
         </div>
       )}
