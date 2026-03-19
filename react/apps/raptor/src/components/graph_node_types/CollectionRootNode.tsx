@@ -6,7 +6,7 @@ export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
   return (
     <div
       style={{
-        background: '#3f3f46',
+        background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
         padding: '10px 20px',

@@ -6,7 +6,7 @@ export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
   return (
     <div
       style={{
-        background: '#27272a',
+        background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
         padding: '10px 16px',

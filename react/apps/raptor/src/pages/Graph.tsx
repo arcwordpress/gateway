@@ -1,10 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import {
   ReactFlow,
-  Handle,
-  Position,
   Controls,
   Background,
   BackgroundVariant,
@@ -13,16 +10,14 @@ import {
   type Node,
   type Edge,
   type ReactFlowInstance,
-  type NodeProps,
-  type NodeTypes,
 } from '@xyflow/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { GraphSkeleton } from '../components/graph/GraphSkeleton'
+import { EXTENSIONS_GRAPH_NODE_TYPES, layoutWithDagre } from '../components/graph_node_types'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -42,95 +37,10 @@ type PanelState =
   | { mode: 'delete'; key: string }
   | null
 
-type SiteNodeType = Node<{ onCreateExtension: () => void }, 'siteNode'>
-type ExtNodeType  = Node<{ title: string; extKey: string; onEdit: () => void; onDelete: () => void }, 'extensionNode'>
-
 function toKey(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
 }
 
-
-// ─── Custom node: Site ──────────────────────────────────────────────────────
-
-function SiteNode({ data }: NodeProps<SiteNodeType>) {
-  return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 pt-3 pb-3 flex flex-col items-center gap-3 min-w-[170px]">
-      <span className="text-neutral-300 text-xs font-semibold tracking-[0.12em] uppercase select-none">
-        Site
-      </span>
-      <button
-        onClick={data.onCreateExtension}
-        className="flex items-center gap-2 w-full justify-center px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-200 text-sm font-medium transition-colors cursor-pointer"
-      >
-        <PlusCircle size={15} strokeWidth={2} />
-        Create Extension
-      </button>
-      <Handle type="source" position={Position.Bottom} />
-    </div>
-  )
-}
-
-// ─── Custom node: Extension ─────────────────────────────────────────────────
-
-function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
-  return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl px-3 pt-3 pb-3 flex flex-col gap-2.5 w-[180px]">
-      <Handle type="target" position={Position.Top} />
-      <div>
-        <div className="text-neutral-200 text-sm font-medium leading-snug">{data.title}</div>
-        <div className="text-neutral-500 text-[11px] font-mono mt-0.5">{data.extKey}</div>
-      </div>
-      <div className="flex gap-1.5">
-        <button
-          onClick={data.onEdit}
-          className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-300 text-xs font-medium transition-colors cursor-pointer"
-        >
-          <Pencil size={11} strokeWidth={2} />
-          Edit
-        </button>
-        <button
-          onClick={data.onDelete}
-          className="flex items-center gap-1 px-2 py-1 rounded-md bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-neutral-300 text-xs font-medium transition-colors cursor-pointer"
-        >
-          <Trash2 size={11} strokeWidth={2} />
-          Delete
-        </button>
-      </div>
-      <Handle type="source" position={Position.Bottom} />
-    </div>
-  )
-}
-
-const nodeTypes: NodeTypes = {
-  siteNode:      SiteNode      as React.ComponentType<NodeProps>,
-  extensionNode: ExtensionNode as React.ComponentType<NodeProps>,
-}
-
-// ─── Dagre layout ───────────────────────────────────────────────────────────
-
-const NODE_DIMS: Record<string, { w: number; h: number }> = {
-  siteNode:      { w: 170, h: 90 },
-  extensionNode: { w: 180, h: 88 },
-}
-
-function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
-  g.setGraph({ rankdir: 'TB', nodesep: 60, ranksep: 40 })
-
-  nodes.forEach((n) => {
-    const { w, h } = NODE_DIMS[n.type ?? ''] ?? { w: 160, h: 50 }
-    g.setNode(n.id, { width: w, height: h })
-  })
-  edges.forEach((e) => g.setEdge(e.source, e.target))
-
-  Dagre.layout(g)
-
-  return nodes.map((n) => {
-    const pos = g.node(n.id)
-    const { w, h } = NODE_DIMS[n.type ?? ''] ?? { w: 160, h: 50 }
-    return { ...n, position: { x: pos.x - w / 2, y: pos.y - h / 2 } }
-  })
-}
 
 // ─── Shared panel shell ─────────────────────────────────────────────────────
 
@@ -744,7 +654,7 @@ export default function Graph() {
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onInit={setRfInstance}
-              nodeTypes={nodeTypes}
+              nodeTypes={EXTENSIONS_GRAPH_NODE_TYPES}
               fitView
               fitViewOptions={{ padding: 0.25 }}
               proOptions={{ hideAttribution: true }}

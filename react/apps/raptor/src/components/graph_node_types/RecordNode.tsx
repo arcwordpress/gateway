@@ -6,7 +6,7 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
   return (
     <div
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #334155',
         borderRadius: 8,
         padding: '8px 12px',

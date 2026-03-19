@@ -12,7 +12,7 @@ export function ViewsNode({ data }: NodeProps<ViewsNodeType>) {
   return (
     <div
       style={{
-        background: '#27272a',
+        background: 'var(--node-bg)',
         border: '1px solid #475569',
         borderRadius: 8,
         padding: '8px 12px',

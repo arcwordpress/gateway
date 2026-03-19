@@ -71,7 +71,7 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
   return (
     <div
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 10,
         color: '#e4e4e7',

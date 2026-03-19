@@ -15,7 +15,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
   return (
     <div
       style={{
-        background: data.isActive ? '#3f3f46' : '#27272a',
+        background: 'var(--node-bg)',
         border: `1px solid ${data.isActive ? '#52525b' : '#3f3f46'}`,
         borderRadius: 8,
         padding: '8px 14px',

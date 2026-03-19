@@ -27,7 +27,7 @@ function TypeBadge({ type }: { type: string }) {
 export function JsonSchemaNode({ data }: NodeProps<SchemaNodeData>) {
   return (
     <div style={{
-      background: '#18181b',
+      background: 'var(--node-bg)',
       border: '1px solid #4b5563',
       borderRadius: 10,
       minWidth: 220,

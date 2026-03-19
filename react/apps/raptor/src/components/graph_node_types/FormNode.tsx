@@ -12,7 +12,7 @@ export function FormNode({ data }: NodeProps<FormNodeType>) {
   return (
     <div
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #27272a',
         borderRadius: 8,
         padding: '8px 12px',

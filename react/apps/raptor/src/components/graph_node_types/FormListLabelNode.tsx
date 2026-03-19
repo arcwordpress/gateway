@@ -6,7 +6,7 @@ export function FormListLabelNode(_: NodeProps<FormListLabelNodeType>) {
   return (
     <div
       style={{
-        background: '#18181b',
+        background: 'var(--node-bg)',
         border: '1px solid #1e293b',
         borderRadius: 6,
         padding: '6px 12px',
