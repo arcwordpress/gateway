@@ -14,7 +14,7 @@ export function FormNode({ data, selected }: NodeProps<FormNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: selected ? '1px solid #6366f1' : '1px solid var(--node-border-color)',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         color: '#d4d4d8',

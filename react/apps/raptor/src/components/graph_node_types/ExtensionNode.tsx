@@ -34,7 +34,7 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: `1px solid ${data.isActive ? '#52525b' : 'var(--node-border-color)'}`,
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         padding: '8px 10px',
         color: data.isActive ? '#e4e4e7' : '#d4d4d8',
