@@ -1,6 +1,7 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { type ViewPreviewNodeType } from './types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 function cellValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
@@ -22,30 +23,21 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
         minWidth: 420,
         maxWidth: 560,
         overflow: 'hidden',
+        padding: '8px 10px',
       }}
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      <div
-        style={{
-          background: '#27272a',
-          borderBottom: '1px solid #1f2937',
-          padding: '8px 12px',
-        }}
-      >
-        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#71717a', marginBottom: 2 }}>
-          View Preview
-        </div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5' }}>{data.title}</div>
-      </div>
+      <NodeTypeHeader label="View Preview" />
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', marginBottom: 8 }}>{data.title}</div>
 
       {cols.length === 0 ? (
-        <div style={{ padding: '10px 12px', color: '#71717a', fontSize: 12, fontStyle: 'italic' }}>
+        <div style={{ color: '#71717a', fontSize: 12, fontStyle: 'italic' }}>
           No columns selected for this view.
         </div>
       ) : (
-        <div style={{ padding: 8 }}>
+        <div style={{ padding: '8px 0' }}>
           <div
             style={{
               display: 'grid',

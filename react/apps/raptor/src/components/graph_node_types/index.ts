@@ -1,4 +1,5 @@
 import { type NodeTypes, type EdgeTypes } from '@xyflow/react'
+import { FieldNode } from './FieldNode'
 import { SiteNode } from './SiteNode'
 import { ExtensionsGraphNode } from './ExtensionsGraphNode'
 import { CollectionRootNode } from './CollectionRootNode'
@@ -55,6 +56,8 @@ export { ExtensionsGraphNode } from './ExtensionsGraphNode'
 export type { ExtensionsGraphNodeType } from './ExtensionsGraphNode'
 
 // Export node components
+export { FieldNode } from './FieldNode'
+export type { FieldNodeType } from './FieldNode'
 export { CollectionRootNode } from './CollectionRootNode'
 export { DatabaseNode } from './DatabaseNode'
 export { RecordsContainerNode } from './RecordsContainerNode'
@@ -74,6 +77,7 @@ export { CollectionsLabelNode } from './CollectionsRootNode'
 export { ExtensionNode } from './ExtensionNode'
 export { CollectionNode } from './CollectionNode'
 export { BusEdge } from './BusEdge'
+export { NodeTypeHeader } from './NodeTypeHeader'
 
 // Extensions graph node types registry (used by pages/Graph.tsx)
 export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
@@ -103,6 +107,14 @@ export const COLLECTIONS_GRAPH_NODE_TYPES: NodeTypes = {
   collectionsLabelNode: CollectionsLabelNode,
   extensionNode:        ExtensionNode,
   collectionNode:       CollectionNode,
+}
+
+// Node types registry for /fields, /forms, /views global overview graphs
+export const GLOBAL_OVERVIEW_NODE_TYPES: NodeTypes = {
+  collectionRootNode: CollectionRootNode,
+  fieldNode:          FieldNode,
+  formNode:           FormNode,
+  viewNode:           ViewNode,
 }
 
 // Export Collections Viewer edge types registry

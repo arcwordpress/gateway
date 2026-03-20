@@ -1,4 +1,5 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type ActNodeType = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
 
@@ -11,23 +12,11 @@ export function ActionsNode({ data }: NodeProps<ActNodeType>) {
         borderRadius: 8,
         minWidth: 140,
         overflow: 'hidden',
+        padding: '8px 10px',
       }}
     >
       <Handle type="source" position={Position.Right} />
-      <div
-        style={{
-          padding: '5px 10px',
-          borderBottom: '1px solid #1e1e1e',
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: '#e4e4e7',
-          userSelect: 'none',
-        }}
-      >
-        Actions
-      </div>
+      <NodeTypeHeader label="Actions" />
       <div>
         {data.actions.map((action) => (
           <button

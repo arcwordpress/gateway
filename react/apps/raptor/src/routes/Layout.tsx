@@ -49,7 +49,8 @@ export default function Layout() {
     if (root) {
       root.style.marginLeft = '-20px'
       root.style.boxSizing = 'border-box'
-      root.style.borderLeft = '1px solid #3f3f46'
+      root.style.borderLeft = isExpanded ? '' : '1px solid #3f3f46'
+      root.style.borderTop = isExpanded ? '' : '1px solid #3f3f46'
     }
 
     // Hide WordPress footer completely
@@ -67,7 +68,7 @@ export default function Layout() {
     return () => {
       window.removeEventListener('resize', updateShellGeometry)
     }
-  }, [isWP])
+  }, [isWP, isExpanded])
 
   const shellTopOffset = isExpanded ? 0 : baseTopOffset
   const shellHeightPx = isExpanded ? window.innerHeight : baseShellHeightPx

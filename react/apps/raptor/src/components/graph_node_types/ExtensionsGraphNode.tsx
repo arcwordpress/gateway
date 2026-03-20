@@ -1,5 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type ExtensionsGraphNodeType = Node<
   { title: string; extKey: string; onEdit: () => void; onDelete: () => void },
@@ -13,7 +14,7 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
         background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 12,
-        padding: '12px',
+        padding: '8px 10px',
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
@@ -21,6 +22,7 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
       }}
     >
       <Handle type="target" position={Position.Top} />
+      <NodeTypeHeader label="Extension" />
       <div>
         <div style={{ color: '#e4e4e7', fontSize: 13, fontWeight: 500, lineHeight: 1.3 }}>
           {data.title}

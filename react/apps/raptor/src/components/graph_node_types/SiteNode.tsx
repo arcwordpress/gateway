@@ -1,5 +1,6 @@
 import { PlusCircle } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type SiteNodeType = Node<{ onCreateExtension: () => void }, 'siteNode'>
 
@@ -10,26 +11,14 @@ export function SiteNode({ data }: NodeProps<SiteNodeType>) {
         background: 'var(--node-bg)',
         border: '1px solid #3f3f46',
         borderRadius: 12,
-        padding: '12px 16px 12px',
+        padding: '8px 10px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         gap: 12,
         minWidth: 170,
       }}
     >
-      <span
-        style={{
-          color: '#a1a1aa',
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          userSelect: 'none',
-        }}
-      >
-        Site
-      </span>
+      <NodeTypeHeader label="Site" />
       <button
         onClick={data.onCreateExtension}
         style={{

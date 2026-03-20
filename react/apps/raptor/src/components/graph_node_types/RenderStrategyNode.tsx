@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { type Node } from '@xyflow/react'
 import { type ViewRender } from '../../lib/object_types'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export type RenderStrategyNodeType = Node<
   {
@@ -77,21 +78,17 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
         color: '#e4e4e7',
         minWidth: 320,
         overflow: 'hidden',
+        padding: '8px 10px',
       }}
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      {/* Header */}
-      <div style={{ background: '#18181b', borderBottom: '1px solid #27272a', padding: '8px 12px' }}>
-        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 2 }}>
-          Render Options
-        </div>
-        <div style={{ fontSize: 11, color: '#71717a' }}>Choose how to embed this view</div>
-      </div>
+      <NodeTypeHeader label="Render Options" />
+      <div style={{ fontSize: 11, color: '#71717a', marginBottom: 8 }}>Choose how to embed this view</div>
 
       {/* Saved Renders */}
-      <div style={{ padding: '10px 12px', borderBottom: '1px solid #27272a' }}>
+      <div style={{ padding: '10px 0', borderBottom: '1px solid #27272a' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#71717a', marginBottom: 6, fontWeight: 600 }}>
           Saved Renders
         </div>
@@ -150,7 +147,7 @@ export function RenderStrategyNode({ data }: NodeProps<RenderStrategyNodeType>) 
       </div>
 
       {/* New Render form */}
-      <div style={{ padding: '10px 12px' }}>
+      <div style={{ padding: '10px 0' }}>
         <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#71717a', marginBottom: 8, fontWeight: 600 }}>
           + New Render
         </div>

@@ -3,10 +3,9 @@ import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { type RecordsContNodeData } from './types'
 import { RecordsCtx } from './RecordsContext'
+import { NodeTypeHeader } from './NodeTypeHeader'
 
 export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
-  // Read live state from context — not from node data, which would freeze the
-  // function reference and give stale status after the first render.
   const { status, count, onRefresh } = useContext(RecordsCtx)
 
   const statusLine: { text: string; color: string } = {
@@ -25,7 +24,7 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
         background: 'var(--node-bg)',
         border: '1px solid #78716c',
         borderRadius: 10,
-        padding: '10px 16px',
+        padding: '8px 10px',
         color: '#d4d4d8',
         fontSize: 12,
         minWidth: 150,
@@ -34,9 +33,7 @@ export function RecordsContainerNode(_: NodeProps<RecordsContNodeData>) {
     >
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a1a1aa', marginBottom: 4, fontWeight: 600 }}>
-        Records
-      </div>
+      <NodeTypeHeader label="Records" />
       <div style={{ fontSize: 11, color: statusLine.color, marginBottom: 8 }}>
         {statusLine.text}
       </div>
