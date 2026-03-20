@@ -2,6 +2,7 @@ import Dagre from '@dagrejs/dagre'
 import { type Node, type Edge } from '@xyflow/react'
 
 export const NODE_DIMS: Record<string, { w: number; h: number }> = {
+  siteNode:      { w: 180, h: 100 },
   extensionNode: { w: 200, h: 130 },
   collectionNode: { w: 200, h: 160 },
 }

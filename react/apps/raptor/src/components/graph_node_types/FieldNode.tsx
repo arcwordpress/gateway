@@ -14,7 +14,7 @@ export function FieldNode({ data }: NodeProps<FieldNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #374151',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         color: '#d4d4d8',

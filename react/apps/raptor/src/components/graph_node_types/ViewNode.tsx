@@ -18,7 +18,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
       onClick={data.onToggle}
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #1e293b',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         color: '#d4d4d8',
@@ -29,7 +29,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.2s ease',
-        borderColor: data.isExpanded ? '#3f3f46' : '#27272a',
+        borderColor: data.isExpanded ? 'var(--node-border-color)' : '#27272a',
       }}
     >
       <Handle type="target" position={Position.Top} />

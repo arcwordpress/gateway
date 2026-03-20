@@ -29,7 +29,7 @@ export function JsonSchemaNode({ data }: NodeProps<SchemaNodeData>) {
   return (
     <div style={{
       background: 'var(--node-bg)',
-      border: '1px solid #4b5563',
+      border: '1px solid var(--node-border-color)',
       borderRadius: 10,
       minWidth: 220,
       maxWidth: 280,

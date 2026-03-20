@@ -17,7 +17,7 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #334155',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         color: '#e4e4e7',
         minWidth: 420,
