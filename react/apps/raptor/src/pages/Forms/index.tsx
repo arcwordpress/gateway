@@ -16,15 +16,15 @@ function CollectionName() {
 
 function Files() {
   return (
-    <div>
+    <div className="mt-8">
       <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
       <article>
         <ul>
           <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">Form.php</h3>
+            <h3 className="!text-white text-lg hover:underline hover:text-zinc-300 transition-colors">Form.php</h3>
           </li>
           <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">FormMigration.php</h3>
+            <h3 className="!text-white text-lg hover:underline hover:text-zinc-300 transition-colors">FormMigration.php</h3>
           </li>
         </ul>
       </article>

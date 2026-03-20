@@ -9,18 +9,19 @@ export type FormNodeType = Node<
   'formNode'
 >
 
-export function FormNode({ data }: NodeProps<FormNodeType>) {
+export function FormNode({ data, selected }: NodeProps<FormNodeType>) {
   return (
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #27272a',
+        border: selected ? '1px solid #6366f1' : '1px solid #27272a',
         borderRadius: 8,
         padding: '8px 10px',
         color: '#d4d4d8',
         fontSize: 12,
         fontWeight: 500,
         minWidth: 140,
+        cursor: 'pointer',
       }}
     >
       <Handle type="target" position={Position.Top} />

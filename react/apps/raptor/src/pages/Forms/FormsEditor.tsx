@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Form } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { HandleIcon } from '../../components/HandleIcon'
@@ -122,9 +123,12 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
   return (
     <section>
       <header className="flex justify-between items-center gap-6 mb-10">
-        <h2 className="!text-white text-xl font-medium">Form List</h2>
+        <div>
+          <h2 className="!text-white text-xl font-medium">Form List</h2>
+          <span className="text-xs text-zinc-500 font-mono">→ \Gateway\Form</span>
+        </div>
         <button
-          className="text-3xl disabled:opacity-50"
+          className="text-3xl disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !formListId}
           onClick={handleAdd}
         >
@@ -146,6 +150,7 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={forms.map((form) => form.form_key)} strategy={verticalListSortingStrategy}>
+          <div className="overflow-x-auto">
           <ul className="min-w-96 space-y-2">
             {forms.map((form) => (
               <SortableFormItem
@@ -156,6 +161,7 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
               />
             ))}
           </ul>
+          </div>
         </SortableContext>
       </DndContext>
 
@@ -187,7 +193,7 @@ function SortableFormItem({
     <li
       ref={setNodeRef}
       style={style}
-      className={`group relative flex gap-4 items-center border border-white px-4 py-2 rounded transition-opacity ${
+      className={`group relative flex gap-4 items-center border border-zinc-700 px-4 py-2 rounded transition-opacity ${
         isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
@@ -212,16 +218,18 @@ function SortableFormItem({
           ↓
         </button>
         <button
+          title="Edit form"
           onClick={() => setEditSurface({ mode: 'editForm', form })}
-          className="px-2 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
+          className="p-1.5 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-100 transition-colors"
         >
-          Edit
+          <Pencil size={13} />
         </button>
         <button
+          title="Delete form"
           onClick={() => setEditSurface({ mode: 'deleteConfirm', form })}
-          className="px-2 py-1 text-xs rounded bg-red-700 hover:bg-red-600 text-white transition-colors"
+          className="p-1.5 rounded bg-red-700 hover:bg-red-600 text-white transition-colors"
         >
-          Delete
+          <Trash2 size={13} />
         </button>
       </div>
     </li>
