@@ -129,8 +129,8 @@ function PanelShell({
 // ─── Shared form helpers ─────────────────────────────────────────────────────
 
 const baseInput =
-  'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
-  'placeholder-zinc-600 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
+  'w-full px-3 py-2 rounded-lg bg-transparent border border-zinc-800/60 text-zinc-200 ' +
+  'placeholder-zinc-700 focus:outline-none focus:border-zinc-600 ' +
   'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
 function FieldSkeleton() {

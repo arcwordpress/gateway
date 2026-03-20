@@ -37,7 +37,11 @@ export default function Layout() {
     const updateShellGeometry = () => {
       const wpAdminBar = document.getElementById('wpadminbar')
       const topbarHeight = isWP ? (wpAdminBar ? wpAdminBar.offsetHeight : 32) : 0
-      const available = Math.max(window.innerHeight - topbarHeight, 0)
+      // Subtract 1px for the border-top applied to the root in embed mode.
+      // Without this, minHeight overflows the box-sizing: border-box root by 1px,
+      // causing a scrollbar that hides the top border line.
+      const borderOffset = isExpanded ? 0 : 1
+      const available = Math.max(window.innerHeight - topbarHeight - borderOffset, 0)
       setBaseTopOffset(topbarHeight)
       setBaseShellHeightPx(available)
     }
