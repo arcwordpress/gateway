@@ -8,8 +8,8 @@ export function CollectionsTabs() {
 
   const tabCls = (active: boolean) =>
     active
-      ? 'px-4 py-2.5 text-xs font-semibold border-b-2 border-zinc-400 text-zinc-200 transition-colors'
-      : 'px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors'
+      ? 'px-4 py-2.5 text-xs font-semibold border-b-2 border-zinc-400 !text-zinc-200 transition-colors'
+      : 'px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent !text-zinc-400 hover:!text-zinc-200 transition-colors'
 
   return (
     <div className="shrink-0 flex border-b border-zinc-800" style={{ backgroundColor: 'var(--app-bg)' }}>
