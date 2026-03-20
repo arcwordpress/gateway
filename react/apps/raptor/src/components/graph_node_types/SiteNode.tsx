@@ -14,7 +14,6 @@ export function SiteNode({ data }: NodeProps<SiteNodeType>) {
         padding: '8px 10px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         gap: 12,
         minWidth: 170,
       }}
