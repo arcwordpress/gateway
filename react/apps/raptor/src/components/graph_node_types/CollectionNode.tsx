@@ -9,6 +9,7 @@ export type CollNodeType = Node<
     collKey: string
     isActive: boolean
     fields?: Array<{ name: string; label?: string; type?: string }>
+    handles?: Array<{ id: string; type: 'source' | 'target'; position: Position }>
     onEdit?: () => void
     onDelete?: () => void
     onNavigateFields?: () => void
@@ -111,7 +112,9 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         fontWeight: data.isActive ? 600 : 400,
       }}
     >
-      <Handle id="h-top" type="target" position={Position.Top} />
+      {(data.handles ?? [{ id: 'h-top', type: 'target' as const, position: Position.Top }]).map((h) => (
+        <Handle key={h.id} id={h.id} type={h.type} position={h.position} />
+      ))}
 
       <NodeTypeHeader label="Collection" menu={dotMenu} />
 
