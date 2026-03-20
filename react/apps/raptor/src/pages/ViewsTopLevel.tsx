@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
 import { GlobalViewsGraph } from './Views/GlobalViewsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
-import { TopLevelTopBar } from './Builders/TopLevelTopBar'
+import { BuilderTopBar } from './Builders/BuilderTopBar'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
 
@@ -84,7 +84,7 @@ export default function ViewsTopLevelPage() {
         </div>
       )}
 
-      <TopLevelTopBar section="views" viewMode={viewMode} onViewModeChange={setViewMode} />
+      <BuilderTopBar viewMode={viewMode} onViewModeChange={setViewMode} />
     </BuilderLayout>
   )
 }

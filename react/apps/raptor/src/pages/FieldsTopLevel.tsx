@@ -5,7 +5,7 @@ import { useWorkspace } from '../context/workspace'
 import { GlobalFieldsGraph } from './Fields/GlobalFieldsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
 import { BuilderSkeleton } from './Builders/BuilderSkeleton'
-import { TopLevelTopBar } from './Builders/TopLevelTopBar'
+import { BuilderTopBar } from './Builders/BuilderTopBar'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
 
@@ -98,7 +98,7 @@ export default function FieldsTopLevelPage() {
         </div>
       </div>
 
-      <TopLevelTopBar section="fields" viewMode={viewMode} onViewModeChange={setViewMode} />
+      <BuilderTopBar viewMode={viewMode} onViewModeChange={setViewMode} />
     </BuilderLayout>
   )
 }
