@@ -8,7 +8,7 @@ export function RecordNode({ data }: NodeProps<RecordNodeData>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #334155',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         color: '#71717a',

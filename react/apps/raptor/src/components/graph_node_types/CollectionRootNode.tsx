@@ -8,7 +8,7 @@ export function CollectionRootNode({ data }: NodeProps<CollRootNodeData>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #3f3f46',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         padding: '8px 10px',
         color: '#e4e4e7',

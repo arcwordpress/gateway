@@ -8,7 +8,7 @@ export function CollectionsLabelNode({ data }: NodeProps<CollectionsLabelNodeTyp
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #16a34a',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         padding: '8px 10px',
         color: '#e4e4e7',

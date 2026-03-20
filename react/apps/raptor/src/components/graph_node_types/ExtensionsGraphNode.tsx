@@ -12,7 +12,7 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #3f3f46',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 12,
         padding: '8px 10px',
         display: 'flex',
