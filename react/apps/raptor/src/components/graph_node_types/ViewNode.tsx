@@ -29,7 +29,7 @@ export function ViewNode({ data }: NodeProps<ViewNodeType>) {
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.2s ease',
-        borderColor: data.isExpanded ? 'var(--node-border-color)' : '#27272a',
+        borderColor: 'var(--node-border-color)',
       }}
     >
       <Handle type="target" position={Position.Top} />

@@ -103,7 +103,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: `1px solid ${data.isActive ? '#52525b' : 'var(--node-border-color)'}`,
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         width: 200,
