@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
 import { GlobalViewsGraph } from './Views/GlobalViewsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
+import { BuilderTopBar } from './Builders/BuilderTopBar'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
 
@@ -83,60 +84,7 @@ export default function ViewsTopLevelPage() {
         </div>
       )}
 
-      {/* Floating topbar with collection selector and view toggle */}
-      <div
-        className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between px-4 py-2 rounded border border-zinc-700 bg-dark backdrop-blur-sm"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-zinc-400">Collection</span>
-          <select
-            value={activeCollectionKey ?? ''}
-            onChange={(e) => {
-              const nextKey = e.target.value || null
-              navigate({
-                to: nextKey
-                  ? '/collections/$collectionKey/views'
-                  : '/views',
-                params: nextKey ? { collectionKey: nextKey } : undefined,
-              })
-            }}
-            className="h-8 min-w-[240px] rounded border border-zinc-700 bg-dark px-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-            disabled={isCollectionsLoading}
-          >
-            <option value="">All Collections</option>
-            {workspaceCollections.map((c) => (
-              <option key={c.id} value={c.collection_key}>
-                {c.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* View mode toggle on the right */}
-        <div className="flex gap-1 border border-zinc-700 rounded p-1 bg-zinc-900/50">
-          <button
-            onClick={() => setViewMode('graph')}
-            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-              viewMode === 'graph'
-                ? 'bg-zinc-700 text-white'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Graph
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-              viewMode === 'list'
-                ? 'bg-zinc-700 text-white'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            List
-          </button>
-        </div>
-      </div>
+      <BuilderTopBar viewMode={viewMode} onViewModeChange={setViewMode} />
     </BuilderLayout>
   )
 }
