@@ -588,12 +588,13 @@ export default function Graph() {
     const exts = extensions ?? []
 
     const rawNodes: Node[] = [
-      // Site root node
+      // Site root node — fixed in place
       {
         id: 'site',
         type: 'siteNode',
         data: { onCreateExtension: openCreate },
         position: { x: 0, y: 0 },
+        draggable: false,
       },
     ]
 
@@ -615,10 +616,11 @@ export default function Graph() {
       })
 
       rawEdges.push({
-        id: `e-site-${ext.key}`,
+        id:     `e-site-${ext.key}`,
         source: 'site',
         target: extId,
-        style: { stroke: '#52525b' },
+        type:   'smoothstep',
+        style:  { stroke: '#52525b' },
       })
     }
 
@@ -635,7 +637,7 @@ export default function Graph() {
 
     // Run after the new node layout is committed so first render matches Fit View.
     const frame = requestAnimationFrame(() => {
-      rfInstance.fitView({ padding: 0.25, duration: 0 })
+      rfInstance.fitView({ padding: 0.25, duration: 0, maxZoom: 1 })
     })
 
     return () => cancelAnimationFrame(frame)
@@ -656,7 +658,7 @@ export default function Graph() {
               onInit={setRfInstance}
               nodeTypes={EXTENSIONS_GRAPH_NODE_TYPES}
               fitView
-              fitViewOptions={{ padding: 0.25 }}
+              fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
               proOptions={{ hideAttribution: true }}
             >
               <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
