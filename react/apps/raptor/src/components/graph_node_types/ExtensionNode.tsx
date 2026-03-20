@@ -41,7 +41,6 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
         fontSize: 13,
         fontWeight: data.isActive ? 600 : 500,
         minWidth: 160,
-        textAlign: 'center',
       }}
     >
       <Handle type="source" position={Position.Right} />
