@@ -50,6 +50,47 @@ export function layoutCollectionsLR(nodes: Node[], edges: Edge[]): Node[] {
   return nodes.map((n) => ({ ...n, position: positions[n.id] ?? n.position }))
 }
 
+// ─── Collections dagre layout ─────────────────────────────────────────────────
+// Extension node: upper-left of its group.
+// Collections: horizontal row directly below, left-aligned with the extension.
+
+const _EXT_W   = 200
+const _EXT_H   = 140
+const _COLL_W  = 200
+const _COLL_H  = 180
+const _COLL_H_GAP   = 40   // horizontal gap between adjacent collections
+const _EXT_COL_GAP  = 40   // vertical gap from ext bottom to collection row top
+const _GROUP_GAP    = 60   // vertical gap between extension groups
+
+export function layoutCollectionsDagre(nodes: Node[], edges: Edge[]): Node[] {
+  const extToColls: Record<string, string[]> = {}
+  edges.forEach((e) => {
+    if (!extToColls[e.source]) extToColls[e.source] = []
+    extToColls[e.source].push(e.target)
+  })
+
+  const extNodes = nodes.filter((n) => n.type === 'extensionNode')
+  const positions: Record<string, { x: number; y: number }> = {}
+
+  let currentY = 0
+  for (const ext of extNodes) {
+    positions[ext.id] = { x: 0, y: currentY }
+
+    const collIds = extToColls[ext.id] ?? []
+    for (let i = 0; i < collIds.length; i++) {
+      positions[collIds[i]] = {
+        x: i * (_COLL_W + _COLL_H_GAP),
+        y: currentY + _EXT_H + _EXT_COL_GAP,
+      }
+    }
+
+    const groupH = _EXT_H + (collIds.length > 0 ? _EXT_COL_GAP + _COLL_H : 0)
+    currentY += groupH + _GROUP_GAP
+  }
+
+  return nodes.map((n) => ({ ...n, position: positions[n.id] ?? n.position }))
+}
+
 export function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
   g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 60 })

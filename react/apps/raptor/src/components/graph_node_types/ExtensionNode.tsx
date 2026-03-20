@@ -19,7 +19,6 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
       }}
     >
       <Handle type="source" position={Position.Right} />
-      <Handle id="action-target" type="target" position={Position.Left} />
       <NodeTypeHeader label="Extension" />
       <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: 4 }}>
         {data.extKey}

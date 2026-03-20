@@ -111,11 +111,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         fontWeight: data.isActive ? 600 : 400,
       }}
     >
-      {/* 4 handles — one per side. connectionMode=loose on ReactFlow lets any connect to any. */}
-      <Handle id="h-top"    type="target" position={Position.Top} />
-      <Handle id="h-right"  type="source" position={Position.Right} />
-      <Handle id="h-bottom" type="source" position={Position.Bottom} />
-      <Handle id="h-left"   type="target" position={Position.Left} />
+      <Handle id="h-top" type="target" position={Position.Top} />
 
       <NodeTypeHeader label="Collection" menu={dotMenu} />
 

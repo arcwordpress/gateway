@@ -21,7 +21,7 @@ import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 import {
   COLLECTIONS_GRAPH_NODE_TYPES,
   COLLECTIONS_GRAPH_EDGE_TYPES,
-  layoutCollectionsLR,
+  layoutCollectionsDagre,
 } from '../components/graph_node_types'
 import {
   REL_TYPES,
@@ -563,33 +563,23 @@ export default function CollectionsViewer() {
           source:       extId,
           target:       colId,
           targetHandle: 'h-top',
-          type:         'busEdge',
+          type:         'smoothstep',
         })
       }
     }
 
-    // Lay out first so we know positions for handle selection
-    const laidOut = layoutCollectionsLR(hierarchyNodes, hierarchyEdges)
-    const posMap: Record<string, { x: number; y: number }> = {}
-    laidOut.forEach((n) => { posMap[n.id] = n.position })
+    const laidOut = layoutCollectionsDagre(hierarchyNodes, hierarchyEdges)
 
-    // Relationship edges — pick handles based on relative position for clean routing
+    // Relationship edges
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
         const srcId = `col-${rel.source}`
         const tgtId = `col-${rel.target}`
-        const srcX = posMap[srcId]?.x ?? 0
-        const tgtX = posMap[tgtId]?.x ?? 0
-        // Source is left of target → right→left; otherwise left→right
-        const sourceHandle = srcX <= tgtX ? 'h-right' : 'h-left'
-        const targetHandle = srcX <= tgtX ? 'h-left'  : 'h-right'
         relEdges.push({
           id:                   `rel-${rel.id}`,
           source:               srcId,
           target:               tgtId,
-          sourceHandle,
-          targetHandle,
           label:                REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
           labelStyle:           { fill: '#a1a1aa', fontSize: 10 },
           labelBgStyle:         { fill: 'var(--node-bg)', fillOpacity: 1 },
