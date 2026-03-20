@@ -164,7 +164,6 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         <div
           style={{
             display: 'flex',
-            gap: 4,
             marginTop: 8,
             paddingTop: 6,
             borderTop: '1px solid #27272a',
@@ -174,7 +173,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
             { label: 'Fields', fn: data.onNavigateFields },
             { label: 'Views',  fn: data.onNavigateViews },
             { label: 'Forms',  fn: data.onNavigateForms },
-          ].map(({ label, fn }) =>
+          ].map(({ label, fn }, i, arr) =>
             fn ? (
               <button
                 key={label}
@@ -186,7 +185,8 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                   fontWeight: 500,
                   background: 'none',
                   border: '1px solid #3f3f46',
-                  borderRadius: 4,
+                  borderLeft: i === 0 ? '1px solid #3f3f46' : 'none',
+                  borderRadius: i === 0 ? '4px 0 0 4px' : i === arr.length - 1 ? '0 4px 4px 0' : 0,
                   color: '#71717a',
                   cursor: 'pointer',
                   transition: 'color 0.15s, border-color 0.15s',
