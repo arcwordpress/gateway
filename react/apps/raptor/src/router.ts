@@ -47,14 +47,6 @@ const indexRoute = createRoute({
   component: DashboardPage,
 })
 
-/*
-const collectionsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/$extKey/collections',
-  component: CollectionsPage,
-})
-*/
-
 const collectionsViewerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/collections',
@@ -161,7 +153,6 @@ export const recordViewRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  //collectionsRoute,
   collectionsViewerRoute,
   registeredCollectionsRoute,
   collectionsRelationshipsRoute,
