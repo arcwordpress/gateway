@@ -19,17 +19,43 @@ function CollectionName() {
 // ─── Files ────────────────────────────────────────────────────────────────────
 
 function Files() {
+  const { collection, isLoading } = useCollection()
+
+  const outputFiles = collection?.output_files
+
+  if (isLoading) {
+    return (
+      <div>
+        <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-40 rounded bg-zinc-700 animate-pulse" />
+          <div className="h-5 w-32 rounded bg-zinc-700 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!outputFiles || outputFiles.length === 0) return null
+
   return (
     <div>
       <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
       <article>
-        <ul>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">Event.php</h3>
-          </li>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">Migrate.php</h3>
-          </li>
+        <ul className="flex flex-col gap-2">
+          {outputFiles.map((file) => (
+            <li key={file.relative} className="flex gap-3 items-center">
+              <span
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${file.exists ? 'bg-green-400' : 'bg-zinc-600'}`}
+                title={file.exists ? 'File exists' : 'Not yet generated'}
+              />
+              <h3
+                className="!text-white text-lg font-mono"
+                title={file.relative}
+              >
+                {file.filename}
+              </h3>
+            </li>
+          ))}
         </ul>
       </article>
     </div>
