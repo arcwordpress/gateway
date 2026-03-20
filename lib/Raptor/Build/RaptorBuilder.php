@@ -101,7 +101,7 @@ class RaptorBuilder
         RaptorExtension $extension
     ): array {
         // Create directory structure
-        foreach (['lib/Collections', 'lib/Views', 'lib/Pages'] as $subDir) {
+        foreach (['lib/Collections', 'lib/Views', 'lib/Pages', 'schemas'] as $subDir) {
             if (!is_dir($pluginDir . '/' . $subDir)) {
                 if (!wp_mkdir_p($pluginDir . '/' . $subDir)) {
                     return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
@@ -179,11 +179,13 @@ class RaptorBuilder
             $collectionData, $pluginSlug, $namespace
         );
         $migrationResult = $this->generateAndRunMigration($collectionData, $pluginSlug, $namespace);
+        $schemaResult    = JsonSchemaGenerator::generateAndWrite($collectionData, $pluginSlug);
 
         return [
             'collection_key'  => $collection->collection_key,
             'class_generated' => $classResult,
             'migration'       => $migrationResult,
+            'schema'          => $schemaResult,
             'warnings'        => $warnings,
         ];
     }
@@ -292,6 +294,60 @@ class RaptorBuilder
         }
 
         return $this->build($extension->extension_key);
+    }
+
+    // ─── Output file helpers ──────────────────────────────────────────────────
+
+    /**
+     * Return the expected output file paths for a collection.
+     *
+     * Files may or may not exist yet (e.g. before the first build).
+     * Each entry includes 'path' (absolute), 'relative' (from plugin root),
+     * 'filename', and 'exists' (bool).
+     *
+     * @param  RaptorCollection $collection
+     * @return array|null  null if the collection has no extension
+     */
+    public function outputFilesForCollection(\Gateway\Raptor\Collections\RaptorCollection $collection): ?array
+    {
+        if (!$collection->extension_id) {
+            return null;
+        }
+
+        $collection->loadMissing('extension');
+        $extension = $collection->extension;
+        if (!$extension) {
+            return null;
+        }
+
+        $pluginSlug = $this->toPluginSlug($extension->extension_key);
+        $pluginDir  = WP_PLUGIN_DIR . '/' . $pluginSlug;
+        $className  = str_replace('_', '', ucwords($collection->collection_key, '_'));
+
+        $entries = [
+            [
+                'relative' => 'lib/Collections/' . $className . '.php',
+                'type'     => 'collection_class',
+            ],
+            [
+                'relative' => 'schemas/' . $className . '.json',
+                'type'     => 'json_schema',
+            ],
+        ];
+
+        $files = [];
+        foreach ($entries as $entry) {
+            $abs            = $pluginDir . '/' . $entry['relative'];
+            $files[] = [
+                'filename' => basename($abs),
+                'relative' => $entry['relative'],
+                'path'     => $abs,
+                'type'     => $entry['type'],
+                'exists'   => file_exists($abs),
+            ];
+        }
+
+        return $files;
     }
 
     // ─── Naming helpers ───────────────────────────────────────────────────────

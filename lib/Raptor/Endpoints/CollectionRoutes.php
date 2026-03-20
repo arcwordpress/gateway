@@ -170,11 +170,14 @@ class CollectionRoutes
             return $collection;
         }
 
+        $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
+
         return new \WP_REST_Response([
             'success'    => true,
             'collection' => array_merge(
                 CollectionController::withNested($collection)->toArray(),
-                ['fields' => $collection->getFields()],
+                ['fields'        => $collection->getFields()],
+                ['output_files'  => $outputFiles],
             ),
         ], 200);
     }
