@@ -123,4 +123,4 @@ export const COLLECTIONS_GRAPH_EDGE_TYPES: EdgeTypes = {
 }
 
 // Export Collections Viewer layout utilities
-export { NODE_DIMS, layoutWithDagre, layoutCollectionsLR } from './layoutWithDagre'
+export { NODE_DIMS, layoutWithDagre, layoutCollectionsLR, layoutCollectionsDagre } from './layoutWithDagre'
