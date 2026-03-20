@@ -15,6 +15,7 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
         borderRadius: 10,
         padding: '8px 10px',
         width: 180,
+        overflow: 'hidden',
       }}
     >
       <Handle type="target" position={Position.Top} />
@@ -25,7 +26,7 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
       <div style={{ color: '#71717a', fontSize: 10, fontFamily: 'monospace', marginTop: 2 }}>
         {data.extKey}
       </div>
-      <div style={{ display: 'flex', marginTop: 8 }}>
+      <div style={{ display: 'flex', margin: '8px -10px -8px', borderTop: '1px solid var(--node-border-color)' }}>
         {([
           { label: 'Edit',   fn: data.onEdit },
           { label: 'Delete', fn: data.onDelete },
@@ -35,13 +36,13 @@ export function ExtensionsGraphNode({ data }: NodeProps<ExtensionsGraphNodeType>
             onClick={(e) => { e.stopPropagation(); fn() }}
             style={{
               flex: 1,
-              padding: '3px 0',
+              padding: '5px 0',
               fontSize: 10,
               fontWeight: 500,
               background: 'none',
-              border: '1px solid var(--node-border-color)',
-              borderLeft: i === 0 ? '1px solid var(--node-border-color)' : 'none',
-              borderRadius: i === 0 ? '4px 0 0 4px' : i === arr.length - 1 ? '0 4px 4px 0' : 0,
+              border: 'none',
+              borderRight: i < arr.length - 1 ? '1px solid var(--node-border-color)' : 'none',
+              borderRadius: 0,
               color: '#71717a',
               cursor: 'pointer',
             }}

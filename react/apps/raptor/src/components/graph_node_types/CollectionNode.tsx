@@ -107,6 +107,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         borderRadius: 8,
         padding: '8px 10px',
         width: 200,
+        overflow: 'hidden',
         color: '#e4e4e7',
         fontSize: 12,
         fontWeight: data.isActive ? 600 : 400,
@@ -167,9 +168,8 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         <div
           style={{
             display: 'flex',
-            marginTop: 8,
-            paddingTop: 6,
-            borderTop: '1px solid #27272a',
+            margin: '8px -10px -8px',
+            borderTop: '1px solid var(--node-border-color)',
           }}
         >
           {[
@@ -183,27 +183,19 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
                 onClick={(e) => { e.stopPropagation(); fn() }}
                 style={{
                   flex: 1,
-                  padding: '3px 0',
+                  padding: '5px 0',
                   fontSize: 9,
                   fontWeight: 500,
                   background: 'none',
-                  border: '1px solid #3f3f46',
-                  borderLeft: i === 0 ? '1px solid #3f3f46' : 'none',
-                  borderRadius: i === 0 ? '4px 0 0 4px' : i === arr.length - 1 ? '0 4px 4px 0' : 0,
+                  border: 'none',
+                  borderRight: i < arr.length - 1 ? '1px solid var(--node-border-color)' : 'none',
+                  borderRadius: 0,
                   color: '#71717a',
                   cursor: 'pointer',
-                  transition: 'color 0.15s, border-color 0.15s',
+                  transition: 'color 0.15s',
                 }}
-                onMouseEnter={(e) => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.color = '#a1a1aa'
-                  b.style.borderColor = '#52525b'
-                }}
-                onMouseLeave={(e) => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.color = '#71717a'
-                  b.style.borderColor = '#3f3f46'
-                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#71717a' }}
               >
                 {label}
               </button>

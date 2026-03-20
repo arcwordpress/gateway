@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Plus } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { NodeTypeHeader } from './NodeTypeHeader'
 
@@ -54,10 +54,11 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
         <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={(e) => { e.stopPropagation(); data.onCreate?.() }}
+            title="Create Collection"
             style={{
-              padding: '3px 8px',
-              fontSize: 10,
-              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '3px 6px',
               background: 'none',
               border: 'none',
               color: '#a1a1aa',
@@ -67,7 +68,7 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#d4d4d8' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
           >
-            + Create Collection
+            <Plus size={13} strokeWidth={2} />
           </button>
         </div>
       )}
