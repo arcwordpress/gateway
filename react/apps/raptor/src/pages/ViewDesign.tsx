@@ -11,12 +11,13 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
-import { DndContext, DragOverlay, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, closestCenter, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { FacetPalette, FacetBlock } from '../components/FacetPalette'
-import { type FacetType } from '../lib/facet_types'
+import { type FacetType, type DroppedFacet } from '../lib/facet_types'
 import { apiUrl, authHeaders } from '../lib/api'
 import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
 
@@ -84,15 +85,48 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const [draftView, setDraftView] = useState<View | null>(null)
   const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
-  const [droppedFacets, setDroppedFacets] = useState<FacetType[]>([])
+  const [droppedFacets, setDroppedFacets] = useState<DroppedFacet[]>([])
 
   function handleDragStart(e: DragStartEvent) {
-    setActiveFacetType(e.active.data.current?.facetType ?? null)
+    if (e.active.data.current?.facetType) {
+      setActiveFacetType(e.active.data.current.facetType as FacetType)
+    }
   }
   function handleDragEnd(e: DragEndEvent) {
-    if (e.over?.id === 'facet-drop-zone' && activeFacetType) {
-      setDroppedFacets((prev) => [...prev, activeFacetType])
+    const { active, over } = e
+
+    // Palette drag — insert at position of hovered item, or append
+    if (active.data.current?.facetType && activeFacetType) {
+      const newFacet: DroppedFacet = {
+        id: `df_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        type: activeFacetType,
+      }
+      if (over && over.id !== 'facet-drop-zone') {
+        const overIndex = droppedFacets.findIndex((f) => f.id === over.id)
+        if (overIndex !== -1) {
+          setDroppedFacets((prev) => [
+            ...prev.slice(0, overIndex),
+            newFacet,
+            ...prev.slice(overIndex),
+          ])
+          setActiveFacetType(null)
+          return
+        }
+      }
+      if (over) setDroppedFacets((prev) => [...prev, newFacet])
+      setActiveFacetType(null)
+      return
     }
+
+    // Sort drag — reorder within drop zone
+    if (active.data.current?.droppedFacet && over && over.id !== active.id) {
+      const oldIndex = droppedFacets.findIndex((f) => f.id === active.id)
+      const newIndex = droppedFacets.findIndex((f) => f.id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        setDroppedFacets((prev) => arrayMove(prev, oldIndex, newIndex))
+      }
+    }
+
     setActiveFacetType(null)
   }
 
@@ -272,6 +306,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         title: draftView?.title ?? viewKey,
         columns: viewColumns,
         rows: previewRows,
+        droppedFacets,
+        onReorderFacets: setDroppedFacets,
       },
       position: { x: 50, y: 80 },
       style: { width: 720 },
@@ -340,7 +376,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
@@ -416,7 +452,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
@@ -455,7 +491,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         </div>
 
         {/* Facet Palette */}
-        <FacetPalette activeFacetType={activeFacetType} droppedFacets={droppedFacets} />
+        <FacetPalette activeFacetType={activeFacetType} />
 
         <DragOverlay>
           {activeFacetType ? <FacetBlock type={activeFacetType} /> : null}
