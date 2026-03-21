@@ -90,23 +90,35 @@
   fill: currentColor;
 }
 
-/* Override WordPress core select styles for collection switcher */
+/* Override WordPress core / @gateway/forms light-theme styles for form controls */
 #gateway-raptor-canvas-host select,
-#gateway-raptor-root select {
+#gateway-raptor-root select,
+#gateway-raptor-canvas-host input,
+#gateway-raptor-root input,
+#gateway-raptor-canvas-host textarea,
+#gateway-raptor-root textarea {
   background-color: var(--app-bg) !important;
-  /* background-image: none !important; */
   color: #f4f4f5 !important;
   border-color: #3f3f46 !important;
   border-radius: 0.375rem !important;
-  padding: 0.375rem 0.5rem !important;
-  min-height: auto !important;
-  line-height: normal !important;
   font-size: 0.75rem !important;
   box-shadow: none !important;
 }
 
+#gateway-raptor-canvas-host select,
+#gateway-raptor-root select {
+  /* background-image: none !important; */
+  padding: 0.375rem 0.5rem !important;
+  min-height: auto !important;
+  line-height: normal !important;
+}
+
 #gateway-raptor-canvas-host select:focus,
-#gateway-raptor-root select:focus {
+#gateway-raptor-root select:focus,
+#gateway-raptor-canvas-host input:focus,
+#gateway-raptor-root input:focus,
+#gateway-raptor-canvas-host textarea:focus,
+#gateway-raptor-root textarea:focus {
   outline: none !important;
   border-color: #71717a !important;
   box-shadow: 0 0 0 1px #71717a !important;
