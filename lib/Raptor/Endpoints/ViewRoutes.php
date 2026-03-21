@@ -136,7 +136,6 @@ class ViewRoutes
             'sort_order'    => isset($data['sort_order']) ? (int) $data['sort_order'] : 0,
             'source'        => sanitize_text_field($data['source'] ?? ''),
             'columns'       => $data['columns'] ?? [],
-            'facet_filters' => $data['facet_filters'] ?? [],
             'default_sort'  => $data['default_sort'] ?? [],
             'per_page'      => isset($data['per_page']) ? (int) $data['per_page'] : 20,
         ]);
@@ -207,10 +206,6 @@ class ViewRoutes
 
         if (isset($data['columns'])) {
             $updates['columns'] = $data['columns'];
-        }
-
-        if (isset($data['facet_filters'])) {
-            $updates['facet_filters'] = $data['facet_filters'];
         }
 
         if (isset($data['default_sort'])) {

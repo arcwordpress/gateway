@@ -79,7 +79,7 @@ abstract class Grid
      *
      * @var array
      */
-    protected $facetFilters = [];
+    protected $facets = [];
 
     /**
      * Default sort applied when no explicit sort is requested.
@@ -173,13 +173,13 @@ abstract class Grid
     // -------------------------------------------------------------------------
 
     /**
-     * Get the facet filter definitions.
+     * Get the facet definitions.
      *
      * @return array
      */
-    public function getFacetFilters(): array
+    public function getFacets(): array
     {
-        return $this->facetFilters;
+        return $this->facets;
     }
 
     // -------------------------------------------------------------------------

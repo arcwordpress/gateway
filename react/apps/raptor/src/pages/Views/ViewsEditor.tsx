@@ -38,7 +38,6 @@ export function ViewsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
           status: 'active',
           source: collectionKey,
           columns: [],
-          facet_filters: [],
           default_sort: {},
           per_page: 20,
           sort_order: views.length,

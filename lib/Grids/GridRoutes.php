@@ -103,7 +103,7 @@ class GridRoutes
             'key'          => $grid->getKey(),
             'class'        => get_class($grid),
             'columns'      => $grid->getColumns(),
-            'facetFilters' => $grid->getFacetFilters(),
+            'facets'       => $grid->getFacets(),
             'defaultSort'  => $grid->getDefaultSort(),
             'perPage'      => $grid->getPerPage(),
             'collection'   => $collection ? $collection->getKey() : null,
