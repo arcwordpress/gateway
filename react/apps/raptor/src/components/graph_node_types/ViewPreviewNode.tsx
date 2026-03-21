@@ -29,7 +29,7 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      <NodeTypeHeader label="View Preview" />
+      <NodeTypeHeader label="Desktop" />
       <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', marginBottom: 8 }}>{data.title}</div>
 
       {cols.length === 0 ? (

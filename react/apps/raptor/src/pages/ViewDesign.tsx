@@ -11,11 +11,12 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
-import { DndContext } from '@dnd-kit/core'
+import { DndContext, DragOverlay, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
 import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
-import { FacetPalette } from '../components/FacetPalette'
+import { FacetPalette, FacetBlock } from '../components/FacetPalette'
+import { type FacetType } from '../lib/facet_types'
 import { apiUrl, authHeaders } from '../lib/api'
 import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
 
@@ -82,6 +83,18 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   })
 
   const [draftView, setDraftView] = useState<View | null>(null)
+  const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
+  const [droppedFacets, setDroppedFacets] = useState<FacetType[]>([])
+
+  function handleDragStart(e: DragStartEvent) {
+    setActiveFacetType(e.active.data.current?.facetType ?? null)
+  }
+  function handleDragEnd(e: DragEndEvent) {
+    if (e.over?.id === 'facet-drop-zone' && activeFacetType) {
+      setDroppedFacets((prev) => [...prev, activeFacetType])
+    }
+    setActiveFacetType(null)
+  }
 
   useEffect(() => {
     if (view) setDraftView(view)
@@ -403,7 +416,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <DndContext>
+      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
@@ -442,7 +455,11 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         </div>
 
         {/* Facet Palette */}
-        <FacetPalette />
+        <FacetPalette activeFacetType={activeFacetType} droppedFacets={droppedFacets} />
+
+        <DragOverlay>
+          {activeFacetType ? <FacetBlock type={activeFacetType} /> : null}
+        </DragOverlay>
 
         {/* Right Panel */}
         <div className="absolute top-12 right-0 bottom-0 w-96 bg-zinc-900/95 backdrop-blur border-l border-zinc-800 overflow-y-auto z-10">
