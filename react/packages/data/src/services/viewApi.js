@@ -25,7 +25,7 @@ export const fetchViews = async (options = {}) => {
  * @param {string} key - View key
  * @param {Object} options - Request options
  * @param {Object} options.auth - Optional auth override { username, password }
- * @returns {Promise<Object>} View object { key, renderType, columns, facetFilters, defaultSort, perPage, collection }
+ * @returns {Promise<Object>} View object { key, renderType, columns, facets, defaultSort, perPage, collection }
  */
 export const fetchView = async (key, options = {}) => {
   const client = getApiClient();

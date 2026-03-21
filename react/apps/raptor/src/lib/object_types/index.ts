@@ -55,7 +55,6 @@ export type View = {
   status: string
   source: string
   columns: string[]
-  facet_filters: unknown[]
   default_sort: Record<string, unknown>
   per_page: number
   facet_list?: { id: number; facets: Facet[] } | null

@@ -10,7 +10,7 @@ abstract class View
 
     protected $columns = [];
 
-    protected $facetFilters = [];
+    protected $facets = [];
 
     protected $defaultSort = [];
 
@@ -48,9 +48,9 @@ abstract class View
         return $this->columns;
     }
 
-    public function getFacetFilters(): array
+    public function getFacets(): array
     {
-        return $this->facetFilters;
+        return $this->facets;
     }
 
     public function getDefaultSort(): array
