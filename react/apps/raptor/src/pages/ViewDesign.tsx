@@ -11,7 +11,7 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
-import { DndContext, DragOverlay, closestCenter, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, closestCenter, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
@@ -86,10 +86,17 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [draftView, setDraftView] = useState<View | null>(null)
   const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
   const [droppedFacets, setDroppedFacets] = useState<DroppedFacet[]>([])
+  const [overFacetId, setOverFacetId] = useState<string | null>(null)
 
   function handleDragStart(e: DragStartEvent) {
     if (e.active.data.current?.facetType) {
       setActiveFacetType(e.active.data.current.facetType as FacetType)
+    }
+  }
+  function handleDragOver(e: DragOverEvent) {
+    // Only track insertion position during palette drags
+    if (activeFacetType) {
+      setOverFacetId(e.over ? (e.over.id as string) : null)
     }
   }
   function handleDragEnd(e: DragEndEvent) {
@@ -115,6 +122,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       }
       if (over) setDroppedFacets((prev) => [...prev, newFacet])
       setActiveFacetType(null)
+      setOverFacetId(null)
       return
     }
 
@@ -128,6 +136,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     }
 
     setActiveFacetType(null)
+    setOverFacetId(null)
   }
 
   useEffect(() => {
@@ -307,6 +316,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         columns: viewColumns,
         rows: previewRows,
         droppedFacets,
+        overFacetId,
         onReorderFacets: setDroppedFacets,
       },
       position: { x: 50, y: 80 },
@@ -376,7 +386,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets, overFacetId])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
@@ -452,7 +462,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
