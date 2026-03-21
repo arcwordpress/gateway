@@ -34,6 +34,7 @@
 #gateway-raptor-root {
   font-family: system-ui, -apple-system, sans-serif;
   background-color: var(--app-bg);
+  --color-text: #d4d4d8; /* zinc-300 — used by @gateway/forms field__label */
 }
 
 /* React Flow dark-mode overrides scoped to the graph page */
