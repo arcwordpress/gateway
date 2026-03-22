@@ -139,8 +139,28 @@ class GatewaySettingsCollection extends \Gateway\Collection
 
         // Detect SQLite environment on retrieval
         static::retrieved(function ($model) {
-            $model->is_sqlite_environment = defined('SQLITE_DB_DROPIN_VERSION') || 
+            $model->is_sqlite_environment = defined('SQLITE_DB_DROPIN_VERSION') ||
                                            $model->db_driver === 'sqlite';
+        });
+
+        // Mirror connection-critical settings to wp_options after every save so that
+        // DatabaseConnection::boot() can read them before Eloquent is bootstrapped on
+        // the next request.  Without this sync the Raptor UI's PUT /settings/1 writes
+        // only to the gateway DB table while boot() reads get_option(), meaning the port
+        // (and driver) change never actually takes effect.
+        static::saved(function ($model) {
+            update_option('gateway_connection_port', $model->connection_port ?? '');
+
+            $db_config = get_option('gateway_db_config', []);
+            $db_config['driver'] = $model->db_driver ?? 'mysql';
+            if ($db_config['driver'] === 'sqlite' && !empty($model->sqlite_path)) {
+                $db_config['database'] = $model->sqlite_path;
+            }
+            update_option('gateway_db_config', $db_config);
+
+            if (function_exists('gateway_clear_connection_cache')) {
+                gateway_clear_connection_cache();
+            }
         });
     }
 
