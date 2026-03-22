@@ -7,6 +7,7 @@ import { type ViewPreviewNodeType } from './types'
 import { type DroppedFacet } from '../../lib/facet_types'
 import { NodeTypeHeader } from './NodeTypeHeader'
 import { useViewDnd } from '../../pages/ViewDndCtx'
+import { FacetRender } from '../FacetRender'
 
 function cellValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
@@ -17,41 +18,55 @@ function cellValue(value: unknown): string {
 // Stop ReactFlow from treating pointer-down inside the drop zone as a node drag
 function stopRF(e: React.PointerEvent) { e.stopPropagation() }
 
-function SortableFacetChip({ facet, showInsertBefore }: { facet: DroppedFacet; showInsertBefore: boolean }) {
+function SortableFacetCard({ facet, showInsertBefore }: { facet: DroppedFacet; showInsertBefore: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: facet.id,
     data: { droppedFacet: facet },
   })
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', flexShrink: 0 }}>
       {showInsertBefore && (
         <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, marginRight: 4, flexShrink: 0 }} />
       )}
       <div
         ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        onPointerDown={(e) => { e.stopPropagation(); (listeners as any)?.onPointerDown?.(e) }}
         style={{
           transform: CSS.Transform.toString(transform),
           transition,
           opacity: isDragging ? 0.4 : 1,
-          cursor: 'grab',
-          padding: '4px 8px',
-          borderRadius: 4,
-          background: '#18181b',
           border: '1px solid #3f3f46',
-          fontSize: 10,
-          fontWeight: 600,
-          color: '#a1a1aa',
-          letterSpacing: '0.03em',
-          textTransform: 'capitalize',
-          userSelect: 'none',
-          touchAction: 'none',
+          borderRadius: 6,
+          background: '#18181b',
+          overflow: 'hidden',
+          flexShrink: 0,
         }}
       >
-        {facet.type.replace(/_/g, ' ')}
+        {/* Drag handle strip — only this element carries the sortable listeners */}
+        <div
+          {...attributes}
+          {...listeners}
+          onPointerDown={(e) => { e.stopPropagation(); (listeners as any)?.onPointerDown?.(e) }}
+          style={{
+            padding: '3px 8px',
+            background: '#27272a',
+            borderBottom: '1px solid #3f3f46',
+            cursor: 'grab',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase' as const,
+            color: '#52525b',
+            userSelect: 'none' as const,
+          }}
+        >
+          ⠿ {(facet.label || facet.type).replace(/_/g, ' ')}
+        </div>
+
+        {/* Actual interactive facet component */}
+        <div style={{ padding: '6px 8px' }}>
+          <FacetRender facet={facet} />
+        </div>
       </div>
     </div>
   )
@@ -69,7 +84,7 @@ function FacetDropZone({ droppedFacets }: { droppedFacets: DroppedFacet[] }) {
       onPointerDown={stopRF}
       style={{
         marginBottom: 10,
-        minHeight: 36,
+        minHeight: 44,
         borderRadius: 6,
         border: `1px dashed ${isOver ? '#3b82f6' : '#3f3f46'}`,
         background: isOver ? 'rgba(59,130,246,0.06)' : 'transparent',
@@ -77,19 +92,19 @@ function FacetDropZone({ droppedFacets }: { droppedFacets: DroppedFacet[] }) {
         padding: '6px 8px',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: 4,
-        alignItems: 'center',
+        gap: 6,
+        alignItems: 'flex-start',
       }}
     >
       <SortableContext items={droppedFacets.map((f) => f.id)} strategy={horizontalListSortingStrategy}>
         {droppedFacets.length === 0 ? (
           <div style={{ fontSize: 10, color: isOver ? '#3b82f6' : '#3f3f46', fontStyle: 'italic', transition: 'color 0.15s' }}>
-            Drop filter types here
+            Drop facet types here
           </div>
         ) : (
           <>
             {droppedFacets.map((facet) => (
-              <SortableFacetChip
+              <SortableFacetCard
                 key={facet.id}
                 facet={facet}
                 showInsertBefore={overFacetId === facet.id}
