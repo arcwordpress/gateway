@@ -62,6 +62,10 @@ const _COLL_H       = 180
 const _COLL_H_GAP   = 40   // horizontal gap between adjacent collections
 const _EXT_COLL_GAP = 80   // horizontal gap between extension right edge and first collection
 const _GROUP_GAP    = 60   // vertical gap between extension groups
+const _COLL_DY      = 100  // how far below the extension's top edge the collection row starts;
+                            // must exceed _EXT_H/2 so the extension's right handle clears the
+                            // collection tops and edges can route straight across instead of
+                            // going up and around the collection node bodies
 
 export function layoutCollectionsDagre(nodes: Node[], edges: Edge[]): Node[] {
   const extToColls: Record<string, string[]> = {}
@@ -81,11 +85,11 @@ export function layoutCollectionsDagre(nodes: Node[], edges: Edge[]): Node[] {
     for (let i = 0; i < collIds.length; i++) {
       positions[collIds[i]] = {
         x: _EXT_W + _EXT_COLL_GAP + i * (_COLL_W + _COLL_H_GAP),
-        y: currentY,
+        y: currentY + _COLL_DY,
       }
     }
 
-    const rowH = Math.max(_EXT_H, collIds.length > 0 ? _COLL_H : _EXT_H)
+    const rowH = Math.max(_EXT_H, collIds.length > 0 ? _COLL_H + _COLL_DY : _EXT_H)
     currentY += rowH + _GROUP_GAP
   }
 
