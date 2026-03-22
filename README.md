@@ -19,8 +19,7 @@ A WordPress plugin for collection registry and data management with React-based 
 ## Installation
 
 1. Upload the plugin files to `/wp-content/plugins/gateway/`
-2. Run `composer install` to install dependencies
-3. Activate the plugin through the WordPress admin panel
+2. Activate the plugin through the WordPress admin panel
 
 ## Changelog
 
@@ -32,4 +31,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Version
 
-1.2.1-rc1
+1.2.1-rc4
