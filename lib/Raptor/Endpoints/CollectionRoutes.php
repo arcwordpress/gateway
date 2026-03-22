@@ -72,176 +72,210 @@ class CollectionRoutes
 
     public function getCollections(\WP_REST_Request $request): \WP_REST_Response
     {
-        $query = RaptorCollection::orderBy('created_at', 'asc');
+        try {
+            $query = RaptorCollection::orderBy('created_at', 'asc');
 
-        $extensionKey = $request->get_param('extension_key');
-        if ($extensionKey) {
-            $extension = RaptorExtension::where('extension_key', sanitize_text_field($extensionKey))->first();
-            if ($extension) {
-                $query->where('extension_id', $extension->id);
+            $extensionKey = $request->get_param('extension_key');
+            if ($extensionKey) {
+                $extension = RaptorExtension::where('extension_key', sanitize_text_field($extensionKey))->first();
+                if ($extension) {
+                    $query->where('extension_id', $extension->id);
+                }
             }
+
+            $collections = $query->get();
+
+            if ($request->get_param('with_nested')) {
+                $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+            }
+
+            return new \WP_REST_Response([
+                'success'     => true,
+                'collections' => $collections->toArray(),
+            ], 200);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
         }
-
-        $collections = $query->get();
-
-        if ($request->get_param('with_nested')) {
-            $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
-        }
-
-        return new \WP_REST_Response([
-            'success'     => true,
-            'collections' => $collections->toArray(),
-        ], 200);
     }
 
     public function createCollection(\WP_REST_Request $request): \WP_REST_Response
     {
-        $data  = $request->get_json_params() ?? [];
-        $title = sanitize_text_field($data['title'] ?? '');
+        try {
+            $data  = $request->get_json_params() ?? [];
+            $title = sanitize_text_field($data['title'] ?? '');
 
-        if (!$title) {
+            if (!$title) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => 'Title is required.',
+                ], 400);
+            }
+
+            // Use provided key or auto-generate from title.
+            $key = isset($data['collection_key']) && $data['collection_key']
+                ? $this->sanitizeKey($data['collection_key'])
+                : $this->titleToKey($title);
+
+            if (!$key) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => 'Could not generate a valid collection key from the given title.',
+                ], 400);
+            }
+
+            if (RaptorCollection::where('collection_key', $key)->exists()) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => "A collection with key \"{$key}\" already exists.",
+                ], 409);
+            }
+
+            $extensionId = null;
+
+            // Accept either extension_id (numeric) or extension_key (string)
+            if (!empty($data['extension_id'])) {
+                $extensionId = (int) $data['extension_id'];
+            } elseif (!empty($data['extension_key'])) {
+                $ext = RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
+                $extensionId = $ext ? $ext->id : null;
+            }
+
+            $collection = CollectionController::create([
+                'collection_key' => $key,
+                'extension_id'   => $extensionId,
+                'title'          => $title,
+                'description'    => sanitize_textarea_field($data['description'] ?? ''),
+                'status'         => 'active',
+            ]);
+
+            // Build the extension if this collection has one
+            $buildResult = null;
+            if ($extensionId) {
+                $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
+            }
+
+            $response = [
+                'success'    => true,
+                'message'    => 'Collection created.',
+                'collection' => $collection->toArray(),
+            ];
+
+            if ($buildResult) {
+                $response['build'] = $buildResult;
+            }
+
+            return new \WP_REST_Response($response, 201);
+        } catch (\Exception $e) {
             return new \WP_REST_Response([
-                'success' => false,
-                'message' => 'Title is required.',
-            ], 400);
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
         }
-
-        // Use provided key or auto-generate from title.
-        $key = isset($data['collection_key']) && $data['collection_key']
-            ? $this->sanitizeKey($data['collection_key'])
-            : $this->titleToKey($title);
-
-        if (!$key) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => 'Could not generate a valid collection key from the given title.',
-            ], 400);
-        }
-
-        if (RaptorCollection::where('collection_key', $key)->exists()) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => "A collection with key \"{$key}\" already exists.",
-            ], 409);
-        }
-
-        $extensionId = null;
-        
-        // Accept either extension_id (numeric) or extension_key (string)
-        if (!empty($data['extension_id'])) {
-            $extensionId = (int) $data['extension_id'];
-        } elseif (!empty($data['extension_key'])) {
-            $ext = RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
-            $extensionId = $ext ? $ext->id : null;
-        }
-
-        $collection = CollectionController::create([
-            'collection_key' => $key,
-            'extension_id'   => $extensionId,
-            'title'          => $title,
-            'description'    => sanitize_textarea_field($data['description'] ?? ''),
-            'status'         => 'active',
-        ]);
-
-        // Build the extension if this collection has one
-        $buildResult = null;
-        if ($extensionId) {
-            $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
-        }
-
-        $response = [
-            'success'    => true,
-            'message'    => 'Collection created.',
-            'collection' => $collection->toArray(),
-        ];
-
-        // Include build result if available
-        if ($buildResult) {
-            $response['build'] = $buildResult;
-        }
-
-        return new \WP_REST_Response($response, 201);
     }
 
     public function getCollection(\WP_REST_Request $request): \WP_REST_Response
     {
-        $collection = $this->findOrFail($request->get_param('collection_key'));
-        if ($collection instanceof \WP_REST_Response) {
-            return $collection;
+        try {
+            $collection = $this->findOrFail($request->get_param('collection_key'));
+            if ($collection instanceof \WP_REST_Response) {
+                return $collection;
+            }
+
+            $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
+
+            return new \WP_REST_Response([
+                'success'    => true,
+                'collection' => array_merge(
+                    CollectionController::withNested($collection)->toArray(),
+                    ['fields'        => $collection->getFields()],
+                    ['output_files'  => $outputFiles],
+                ),
+            ], 200);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
         }
-
-        $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
-
-        return new \WP_REST_Response([
-            'success'    => true,
-            'collection' => array_merge(
-                CollectionController::withNested($collection)->toArray(),
-                ['fields'        => $collection->getFields()],
-                ['output_files'  => $outputFiles],
-            ),
-        ], 200);
     }
 
     public function updateCollection(\WP_REST_Request $request): \WP_REST_Response
     {
-        $collection = $this->findOrFail($request->get_param('collection_key'));
-        if ($collection instanceof \WP_REST_Response) {
-            return $collection;
-        }
+        try {
+            $collection = $this->findOrFail($request->get_param('collection_key'));
+            if ($collection instanceof \WP_REST_Response) {
+                return $collection;
+            }
 
-        $data   = $request->get_json_params() ?? [];
-        $update = [];
+            $data   = $request->get_json_params() ?? [];
+            $update = [];
 
-        if (isset($data['title'])) {
-            $update['title'] = sanitize_text_field($data['title']);
-        }
-        if (isset($data['description'])) {
-            $update['description'] = sanitize_textarea_field($data['description']);
-        }
-        if (isset($data['status'])) {
-            $update['status'] = sanitize_text_field($data['status']);
-        }
-        if (array_key_exists('relationships', $data)) {
-            $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
-        }
+            if (isset($data['title'])) {
+                $update['title'] = sanitize_text_field($data['title']);
+            }
+            if (isset($data['description'])) {
+                $update['description'] = sanitize_textarea_field($data['description']);
+            }
+            if (isset($data['status'])) {
+                $update['status'] = sanitize_text_field($data['status']);
+            }
+            if (array_key_exists('relationships', $data)) {
+                $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
+            }
 
-        $collection->update($update);
+            $collection->update($update);
 
-        $buildResult = null;
-        if ($collection->extension_id) {
-            $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
+            $buildResult = null;
+            if ($collection->extension_id) {
+                $buildResult = (new RaptorBuilder())->buildFromCollection($collection);
+            }
+
+            $response = [
+                'success'    => true,
+                'collection' => $collection->fresh()->toArray(),
+            ];
+
+            if ($buildResult) {
+                $response['build'] = $buildResult;
+            }
+
+            return new \WP_REST_Response($response, 200);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
         }
-
-        $response = [
-            'success'    => true,
-            'collection' => $collection->fresh()->toArray(),
-        ];
-
-        if ($buildResult) {
-            $response['build'] = $buildResult;
-        }
-
-        return new \WP_REST_Response($response, 200);
     }
 
     public function deleteCollection(\WP_REST_Request $request): \WP_REST_Response
     {
-        $collection = $this->findOrFail($request->get_param('collection_key'));
-        if ($collection instanceof \WP_REST_Response) {
-            return $collection;
+        try {
+            $collection = $this->findOrFail($request->get_param('collection_key'));
+            if ($collection instanceof \WP_REST_Response) {
+                return $collection;
+            }
+
+            $extension = $collection->extension_id ? $collection->extension : null;
+            $collection->delete();
+
+            if ($extension) {
+                (new RaptorBuilder())->build($extension->extension_key);
+            }
+
+            return new \WP_REST_Response([
+                'success' => true,
+                'message' => 'Collection deleted.',
+            ], 200);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
         }
-
-        $extension = $collection->extension_id ? $collection->extension : null;
-        $collection->delete();
-
-        if ($extension) {
-            (new RaptorBuilder())->build($extension->extension_key);
-        }
-
-        return new \WP_REST_Response([
-            'success' => true,
-            'message' => 'Collection deleted.',
-        ], 200);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────
