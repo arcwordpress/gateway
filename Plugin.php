@@ -128,6 +128,9 @@ class Plugin
         // dbDelta() is idempotent — it only adds missing columns/keys, never drops them.
         $this->maybeRunMigrations();
 
+        // Show admin notice when DB connection failed at activation and migrations are pending.
+        add_action('admin_notices', [$this, 'showConnectionNotice']);
+
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);
 
@@ -375,7 +378,16 @@ class Plugin
         if ($stored === GATEWAY_VERSION) {
             return;
         }
+
+        // Don't attempt migrations if the DB connection is unavailable (e.g. wrong port).
+        // gateway_schema_version is intentionally left unset so the next request retries
+        // automatically once the port is corrected in Gateway Settings.
+        if (!Database\DatabaseConnection::testConnection()) {
+            return;
+        }
+
         Database\MigrationHooks::runCoreMigrations();
+        delete_transient('gateway_migrations_pending');
         update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
@@ -387,24 +399,16 @@ class Plugin
         // Auto-configure database driver on first activation
         $this->autoConfigureDatabase();
 
-        // Test database connection before attempting migrations
-        // Use testConnection() with the configured timeout from boot()
+        // If the database connection is unavailable (e.g. non-standard port in Local WP),
+        // skip migrations and defer them. An admin notice will guide the user to fix the
+        // port in Gateway Settings; reloading any admin page will then retry automatically.
         if (!Database\DatabaseConnection::testConnection()) {
-
-            $message = 'Gateway plugin activation failed: Unable to connect to database. ';
-            $message .= 'Please check your database configuration and try again.';
-
-            // For MySQL, provide additional guidance about port configuration
-            if (Database\DatabaseConnection::getDriver() === 'mysql') {
-                $message .= '<br><br>';
-                $message .= 'If you are using Local WP or another development tool with dynamic database ports, ';
-                $message .= 'you may need to configure the connection port in Gateway settings after activation. ';
-                $message .= 'Please ensure your database server is running and accessible.';
-            }
-            
+            set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
+            return;
         }
 
-        // Run core migrations via action hook
+        // Connection is healthy — clear any stale deferral flag and run migrations.
+        delete_transient('gateway_migrations_pending');
         Database\MigrationHooks::runCoreMigrations();
 
         // Create directories for request log tracking
@@ -417,6 +421,31 @@ class Plugin
 
         // Flush rewrite rules
         flush_rewrite_rules();
+    }
+
+    /**
+     * Show an admin notice when migrations were deferred due to a connection failure.
+     *
+     * The transient 'gateway_migrations_pending' is set in activate() when testConnection()
+     * fails (e.g. non-standard port in Local WP). It is cleared automatically by
+     * maybeRunMigrations() once a working connection is detected on a subsequent request.
+     */
+    public function showConnectionNotice(): void
+    {
+        if (!get_transient('gateway_migrations_pending')) {
+            return;
+        }
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        $settings_url = admin_url('admin.php?page=gateway-settings');
+        echo '<div class="notice notice-warning"><p>'
+            . '<strong>Gateway:</strong> The database connection failed during activation — '
+            . 'migrations have not run yet. '
+            . 'Please set the correct connection port in '
+            . '<a href="' . esc_url($settings_url) . '">Gateway Settings</a>, '
+            . 'then reload this page and migrations will run automatically.'
+            . '</p></div>';
     }
 
     /**
