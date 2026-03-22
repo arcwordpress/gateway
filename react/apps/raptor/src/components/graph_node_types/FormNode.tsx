@@ -9,7 +9,7 @@ export type FormNodeType = Node<
   'formNode'
 >
 
-export function FormNode({ data, selected }: NodeProps<FormNodeType>) {
+export function FormNode({ data }: NodeProps<FormNodeType>) {
   return (
     <div
       style={{
