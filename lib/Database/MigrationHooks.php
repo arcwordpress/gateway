@@ -97,32 +97,39 @@ class MigrationHooks
     }
 
     /**
-     * Run core migrations (called during plugin activation)
+     * Run core migrations (called during plugin activation and on version change).
      *
      * Creates internal Gateway tables that must exist before any request
      * attempts to read block-type or collection active/inactive state.
      *
-     * @return void
+     * @return bool True when all migrations completed without error, false otherwise.
      */
-    public static function runCoreMigrations()
+    public static function runCoreMigrations(): bool
     {
-        \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
-        \Gateway\Migrations\GatewayCollectionUserMigration::create();
-        \Gateway\Migrations\GatewaySettingsMigration::create();
-        \Gateway\Raptor\Migrations\RaptorExtensionMigration::create();
-        \Gateway\Raptor\Migrations\RaptorCollectionMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFieldListMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFieldMigration::create();
-        \Gateway\Raptor\Migrations\RaptorViewListMigration::create();
-        \Gateway\Raptor\Migrations\RaptorViewMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFormListMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFormMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFormFieldMigration::create();
-        \Gateway\Raptor\Migrations\RaptorViewRenderMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFacetListMigration::create();
-        \Gateway\Raptor\Migrations\RaptorFacetMigration::create();
+        try {
+            \Gateway\Migrations\GatewayBlockTypeUserMigration::create();
+            \Gateway\Migrations\GatewayCollectionUserMigration::create();
+            \Gateway\Migrations\GatewaySettingsMigration::create();
+            \Gateway\Raptor\Migrations\RaptorExtensionMigration::create();
+            \Gateway\Raptor\Migrations\RaptorCollectionMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFieldListMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFieldMigration::create();
+            \Gateway\Raptor\Migrations\RaptorViewListMigration::create();
+            \Gateway\Raptor\Migrations\RaptorViewMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFormListMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFormMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFormFieldMigration::create();
+            \Gateway\Raptor\Migrations\RaptorViewRenderMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFacetListMigration::create();
+            \Gateway\Raptor\Migrations\RaptorFacetMigration::create();
 
-        // Migrate existing WordPress options to the settings collection
-        \Gateway\Migrations\GatewaySettingsMigration::migrateFromOptions(false);
+            // Migrate existing WordPress options to the settings collection
+            \Gateway\Migrations\GatewaySettingsMigration::migrateFromOptions(false);
+
+            return true;
+        } catch (\Exception $e) {
+            error_log('Gateway: runCoreMigrations failed: ' . $e->getMessage());
+            return false;
+        }
     }
 }
