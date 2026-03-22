@@ -2,8 +2,7 @@
 
 namespace Gateway\Endpoints;
 
-use Gateway\Security\Encryption;
-use Gateway\Plugin;
+use Gateway\Collections\GatewaySettingsCollection;
 use Gateway\Database\DatabaseConnection;
 
 class SettingsRoute
@@ -54,99 +53,44 @@ class SettingsRoute
 
     public function get_settings(\WP_REST_Request $request)
     {
-        $encryptedKey = get_option('gateway_anthropic_api_key', '');
-        $hasKey = !empty($encryptedKey);
-
-        // Get database configuration
-        $db_config = get_option('gateway_db_config', []);
-        $driver = $db_config['driver'] ?? 'mysql';
-        $sqlite_path = $db_config['database'] ?? '';
-
-        // Check if we're in a SQLite environment (WordPress Playground detection)
-        $is_sqlite_env = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
-
-        return rest_ensure_response([
-            'port'                 => get_option('gateway_connection_port', ''),
-            'anthropic_api_key'    => '', // Never send the actual key to frontend
-            'has_anthropic_key'    => $hasKey,
-            'db_driver'            => $driver,
-            'sqlite_path'          => $sqlite_path,
-            'is_sqlite_environment' => $is_sqlite_env,
-        ]);
+        $settings = GatewaySettingsCollection::getSettings();
+        return rest_ensure_response($settings->toApiResponse());
     }
 
     public function save_settings(\WP_REST_Request $request)
     {
-        $port = $request->get_param('port');
-        $apiKey = $request->get_param('anthropic_api_key');
-        $dbDriver = $request->get_param('db_driver');
-        $sqlitePath = $request->get_param('sqlite_path');
+        $settings = GatewaySettingsCollection::getSettings();
 
-        // Track if we need to clear connection cache
-        $clear_cache = false;
-
-        // Save the port (empty string is valid for default)
         if ($request->has_param('port')) {
-            update_option('gateway_connection_port', $port);
-            $clear_cache = true; // Port change affects connection
+            $settings->connection_port = $request->get_param('port') ?? '';
         }
 
-        // Save the API key if provided
         if ($request->has_param('anthropic_api_key')) {
-            if (empty($apiKey)) {
-                // If empty, delete the stored key
-                delete_option('gateway_anthropic_api_key');
-            } else {
-                // Encrypt and store the API key
-                $encrypted = Encryption::encrypt($apiKey);
-                if ($encrypted === false) {
-                    return new \WP_Error(
-                        'encryption_failed',
-                        __('Failed to encrypt API key. Please try again.', 'gateway'),
-                        ['status' => 500]
-                    );
-                }
-                update_option('gateway_anthropic_api_key', $encrypted);
-            }
+            // The GatewaySettingsCollection saving hook handles encryption and
+            // the has_anthropic_key flag automatically.
+            $settings->anthropic_api_key = $request->get_param('anthropic_api_key') ?? '';
         }
 
-        // Save database configuration
         if ($request->has_param('db_driver')) {
-            $db_config = get_option('gateway_db_config', []);
-            $db_config['driver'] = $dbDriver;
-
-            // If switching to SQLite, set the path
-            if ($dbDriver === 'sqlite') {
-                if (!empty($sqlitePath)) {
-                    $db_config['database'] = $sqlitePath;
-                } else {
-                    // Use default path (findSQLiteDatabase method needs implementation)
-                    $db_config['database'] = WP_CONTENT_DIR . '/database/.ht.sqlite';
-                }
+            $settings->db_driver = $request->get_param('db_driver');
+            $sqlitePath = $request->get_param('sqlite_path');
+            if ($settings->db_driver === 'sqlite') {
+                $settings->sqlite_path = !empty($sqlitePath)
+                    ? $sqlitePath
+                    : WP_CONTENT_DIR . '/database/.ht.sqlite';
             }
-
-            update_option('gateway_db_config', $db_config);
-            $clear_cache = true; // Driver change affects connection
-        } elseif ($request->has_param('sqlite_path')) {
-            // Update just the SQLite path if driver is already SQLite
-            $db_config = get_option('gateway_db_config', []);
-            if (($db_config['driver'] ?? 'mysql') === 'sqlite') {
-                $db_config['database'] = $sqlitePath;
-                update_option('gateway_db_config', $db_config);
-                $clear_cache = true; // Path change affects connection
-            }
+        } elseif ($request->has_param('sqlite_path') && $settings->db_driver === 'sqlite') {
+            $settings->sqlite_path = $request->get_param('sqlite_path');
         }
 
-        // Clear connection cache if any database settings changed
-        if ($clear_cache && function_exists('gateway_clear_connection_cache')) {
-            gateway_clear_connection_cache();
-        }
+        $settings->save();
+        // The GatewaySettingsCollection saved hook clears the connection cache.
 
         return rest_ensure_response([
-            'success' => true,
-            'message' => __('Settings saved successfully.', 'gateway'),
-            'port' => $port,
-            'has_anthropic_key' => !empty($apiKey) || !empty(get_option('gateway_anthropic_api_key')),
+            'success'          => true,
+            'message'          => __('Settings saved successfully.', 'gateway'),
+            'port'             => $settings->connection_port,
+            'has_anthropic_key' => (bool) $settings->has_anthropic_key,
         ]);
     }
 

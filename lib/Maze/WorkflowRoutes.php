@@ -133,15 +133,15 @@ class WorkflowRoutes
 
     private function getAnthropicApiKey()
     {
-        // Priority 1: Check for stored encrypted key in WordPress options
-        $encryptedKey = get_option('gateway_anthropic_api_key', '');
-        if (!empty($encryptedKey)) {
-            $decrypted = Encryption::decrypt($encryptedKey);
-            if ($decrypted !== false) {
+        // Priority 1: Check for stored encrypted key in the gateway_settings table.
+        try {
+            $settings = \Gateway\Collections\GatewaySettingsCollection::getSettings();
+            $decrypted = $settings->getDecryptedApiKey();
+            if ($decrypted !== null && $decrypted !== false) {
                 return $decrypted;
             }
-            // If decryption fails, log error and continue to fallback
-            error_log('Gateway: Failed to decrypt stored Anthropic API key');
+        } catch (\Exception $e) {
+            error_log('Gateway: Failed to read API key from settings table: ' . $e->getMessage());
         }
 
         // Priority 2: Try $_SERVER
