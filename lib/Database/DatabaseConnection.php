@@ -88,6 +88,12 @@ class DatabaseConnection
                     'charset' => DB_CHARSET,
                     'collation' => $collation,
                     'prefix' => $wpdb->prefix,
+                    'options' => [
+                        // Fail fast when the host is unreachable (e.g. wrong port in Local WP).
+                        // PDO's default is ~30 s which hangs every page load until the
+                        // worker pool is exhausted.  3 s is more than enough for localhost.
+                        \PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3,
+                    ],
                 ]);
             }
 
@@ -252,16 +258,15 @@ class DatabaseConnection
     }
 
     /**
-     * Test database connection with timeout
+     * Test database connection with a lightweight query
      *
-     * This method performs a quick connection test with a configurable timeout.
-     * Note: PDO timeout is set during connection initialization in boot(),
-     * so this test will respect that timeout setting.
+     * The connect timeout is enforced by the PDO::MYSQL_ATTR_CONNECT_TIMEOUT
+     * option set in boot(), so this will return false quickly when the host
+     * is unreachable rather than blocking for 30 s.
      *
-     * @param int $timeout Timeout in seconds (default: 2) - used for documentation/reference only
-     * @return bool True if connection successful within timeout
+     * @return bool True if connection and a simple query both succeed
      */
-    public static function testConnectionWithTimeout($timeout = 2)
+    public static function testConnectionWithTimeout()
     {
         try {
             if (self::$capsule === null) {
