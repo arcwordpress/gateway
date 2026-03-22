@@ -11,11 +11,16 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
+import { DndContext, DragOverlay, pointerWithin, useSensors, useSensor, PointerSensor, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { viewDesignRoute } from '../router'
-import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
+import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo, FacetCardPreview } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
+import { FacetPalette, FacetBlock } from '../components/FacetPalette'
+import { type FacetType, type DroppedFacet } from '../lib/facet_types'
 import { apiUrl, authHeaders } from '../lib/api'
-import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
+import { Collection, Field, View, ViewRender } from '../lib/object_types'
+import { ViewDndCtx } from './ViewDndCtx'
 
 function getRowValue(row: Record<string, unknown>, column: string): unknown {
   if (column in row) return row[column]
@@ -80,6 +85,70 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   })
 
   const [draftView, setDraftView] = useState<View | null>(null)
+  const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
+  const [activeSortFacet, setActiveSortFacet] = useState<DroppedFacet | null>(null)
+  const [droppedFacets, setDroppedFacets] = useState<DroppedFacet[]>([])
+  const [overFacetId, setOverFacetId] = useState<string | null>(null)
+  const [selectedFacetId, setSelectedFacetId] = useState<string | null>(null)
+
+  // Require 5px of movement before a drag starts — prevents accidental drags from clicks
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  function handleDragStart(e: DragStartEvent) {
+    if (e.active.data.current?.facetType) {
+      setActiveFacetType(e.active.data.current.facetType as FacetType)
+    } else if (e.active.data.current?.droppedFacet) {
+      setActiveSortFacet(e.active.data.current.droppedFacet as DroppedFacet)
+    }
+  }
+  function handleDragOver(e: DragOverEvent) {
+    // Only track insertion position during palette drags
+    if (activeFacetType) {
+      setOverFacetId(e.over ? (e.over.id as string) : null)
+    }
+  }
+  function handleDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+
+    // Palette drag — insert at position of hovered item, or append
+    if (active.data.current?.facetType && activeFacetType) {
+      const newFacet: DroppedFacet = {
+        id: `df_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        type: activeFacetType,
+        parent: 0,
+        depth: 0,
+      }
+      if (over && over.id !== 'facet-drop-zone') {
+        const overIndex = droppedFacets.findIndex((f) => f.id === over.id)
+        if (overIndex !== -1) {
+          setDroppedFacets((prev) => [
+            ...prev.slice(0, overIndex),
+            newFacet,
+            ...prev.slice(overIndex),
+          ])
+          setActiveFacetType(null)
+          return
+        }
+      }
+      if (over) setDroppedFacets((prev) => [...prev, newFacet])
+      setActiveFacetType(null)
+      setOverFacetId(null)
+      return
+    }
+
+    // Sort drag — reorder within drop zone
+    if (active.data.current?.droppedFacet && over && over.id !== active.id) {
+      const oldIndex = droppedFacets.findIndex((f) => f.id === active.id)
+      const newIndex = droppedFacets.findIndex((f) => f.id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        setDroppedFacets((prev) => arrayMove(prev, oldIndex, newIndex))
+      }
+    }
+
+    setActiveFacetType(null)
+    setActiveSortFacet(null)
+    setOverFacetId(null)
+  }
 
   useEffect(() => {
     if (view) setDraftView(view)
@@ -156,49 +225,52 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   }, [deleteRenderMutation])
 
   // ── Facets CRUD ───────────────────────────────────────────────────────────
-  const { data: facets, refetch: refetchFacets } = useQuery<Facet[]>({
+  const { refetch: refetchFacets } = useQuery<{ id: number }[]>({
     queryKey: ['view-facets', viewKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), { headers: authHeaders() })
       if (!res.ok) return []
-      const json = await res.json() as { facets?: Facet[] }
+      const json = await res.json() as { facets?: { id: number }[] }
       return json.facets ?? []
     },
     enabled: !!viewKey,
   })
 
   const addFacetMutation = useMutation({
-    mutationFn: async (data: { label: string; field_name: string; facet_type: string }) => {
+    mutationFn: async (data: { facetId: string; label: string; field_name: string; facet_type: string }) => {
+      const { facetId, ...payload } = data
       const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
-      const json = await res.json() as { success: boolean; message?: string }
+      const json = await res.json() as { success: boolean; message?: string; facet?: { id: number } }
       if (!json.success) throw new Error(json.message ?? 'Failed to save facet')
+      return { facetId, dbId: json.facet?.id }
     },
-    onSuccess: () => { void refetchFacets() },
+    onSuccess: ({ facetId, dbId }) => {
+      if (dbId) {
+        setDroppedFacets((prev) =>
+          prev.map((f) => f.id === facetId ? { ...f, dbId } : f)
+        )
+      }
+      void refetchFacets()
+    },
   })
 
-  const deleteFacetMutation = useMutation({
-    mutationFn: async (facetId: number) => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets/${facetId}`), {
-        method: 'DELETE',
-        headers: authHeaders(),
-      })
-      const json = await res.json() as { success: boolean }
-      if (!json.success) throw new Error('Failed to delete facet')
-    },
-    onSuccess: () => { void refetchFacets() },
-  })
-
-  const handleAddFacet = useCallback((data: { label: string; field_name: string; facet_type: string }) => {
-    addFacetMutation.mutate(data)
+  const handleSaveFacet = useCallback((facetId: string, data: { label: string; field_name: string; facet_type: string }) => {
+    // Optimistically store fieldName/label in local state so Layers shows the label immediately
+    setDroppedFacets((prev) =>
+      prev.map((f) => f.id === facetId ? { ...f, fieldName: data.field_name, label: data.label || undefined } : f)
+    )
+    addFacetMutation.mutate({ facetId, ...data })
   }, [addFacetMutation])
 
-  const handleDeleteFacet = useCallback((id: number) => {
-    deleteFacetMutation.mutate(id)
-  }, [deleteFacetMutation])
+  const handleUpdateFacet = useCallback((id: string, updates: Partial<Pick<DroppedFacet, 'fieldName' | 'label'>>) => {
+    setDroppedFacets((prev) =>
+      prev.map((f) => f.id === id ? { ...f, ...updates } : f)
+    )
+  }, [])
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collectionKey],
@@ -247,16 +319,18 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const strategies = renderStrategies ?? []
   const saves = viewRenders ?? []
-  const savedFacets = facets ?? []
 
   const computedNodes: Node[] = [
     {
       id: 'view-preview',
       type: 'viewPreviewNode',
+      dragHandle: '.node-drag-handle',
       data: {
         title: draftView?.title ?? viewKey,
         columns: viewColumns,
         rows: previewRows,
+        droppedFacets,
+        onReorderFacets: setDroppedFacets,
       },
       position: { x: 50, y: 80 },
       style: { width: 720 },
@@ -276,18 +350,6 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         isSaving: saveRenderMutation.isPending,
       },
       position: { x: 240, y: 520 },
-    },
-    {
-      id: 'facets-config',
-      type: 'facetsNode',
-      data: {
-        facets: savedFacets,
-        availableFields: allFields,
-        onAddFacet: handleAddFacet,
-        onDeleteFacet: handleDeleteFacet,
-        isSaving: addFacetMutation.isPending,
-      },
-      position: { x: 700, y: 520 },
     },
     ...(activeEngine
       ? [
@@ -325,7 +387,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
@@ -401,6 +463,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
+      <ViewDndCtx.Provider value={{ overFacetId, droppedFacets, selectedFacetId, onSelectFacet: setSelectedFacetId, onUpdateFacet: handleUpdateFacet }}>
+      <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
@@ -437,6 +501,19 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
             <SharedMiniMap />
           </ReactFlow>
         </div>
+
+        {/* Facet Palette */}
+        <FacetPalette
+          activeFacetType={activeFacetType}
+          availableFields={allFields}
+          onSaveFacet={handleSaveFacet}
+          isSaving={addFacetMutation.isPending}
+        />
+
+        <DragOverlay dropAnimation={null}>
+          {activeFacetType ? <FacetBlock type={activeFacetType} /> : null}
+          {activeSortFacet ? <FacetCardPreview facet={activeSortFacet} /> : null}
+        </DragOverlay>
 
         {/* Right Panel */}
         <div className="absolute top-12 right-0 bottom-0 w-96 bg-zinc-900/95 backdrop-blur border-l border-zinc-800 overflow-y-auto z-10">
@@ -510,6 +587,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
           </div>
         </div>
       </div>
+      </DndContext>
+      </ViewDndCtx.Provider>
     </RecordsCtx.Provider>
   )
 }

@@ -19,11 +19,10 @@ class RaptorView extends \Gateway\Collection
     ];
 
     protected $casts = [
-        'columns' => 'array',
-        'facet_filters' => 'array',
+        'columns'      => 'array',
         'default_sort' => 'array',
-        'sort_order' => 'integer',
-        'per_page' => 'integer',
+        'sort_order'   => 'integer',
+        'per_page'     => 'integer',
     ];
 
     public function getFillable(): array
@@ -37,7 +36,6 @@ class RaptorView extends \Gateway\Collection
             'sort_order',
             'source',
             'columns',
-            'facet_filters',
             'default_sort',
             'per_page',
         ];

@@ -97,7 +97,7 @@ class ViewRoutes
             'renderTypes'  => $renderTypes,
             'class'        => get_class($view),
             'columns'      => $view->getColumns(),
-            'facetFilters' => $view->getFacetFilters(),
+            'facets'       => $view->getFacets(),
             'defaultSort'  => $view->getDefaultSort(),
             'perPage'      => $view->getPerPage(),
             'collection'   => $collection ? $collection->getKey() : null,

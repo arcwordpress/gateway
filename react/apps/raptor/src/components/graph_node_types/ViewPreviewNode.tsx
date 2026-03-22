@@ -1,12 +1,167 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { type ViewPreviewNodeType } from './types'
+import { type DroppedFacet } from '../../lib/facet_types'
 import { NodeTypeHeader } from './NodeTypeHeader'
+import { useViewDnd } from '../../pages/ViewDndCtx'
+import { FacetRender } from '../FacetRender'
 
 function cellValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
+}
+
+// Stop ReactFlow from treating pointer-down inside the drop zone as a node drag
+function stopRF(e: React.PointerEvent) { e.stopPropagation() }
+
+// Non-interactive card shell — used as the DragOverlay clone during sort drags
+export function FacetCardPreview({ facet }: { facet: DroppedFacet }) {
+  return (
+    <div
+      style={{
+        border: '1px solid #3f3f46',
+        borderRadius: 6,
+        background: '#18181b',
+        overflow: 'hidden',
+        flexShrink: 0,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+      }}
+    >
+      <div
+        style={{
+          padding: '3px 8px',
+          background: '#27272a',
+          borderBottom: '1px solid #3f3f46',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase' as const,
+          color: '#52525b',
+          userSelect: 'none' as const,
+          cursor: 'grabbing',
+        }}
+      >
+        ⠿ {(facet.label || facet.type).replace(/_/g, ' ')}
+      </div>
+      <div style={{ padding: '6px 8px' }}>
+        <FacetRender facet={facet} />
+      </div>
+    </div>
+  )
+}
+
+function SortableFacetCard({ facet, showInsertBefore }: { facet: DroppedFacet; showInsertBefore: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: facet.id,
+    data: { droppedFacet: facet },
+  })
+
+  return (
+    // setNodeRef on the outermost element so dnd-kit measures the correct flex-item rect
+    <div
+      ref={setNodeRef}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        flexShrink: 0,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        // Ghost is invisible — DragOverlay shows the clone; spacer keeps layout intact
+        opacity: isDragging ? 0 : 1,
+      }}
+    >
+      {showInsertBefore && (
+        <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, marginRight: 4, flexShrink: 0 }} />
+      )}
+      <div
+        style={{
+          border: '1px solid #3f3f46',
+          borderRadius: 6,
+          background: '#18181b',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
+      >
+        {/* Drag handle strip — only this element carries the sortable listeners */}
+        <div
+          {...attributes}
+          {...listeners}
+          onPointerDown={(e) => { e.stopPropagation(); (listeners as any)?.onPointerDown?.(e) }}
+          style={{
+            padding: '3px 8px',
+            background: '#27272a',
+            borderBottom: '1px solid #3f3f46',
+            cursor: 'grab',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase' as const,
+            color: '#52525b',
+            userSelect: 'none' as const,
+          }}
+        >
+          ⠿ {(facet.label || facet.type).replace(/_/g, ' ')}
+        </div>
+
+        {/* Actual interactive facet component */}
+        <div style={{ padding: '6px 8px' }}>
+          <FacetRender facet={facet} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FacetDropZone({ droppedFacets }: { droppedFacets: DroppedFacet[] }) {
+  const { overFacetId } = useViewDnd()
+  const { setNodeRef, isOver } = useDroppable({ id: 'facet-drop-zone' })
+
+  const showAppendIndicator = isOver && (overFacetId === 'facet-drop-zone' || overFacetId === null)
+
+  return (
+    <div
+      ref={setNodeRef}
+      onPointerDown={stopRF}
+      style={{
+        marginBottom: 10,
+        minHeight: 44,
+        borderRadius: 6,
+        border: `1px dashed ${isOver ? '#3b82f6' : '#3f3f46'}`,
+        background: isOver ? 'rgba(59,130,246,0.06)' : 'transparent',
+        transition: 'border-color 0.15s, background 0.15s',
+        padding: '6px 8px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 6,
+        alignItems: 'flex-start',
+      }}
+    >
+      <SortableContext items={droppedFacets.map((f) => f.id)} strategy={rectSortingStrategy}>
+        {droppedFacets.length === 0 ? (
+          <div style={{ fontSize: 10, color: isOver ? '#3b82f6' : '#3f3f46', fontStyle: 'italic', transition: 'color 0.15s' }}>
+            Drop facet types here
+          </div>
+        ) : (
+          <>
+            {droppedFacets.map((facet) => (
+              <SortableFacetCard
+                key={facet.id}
+                facet={facet}
+                showInsertBefore={overFacetId === facet.id}
+              />
+            ))}
+            {showAppendIndicator && (
+              <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, flexShrink: 0 }} />
+            )}
+          </>
+        )}
+      </SortableContext>
+    </div>
+  )
 }
 
 export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
@@ -17,7 +172,7 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #334155',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         color: '#e4e4e7',
         minWidth: 420,
@@ -29,8 +184,10 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      <NodeTypeHeader label="View Preview" />
+      <NodeTypeHeader label="Desktop" />
       <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', marginBottom: 8 }}>{data.title}</div>
+
+      <FacetDropZone droppedFacets={data.droppedFacets} />
 
       {cols.length === 0 ? (
         <div style={{ color: '#71717a', fontSize: 12, fontStyle: 'italic' }}>

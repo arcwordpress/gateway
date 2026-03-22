@@ -8,7 +8,7 @@ export function FormListLabelNode(_: NodeProps<FormListLabelNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #1e293b',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 6,
         padding: '8px 10px',
         minWidth: 100,
@@ -17,6 +17,7 @@ export function FormListLabelNode(_: NodeProps<FormListLabelNodeType>) {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
       <NodeTypeHeader label="Form List" />
+      <div style={{ fontSize: 10, color: '#52525b', fontFamily: 'monospace', marginTop: 2 }}>→ \Gateway\Form</div>
     </div>
   )
 }

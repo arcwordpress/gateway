@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { MoreVertical } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { NodeTypeHeader } from './NodeTypeHeader'
+import { NodeMenu, type NodeMenuItem } from './NodeMenu'
 
 export type CollNodeType = Node<
   {
@@ -9,6 +8,7 @@ export type CollNodeType = Node<
     collKey: string
     isActive: boolean
     fields?: Array<{ name: string; label?: string; type?: string }>
+    handles?: Array<{ id: string; type: 'source' | 'target'; position: Position }>
     onEdit?: () => void
     onDelete?: () => void
     onNavigateFields?: () => void
@@ -19,103 +19,30 @@ export type CollNodeType = Node<
 >
 
 export function CollectionNode({ data }: NodeProps<CollNodeType>) {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const menuItems = [
+    { label: 'Edit',   fn: data.onEdit },
+    { label: 'Delete', fn: data.onDelete, danger: true },
+  ].filter((item): item is NodeMenuItem => !!item.fn)
 
-  const hasMenu = data.onEdit || data.onDelete
-
-  const dotMenu = hasMenu ? (
-    <div style={{ position: 'relative' }}>
-      <button
-        onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o) }}
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: '2px 3px',
-          cursor: 'pointer',
-          color: '#52525b',
-          borderRadius: 4,
-          display: 'flex',
-          alignItems: 'center',
-          lineHeight: 1,
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#52525b' }}
-      >
-        <MoreVertical size={13} strokeWidth={2} />
-      </button>
-
-      {menuOpen && (
-        <>
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 999 }}
-            onClick={() => setMenuOpen(false)}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              zIndex: 1000,
-              background: '#1c1c1f',
-              border: '1px solid #3f3f46',
-              borderRadius: 6,
-              overflow: 'hidden',
-              minWidth: 120,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-            }}
-          >
-            {[
-              { label: 'Edit',   fn: data.onEdit },
-              { label: 'Delete', fn: data.onDelete },
-            ].map(({ label, fn }) =>
-              fn ? (
-                <button
-                  key={label}
-                  onClick={(e) => { e.stopPropagation(); fn(); setMenuOpen(false) }}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '7px 12px',
-                    background: 'none',
-                    border: 'none',
-                    borderBottom: '1px solid #27272a',
-                    color: '#d4d4d8',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#27272a' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'none' }}
-                >
-                  {label}
-                </button>
-              ) : null
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  ) : undefined
+  const dotMenu = menuItems.length > 0 ? <NodeMenu items={menuItems} /> : undefined
 
   return (
     <div
       style={{
         background: 'var(--node-bg)',
-        border: `1px solid ${data.isActive ? '#52525b' : '#3f3f46'}`,
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         padding: '8px 10px',
         width: 200,
+        overflow: 'hidden',
         color: '#e4e4e7',
         fontSize: 12,
         fontWeight: data.isActive ? 600 : 400,
       }}
     >
-      {/* 4 handles — one per side. connectionMode=loose on ReactFlow lets any connect to any. */}
-      <Handle id="h-top"    type="target" position={Position.Top} />
-      <Handle id="h-right"  type="source" position={Position.Right} />
-      <Handle id="h-bottom" type="source" position={Position.Bottom} />
-      <Handle id="h-left"   type="target" position={Position.Left} />
+      {(data.handles ?? [{ id: 'h-top', type: 'target' as const, position: Position.Top }]).map((h) => (
+        <Handle key={h.id} id={h.id} type={h.type} position={h.position} />
+      ))}
 
       <NodeTypeHeader label="Collection" menu={dotMenu} />
 
@@ -168,43 +95,34 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         <div
           style={{
             display: 'flex',
-            gap: 4,
-            marginTop: 8,
-            paddingTop: 6,
-            borderTop: '1px solid #27272a',
+            margin: '8px -10px -8px',
+            borderTop: '1px solid var(--node-border-color)',
           }}
         >
           {[
             { label: 'Fields', fn: data.onNavigateFields },
             { label: 'Views',  fn: data.onNavigateViews },
             { label: 'Forms',  fn: data.onNavigateForms },
-          ].map(({ label, fn }) =>
+          ].map(({ label, fn }, i, arr) =>
             fn ? (
               <button
                 key={label}
                 onClick={(e) => { e.stopPropagation(); fn() }}
                 style={{
                   flex: 1,
-                  padding: '3px 0',
+                  padding: '5px 0',
                   fontSize: 9,
                   fontWeight: 500,
                   background: 'none',
-                  border: '1px solid #3f3f46',
-                  borderRadius: 4,
+                  border: 'none',
+                  borderRight: i < arr.length - 1 ? '1px solid var(--node-border-color)' : 'none',
+                  borderRadius: 0,
                   color: '#71717a',
                   cursor: 'pointer',
-                  transition: 'color 0.15s, border-color 0.15s',
+                  transition: 'color 0.15s',
                 }}
-                onMouseEnter={(e) => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.color = '#a1a1aa'
-                  b.style.borderColor = '#52525b'
-                }}
-                onMouseLeave={(e) => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.color = '#71717a'
-                  b.style.borderColor = '#3f3f46'
-                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#71717a' }}
               >
                 {label}
               </button>

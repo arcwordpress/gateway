@@ -2,6 +2,7 @@ import SelectFilter from './filter-types/select/SelectFilter';
 import TextFilter from './filter-types/text/TextFilter';
 import RangeFilter from './filter-types/range/RangeFilter';
 import DateRangeFilter from './filter-types/date_range/DateRangeFilter';
+import CheckboxFacet from './filter-types/checkbox/CheckboxFacet';
 
 /**
  * Filter Component
@@ -73,6 +74,16 @@ const Filter = ({ filter, value, onChange, className = '' }) => {
           onChange={onChange}
           startPlaceholder={placeholder?.start || 'Start Date'}
           endPlaceholder={placeholder?.end || 'End Date'}
+          className={className}
+        />
+      );
+
+    case 'checkbox':
+      return (
+        <CheckboxFacet
+          label={label}
+          value={value || false}
+          onChange={onChange}
           className={className}
         />
       );

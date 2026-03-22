@@ -3,6 +3,7 @@ import { type NodeProps } from '@xyflow/react'
 import { type Node } from '@xyflow/react'
 import { type Facet, type Field } from '../../lib/object_types'
 import { NodeTypeHeader } from './NodeTypeHeader'
+import { FACET_TYPES } from '../../lib/facet_types'
 
 export type FacetsNodeType = Node<
   {
@@ -14,8 +15,6 @@ export type FacetsNodeType = Node<
   },
   'facetsNode'
 >
-
-const FACET_TYPES = ['text', 'select', 'checkbox', 'range', 'date_range'] as const
 
 function FacetTypeButton({
   type, isActive, onClick,
@@ -61,7 +60,7 @@ export function FacetsNode({ data }: NodeProps<FacetsNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #3f3f46',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 10,
         color: '#e4e4e7',
         minWidth: 300,

@@ -33,6 +33,8 @@ export type Facet = {
   facet_type: string
   config?: Record<string, unknown>
   sort_order: number
+  parent: number | 0   // 0 = root level; matches PHP Block.php convention
+  depth: number        // 0 = top level … 5 = 6th level
 }
 
 // ─── ViewRender ───────────────────────────────────────────────────────────────
@@ -55,7 +57,6 @@ export type View = {
   status: string
   source: string
   columns: string[]
-  facet_filters: unknown[]
   default_sort: Record<string, unknown>
   per_page: number
   facet_list?: { id: number; facets: Facet[] } | null

@@ -8,7 +8,7 @@ export function ActionsNode({ data }: NodeProps<ActNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #1e1e1e',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 8,
         minWidth: 140,
         overflow: 'hidden',

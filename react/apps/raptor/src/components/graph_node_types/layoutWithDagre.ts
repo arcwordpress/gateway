@@ -2,6 +2,7 @@ import Dagre from '@dagrejs/dagre'
 import { type Node, type Edge } from '@xyflow/react'
 
 export const NODE_DIMS: Record<string, { w: number; h: number }> = {
+  siteNode:      { w: 180, h: 100 },
   extensionNode: { w: 200, h: 130 },
   collectionNode: { w: 200, h: 160 },
 }
@@ -45,6 +46,47 @@ export function layoutCollectionsLR(nodes: Node[], edges: Edge[]): Node[] {
 
     const rowH = Math.max(EXT_H, collIds.length > 0 ? COLL_H + COLL_DY : EXT_H)
     currentY += rowH + ROW_GAP
+  }
+
+  return nodes.map((n) => ({ ...n, position: positions[n.id] ?? n.position }))
+}
+
+// ─── Collections dagre layout ─────────────────────────────────────────────────
+// Extension node: upper-left of its group.
+// Collections: horizontal row directly below, left-aligned with the extension.
+
+const _EXT_W        = 200
+const _EXT_H        = 140
+const _COLL_W       = 200
+const _COLL_H       = 180
+const _COLL_H_GAP   = 40   // horizontal gap between adjacent collections
+const _EXT_COLL_GAP = 80   // horizontal gap between extension right edge and first collection
+const _GROUP_GAP    = 60   // vertical gap between extension groups
+
+export function layoutCollectionsDagre(nodes: Node[], edges: Edge[]): Node[] {
+  const extToColls: Record<string, string[]> = {}
+  edges.forEach((e) => {
+    if (!extToColls[e.source]) extToColls[e.source] = []
+    extToColls[e.source].push(e.target)
+  })
+
+  const extNodes = nodes.filter((n) => n.type === 'extensionNode')
+  const positions: Record<string, { x: number; y: number }> = {}
+
+  let currentY = 0
+  for (const ext of extNodes) {
+    positions[ext.id] = { x: 0, y: currentY }
+
+    const collIds = extToColls[ext.id] ?? []
+    for (let i = 0; i < collIds.length; i++) {
+      positions[collIds[i]] = {
+        x: _EXT_W + _EXT_COLL_GAP + i * (_COLL_W + _COLL_H_GAP),
+        y: currentY,
+      }
+    }
+
+    const rowH = Math.max(_EXT_H, collIds.length > 0 ? _COLL_H : _EXT_H)
+    currentY += rowH + _GROUP_GAP
   }
 
   return nodes.map((n) => ({ ...n, position: positions[n.id] ?? n.position }))

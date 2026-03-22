@@ -5,6 +5,7 @@ import {
   Background,
   BackgroundVariant,
   ConnectionMode,
+  Position,
   useNodesState,
   useEdgesState,
   type Node,
@@ -111,6 +112,12 @@ export default function CollectionsRelationshipsViewer() {
         title:    col.title,
         collKey:  col.collection_key,
         isActive: false,
+        handles: [
+          { id: 'h-top',    type: 'target' as const, position: Position.Top },
+          { id: 'h-right',  type: 'source' as const, position: Position.Right },
+          { id: 'h-bottom', type: 'source' as const, position: Position.Bottom },
+          { id: 'h-left',   type: 'target' as const, position: Position.Left },
+        ],
       } satisfies CollNodeType['data'],
       position: gridPos(i),
     }))

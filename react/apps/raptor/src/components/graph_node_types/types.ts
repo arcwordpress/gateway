@@ -1,4 +1,5 @@
 import { type Node } from '@xyflow/react'
+import { type DroppedFacet } from '../../lib/facet_types'
 
 export type AdminCollectionInfo = {
   key: string
@@ -28,6 +29,8 @@ export type ViewPreviewNodeType = Node<
     title: string
     columns: string[]
     rows: Record<string, unknown>[]
+    droppedFacets: DroppedFacet[]
+    onReorderFacets: (facets: DroppedFacet[]) => void
   },
   'viewPreviewNode'
 >

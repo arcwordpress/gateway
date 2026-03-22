@@ -1,4 +1,4 @@
-import { PlusCircle } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { NodeTypeHeader } from './NodeTypeHeader'
 
@@ -9,40 +9,39 @@ export function SiteNode({ data }: NodeProps<SiteNodeType>) {
     <div
       style={{
         background: 'var(--node-bg)',
-        border: '1px solid #3f3f46',
+        border: '1px solid var(--node-border-color)',
         borderRadius: 12,
         padding: '8px 10px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
         minWidth: 170,
+        overflow: 'hidden',
       }}
     >
       <NodeTypeHeader label="Site" />
-      <button
-        onClick={data.onCreateExtension}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          width: '100%',
-          justifyContent: 'center',
-          padding: '8px 12px',
-          borderRadius: 8,
-          background: '#3f3f46',
-          border: 'none',
-          color: '#e4e4e7',
-          fontSize: 13,
-          fontWeight: 500,
-          cursor: 'pointer',
-          transition: 'background 0.15s',
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#52525b' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#3f3f46' }}
-      >
-        <PlusCircle size={15} strokeWidth={2} />
-        Create Extension
-      </button>
+      <div style={{ margin: '8px -10px -8px', borderTop: '1px solid var(--node-border-color)' }}>
+        <button
+          onClick={data.onCreateExtension}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            width: '100%',
+            padding: '5px 0',
+            background: 'none',
+            border: 'none',
+            color: '#71717a',
+            fontSize: 10,
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a1a1aa' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#71717a' }}
+        >
+          <Plus size={11} strokeWidth={2} />
+          Make Extension
+        </button>
+      </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   )

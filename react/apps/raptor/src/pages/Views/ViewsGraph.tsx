@@ -126,6 +126,13 @@ export function Graph() {
     fetchTrigger === 0             ? 'idle'      :
     recentRecords.length === 0     ? 'empty'     : 'loaded'
 
+  // Layout: all nodes in one horizontal row spaced 400px apart.
+  // Collection occupies slot 0 but is raised 140px above the view row so its
+  // edge hangs down over the other items.
+  const VIEW_ROW_Y = 140
+  const COLLECTION_Y = 0
+  const SLOT_W = 400
+
   const baseNodes: Node[] = [
     {
       id: 'collection',
@@ -137,24 +144,18 @@ export function Graph() {
           void navigate({ to: '/collections' })
         },
       },
-      position: { x: 200, y: 0 },
-    },
-    {
-      id: 'view-list-label',
-      type: 'viewListLabel',
-      data: {},
-      position: { x: 200, y: 140 },
+      position: { x: 0, y: COLLECTION_Y },
     },
   ]
 
   const viewNodes: Node[] = []
-  const viewEdges: Edge[] = [{ id: 'e-collection-viewlist', source: 'collection', target: 'view-list-label' }]
+  const viewEdges: Edge[] = []
 
   views.forEach((view, idx) => {
     const viewNodeId = `view-${view.view_key}`
     const isExpanded = expandedViews.has(view.view_key)
 
-    // Each view gets its own ViewNode
+    // Each view occupies its own slot in the row, starting at slot 1
     viewNodes.push({
       id: viewNodeId,
       type: 'viewNode',
@@ -167,11 +168,11 @@ export function Graph() {
           void navigate({ to: `/collections/${collKey}/views/${vk}/design` })
         },
       },
-      position: { x: 200 + idx * 400, y: 260 },
+      position: { x: (idx + 1) * SLOT_W, y: VIEW_ROW_Y },
     })
 
-    // Edge from View List to each View
-    viewEdges.push({ id: `e-viewlist-${view.view_key}`, source: 'view-list-label', target: viewNodeId })
+    // Direct smoothstep edge from collection down to each view
+    viewEdges.push({ id: `e-collection-${view.view_key}`, source: 'collection', target: viewNodeId, type: 'smoothstep' })
 
     // If expanded, show schema and preview
     if (isExpanded) {
@@ -192,7 +193,7 @@ export function Graph() {
             title: view.title || view.view_key,
             properties: schemaProps,
           },
-          position: { x: 100 + idx * 400, y: 420 },
+          position: { x: (idx + 1) * SLOT_W - 100, y: VIEW_ROW_Y + 200 },
         },
         {
           id: previewNodeId,
@@ -202,13 +203,13 @@ export function Graph() {
             columns: viewColumns,
             rows: previewRows,
           },
-          position: { x: 300 + idx * 400, y: 420 },
+          position: { x: (idx + 1) * SLOT_W + 100, y: VIEW_ROW_Y + 200 },
         }
       )
 
       viewEdges.push(
-        { id: `e-view-schema-${view.view_key}`, source: viewNodeId, target: schemaNodeId },
-        { id: `e-view-preview-${view.view_key}`, source: viewNodeId, target: previewNodeId }
+        { id: `e-view-schema-${view.view_key}`, source: viewNodeId, target: schemaNodeId, type: 'smoothstep' },
+        { id: `e-view-preview-${view.view_key}`, source: viewNodeId, target: previewNodeId, type: 'smoothstep' }
       )
     }
   })
@@ -234,6 +235,7 @@ export function Graph() {
           nodeTypes={FIELD_GRAPH_NODE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          defaultEdgeOptions={{ type: 'smoothstep' }}
           fitView
           proOptions={{ hideAttribution: true }}
         >

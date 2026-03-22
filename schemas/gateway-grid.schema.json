@@ -55,8 +55,8 @@
       "uniqueItems": true
     },
 
-    "facetFilters": {
-      "description": "Ordered list of facet filter controls exposed to the user. Each entry is a polymorphic filter object discriminated by its 'type' property. An empty array means no filter UI is rendered.",
+    "facets": {
+      "description": "Ordered list of facets exposed to the user. Each entry is a polymorphic facet object discriminated by its 'type' property. An empty array means no filter UI is rendered.",
       "type": "array",
       "items": { "$ref": "./facet-filter.schema.json" },
       "default": []
@@ -92,7 +92,7 @@
         { "key": "assigned_to", "label": "Assigned To",  "sortable": false },
         { "key": "created_at",  "label": "Created",      "sortable": true  }
       ],
-      "facetFilters": [
+      "facets": [
         {
           "type": "select",
           "field": "status",

@@ -53,7 +53,7 @@ class RaptorBuilder
         );
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
-            ->with(['fieldList.fields', 'viewList.views.viewRenders'])
+            ->with(['fieldList.fields', 'viewList.views.viewRenders', 'viewList.views.facetList.facets'])
             ->orderBy('id')
             ->get();
 
@@ -202,7 +202,7 @@ class RaptorBuilder
             'title'          => $view->title,
             'collection_key' => $collection->collection_key,
             'columns'        => $view->columns ?? [],
-            'facet_filters'  => $view->facet_filters ?? [],
+            'facets'         => $this->buildFacetsArray($view),
             'default_sort'   => $view->default_sort ?? [],
             'per_page'       => $view->per_page ?? 20,
         ];
@@ -219,6 +219,36 @@ class RaptorBuilder
             'class_generated' => $classResult,
             'page_generated'  => $pageResult,
         ];
+    }
+
+    /**
+     * Build a flat array of facet definitions from a view's RaptorFacet rows.
+     * Each entry maps to the shape expected by \Gateway\View::$facets.
+     */
+    private function buildFacetsArray(RaptorView $view): array
+    {
+        $facetList = $view->facetList;
+
+        if (!$facetList) {
+            return [];
+        }
+
+        return $facetList->facets->map(function ($facet) {
+            $entry = [
+                'field' => $facet->field_name,
+                'type'  => $facet->facet_type,
+            ];
+
+            if (!empty($facet->label)) {
+                $entry['label'] = $facet->label;
+            }
+
+            if (!empty($facet->config)) {
+                $entry['config'] = $facet->config;
+            }
+
+            return $entry;
+        })->values()->toArray();
     }
 
     /**

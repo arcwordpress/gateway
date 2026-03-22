@@ -11,7 +11,7 @@ class FileFromData
      * Generate view class file from view data.
      *
      * @param array  $viewData         Keys: view_key, title, collection_key, columns,
-     *                                 facet_filters, default_sort, per_page
+     *                                 facets, default_sort, per_page
      * @param string $pluginSlug       Plugin slug (e.g. 'horizon')
      * @param string $pluginNamespace  Plugin namespace (e.g. 'Horizon')
      * @return bool True on success, false on failure
@@ -61,7 +61,7 @@ class FileFromData
             '{{VIEW_KEY}}'      => $viewData['view_key'],
             '{{SOURCE_CLASS}}'  => $sourceClass,
             '{{COLUMNS}}'       => self::arrayToPhpLiteral($viewData['columns'] ?? []),
-            '{{FACET_FILTERS}}' => self::arrayToPhpLiteral($viewData['facet_filters'] ?? []),
+            '{{FACETS}}'        => self::arrayToPhpLiteral($viewData['facets'] ?? []),
             '{{DEFAULT_SORT}}'  => self::arrayToPhpLiteral($viewData['default_sort'] ?? []),
             '{{PER_PAGE}}'      => (int) ($viewData['per_page'] ?? 20),
         ];
