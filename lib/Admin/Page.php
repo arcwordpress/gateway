@@ -71,21 +71,29 @@ class Page
             );
         }
 
+        $detected        = \Gateway\Database\DatabaseConnection::autoDetectDriver();
+        $db_driver       = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
+        $connection_port = get_option('gateway_connection_port', '');
+
         wp_localize_script(
             'gateway-raptor-builder',
             'raptorConfig',
             [
-                'apiUrl'      => rest_url(),
-                'nonce'       => wp_create_nonce('wp_rest'),
-                'version'     => GATEWAY_VERSION,
-                'isWordPress' => true,
-                'schemaUrl'   => GATEWAY_URL . 'schemas/raptor/extension.json',
+                'apiUrl'          => rest_url(),
+                'nonce'           => wp_create_nonce('wp_rest'),
+                'version'         => GATEWAY_VERSION,
+                'isWordPress'     => true,
+                'schemaUrl'       => GATEWAY_URL . 'schemas/raptor/extension.json',
                 // maybeRunMigrations() runs before admin_enqueue_scripts, so these
                 // transients are current. React uses dbReady to decide whether to
                 // route the user to Settings before making any other API calls.
-                'dbReady'     => !get_transient('gateway_tables_missing')
-                                 && !get_transient('gateway_migrations_pending')
-                                 && get_transient('gateway_connection_ok') !== '0',
+                'dbReady'         => !get_transient('gateway_tables_missing')
+                                     && !get_transient('gateway_migrations_pending')
+                                     && get_transient('gateway_connection_ok') !== '0',
+                // Current connection config from wp_options so the connection recovery
+                // page can pre-populate its form without any API fetch.
+                'dbDriver'        => $db_driver,
+                'connectionPort'  => $connection_port,
             ]
         );
     }
