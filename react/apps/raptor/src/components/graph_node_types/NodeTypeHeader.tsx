@@ -13,6 +13,7 @@ export function NodeTypeHeader({
 }) {
   return (
     <div
+      className="node-drag-handle"
       style={{
         margin:        '-8px -10px 8px -10px',
         padding:       '4px 6px 4px 10px',
@@ -23,6 +24,7 @@ export function NodeTypeHeader({
         justifyContent: menu != null ? 'space-between' : 'flex-start',
         gap:           4,
         minHeight:     20,
+        cursor:        'grab',
       }}
     >
       <span

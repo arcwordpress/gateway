@@ -19,7 +19,7 @@ import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { FacetPalette, FacetBlock } from '../components/FacetPalette'
 import { type FacetType, type DroppedFacet } from '../lib/facet_types'
 import { apiUrl, authHeaders } from '../lib/api'
-import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
+import { Collection, Field, View, ViewRender } from '../lib/object_types'
 import { ViewDndCtx } from './ViewDndCtx'
 
 function getRowValue(row: Record<string, unknown>, column: string): unknown {
@@ -88,6 +88,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
   const [droppedFacets, setDroppedFacets] = useState<DroppedFacet[]>([])
   const [overFacetId, setOverFacetId] = useState<string | null>(null)
+  const [selectedFacetId, setSelectedFacetId] = useState<string | null>(null)
 
   function handleDragStart(e: DragStartEvent) {
     if (e.active.data.current?.facetType) {
@@ -215,49 +216,52 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   }, [deleteRenderMutation])
 
   // ── Facets CRUD ───────────────────────────────────────────────────────────
-  const { data: facets, refetch: refetchFacets } = useQuery<Facet[]>({
+  const { refetch: refetchFacets } = useQuery<{ id: number }[]>({
     queryKey: ['view-facets', viewKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), { headers: authHeaders() })
       if (!res.ok) return []
-      const json = await res.json() as { facets?: Facet[] }
+      const json = await res.json() as { facets?: { id: number }[] }
       return json.facets ?? []
     },
     enabled: !!viewKey,
   })
 
   const addFacetMutation = useMutation({
-    mutationFn: async (data: { label: string; field_name: string; facet_type: string }) => {
+    mutationFn: async (data: { facetId: string; label: string; field_name: string; facet_type: string }) => {
+      const { facetId, ...payload } = data
       const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets`), {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
-      const json = await res.json() as { success: boolean; message?: string }
+      const json = await res.json() as { success: boolean; message?: string; facet?: { id: number } }
       if (!json.success) throw new Error(json.message ?? 'Failed to save facet')
+      return { facetId, dbId: json.facet?.id }
     },
-    onSuccess: () => { void refetchFacets() },
+    onSuccess: ({ facetId, dbId }) => {
+      if (dbId) {
+        setDroppedFacets((prev) =>
+          prev.map((f) => f.id === facetId ? { ...f, dbId } : f)
+        )
+      }
+      void refetchFacets()
+    },
   })
 
-  const deleteFacetMutation = useMutation({
-    mutationFn: async (facetId: number) => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/view/${viewKey}/facets/${facetId}`), {
-        method: 'DELETE',
-        headers: authHeaders(),
-      })
-      const json = await res.json() as { success: boolean }
-      if (!json.success) throw new Error('Failed to delete facet')
-    },
-    onSuccess: () => { void refetchFacets() },
-  })
-
-  const handleAddFacet = useCallback((data: { label: string; field_name: string; facet_type: string }) => {
-    addFacetMutation.mutate(data)
+  const handleSaveFacet = useCallback((facetId: string, data: { label: string; field_name: string; facet_type: string }) => {
+    // Optimistically store fieldName/label in local state so Layers shows the label immediately
+    setDroppedFacets((prev) =>
+      prev.map((f) => f.id === facetId ? { ...f, fieldName: data.field_name, label: data.label || undefined } : f)
+    )
+    addFacetMutation.mutate({ facetId, ...data })
   }, [addFacetMutation])
 
-  const handleDeleteFacet = useCallback((id: number) => {
-    deleteFacetMutation.mutate(id)
-  }, [deleteFacetMutation])
+  const handleUpdateFacet = useCallback((id: string, updates: Partial<Pick<DroppedFacet, 'fieldName' | 'label'>>) => {
+    setDroppedFacets((prev) =>
+      prev.map((f) => f.id === id ? { ...f, ...updates } : f)
+    )
+  }, [])
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collectionKey],
@@ -306,12 +310,12 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const strategies = renderStrategies ?? []
   const saves = viewRenders ?? []
-  const savedFacets = facets ?? []
 
   const computedNodes: Node[] = [
     {
       id: 'view-preview',
       type: 'viewPreviewNode',
+      dragHandle: '.node-drag-handle',
       data: {
         title: draftView?.title ?? viewKey,
         columns: viewColumns,
@@ -337,18 +341,6 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         isSaving: saveRenderMutation.isPending,
       },
       position: { x: 240, y: 520 },
-    },
-    {
-      id: 'facets-config',
-      type: 'facetsNode',
-      data: {
-        facets: savedFacets,
-        availableFields: allFields,
-        onAddFacet: handleAddFacet,
-        onDeleteFacet: handleDeleteFacet,
-        isSaving: addFacetMutation.isPending,
-      },
-      position: { x: 700, y: 520 },
     },
     ...(activeEngine
       ? [
@@ -386,7 +378,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
@@ -462,7 +454,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <ViewDndCtx.Provider value={{ overFacetId, droppedFacets }}>
+      <ViewDndCtx.Provider value={{ overFacetId, droppedFacets, selectedFacetId, onSelectFacet: setSelectedFacetId, onUpdateFacet: handleUpdateFacet }}>
       <DndContext collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
@@ -502,7 +494,12 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         </div>
 
         {/* Facet Palette */}
-        <FacetPalette activeFacetType={activeFacetType} />
+        <FacetPalette
+          activeFacetType={activeFacetType}
+          availableFields={allFields}
+          onSaveFacet={handleSaveFacet}
+          isSaving={addFacetMutation.isPending}
+        />
 
         <DragOverlay>
           {activeFacetType ? <FacetBlock type={activeFacetType} /> : null}

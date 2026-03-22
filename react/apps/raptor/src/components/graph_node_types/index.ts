@@ -12,7 +12,6 @@ import { ViewListLabelNode } from './ViewListLabelNode'
 import { ViewNode } from './ViewNode'
 import { RenderStrategyNode } from './RenderStrategyNode'
 import { RenderOutputNode } from './RenderOutputNode'
-import { FacetsNode } from './FacetsNode'
 import { FormListLabelNode } from './FormListLabelNode'
 import { FormNode } from './FormNode'
 
@@ -44,8 +43,6 @@ export type { FormNodeType } from './FormNode'
 export type { ViewNodeType } from './ViewNode'
 export type { RenderStrategyNodeType } from './RenderStrategyNode'
 export type { RenderOutputNodeType } from './RenderOutputNode'
-export type { FacetsNodeType } from './FacetsNode'
-
 // Export context
 export { RecordsCtx } from './RecordsContext'
 
@@ -70,7 +67,6 @@ export { FormNode } from './FormNode'
 export { ViewNode } from './ViewNode'
 export { RenderStrategyNode } from './RenderStrategyNode'
 export { RenderOutputNode } from './RenderOutputNode'
-export { FacetsNode } from './FacetsNode'
 
 // Export Collections Viewer nodes
 export { CollectionsLabelNode } from './CollectionsRootNode'
@@ -97,7 +93,6 @@ export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
   viewNode:             ViewNode,
   renderStrategyNode:   RenderStrategyNode,
   renderOutputNode:     RenderOutputNode,
-  facetsNode:           FacetsNode,
   formListLabel:        FormListLabelNode,
   formNode:             FormNode,
 }
