@@ -13,3 +13,5 @@ export { default as Filter } from './components/Filter';
 export { default as FilterGroup } from './components/Filters';
 export { GridProvider, useGridContext, useRecord } from './context/GridContext';
 export { default as ViewSwitcher } from './components/ViewSwitcher';
+export { default as useFilter } from './hooks/useFilter';
+export { default as CheckboxFacet } from './components/filter-types/checkbox/CheckboxFacet';
