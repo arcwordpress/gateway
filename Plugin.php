@@ -118,14 +118,15 @@ class Plugin
         register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
         register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
 
+        // Boot Eloquent before running migrations so that migrateFromOptions()
+        // can use Eloquent models (e.g. GatewaySettingsCollection::find()).
+        $this->bootEloquent();
+
         // Re-run core migrations whenever the plugin version changes.
         // register_activation_hook only fires on manual (de)activate, not on updates,
         // so schema changes added after the initial install would never be applied.
         // dbDelta() is idempotent — it only adds missing columns/keys, never drops them.
         $this->maybeRunMigrations();
-
-        // Boot Eloquent on plugins_loaded
-        $this->bootEloquent();
 
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);

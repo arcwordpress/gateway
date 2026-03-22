@@ -29,7 +29,7 @@ class GatewaySettingsMigration
             connection_port varchar(10) NOT NULL DEFAULT '',
             sqlite_path varchar(500) NOT NULL DEFAULT '',
             is_sqlite_environment tinyint(1) NOT NULL DEFAULT 0,
-            anthropic_api_key text NOT NULL DEFAULT '',
+            anthropic_api_key text NOT NULL,
             has_anthropic_key tinyint(1) NOT NULL DEFAULT 0,
             created_at timestamp NULL DEFAULT NULL,
             updated_at timestamp NULL DEFAULT NULL,
