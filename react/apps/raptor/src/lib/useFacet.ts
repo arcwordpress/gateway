@@ -1,22 +1,6 @@
 import { createElement, useMemo, useState } from 'react'
 import { type FacetType } from './facet_types'
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { Filter } = require('@arcwp/gateway-grids') as { Filter: React.ComponentType<FacetFilterProps> }
-
-interface FacetFilterProps {
-  filter: {
-    type: string
-    label: string
-    field: string
-    choices?: { value: string; label: string }[]
-    min?: number
-    max?: number
-  }
-  value: unknown
-  onChange: (v: unknown) => void
-  className?: string
-}
+import FilterComponent from '@arcwp/gateway-grids/src/components/Filter'
 
 export interface FacetConfig {
   type: FacetType
@@ -39,7 +23,7 @@ export function useFacet(config: FacetConfig) {
 
   const FacetComponent = useMemo(() => {
     const Bound = (props: { value: unknown; onChange: (v: unknown) => void; className?: string }) =>
-      createElement(Filter, { filter: filterConfig, ...props })
+      createElement(FilterComponent as React.ComponentType<object>, { filter: filterConfig, ...props })
     Bound.displayName = `Facet(${config.type})`
     return Bound
   }, [filterConfig, config.type])
