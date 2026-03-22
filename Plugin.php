@@ -385,6 +385,9 @@ class Plugin
         // unset so migrations retry automatically once the port is corrected.
         if (!Database\DatabaseConnection::testConnection()) {
             set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
+            // Pre-populate the connection-OK cache so showConnectionNotice() can read it
+            // without making a second TCP attempt on the same page load.
+            set_transient('gateway_connection_ok', '0', 60);
             return;
         }
 
@@ -398,6 +401,9 @@ class Plugin
 
         delete_transient('gateway_migrations_pending');
         delete_transient('gateway_tables_missing');
+        // Clear the connection cache so the notice disappears on the very next page load
+        // rather than waiting up to 60 s for the transient to expire.
+        delete_transient('gateway_connection_ok');
         update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
@@ -449,14 +455,13 @@ class Plugin
     }
 
     /**
-     * Show admin notices for two degraded-mode scenarios:
+     * Show admin notices for degraded-mode scenarios.
      *
-     * 1. gateway_migrations_pending — DB connection unavailable (wrong port, unreachable host).
-     *    Set by activate() / cleared by maybeRunMigrations() once the connection comes back.
-     *
-     * 2. gateway_tables_missing — connection is fine but core tables could not be created
-     *    (e.g. Eloquent and $wpdb targeting different files, dbDelta failure, etc.).
-     *    Set by activate() / maybeRunMigrations() on failure; cleared on the next successful run.
+     * Rather than relying on transients set during activation, this method directly checks the
+     * connection status on every page (cached for 60 s via gateway_connection_ok transient).
+     * This ensures the notice appears even when gateway_schema_version is already set (i.e. a
+     * previously-working install whose DB connection broke later), a case where
+     * maybeRunMigrations() short-circuits before ever testing the connection.
      */
     public function showConnectionNotice(): void
     {
@@ -466,13 +471,25 @@ class Plugin
 
         $settings_url = admin_url('admin.php?page=gateway-settings');
 
-        if (get_transient('gateway_migrations_pending')) {
-            echo '<div class="notice notice-warning"><p>'
-                . '<strong>Gateway:</strong> The database connection failed — migrations have not run yet. '
-                . 'Please configure the correct connection port in '
+        // Cache the connection-OK result for 60 s so we don't block every admin page load
+        // with a TCP connect attempt.  maybeRunMigrations() pre-populates this transient on
+        // the same request when it has already tested the connection, so normally there is no
+        // extra cost here.
+        $cached = get_transient('gateway_connection_ok');
+        if ($cached === false) {
+            $ok     = Database\DatabaseConnection::testConnection();
+            $cached = $ok ? '1' : '0';
+            set_transient('gateway_connection_ok', $cached, 60);
+        }
+
+        if ($cached === '0') {
+            echo '<div class="notice notice-error"><p>'
+                . '<strong>Gateway:</strong> The database connection failed. '
+                . 'Please configure the correct port in '
                 . '<a href="' . esc_url($settings_url) . '">Gateway Settings</a>. '
                 . 'Migrations will run automatically once the connection is restored.'
                 . '</p></div>';
+            return;
         }
 
         if (get_transient('gateway_tables_missing')) {
