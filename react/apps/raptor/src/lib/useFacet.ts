@@ -23,7 +23,7 @@ export function useFacet(config: FacetConfig) {
 
   const FacetComponent = useMemo(() => {
     const Bound = (props: { value: unknown; onChange: (v: unknown) => void; className?: string }) =>
-      createElement(FilterComponent as React.ComponentType<object>, { filter: filterConfig, ...props })
+      createElement(FilterComponent as React.ComponentType<Record<string, unknown>>, { filter: filterConfig, ...props })
     Bound.displayName = `Facet(${config.type})`
     return Bound
   }, [filterConfig, config.type])
