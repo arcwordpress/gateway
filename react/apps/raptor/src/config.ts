@@ -6,6 +6,8 @@ declare global {
       version: string
       isWordPress: true
       schemaUrl: string
+      /** False when Gateway tables don't exist yet (wrong DB driver, first install, etc.) */
+      dbReady?: boolean
     }
   }
 }
@@ -17,6 +19,8 @@ export type AppConfig = {
   version: string
   /** Full URL to schemas/raptor/extension.json */
   schemaUrl: string
+  /** True when Gateway database tables exist and are ready to use */
+  dbReady: boolean
 }
 
 function buildConfig(): AppConfig {
@@ -27,6 +31,7 @@ function buildConfig(): AppConfig {
       nonce: window.raptorConfig.nonce,
       version: window.raptorConfig.version,
       schemaUrl: window.raptorConfig.schemaUrl,
+      dbReady: window.raptorConfig.dbReady ?? true,
     }
   }
   return {
@@ -36,6 +41,7 @@ function buildConfig(): AppConfig {
     version: import.meta.env.VITE_VERSION ?? 'dev',
     // Vite serves /public at root — schema lives in public/schemas/raptor/
     schemaUrl: import.meta.env.VITE_SCHEMA_URL ?? '/schemas/raptor/extension.json',
+    dbReady: true,
   }
 }
 

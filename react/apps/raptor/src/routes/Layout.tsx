@@ -78,6 +78,15 @@ export default function Layout() {
   const shellHeightPx = isExpanded ? window.innerHeight : baseShellHeightPx
   const shellHeightCss = isExpanded ? '100vh' : `${baseShellHeightPx}px`
 
+  // When the database is not ready (missing tables, wrong driver, etc.) route the user
+  // to Settings immediately so they can fix the connection before the app tries to
+  // query any data. PHP passes dbReady via wp_localize_script based on current transients.
+  useEffect(() => {
+    if (!appConfig.dbReady && pathname !== '/settings') {
+      void navigate({ to: '/settings' })
+    }
+  }, [])
+
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<WorkspaceCollection[]>({
     queryKey: ['raptor-collections'],
     queryFn: async () => {
