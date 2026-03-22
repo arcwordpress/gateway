@@ -1,7 +1,7 @@
 import { type NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 import { useDroppable } from '@dnd-kit/core'
-import { SortableContext, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { type ViewPreviewNodeType } from './types'
 import { type DroppedFacet } from '../../lib/facet_types'
@@ -18,6 +18,42 @@ function cellValue(value: unknown): string {
 // Stop ReactFlow from treating pointer-down inside the drop zone as a node drag
 function stopRF(e: React.PointerEvent) { e.stopPropagation() }
 
+// Non-interactive card shell — used as the DragOverlay clone during sort drags
+export function FacetCardPreview({ facet }: { facet: DroppedFacet }) {
+  return (
+    <div
+      style={{
+        border: '1px solid #3f3f46',
+        borderRadius: 6,
+        background: '#18181b',
+        overflow: 'hidden',
+        flexShrink: 0,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+      }}
+    >
+      <div
+        style={{
+          padding: '3px 8px',
+          background: '#27272a',
+          borderBottom: '1px solid #3f3f46',
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase' as const,
+          color: '#52525b',
+          userSelect: 'none' as const,
+          cursor: 'grabbing',
+        }}
+      >
+        ⠿ {(facet.label || facet.type).replace(/_/g, ' ')}
+      </div>
+      <div style={{ padding: '6px 8px' }}>
+        <FacetRender facet={facet} />
+      </div>
+    </div>
+  )
+}
+
 function SortableFacetCard({ facet, showInsertBefore }: { facet: DroppedFacet; showInsertBefore: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: facet.id,
@@ -25,16 +61,24 @@ function SortableFacetCard({ facet, showInsertBefore }: { facet: DroppedFacet; s
   })
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', flexShrink: 0 }}>
+    // setNodeRef on the outermost element so dnd-kit measures the correct flex-item rect
+    <div
+      ref={setNodeRef}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        flexShrink: 0,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        // Ghost is invisible — DragOverlay shows the clone; spacer keeps layout intact
+        opacity: isDragging ? 0 : 1,
+      }}
+    >
       {showInsertBefore && (
         <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, marginRight: 4, flexShrink: 0 }} />
       )}
       <div
-        ref={setNodeRef}
         style={{
-          transform: CSS.Transform.toString(transform),
-          transition,
-          opacity: isDragging ? 0.4 : 1,
           border: '1px solid #3f3f46',
           borderRadius: 6,
           background: '#18181b',
@@ -96,7 +140,7 @@ function FacetDropZone({ droppedFacets }: { droppedFacets: DroppedFacet[] }) {
         alignItems: 'flex-start',
       }}
     >
-      <SortableContext items={droppedFacets.map((f) => f.id)} strategy={horizontalListSortingStrategy}>
+      <SortableContext items={droppedFacets.map((f) => f.id)} strategy={rectSortingStrategy}>
         {droppedFacets.length === 0 ? (
           <div style={{ fontSize: 10, color: isOver ? '#3b82f6' : '#3f3f46', fontStyle: 'italic', transition: 'color 0.15s' }}>
             Drop facet types here

@@ -11,10 +11,10 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
-import { DndContext, DragOverlay, pointerWithin, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, pointerWithin, useSensors, useSensor, PointerSensor, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { viewDesignRoute } from '../router'
-import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
+import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo, FacetCardPreview } from '../components/graph_node_types'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { FacetPalette, FacetBlock } from '../components/FacetPalette'
 import { type FacetType, type DroppedFacet } from '../lib/facet_types'
@@ -86,13 +86,19 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   const [draftView, setDraftView] = useState<View | null>(null)
   const [activeFacetType, setActiveFacetType] = useState<FacetType | null>(null)
+  const [activeSortFacet, setActiveSortFacet] = useState<DroppedFacet | null>(null)
   const [droppedFacets, setDroppedFacets] = useState<DroppedFacet[]>([])
   const [overFacetId, setOverFacetId] = useState<string | null>(null)
   const [selectedFacetId, setSelectedFacetId] = useState<string | null>(null)
 
+  // Require 5px of movement before a drag starts — prevents accidental drags from clicks
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
   function handleDragStart(e: DragStartEvent) {
     if (e.active.data.current?.facetType) {
       setActiveFacetType(e.active.data.current.facetType as FacetType)
+    } else if (e.active.data.current?.droppedFacet) {
+      setActiveSortFacet(e.active.data.current.droppedFacet as DroppedFacet)
     }
   }
   function handleDragOver(e: DragOverEvent) {
@@ -140,6 +146,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
     }
 
     setActiveFacetType(null)
+    setActiveSortFacet(null)
     setOverFacetId(null)
   }
 
@@ -457,7 +464,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
       <ViewDndCtx.Provider value={{ overFacetId, droppedFacets, selectedFacetId, onSelectFacet: setSelectedFacetId, onUpdateFacet: handleUpdateFacet }}>
-      <DndContext collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
@@ -503,8 +510,9 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
           isSaving={addFacetMutation.isPending}
         />
 
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeFacetType ? <FacetBlock type={activeFacetType} /> : null}
+          {activeSortFacet ? <FacetCardPreview facet={activeSortFacet} /> : null}
         </DragOverlay>
 
         {/* Right Panel */}
