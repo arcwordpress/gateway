@@ -173,6 +173,7 @@ const routeTree = rootRoute.addChildren([
   viewDesignRoute,
   settingsRoute,
   connectionSettingsRoute,
+  docsRoute,
   recordsIndexRoute,
   recordsListRoute,
   recordCreateRoute,

@@ -35,7 +35,6 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom'],
           'vendor-router': ['@tanstack/react-router'],
           'vendor-query': ['@tanstack/react-query'],
-          'vendor-table': ['@tanstack/react-table'],
           'vendor-charts': ['recharts'],
           'vendor-flow': ['@xyflow/react', '@dagrejs/dagre'],
           'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
