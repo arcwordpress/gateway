@@ -36,6 +36,9 @@ class TestConnectionRoute
             global $wpdb;
 
             $capsule = DatabaseConnection::getCapsule();
+            if ($capsule === null) {
+                return new \WP_REST_Response(['error' => 'Database not initialised'], 503);
+            }
             $connection = $capsule->getConnection();
             $driver = DatabaseConnection::getDriver();
             $result['driver'] = $driver;

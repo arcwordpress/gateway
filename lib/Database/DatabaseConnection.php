@@ -307,7 +307,7 @@ class DatabaseConnection
      *
      * @return bool True if connection and a simple query both succeed
      */
-    public static function testConnectionWithTimeout()
+    public static function testConnectionWithTimeout($timeout = 5)
     {
         try {
             if (self::$capsule === null) {
