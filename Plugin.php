@@ -376,7 +376,16 @@ class Plugin
     {
         $stored = get_option('gateway_schema_version', '');
         if ($stored === GATEWAY_VERSION) {
-            return;
+            // Version matches, but verify the tables actually exist in the *current* Eloquent
+            // connection. This handles two real cases:
+            //   - User changed db_driver (e.g. MySQL → SQLite): the schema_version in WordPress
+            //     wp_options reflects the OLD database; the new one has no Gateway tables yet.
+            //   - dbDelta failed silently on a previous run: it doesn't throw, so
+            //     runCoreMigrations() thought it succeeded and set the version anyway.
+            if ($this->coreTablesExist()) {
+                return;
+            }
+            // Tables are missing — fall through and attempt migrations.
         }
 
         // Don't attempt migrations if the DB connection is unavailable (e.g. wrong port).
@@ -393,7 +402,9 @@ class Plugin
 
         $success = Database\MigrationHooks::runCoreMigrations();
 
-        if (!$success) {
+        // dbDelta() does not throw on failure — it silently skips table creation. Always
+        // verify the key table actually exists after migrations "succeed".
+        if (!$success || !$this->coreTablesExist()) {
             // Connection is reachable but tables could not be created — flag for notice.
             set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
             return;
@@ -405,6 +416,29 @@ class Plugin
         // rather than waiting up to 60 s for the transient to expire.
         delete_transient('gateway_connection_ok');
         update_option('gateway_schema_version', GATEWAY_VERSION, false);
+    }
+
+    /**
+     * Check whether the core Gateway tables exist in the *current Eloquent connection*.
+     *
+     * This deliberately uses the Eloquent Schema Builder rather than $wpdb so that it
+     * always reflects whichever database Eloquent is connected to (MySQL or SQLite), not
+     * the WordPress database that $wpdb targets.
+     */
+    private function coreTablesExist(): bool
+    {
+        try {
+            $capsule = Database\DatabaseConnection::getCapsule();
+            if ($capsule === null) {
+                return false;
+            }
+            global $wpdb;
+            return $capsule->getConnection()
+                ->getSchemaBuilder()
+                ->hasTable($wpdb->prefix . 'gateway_settings');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**

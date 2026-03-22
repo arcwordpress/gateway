@@ -47,7 +47,10 @@ class DatabaseConnection
             // saved by the user in the settings UI is honoured on the very next request
             // even before the gateway_settings table exists.
             $detected    = self::autoDetectDriver();
-            $driver      = $detected['driver']   ?? 'mysql';
+            // Read driver and port from wp_options: the settings POST endpoint writes there
+            // when Eloquent is unavailable (degraded mode) so that the user can switch the
+            // driver back out of a broken state even when the settings table doesn't exist.
+            $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
             $custom_port = get_option('gateway_connection_port', '');
             $sqlite_path = $detected['database'] ?? '';
             if ($driver === 'sqlite') {

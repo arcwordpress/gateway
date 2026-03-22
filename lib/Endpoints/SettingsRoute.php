@@ -66,18 +66,34 @@ class SettingsRoute
         // succeed. All other fields are silently ignored in this state.
         $settings = GatewaySettingsCollection::getSettings();
 
-        // $settings->exists === false means getSettings() returned the in-memory fallback.
+        // $settings->exists === false means getSettings() returned the in-memory fallback
+        // because Eloquent could not reach the database (missing table, broken connection, etc.).
         if (!$settings->exists) {
+            // Persist connection settings to wp_options so DatabaseConnection::boot() can
+            // pick them up on the next request. This is the escape hatch that lets a user
+            // switch the driver back (e.g. SQLite → MySQL) even when Gateway tables are gone.
             if ($request->has_param('port')) {
                 update_option('gateway_connection_port', $request->get_param('port') ?? '');
             }
+            if ($request->has_param('db_driver')) {
+                update_option('gateway_connection_driver', sanitize_text_field($request->get_param('db_driver')));
+            }
+            // Clear the schema version so maybeRunMigrations() re-runs migrations against
+            // the new connection on the very next request.
+            delete_option('gateway_schema_version');
+            delete_transient('gateway_connection_ok');
+
             return rest_ensure_response([
                 'success'          => true,
-                'message'          => __('Port saved. Reload the page to test the connection.', 'gateway'),
+                'message'          => __('Settings saved. Reload the page to apply.', 'gateway'),
                 'port'             => $request->get_param('port') ?? '',
                 'has_anthropic_key' => false,
             ]);
         }
+
+        // Track whether the connection target is changing so we can force a migration re-run.
+        $driver_changed = $request->has_param('db_driver') && $request->get_param('db_driver') !== $settings->db_driver;
+        $port_changed   = $request->has_param('port') && $request->get_param('port') !== $settings->connection_port;
 
         if ($request->has_param('port')) {
             $settings->connection_port = $request->get_param('port') ?? '';
@@ -103,6 +119,13 @@ class SettingsRoute
 
         $settings->save();
         // The GatewaySettingsCollection saved hook clears the connection cache.
+
+        // When the connection target changes (driver or port), clear the schema version so
+        // maybeRunMigrations() re-runs migrations for the new database on the next request.
+        if ($driver_changed || $port_changed) {
+            delete_option('gateway_schema_version');
+            delete_transient('gateway_connection_ok');
+        }
 
         return rest_ensure_response([
             'success'          => true,
