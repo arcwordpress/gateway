@@ -51,8 +51,16 @@ class GatewaySettingsMigration
      */
     public static function migrateFromOptions(): void
     {
-        // Check if settings record already exists — nothing to do.
-        $settings = \Gateway\Collections\GatewaySettingsCollection::find(1);
+        // Guard: if the gateway_settings table doesn't exist yet (e.g. create() was a no-op
+        // because Eloquent and $wpdb point to different DB files, or dbDelta() failed silently),
+        // bail rather than throwing a fatal PDOException.
+        try {
+            $settings = \Gateway\Collections\GatewaySettingsCollection::find(1);
+        } catch (\Exception $e) {
+            // Table not queryable — skip migration entirely this run.
+            return;
+        }
+
         if ($settings) {
             // Already migrated. Still clean up any leftover wp_options.
             delete_option('gateway_connection_port');
@@ -70,16 +78,22 @@ class GatewaySettingsMigration
         $sqlitePath  = $dbConfig['database'] ?? '';
         $isSqliteEnv = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
 
-        // Create the settings record.
-        \Gateway\Collections\GatewaySettingsCollection::create([
-            'id'                    => 1,
-            'db_driver'             => $driver,
-            'connection_port'       => $port,
-            'sqlite_path'           => $sqlitePath,
-            'is_sqlite_environment' => $isSqliteEnv,
-            'anthropic_api_key'     => $encryptedApiKey, // already encrypted
-            'has_anthropic_key'     => !empty($encryptedApiKey),
-        ]);
+        try {
+            // Create the settings record.
+            \Gateway\Collections\GatewaySettingsCollection::create([
+                'id'                    => 1,
+                'db_driver'             => $driver,
+                'connection_port'       => $port,
+                'sqlite_path'           => $sqlitePath,
+                'is_sqlite_environment' => $isSqliteEnv,
+                'anthropic_api_key'     => $encryptedApiKey, // already encrypted
+                'has_anthropic_key'     => !empty($encryptedApiKey),
+            ]);
+        } catch (\Exception $e) {
+            // Table still not writable — leave wp_options in place for the next attempt.
+            error_log('Gateway: migrateFromOptions could not create settings record: ' . $e->getMessage());
+            return;
+        }
 
         // Remove old wp_options — they are no longer the source of truth.
         delete_option('gateway_connection_port');

@@ -386,8 +386,16 @@ class Plugin
             return;
         }
 
-        Database\MigrationHooks::runCoreMigrations();
+        $success = Database\MigrationHooks::runCoreMigrations();
+
+        if (!$success) {
+            // Connection is reachable but tables could not be created — flag for notice.
+            set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
+            return;
+        }
+
         delete_transient('gateway_migrations_pending');
+        delete_transient('gateway_tables_missing');
         update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
@@ -404,14 +412,27 @@ class Plugin
             return;
         }
 
-        // Connection is healthy — clear any stale deferral flag and run migrations first.
+        // Connection is healthy — clear any stale deferral flags and run migrations first.
         // The gateway_settings table is created here, so autoConfigureDatabase() must
         // run after this point (it writes to that table via Eloquent).
         delete_transient('gateway_migrations_pending');
-        Database\MigrationHooks::runCoreMigrations();
+        $success = Database\MigrationHooks::runCoreMigrations();
+
+        if (!$success) {
+            // Connection is reachable but tables couldn't be created (e.g. Eloquent and
+            // $wpdb are pointing to different DB files). Show the "run migrations" notice.
+            set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
+            return;
+        }
+
+        delete_transient('gateway_tables_missing');
 
         // Auto-configure database driver (table now exists).
-        $this->autoConfigureDatabase();
+        try {
+            $this->autoConfigureDatabase();
+        } catch (\Exception $e) {
+            error_log('Gateway: autoConfigureDatabase failed during activation: ' . $e->getMessage());
+        }
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
@@ -426,28 +447,39 @@ class Plugin
     }
 
     /**
-     * Show an admin notice when migrations were deferred due to a connection failure.
+     * Show admin notices for two degraded-mode scenarios:
      *
-     * The transient 'gateway_migrations_pending' is set in activate() when testConnection()
-     * fails (e.g. non-standard port in Local WP). It is cleared automatically by
-     * maybeRunMigrations() once a working connection is detected on a subsequent request.
+     * 1. gateway_migrations_pending — DB connection unavailable (wrong port, unreachable host).
+     *    Set by activate() / cleared by maybeRunMigrations() once the connection comes back.
+     *
+     * 2. gateway_tables_missing — connection is fine but core tables could not be created
+     *    (e.g. Eloquent and $wpdb targeting different files, dbDelta failure, etc.).
+     *    Set by activate() / maybeRunMigrations() on failure; cleared on the next successful run.
      */
     public function showConnectionNotice(): void
     {
-        if (!get_transient('gateway_migrations_pending')) {
-            return;
-        }
         if (!current_user_can('manage_options')) {
             return;
         }
+
         $settings_url = admin_url('admin.php?page=gateway-settings');
-        echo '<div class="notice notice-warning"><p>'
-            . '<strong>Gateway:</strong> The database connection failed during activation — '
-            . 'migrations have not run yet. '
-            . 'Please set the correct connection port in '
-            . '<a href="' . esc_url($settings_url) . '">Gateway Settings</a>, '
-            . 'then reload this page and migrations will run automatically.'
-            . '</p></div>';
+
+        if (get_transient('gateway_migrations_pending')) {
+            echo '<div class="notice notice-warning"><p>'
+                . '<strong>Gateway:</strong> The database connection failed — migrations have not run yet. '
+                . 'Please configure the correct connection port in '
+                . '<a href="' . esc_url($settings_url) . '">Gateway Settings</a>. '
+                . 'Migrations will run automatically once the connection is restored.'
+                . '</p></div>';
+        }
+
+        if (get_transient('gateway_tables_missing')) {
+            echo '<div class="notice notice-warning"><p>'
+                . '<strong>Gateway:</strong> Core database tables are missing. '
+                . 'Please visit <a href="' . esc_url($settings_url) . '">Gateway Settings</a> '
+                . 'to run core migrations.'
+                . '</p></div>';
+        }
     }
 
     /**
