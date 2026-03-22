@@ -2,6 +2,15 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.2.1-rc1] - 2026-03-21
+
+### Changed
+- Change in terminology from "grids" to "views" and from "filters" to "facets". 
+
+### Added
+- Draft of the Raptor graph editor based on React Flow and Dagre. 
+- Visual builder for fields that combined list editing and graph diagram.
+
 ## [1.2.0-rc1] - 2026-02-18
 
 ### Changed
