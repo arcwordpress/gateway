@@ -458,9 +458,9 @@ class Plugin
                 return false;
             }
             global $wpdb;
-            return $capsule->getConnection()
-                ->getSchemaBuilder()
-                ->hasTable($wpdb->prefix . 'gateway_settings');
+            $schema = $capsule->getConnection()->getSchemaBuilder();
+            return $schema->hasTable($wpdb->prefix . 'gateway_settings')
+                && $schema->hasTable($wpdb->prefix . 'gateway_raptor_extension');
         } catch (\Exception $e) {
             return false;
         }
