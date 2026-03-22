@@ -67,11 +67,17 @@ class Page
             'gateway-raptor-builder',
             'raptorConfig',
             [
-                'apiUrl'     => rest_url(),
-                'nonce'      => wp_create_nonce('wp_rest'),
-                'version'    => GATEWAY_VERSION,
+                'apiUrl'      => rest_url(),
+                'nonce'       => wp_create_nonce('wp_rest'),
+                'version'     => GATEWAY_VERSION,
                 'isWordPress' => true,
-                'schemaUrl'  => GATEWAY_URL . 'schemas/raptor/extension.json',
+                'schemaUrl'   => GATEWAY_URL . 'schemas/raptor/extension.json',
+                // maybeRunMigrations() runs before admin_enqueue_scripts, so these
+                // transients are current. React uses dbReady to decide whether to
+                // route the user to Settings before making any other API calls.
+                'dbReady'     => !get_transient('gateway_tables_missing')
+                                 && !get_transient('gateway_migrations_pending')
+                                 && get_transient('gateway_connection_ok') !== '0',
             ]
         );
     }

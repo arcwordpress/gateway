@@ -131,6 +131,30 @@ class Plugin
         // Show admin notice when DB connection failed at activation and migrations are pending.
         add_action('admin_notices', [$this, 'showConnectionNotice']);
 
+        // Global exception handler for all Gateway REST endpoints.
+        // Catches unhandled Eloquent/PDO exceptions (e.g. "no such table") from any
+        // /gateway/v1/* route and returns a structured 503 response instead of a PHP fatal.
+        // Permissions and arg validation still run before this filter (WordPress core order).
+        add_filter('rest_dispatch_request', function ($result, $request, $route, $handler) {
+            if ($result !== null || strpos($route, '/gateway/v1') !== 0) {
+                return $result;
+            }
+            $callback = $handler['callback'] ?? null;
+            if (!$callback || !is_callable($callback)) {
+                return $result;
+            }
+            try {
+                return call_user_func($callback, $request);
+            } catch (\Exception $e) {
+                error_log('Gateway REST handler error on ' . $route . ': ' . $e->getMessage());
+                return new \WP_Error(
+                    'gateway_db_error',
+                    'Gateway database tables are not yet initialised. Check Gateway Settings.',
+                    ['status' => 503]
+                );
+            }
+        }, 10, 4);
+
         // Hook for any initialization that needs to happen on 'init'
         add_action('init', [$this, 'onInit']);
 
