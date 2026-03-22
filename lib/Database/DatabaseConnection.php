@@ -58,6 +58,18 @@ class DatabaseConnection
                 // SQLite configuration
                 $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
 
+                // Ensure the database file exists before Eloquent connects.
+                // Laravel's SQLiteConnector calls base_path() (a Laravel-only helper) when
+                // realpath() returns false, which happens when the file doesn't exist yet.
+                // Creating the file here prevents that fatal error on fresh installs.
+                $db_dir = dirname($database);
+                if (!is_dir($db_dir)) {
+                    wp_mkdir_p($db_dir);
+                }
+                if (!file_exists($database)) {
+                    touch($database);
+                }
+
                 self::$capsule->addConnection([
                     'driver'    => 'sqlite',
                     'database'  => $database,
@@ -101,7 +113,7 @@ class DatabaseConnection
                     // pool is exhausted.  3 s is enough for localhost.
                     // The constant only exists when pdo_mysql is loaded; skip silently
                     // on environments that use a different driver (e.g. mysqlnd variants).
-                    'options' => defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
+                    'options' => class_exists('PDO') && defined('\PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
                         ? [\PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3]
                         : [],
                 ]);
@@ -124,6 +136,14 @@ class DatabaseConnection
                 $sqlite_path = self::findSQLiteDatabase();
 
                 try {
+                    $db_dir = dirname($sqlite_path);
+                    if (!is_dir($db_dir)) {
+                        wp_mkdir_p($db_dir);
+                    }
+                    if (!file_exists($sqlite_path)) {
+                        touch($sqlite_path);
+                    }
+
                     self::$capsule->addConnection([
                         'driver'    => 'sqlite',
                         'database'  => $sqlite_path,
