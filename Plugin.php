@@ -10,12 +10,10 @@
 
 namespace Gateway;
 
-// Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants
 define('GATEWAY_VERSION', '1.2.1-rc4');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
@@ -26,7 +24,6 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
 
-// Register SPL autoloader for Gateway classes
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
     $base_dir = GATEWAY_PATH . 'lib/';
@@ -70,7 +67,23 @@ class Plugin
         return self::$instance;
     }
 
+    private $dbConnection = false;
+
     private function __construct()
+    {
+        $this->dbConnection = Database\DatabaseConnection::testConnection();
+        if (!$this->dbConnection) {
+            error_log('Gateway: Database connection failed in constructor. Plugin will load in degraded mode.');
+            add_action('admin_notices', [$this, 'showConnectionNotice']);
+            $this->raptorEndpoints();
+            Admin\Page::init();
+        } else {
+            $this->bootEloquent();
+            $this->init();
+        }
+    }
+
+    private function init()
     {
         $this->registry = new CollectionRegistry();
         $this->viewRegistry = new Views\ViewRegistry();
@@ -88,6 +101,46 @@ class Plugin
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         new Endpoints\CoreCollectionUserRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
+        
+        
+        new Blocks\BlockRoutes();
+        new Blocks\JsonBlock\JsonBlockRoutes();
+        $this->patternRegistry = new Patterns\PatternRegistry();
+
+        Database\MigrationHooks::init();
+
+        $this->maybeRunMigrations();
+
+        
+
+        gateway_rest_dispatch_filter();
+
+        Admin\Page::init();
+        Admin\Records::init();
+        Admin\Builder::init();
+        Package\PackageMenus::init();
+        Forms\Render::init();
+        Forms\Shortcode::init();
+        Render\Render::init();
+        Views\Render\Shortcode\Shortcode::init();
+        Raptor\ViewRenderer::init();
+        Filters\Render::init();
+        Gutenberg\BlockRegistry::init();
+        Blocks\BlockInit::init();
+        Blocks\JsonBlock\JsonBlockRegistrar::init();
+        Blocks\BlockBindings::init();
+
+        $this->patternRegistry->init();
+        AppTemplate::init();
+
+        add_action('gateway_loaded', [$this, 'registerCollections']);
+        add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
+        add_action('gateway_loaded', [$this, 'seedCollections'], 20);
+
+    }
+
+    public function raptorEndpoints() 
+    {
         new Raptor\Endpoints\ExtensionCrudRoutes();
         new Raptor\Endpoints\ExtensionRoutes();
         new Raptor\Endpoints\CollectionRoutes();
@@ -99,179 +152,10 @@ class Plugin
         new Raptor\Endpoints\ViewRoutes();
         new Raptor\Endpoints\ViewRenderRoutes();
         new Raptor\Endpoints\FacetRoutes();
-        new Blocks\BlockRoutes();
-        new Blocks\JsonBlock\JsonBlockRoutes();
-        // Defer FieldTypeRoutes to onInit to avoid early initialization issues
-        $this->patternRegistry = new Patterns\PatternRegistry();
-
-        // Initialize migration hooks
-        Database\MigrationHooks::init();
-
-        $this->init();
     }
 
-    /**
-     * Initialize the plugin
-     */
-    private function init()
-    {
-        // Register activation and deactivation hooks early (must be during plugin load)
-        register_activation_hook(GATEWAY_FILE, [$this, 'activate']);
-        register_deactivation_hook(GATEWAY_FILE, [$this, 'deactivate']);
-
-        // Boot Eloquent before running migrations so that migrateFromOptions()
-        // can use Eloquent models (e.g. GatewaySettingsCollection::find()).
-        $this->bootEloquent();
-
-        // Re-run core migrations whenever the plugin version changes.
-        // register_activation_hook only fires on manual (de)activate, not on updates,
-        // so schema changes added after the initial install would never be applied.
-        // dbDelta() is idempotent — it only adds missing columns/keys, never drops them.
-        $this->maybeRunMigrations();
-
-        // Show admin notice when DB connection failed at activation and migrations are pending.
-        add_action('admin_notices', [$this, 'showConnectionNotice']);
-
-        // Global exception handler for all Gateway REST endpoints.
-        // Catches unhandled Eloquent/PDO exceptions (e.g. "no such table") from any
-        // /gateway/v1/* route and returns a structured 503 response instead of a PHP fatal.
-        // Permissions and arg validation still run before this filter (WordPress core order).
-        add_filter('rest_dispatch_request', function ($result, $request, $route, $handler) {
-            if ($result !== null || strpos($route, '/gateway/v1') !== 0) {
-                return $result;
-            }
-            $callback = $handler['callback'] ?? null;
-            if (!$callback || !is_callable($callback)) {
-                return $result;
-            }
-            try {
-                return call_user_func($callback, $request);
-            } catch (\Exception $e) {
-                error_log('Gateway REST handler error on ' . $route . ': ' . $e->getMessage());
-                return new \WP_Error(
-                    'gateway_db_error',
-                    'Gateway database tables are not yet initialised. Check Gateway Settings.',
-                    ['status' => 503]
-                );
-            }
-        }, 10, 4);
-
-        // Hook for any initialization that needs to happen on 'init'
-        add_action('init', [$this, 'onInit']);
-
-        // Initialize admin pages
-        Admin\Page::init();
-        Admin\Records::init();
-        Admin\Builder::init(); // Builder now runs the Raptor app
-        Package\PackageMenus::init();
-
-        // Initialize front-end forms
-        Forms\Render::init();
-        Forms\Shortcode::init();
-
-        // Initialize experimental rendering system
-        Render\Render::init();
-
-        // Initialize stable view shortcode registry: [gateway_view key="..."]
-        Views\Render\Shortcode\Shortcode::init();
-
-        // Initialize front-end views with Interactivity API
-        Raptor\ViewRenderer::init();
-
-        // Initialize front-end filters
-        Filters\Render::init();
-
-        // Initialize Gutenberg blocks
-        Gutenberg\BlockRegistry::init();
-
-        // Initialize dynamic blocks (programmatic registration and asset enqueuing)
-        Blocks\BlockInit::init();
-
-        // Initialize JSON-only block registration (schema/blocks/types/*.json)
-        Blocks\JsonBlock\JsonBlockRegistrar::init();
-
-        // Initialize block bindings for collections
-        Blocks\BlockBindings::init();
-
-        // Initialize block patterns
-        $this->patternRegistry->init();
-
-        // Initialize app page template and SPA routing
-        AppTemplate::init();
-
-        // Register internal gateway collections, then core WP collections.
-        add_action('gateway_loaded', [$this, 'registerCollections']);
-
-        // Seed block type and collection user tables after registration.
-        add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
-        add_action('gateway_loaded', [$this, 'seedCollections'], 20);
-
-    }
-
-    public function onInit()
-    {
-        // Initialize FieldTypeRoutes here after full plugin initialization
-        new Forms\Fields\FieldTypeRoutes();
-        do_action('gateway_loaded');
-    }
-
-    /**
-     * Core WP table collection map, keyed by collection key.
-     *
-     * @return array<string, class-string>
-     */
-    public static function getCoreCollectionMap(): array
-    {
-        return [
-            'wp_post'              => Collections\WP\Post::class,
-            'wp_user'              => Collections\WP\User::class,
-            'wp_comment'           => Collections\WP\Comment::class,
-            'wp_option'            => Collections\WP\Option::class,
-            'wp_postmeta'          => Collections\WP\PostMeta::class,
-            'wp_usermeta'          => Collections\WP\UserMeta::class,
-            'wp_commentmeta'       => Collections\WP\CommentMeta::class,
-            'wp_term'              => Collections\WP\Term::class,
-            'wp_term_taxonomy'     => Collections\WP\TermTaxonomy::class,
-            'wp_term_relationship' => Collections\WP\TermRelationship::class,
-            'wp_termmeta'          => Collections\WP\TermMeta::class,
-            'wp_link'              => Collections\WP\Link::class,
-        ];
-    }
-
-    /**
-     * Register internal Gateway collections and core WP collections.
-     *
-     * Internal collections (BlockTypeUser, CollectionUser) are always
-     * registered — they are structural and required by the plugin.
-     *
-     * Core WP collections are only registered when their active flag is true
-     * in the CollectionUser table (defaults to true when no row exists).
-     */
-    public function registerCollections()
-    {
-        // Always register internal structural collections first.
-        Collections\Gateway\BlockTypeUser::register();
-        Collections\Gateway\CollectionUser::register();
-        Collections\GatewaySettingsCollection::register();
-
-        // Register core WP collections, gated by CollectionUser active flag.
-        foreach (self::getCoreCollectionMap() as $key => $class) {
-            if (Collections\Gateway\CollectionUser::isActive($key)) {
-                $class::register();
-            }
-        }
-    }
-
-    /**
-     * Seed the gateway_block_type_users table.
-     *
-     * Enumerates block types from all three registration systems and inserts
-     * a row with active = 1 for any slug not yet recorded. Existing rows
-     * (including user-set active = 0) are never overwritten.
-     */
     public function seedBlockTypes()
     {
-        // 1. Gutenberg / React blocks (react/block-types/build/blocks/*/block.json)
         $gutenbergDir = GATEWAY_PATH . 'react/block-types/build/blocks';
         if (is_dir($gutenbergDir)) {
             foreach (glob($gutenbergDir . '/*/block.json') ?: [] as $jsonPath) {
@@ -286,7 +170,6 @@ class Plugin
             }
         }
 
-        // 2. PHP-class blocks (registered via BlockInit::registerInternalBlocks)
         foreach (Blocks\BlockRegistry::instance()->getAll() as $block) {
             Collections\Gateway\BlockTypeUser::seedOne(
                 $block::getName(),
@@ -295,7 +178,6 @@ class Plugin
             );
         }
 
-        // 3. JSON schema blocks (schema/blocks/types/*.json)
         foreach (Blocks\JsonBlock\JsonBlockLoader::getAll() as $definition) {
             if (!empty($definition['name'])) {
                 Collections\Gateway\BlockTypeUser::seedOne(
@@ -307,22 +189,12 @@ class Plugin
         }
     }
 
-    /**
-     * Seed the gateway_collection_users table.
-     *
-     * Inserts a row with active = 1 for each core WP collection key that
-     * does not yet have a record. Existing rows are never overwritten.
-     */
     public function seedCollections()
     {
         foreach (array_keys(self::getCoreCollectionMap()) as $key) {
             Collections\Gateway\CollectionUser::seedOne($key);
         }
     }
-
-    /**
-     * Object registry getters.
-     **/
 
     public function getRegistry()
     {
@@ -364,92 +236,49 @@ class Plugin
         return $this->fieldTypeRegistry;
     }
 
-    /**
-     * Boot Eloquent ORM
-     */
     public static function bootEloquent()
     {
         Database\DatabaseConnection::boot();
     }
 
-    /**
-     * Detect if WordPress is using SQLite
-     *
-     * @return bool
-     */
     public static function isSQLiteEnvironment()
     {
         return Database\DatabaseConnection::isSQLiteEnvironment();
     }
 
-    /**
-     * Find SQLite database file path
-     *
-     * @return string Path to SQLite database
-     */
     public static function findSQLiteDatabase()
     {
         return Database\DatabaseConnection::findSQLiteDatabase();
     }
 
-    /**
-     * Run core migrations if the stored schema version differs from the current
-     * plugin version.  Called on every request but exits immediately when the
-     * version matches, so the overhead is a single get_option() call.
-     */
     private function maybeRunMigrations(): void
     {
         $stored = get_option('gateway_schema_version', '');
         if ($stored === GATEWAY_VERSION) {
-            // Version matches, but verify the tables actually exist in the *current* Eloquent
-            // connection. This handles two real cases:
-            //   - User changed db_driver (e.g. MySQL → SQLite): the schema_version in WordPress
-            //     wp_options reflects the OLD database; the new one has no Gateway tables yet.
-            //   - dbDelta failed silently on a previous run: it doesn't throw, so
-            //     runCoreMigrations() thought it succeeded and set the version anyway.
             if ($this->coreTablesExist()) {
                 return;
             }
-            // Tables are missing — fall through and attempt migrations.
         }
 
-        // Don't attempt migrations if the DB connection is unavailable (e.g. wrong port).
-        // Set the pending transient so the admin notice appears on every WP admin page
-        // until the connection is restored. gateway_schema_version is intentionally left
-        // unset so migrations retry automatically once the port is corrected.
         if (!Database\DatabaseConnection::testConnection()) {
             set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
-            // Pre-populate the connection-OK cache so showConnectionNotice() can read it
-            // without making a second TCP attempt on the same page load.
             set_transient('gateway_connection_ok', '0', 60);
             return;
         }
 
         $success = Database\MigrationHooks::runCoreMigrations();
 
-        // dbDelta() does not throw on failure — it silently skips table creation. Always
-        // verify the key table actually exists after migrations "succeed".
         if (!$success || !$this->coreTablesExist()) {
-            // Connection is reachable but tables could not be created — flag for notice.
             set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
             return;
         }
 
         delete_transient('gateway_migrations_pending');
         delete_transient('gateway_tables_missing');
-        // Clear the connection cache so the notice disappears on the very next page load
-        // rather than waiting up to 60 s for the transient to expire.
         delete_transient('gateway_connection_ok');
         update_option('gateway_schema_version', GATEWAY_VERSION, false);
     }
 
-    /**
-     * Check whether the core Gateway tables exist in the *current Eloquent connection*.
-     *
-     * This deliberately uses the Eloquent Schema Builder rather than $wpdb so that it
-     * always reflects whichever database Eloquent is connected to (MySQL or SQLite), not
-     * the WordPress database that $wpdb targets.
-     */
     private function coreTablesExist(): bool
     {
         try {
@@ -466,42 +295,29 @@ class Plugin
         }
     }
 
-    /**
-     * Plugin activation
-     */
     public function activate()
     {
-        // If the database connection is unavailable (e.g. non-standard port in Local WP),
-        // skip migrations and defer them. An admin notice will guide the user to fix the
-        // port in Gateway Settings; reloading any admin page will then retry automatically.
         if (!Database\DatabaseConnection::testConnection()) {
             set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
             return;
         }
 
-        // Connection is healthy — clear any stale deferral flags and run migrations first.
-        // The gateway_settings table is created here, so autoConfigureDatabase() must
-        // run after this point (it writes to that table via Eloquent).
         delete_transient('gateway_migrations_pending');
         $success = Database\MigrationHooks::runCoreMigrations();
 
         if (!$success) {
-            // Connection is reachable but tables couldn't be created (e.g. Eloquent and
-            // $wpdb are pointing to different DB files). Show the "run migrations" notice.
             set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
             return;
         }
 
         delete_transient('gateway_tables_missing');
 
-        // Auto-configure database driver (table now exists).
         try {
-            $this->autoConfigureDatabase();
+            $this->createDatabaseSettingsIfMissing();
         } catch (\Exception $e) {
-            error_log('Gateway: autoConfigureDatabase failed during activation: ' . $e->getMessage());
+            error_log('Gateway: createDatabaseSettingsIfMissing failed during activation: ' . $e->getMessage());
         }
 
-        // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
             mkdir(GATEWAY_DATA_DIR, 0755, true);
         }
@@ -509,62 +325,33 @@ class Plugin
             mkdir(GATEWAY_REQUEST_LOG_DIR, 0755, true);
         }
 
-        // Flush rewrite rules
         flush_rewrite_rules();
     }
 
-    /**
-     * Show admin notices for degraded-mode scenarios.
-     *
-     * Rather than relying on transients set during activation, this method directly checks the
-     * connection status on every page (cached for 60 s via gateway_connection_ok transient).
-     * This ensures the notice appears even when gateway_schema_version is already set (i.e. a
-     * previously-working install whose DB connection broke later), a case where
-     * maybeRunMigrations() short-circuits before ever testing the connection.
-     */
     public function showConnectionNotice(): void
     {
-        if (!current_user_can('manage_options')) {
-            return;
-        }
+        $settings_url = admin_url('admin.php?page=gateway#/settings/connection');
+        echo '<div class="notice notice-error"><p>'
+            . '<strong>Gateway:</strong> Cannot connect to the database. '
+            . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
+            . 'to enter the correct connection details. '
+            . 'Migrations will run automatically once the connection is restored.'
+            . '</p></div>';
+        return;        
+    }
 
-        $settings_url = admin_url('admin.php?page=gateway#/settings');
-
-        // Cache the connection-OK result for 60 s so we don't block every admin page load
-        // with a TCP connect attempt.  maybeRunMigrations() pre-populates this transient on
-        // the same request when it has already tested the connection, so normally there is no
-        // extra cost here.
-        $cached = get_transient('gateway_connection_ok');
-        if ($cached === false) {
-            $ok     = Database\DatabaseConnection::testConnection();
-            $cached = $ok ? '1' : '0';
-            set_transient('gateway_connection_ok', $cached, 60);
-        }
-
-        if ($cached === '0') {
-            echo '<div class="notice notice-error"><p>'
-                . '<strong>Gateway:</strong> Cannot connect to the database. '
-                . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
-                . 'to enter the correct connection details. '
-                . 'Migrations will run automatically once the connection is restored.'
-                . '</p></div>';
-            return;
-        }
-
+    public function showMigrationNotice(): void 
+    {
         if (get_transient('gateway_tables_missing')) {
             echo '<div class="notice notice-warning"><p>'
-                . '<strong>Gateway:</strong> Database tables are missing — the connection may be pointing at the wrong database. '
+                . '<strong>Gateway:</strong> Database tables are missing . '
                 . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
                 . 'to fix the connection. Tables will be created automatically once the correct database is connected.'
                 . '</p></div>';
         }
     }
 
-    /**
-     * Auto-configure database driver based on environment detection.
-     * Called during activation, after runCoreMigrations() has created the gateway_settings table.
-     */
-    private function autoConfigureDatabase()
+    private function createDatabaseSettingsIfMissing()
     {
         $is_sqlite   = self::isSQLiteEnvironment();
         $driver      = $is_sqlite ? 'sqlite' : 'mysql';
@@ -573,7 +360,6 @@ class Plugin
         $settings = Collections\GatewaySettingsCollection::find(1);
 
         if (!$settings) {
-            // Fresh install — create the singleton settings row.
             Collections\GatewaySettingsCollection::create([
                 'id'                    => 1,
                 'db_driver'             => $driver,
@@ -583,56 +369,15 @@ class Plugin
                 'has_anthropic_key'     => false,
                 'is_sqlite_environment' => $is_sqlite,
             ]);
-        } else {
-            // Row may already exist (e.g. from migrateFromOptions).
-            // Correct the driver if our detection disagrees (handles fresh SQLite installs
-            // where migrateFromOptions defaulted to 'mysql' because no wp_options existed).
-            if ($settings->db_driver !== $driver) {
-                $settings->db_driver = $driver;
-                if ($is_sqlite && empty($settings->sqlite_path)) {
-                    $settings->sqlite_path = $sqlite_path;
-                }
-                $settings->is_sqlite_environment = $is_sqlite;
-                $settings->save();
-            }
         }
     }
 
-    /**
-     * Plugin deactivation
-     */
     public function deactivate()
     {
         flush_rewrite_rules();
     }
 }
 
-// Initialize plugin
 Plugin::getInstance();
 
-/**
- * Action: gateway_plugin_loaded
- *
- * Fires immediately after the Gateway plugin has fully loaded.
- * This is the EARLIEST hook available for extensions that need to run
- * setup before WordPress 'init'.
- *
- * Extensions should use this hook with plugins_loaded for timing-safe initialization:
- *
- *     add_action('plugins_loaded', function() {
- *         if (!class_exists('\Gateway\Plugin')) {
- *             return;
- *         }
- *         // Your early initialization here
- *     }, 0);
- *
- * Or hook directly into gateway_plugin_loaded for post-Gateway setup:
- *
- *     add_action('gateway_plugin_loaded', function() {
- *         // Gateway is guaranteed to be loaded here
- *     });
- *
- * For collection registration, use the later 'gateway_loaded' hook instead,
- * which fires on WordPress 'init'.
- */
 do_action('gateway_plugin_loaded');

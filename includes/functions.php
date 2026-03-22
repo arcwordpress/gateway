@@ -162,4 +162,26 @@ add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $upd
     
 }, 10, 3);
 
+function gateway_rest_dispatch_filter() 
+{
+    add_filter('rest_dispatch_request', function ($result, $request, $route, $handler) {
+        if ($result !== null || strpos($route, '/gateway/v1') !== 0) {
+            return $result;
+        }
+        $callback = $handler['callback'] ?? null;
+        if (!$callback || !is_callable($callback)) {
+            return $result;
+        }
+        try {
+            return call_user_func($callback, $request);
+        } catch (\Exception $e) {
+            error_log('Gateway REST handler error on ' . $route . ': ' . $e->getMessage());
+            return new \WP_Error(
+                'gateway_db_error',
+                'Gateway database tables are not yet initialised. Check Gateway Settings.',
+                ['status' => 503]
+            );
+        }
+    }, 10, 4);
+}
 

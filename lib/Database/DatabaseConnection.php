@@ -95,34 +95,6 @@ class DatabaseConnection
             do_action('gateway_eloquent_booted', self::$capsule);
         } catch (\Exception $e) {
             error_log('Gateway database connection failed: ' . $e->getMessage());
-
-            // If MySQL failed and we haven't tried SQLite yet, try to detect and use SQLite
-            if ($driver === 'mysql' && self::isSQLiteEnvironment()) {
-                error_log('Gateway: MySQL connection failed, attempting SQLite fallback');
-
-                // Reset capsule
-                self::$capsule = new Capsule;
-
-                $sqlite_path = self::findSQLiteDatabase();
-
-                try {
-                    self::$capsule->addConnection([
-                        'driver'    => 'sqlite',
-                        'database'  => $sqlite_path,
-                        'prefix'    => $wpdb->prefix,
-                        'foreign_key_constraints' => true,
-                    ]);
-
-                    self::$capsule->setAsGlobal();
-                    self::$capsule->bootEloquent();
-
-                    error_log('Gateway: Successfully connected using SQLite fallback');
-                    do_action('gateway_eloquent_booted', self::$capsule);
-                } catch (\Exception $sqliteError) {
-                    error_log('Gateway: SQLite fallback also failed: ' . $sqliteError->getMessage());
-                    // Both failed, but don't crash - return the capsule anyway
-                }
-            }
         }
 
         return self::$capsule;
