@@ -106,4 +106,27 @@ class ConnectionAvailabilityTest extends TestCase
 
         $this->assertTrue(DatabaseConnection::testConnection());
     }
+
+    /**
+     * The MySQL connection config must include a short connect timeout so that
+     * testConnection() fails fast instead of blocking PHP-FPM workers for ~30 s
+     * when the database host is unreachable.
+     *
+     * If this test fails, someone removed PDO::MYSQL_ATTR_CONNECT_TIMEOUT from
+     * boot() and page loads will hang on every request until the worker pool is
+     * exhausted.
+     */
+    public function test_mysql_boot_config_includes_connect_timeout(): void
+    {
+        $source = file_get_contents(
+            (new \ReflectionClass(DatabaseConnection::class))->getFileName()
+        );
+
+        $this->assertStringContainsString(
+            'MYSQL_ATTR_CONNECT_TIMEOUT',
+            $source,
+            'PDO::MYSQL_ATTR_CONNECT_TIMEOUT must be set in boot() — without it a ' .
+            'unreachable host blocks each PHP-FPM worker for ~30 s'
+        );
+    }
 }
