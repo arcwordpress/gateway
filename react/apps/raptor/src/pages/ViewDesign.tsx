@@ -109,6 +109,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       const newFacet: DroppedFacet = {
         id: `df_${Date.now()}_${Math.random().toString(36).slice(2)}`,
         type: activeFacetType,
+        parent: 0,
+        depth: 0,
       }
       if (over && over.id !== 'facet-drop-zone') {
         const overIndex = droppedFacets.findIndex((f) => f.id === over.id)
