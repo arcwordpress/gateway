@@ -503,7 +503,7 @@ class Plugin
             return;
         }
 
-        $settings_url = admin_url('admin.php?page=gateway-settings');
+        $settings_url = admin_url('admin.php?page=gateway#/settings');
 
         // Cache the connection-OK result for 60 s so we don't block every admin page load
         // with a TCP connect attempt.  maybeRunMigrations() pre-populates this transient on
@@ -518,9 +518,9 @@ class Plugin
 
         if ($cached === '0') {
             echo '<div class="notice notice-error"><p>'
-                . '<strong>Gateway:</strong> The database connection failed. '
-                . 'Please configure the correct port in '
-                . '<a href="' . esc_url($settings_url) . '">Gateway Settings</a>. '
+                . '<strong>Gateway:</strong> Cannot connect to the database. '
+                . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
+                . 'to enter the correct connection details. '
                 . 'Migrations will run automatically once the connection is restored.'
                 . '</p></div>';
             return;
@@ -528,9 +528,9 @@ class Plugin
 
         if (get_transient('gateway_tables_missing')) {
             echo '<div class="notice notice-warning"><p>'
-                . '<strong>Gateway:</strong> Core database tables are missing. '
-                . 'Please visit <a href="' . esc_url($settings_url) . '">Gateway Settings</a> '
-                . 'to run core migrations.'
+                . '<strong>Gateway:</strong> Database tables are missing — the connection may be pointing at the wrong database. '
+                . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
+                . 'to fix the connection. Tables will be created automatically once the correct database is connected.'
                 . '</p></div>';
         }
     }
