@@ -178,7 +178,7 @@ class DatabaseConnection
      *
      * @return array Configuration array with driver and database path
      */
-    private static function autoDetectDriver()
+    public static function autoDetectDriver()
     {
         if (self::isSQLiteEnvironment()) {
             return [
