@@ -49,7 +49,7 @@ class GatewaySettingsMigration
      *
      * @return void
      */
-    public static function migrateFromOptions(): void
+    public static function migrateFromOptions(bool $overwrite = true): void
     {
         // Guard: if the gateway_settings table doesn't exist yet (e.g. create() was a no-op
         // because Eloquent and $wpdb point to different DB files, or dbDelta() failed silently),
