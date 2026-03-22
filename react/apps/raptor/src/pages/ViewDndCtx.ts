@@ -6,7 +6,7 @@ export interface ViewDndState {
   droppedFacets: DroppedFacet[]
   selectedFacetId: string | null
   onSelectFacet: (id: string | null) => void
-  onUpdateFacet: (id: string, updates: Partial<Pick<DroppedFacet, 'fieldName' | 'label'>>) => void
+  onUpdateFacet: (id: string, updates: Partial<Pick<DroppedFacet, 'fieldName' | 'label' | 'parent' | 'depth'>>) => void
 }
 
 export const ViewDndCtx = createContext<ViewDndState>({

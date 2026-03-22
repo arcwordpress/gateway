@@ -90,7 +90,7 @@ export function Layers() {
             <LayerRow
               key={facet.id}
               label={facet.label || facet.type.replace(/_/g, ' ')}
-              depth={1}
+              depth={facet.depth ?? 1}
               isSelected={selectedFacetId === facet.id}
               onClick={() => onSelectFacet(selectedFacetId === facet.id ? null : facet.id)}
             />
