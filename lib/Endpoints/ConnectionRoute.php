@@ -79,30 +79,6 @@ class ConnectionRoute
             update_option('gateway_connection_port', $port);
         }
 
-        // CRITICAL: boot() reads the driver/port from the gateway_settings table via $wpdb
-        // (which always points to MySQL/WordPress's database), NOT from wp_options. wp_options
-        // is only used when the table doesn't exist yet. If the row exists in MySQL but Eloquent
-        // is currently connected to a different database (e.g. SQLite), saving via Eloquent
-        // would write to the wrong database. We must write directly via $wpdb so that the very
-        // next boot() call reads the updated driver/port from MySQL's gateway_settings row.
-        global $wpdb;
-        $table = $wpdb->prefix . 'gateway_settings';
-        $wpdb->suppress_errors(true);
-        $existing = $wpdb->get_var("SELECT id FROM `{$table}` WHERE id = 1");
-        $wpdb->suppress_errors(false);
-        if ($existing) {
-            $update = [];
-            if ($driver !== null) {
-                $update['db_driver'] = $driver;
-            }
-            if ($port !== null) {
-                $update['connection_port'] = $port;
-            }
-            if (!empty($update)) {
-                $wpdb->update($table, $update, ['id' => 1]);
-            }
-        }
-
         // Clear schema version so maybeRunMigrations() re-runs on next page load,
         // and clear the connection OK transient so boot() retries the connection.
         delete_option('gateway_schema_version');

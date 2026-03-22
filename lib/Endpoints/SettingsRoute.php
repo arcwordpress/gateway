@@ -118,7 +118,12 @@ class SettingsRoute
         }
 
         $settings->save();
-        // The GatewaySettingsCollection saved hook clears the connection cache.
+        // Keep wp_options in sync — boot() reads connection config from there.
+        update_option('gateway_connection_driver', $settings->db_driver);
+        update_option('gateway_connection_port',   $settings->connection_port);
+        if (!empty($settings->sqlite_path)) {
+            update_option('gateway_sqlite_path', $settings->sqlite_path);
+        }
 
         // When the connection target changes (driver or port), clear the schema version so
         // maybeRunMigrations() re-runs migrations for the new database on the next request.

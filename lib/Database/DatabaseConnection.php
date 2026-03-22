@@ -26,56 +26,19 @@ class DatabaseConnection
 
         self::$capsule = new Capsule;
 
-        // Read connection config directly from the gateway_settings table via $wpdb.
-        // We cannot use Eloquent here because boot() is what initialises Eloquent.
-        $settings_table = $wpdb->prefix . 'gateway_settings';
-        $wpdb->suppress_errors(true);
-        $row = $wpdb->get_row(
-            "SELECT db_driver, connection_port, sqlite_path FROM `{$settings_table}` WHERE id = 1",
-            ARRAY_A
-        );
-        $wpdb->suppress_errors(false);
-
-        if ($row) {
-            $driver      = $row['db_driver']      ?? 'mysql';
-            $custom_port = $row['connection_port'] ?? '';
-            $sqlite_path = $row['sqlite_path']     ?? '';
-        } else {
-            // Fresh install or table not yet created — auto-detect.
-            // Also read the port from wp_options: the settings POST endpoint writes there
-            // as a fallback when Eloquent is unavailable (degraded mode), so that a port
-            // saved by the user in the settings UI is honoured on the very next request
-            // even before the gateway_settings table exists.
-            $detected    = self::autoDetectDriver();
-            // Read driver and port from wp_options: the settings POST endpoint writes there
-            // when Eloquent is unavailable (degraded mode) so that the user can switch the
-            // driver back out of a broken state even when the settings table doesn't exist.
-            $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
-            $custom_port = get_option('gateway_connection_port', '');
-            $sqlite_path = $detected['database'] ?? '';
-            if ($driver === 'sqlite') {
-                error_log('Gateway: Auto-detected SQLite, path: ' . $sqlite_path);
-            }
-        }
-
-        // $driver / $custom_port / $sqlite_path are now set from whichever branch above.
+        // wp_options is the single source of truth for connection config. It lives in
+        // MySQL (WordPress's database) and is always readable regardless of which database
+        // Eloquent is currently using. autoDetectDriver() is used only as a last-resort
+        // default when no option has ever been saved.
+        $detected    = self::autoDetectDriver();
+        $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
+        $custom_port = get_option('gateway_connection_port', '');
+        $sqlite_path = get_option('gateway_sqlite_path', $detected['database'] ?? '');
 
         try {
             if ($driver === 'sqlite') {
                 // SQLite configuration
                 $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
-
-                // Ensure the database file exists before Eloquent connects.
-                // Laravel's SQLiteConnector calls base_path() (a Laravel-only helper) when
-                // realpath() returns false, which happens when the file doesn't exist yet.
-                // Creating the file here prevents that fatal error on fresh installs.
-                $db_dir = dirname($database);
-                if (!is_dir($db_dir)) {
-                    wp_mkdir_p($db_dir);
-                }
-                if (!file_exists($database)) {
-                    touch($database);
-                }
 
                 self::$capsule->addConnection([
                     'driver'    => 'sqlite',
@@ -143,14 +106,6 @@ class DatabaseConnection
                 $sqlite_path = self::findSQLiteDatabase();
 
                 try {
-                    $db_dir = dirname($sqlite_path);
-                    if (!is_dir($db_dir)) {
-                        wp_mkdir_p($db_dir);
-                    }
-                    if (!file_exists($sqlite_path)) {
-                        touch($sqlite_path);
-                    }
-
                     self::$capsule->addConnection([
                         'driver'    => 'sqlite',
                         'database'  => $sqlite_path,
