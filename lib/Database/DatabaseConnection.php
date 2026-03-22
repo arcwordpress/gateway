@@ -88,12 +88,14 @@ class DatabaseConnection
                     'charset' => DB_CHARSET,
                     'collation' => $collation,
                     'prefix' => $wpdb->prefix,
-                    'options' => [
-                        // Fail fast when the host is unreachable (e.g. wrong port in Local WP).
-                        // PDO's default is ~30 s which hangs every page load until the
-                        // worker pool is exhausted.  3 s is more than enough for localhost.
-                        \PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3,
-                    ],
+                    // Fail fast when the host is unreachable (e.g. wrong port in Local WP).
+                    // PDO's default is ~30 s which hangs every page load until the worker
+                    // pool is exhausted.  3 s is enough for localhost.
+                    // The constant only exists when pdo_mysql is loaded; skip silently
+                    // on environments that use a different driver (e.g. mysqlnd variants).
+                    'options' => defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
+                        ? [\PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3]
+                        : [],
                 ]);
             }
 
