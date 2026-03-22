@@ -26,28 +26,37 @@ class DatabaseConnection
 
         self::$capsule = new Capsule;
 
-        // Get database configuration
-        $config = get_option('gateway_db_config', []);
+        // Read connection config directly from the gateway_settings table via $wpdb.
+        // We cannot use Eloquent here because boot() is what initialises Eloquent.
+        $settings_table = $wpdb->prefix . 'gateway_settings';
+        $wpdb->suppress_errors(true);
+        $row = $wpdb->get_row(
+            "SELECT db_driver, connection_port, sqlite_path FROM `{$settings_table}` WHERE id = 1",
+            ARRAY_A
+        );
+        $wpdb->suppress_errors(false);
 
-        // Auto-detect driver if not configured
-        if (empty($config) || !isset($config['driver'])) {
-            $config = self::autoDetectDriver();
-            // Save the detected config
-            if (!empty($config)) {
-                error_log('Gateway: Auto-detected database driver: ' . $config['driver']);
-                if ($config['driver'] === 'sqlite') {
-                    error_log('Gateway: SQLite database path: ' . $config['database']);
-                }
-                update_option('gateway_db_config', $config);
+        if ($row) {
+            $driver      = $row['db_driver']      ?? 'mysql';
+            $custom_port = $row['connection_port'] ?? '';
+            $sqlite_path = $row['sqlite_path']     ?? '';
+        } else {
+            // Fresh install or table not yet created — auto-detect.
+            $detected    = self::autoDetectDriver();
+            $driver      = $detected['driver']   ?? 'mysql';
+            $custom_port = '';
+            $sqlite_path = $detected['database'] ?? '';
+            if ($driver === 'sqlite') {
+                error_log('Gateway: Auto-detected SQLite, path: ' . $sqlite_path);
             }
         }
 
-        $driver = $config['driver'] ?? 'mysql';
+        // $driver / $custom_port / $sqlite_path are now set from whichever branch above.
 
         try {
             if ($driver === 'sqlite') {
                 // SQLite configuration
-                $database = $config['database'] ?? WP_CONTENT_DIR . '/database/.ht.sqlite';
+                $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
 
                 self::$capsule->addConnection([
                     'driver'    => 'sqlite',
@@ -72,8 +81,7 @@ class DatabaseConnection
                     $port = intval($port);
                 }
 
-                // Check for custom port setting (for Local WP and other dynamic environments)
-                $custom_port = get_option('gateway_connection_port', '');
+                // $custom_port was already loaded from the gateway_settings table above.
                 if (!empty($custom_port)) {
                     $port = intval($custom_port);
                 }
@@ -125,12 +133,6 @@ class DatabaseConnection
 
                     self::$capsule->setAsGlobal();
                     self::$capsule->bootEloquent();
-
-                    // Save SQLite config for future loads
-                    update_option('gateway_db_config', [
-                        'driver' => 'sqlite',
-                        'database' => $sqlite_path,
-                    ]);
 
                     error_log('Gateway: Successfully connected using SQLite fallback');
                     do_action('gateway_eloquent_booted', self::$capsule);
@@ -234,8 +236,18 @@ class DatabaseConnection
      */
     public static function getDriver()
     {
-        $config = get_option('gateway_db_config', []);
-        return $config['driver'] ?? 'mysql';
+        if (self::$capsule !== null) {
+            return self::$capsule->getConnection()->getDriverName();
+        }
+
+        // Capsule not yet booted — read directly from gateway_settings via $wpdb.
+        global $wpdb;
+        $table = $wpdb->prefix . 'gateway_settings';
+        $wpdb->suppress_errors(true);
+        $driver = $wpdb->get_var("SELECT db_driver FROM `{$table}` WHERE id = 1");
+        $wpdb->suppress_errors(false);
+
+        return $driver ?: 'mysql';
     }
 
     /**

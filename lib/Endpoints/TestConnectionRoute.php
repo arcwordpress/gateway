@@ -2,6 +2,7 @@
 
 namespace Gateway\Endpoints;
 
+use Gateway\Collections\GatewaySettingsCollection;
 use Gateway\Database\DatabaseConnection;
 
 class TestConnectionRoute
@@ -62,7 +63,7 @@ class TestConnectionRoute
 
             // Get custom port if set (only relevant for MySQL)
             if ($driver === 'mysql') {
-                $custom_port = get_option('gateway_connection_port', '');
+                $custom_port = GatewaySettingsCollection::getSettings()->connection_port ?? '';
                 if (!empty($custom_port)) {
                     $result['custom_port'] = intval($custom_port);
                 }

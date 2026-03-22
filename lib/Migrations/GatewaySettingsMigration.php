@@ -41,48 +41,49 @@ class GatewaySettingsMigration
     }
 
     /**
-     * Migrate existing WordPress options to the settings collection
-     * 
+     * Migrate existing WordPress options to the settings collection.
+     *
      * Reads gateway_connection_port, gateway_anthropic_api_key, and gateway_db_config
      * and creates the singleton settings record (id: 1) if it doesn't exist.
+     * Always deletes the old options after migration so they are never used again.
      *
-     * @param bool $deleteOldOptions Whether to delete old WordPress options after migration
      * @return void
      */
-    public static function migrateFromOptions(bool $deleteOldOptions = false): void
+    public static function migrateFromOptions(): void
     {
-        // Check if settings record already exists
+        // Check if settings record already exists — nothing to do.
         $settings = \Gateway\Collections\GatewaySettingsCollection::find(1);
         if ($settings) {
-            // Settings already migrated
-            return;
-        }
-
-        // Read existing WordPress options
-        $port = get_option('gateway_connection_port', '');
-        $encryptedApiKey = get_option('gateway_anthropic_api_key', '');
-        $dbConfig = get_option('gateway_db_config', []);
-
-        $driver = $dbConfig['driver'] ?? 'mysql';
-        $sqlitePath = $dbConfig['database'] ?? '';
-        $isSqliteEnv = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
-
-        // Create the settings record
-        \Gateway\Collections\GatewaySettingsCollection::create([
-            'id' => 1,
-            'db_driver' => $driver,
-            'connection_port' => $port,
-            'sqlite_path' => $sqlitePath,
-            'is_sqlite_environment' => $isSqliteEnv,
-            'anthropic_api_key' => $encryptedApiKey, // Already encrypted
-            'has_anthropic_key' => !empty($encryptedApiKey),
-        ]);
-
-        // Optionally clean up old options
-        if ($deleteOldOptions) {
+            // Already migrated. Still clean up any leftover wp_options.
             delete_option('gateway_connection_port');
             delete_option('gateway_anthropic_api_key');
             delete_option('gateway_db_config');
+            return;
         }
+
+        // Read existing WordPress options (present on installs upgrading from pre-table versions).
+        $port            = get_option('gateway_connection_port', '');
+        $encryptedApiKey = get_option('gateway_anthropic_api_key', '');
+        $dbConfig        = get_option('gateway_db_config', []);
+
+        $driver      = $dbConfig['driver'] ?? 'mysql';
+        $sqlitePath  = $dbConfig['database'] ?? '';
+        $isSqliteEnv = defined('SQLITE_DB_DROPIN_VERSION') || $driver === 'sqlite';
+
+        // Create the settings record.
+        \Gateway\Collections\GatewaySettingsCollection::create([
+            'id'                    => 1,
+            'db_driver'             => $driver,
+            'connection_port'       => $port,
+            'sqlite_path'           => $sqlitePath,
+            'is_sqlite_environment' => $isSqliteEnv,
+            'anthropic_api_key'     => $encryptedApiKey, // already encrypted
+            'has_anthropic_key'     => !empty($encryptedApiKey),
+        ]);
+
+        // Remove old wp_options — they are no longer the source of truth.
+        delete_option('gateway_connection_port');
+        delete_option('gateway_anthropic_api_key');
+        delete_option('gateway_db_config');
     }
 }

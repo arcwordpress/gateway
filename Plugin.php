@@ -396,9 +396,6 @@ class Plugin
      */
     public function activate()
     {
-        // Auto-configure database driver on first activation
-        $this->autoConfigureDatabase();
-
         // If the database connection is unavailable (e.g. non-standard port in Local WP),
         // skip migrations and defer them. An admin notice will guide the user to fix the
         // port in Gateway Settings; reloading any admin page will then retry automatically.
@@ -407,9 +404,14 @@ class Plugin
             return;
         }
 
-        // Connection is healthy — clear any stale deferral flag and run migrations.
+        // Connection is healthy — clear any stale deferral flag and run migrations first.
+        // The gateway_settings table is created here, so autoConfigureDatabase() must
+        // run after this point (it writes to that table via Eloquent).
         delete_transient('gateway_migrations_pending');
         Database\MigrationHooks::runCoreMigrations();
+
+        // Auto-configure database driver (table now exists).
+        $this->autoConfigureDatabase();
 
         // Create directories for request log tracking
         if (!is_dir(GATEWAY_DATA_DIR)) {
@@ -449,26 +451,40 @@ class Plugin
     }
 
     /**
-     * Auto-configure database driver based on environment detection
+     * Auto-configure database driver based on environment detection.
+     * Called during activation, after runCoreMigrations() has created the gateway_settings table.
      */
     private function autoConfigureDatabase()
     {
-        $existing_config = get_option('gateway_db_config');
+        $is_sqlite   = self::isSQLiteEnvironment();
+        $driver      = $is_sqlite ? 'sqlite' : 'mysql';
+        $sqlite_path = $is_sqlite ? self::findSQLiteDatabase() : '';
 
-        // Only auto-configure if not already set
-        if (empty($existing_config) || !isset($existing_config['driver'])) {
-            $is_sqlite = self::isSQLiteEnvironment();
+        $settings = Collections\GatewaySettingsCollection::find(1);
 
-            $default_config = [
-                'driver' => $is_sqlite ? 'sqlite' : 'mysql',
-            ];
-
-            // Add SQLite-specific configuration
-            if ($is_sqlite) {
-                $default_config['database'] = self::findSQLiteDatabase();
+        if (!$settings) {
+            // Fresh install — create the singleton settings row.
+            Collections\GatewaySettingsCollection::create([
+                'id'                    => 1,
+                'db_driver'             => $driver,
+                'connection_port'       => '',
+                'sqlite_path'           => $sqlite_path,
+                'anthropic_api_key'     => '',
+                'has_anthropic_key'     => false,
+                'is_sqlite_environment' => $is_sqlite,
+            ]);
+        } else {
+            // Row may already exist (e.g. from migrateFromOptions).
+            // Correct the driver if our detection disagrees (handles fresh SQLite installs
+            // where migrateFromOptions defaulted to 'mysql' because no wp_options existed).
+            if ($settings->db_driver !== $driver) {
+                $settings->db_driver = $driver;
+                if ($is_sqlite && empty($settings->sqlite_path)) {
+                    $settings->sqlite_path = $sqlite_path;
+                }
+                $settings->is_sqlite_environment = $is_sqlite;
+                $settings->save();
             }
-
-            update_option('gateway_db_config', $default_config);
         }
     }
 
