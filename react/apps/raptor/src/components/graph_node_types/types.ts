@@ -30,7 +30,6 @@ export type ViewPreviewNodeType = Node<
     columns: string[]
     rows: Record<string, unknown>[]
     droppedFacets: DroppedFacet[]
-    overFacetId: string | null
     onReorderFacets: (facets: DroppedFacet[]) => void
   },
   'viewPreviewNode'

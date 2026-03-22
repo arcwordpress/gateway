@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core'
 import { FACET_TYPES, type FacetType } from '../lib/facet_types'
+import { Layers } from './Layers'
 
 // Pure presentational block — used both in the palette and as DragOverlay clone
 export function FacetBlock({ type, faded }: { type: FacetType; faded?: boolean }) {
@@ -68,11 +69,13 @@ export function FacetPalette({ activeFacetType }: FacetPaletteProps) {
         </div>
       </div>
 
-      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto' }}>
+      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto', maxHeight: 220, flexShrink: 0 }}>
         {FACET_TYPES.map((type) => (
           <DraggableFacetBlock key={type} type={type} isActive={activeFacetType === type} />
         ))}
       </div>
+
+      <Layers />
     </div>
   )
 }
