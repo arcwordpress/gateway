@@ -54,6 +54,14 @@ class Page
             true
         );
 
+        // Vite outputs ESM — the script tag must have type="module".
+        add_filter('script_loader_tag', function ($tag, $handle) {
+            if ($handle !== 'gateway-raptor-builder') {
+                return $tag;
+            }
+            return str_replace('<script ', '<script type="module" ', $tag);
+        }, 10, 2);
+
         foreach ($entry['css'] ?? [] as $i => $css_file) {
             wp_enqueue_style(
                 'gateway-raptor-builder-css-' . $i,
