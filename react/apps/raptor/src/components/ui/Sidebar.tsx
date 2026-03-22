@@ -90,7 +90,14 @@ export default function Sidebar({
       <div className="p-2 space-y-0.5">
         <SectionLabel label="Help" />
         <NavLink to="/docs" label="Documentation" />
-        <NavLink to="/docs" label="Support" />
+        <a
+          href="https://arcwp.ca/support"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="gateway-sidebar-link flex items-center px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
+        >
+          Support
+        </a>
 
         <NavLink to="/settings" label="Settings" icon={Settings2} />
 
