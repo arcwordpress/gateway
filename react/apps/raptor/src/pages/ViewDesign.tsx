@@ -11,7 +11,7 @@ import {
   Background,
   BackgroundVariant,
 } from '@xyflow/react'
-import { DndContext, DragOverlay, closestCenter, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, pointerWithin, type DragStartEvent, type DragEndEvent, type DragOverEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { viewDesignRoute } from '../router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../components/graph_node_types'
@@ -20,6 +20,7 @@ import { FacetPalette, FacetBlock } from '../components/FacetPalette'
 import { type FacetType, type DroppedFacet } from '../lib/facet_types'
 import { apiUrl, authHeaders } from '../lib/api'
 import { Collection, Facet, Field, View, ViewRender } from '../lib/object_types'
+import { ViewDndCtx } from './ViewDndCtx'
 
 function getRowValue(row: Record<string, unknown>, column: string): unknown {
   if (column in row) return row[column]
@@ -316,7 +317,6 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         columns: viewColumns,
         rows: previewRows,
         droppedFacets,
-        overFacetId,
         onReorderFacets: setDroppedFacets,
       },
       position: { x: 50, y: 80 },
@@ -386,7 +386,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets, overFacetId])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, draftView, collection, renderStrategies, viewRenders, activeEngine, activeJsType, saveRenderMutation.isPending, facets, addFacetMutation.isPending, droppedFacets])  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, draftView, activeEngine])                                                                                           // eslint-disable-line react-hooks/exhaustive-deps
 
   const recordsCtxValue: RecordsCtxValue = {
@@ -462,7 +462,8 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
 
   return (
     <RecordsCtx.Provider value={recordsCtxValue}>
-      <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+      <ViewDndCtx.Provider value={{ overFacetId, droppedFacets }}>
+      <DndContext collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="relative w-full h-screen">
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 z-10 h-12 bg-zinc-900/90 backdrop-blur border-b border-zinc-800 flex items-center justify-between px-4">
@@ -580,6 +581,7 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
         </div>
       </div>
       </DndContext>
+      </ViewDndCtx.Provider>
     </RecordsCtx.Provider>
   )
 }

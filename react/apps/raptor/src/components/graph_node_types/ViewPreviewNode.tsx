@@ -6,12 +6,16 @@ import { CSS } from '@dnd-kit/utilities'
 import { type ViewPreviewNodeType } from './types'
 import { type DroppedFacet } from '../../lib/facet_types'
 import { NodeTypeHeader } from './NodeTypeHeader'
+import { useViewDnd } from '../../pages/ViewDndCtx'
 
 function cellValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
 }
+
+// Stop ReactFlow from treating pointer-down inside the drop zone as a node drag
+function stopRF(e: React.PointerEvent) { e.stopPropagation() }
 
 function SortableFacetChip({ facet, showInsertBefore }: { facet: DroppedFacet; showInsertBefore: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -21,25 +25,14 @@ function SortableFacetChip({ facet, showInsertBefore }: { facet: DroppedFacet; s
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-      {/* insertion indicator before this chip */}
-      <div
-        style={{
-          width: showInsertBefore ? 2 : 0,
-          alignSelf: 'stretch',
-          background: '#3b82f6',
-          borderRadius: 1,
-          marginRight: showInsertBefore ? 4 : 0,
-          transition: 'width 0.1s, margin 0.1s',
-          flexShrink: 0,
-        }}
-      />
+      {showInsertBefore && (
+        <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, marginRight: 4, flexShrink: 0 }} />
+      )}
       <div
         ref={setNodeRef}
         {...attributes}
         {...listeners}
-        // nodrag: don't treat this as a ReactFlow node-drag
-        // nopan: don't treat this as a canvas pan
-        className="nodrag nopan"
+        onPointerDown={(e) => { e.stopPropagation(); (listeners as any)?.onPointerDown?.(e) }}
         style={{
           transform: CSS.Transform.toString(transform),
           transition,
@@ -64,17 +57,16 @@ function SortableFacetChip({ facet, showInsertBefore }: { facet: DroppedFacet; s
   )
 }
 
-function FacetDropZone({ droppedFacets, overFacetId }: { droppedFacets: DroppedFacet[]; overFacetId: string | null }) {
+function FacetDropZone({ droppedFacets }: { droppedFacets: DroppedFacet[] }) {
+  const { overFacetId } = useViewDnd()
   const { setNodeRef, isOver } = useDroppable({ id: 'facet-drop-zone' })
 
-  // Show append indicator when hovering the container itself (not a specific chip)
-  const showAppendIndicator = isOver && overFacetId === 'facet-drop-zone'
+  const showAppendIndicator = isOver && (overFacetId === 'facet-drop-zone' || overFacetId === null)
 
   return (
     <div
       ref={setNodeRef}
-      // nodrag + nopan so ReactFlow ignores pointer events here
-      className="nodrag nopan"
+      onPointerDown={stopRF}
       style={{
         marginBottom: 10,
         minHeight: 36,
@@ -103,7 +95,6 @@ function FacetDropZone({ droppedFacets, overFacetId }: { droppedFacets: DroppedF
                 showInsertBefore={overFacetId === facet.id}
               />
             ))}
-            {/* append indicator at end */}
             {showAppendIndicator && (
               <div style={{ width: 2, alignSelf: 'stretch', background: '#3b82f6', borderRadius: 1, flexShrink: 0 }} />
             )}
@@ -137,7 +128,7 @@ export function ViewPreviewNode({ data }: NodeProps<ViewPreviewNodeType>) {
       <NodeTypeHeader label="Desktop" />
       <div style={{ fontSize: 12, fontWeight: 600, color: '#f4f4f5', marginBottom: 8 }}>{data.title}</div>
 
-      <FacetDropZone droppedFacets={data.droppedFacets} overFacetId={data.overFacetId} />
+      <FacetDropZone droppedFacets={data.droppedFacets} />
 
       {cols.length === 0 ? (
         <div style={{ color: '#71717a', fontSize: 12, fontStyle: 'italic' }}>
