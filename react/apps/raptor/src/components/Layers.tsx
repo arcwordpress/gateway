@@ -8,11 +8,14 @@ interface LayerRowProps {
   depth: number
   isGroup?: boolean
   isPlaceholder?: boolean
+  isSelected?: boolean
+  onClick?: () => void
 }
 
-function LayerRow({ label, depth, isGroup = false, isPlaceholder = false }: LayerRowProps) {
+function LayerRow({ label, depth, isGroup = false, isPlaceholder = false, isSelected = false, onClick }: LayerRowProps) {
   return (
     <div
+      onClick={onClick}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -20,7 +23,10 @@ function LayerRow({ label, depth, isGroup = false, isPlaceholder = false }: Laye
         padding: '3px 8px',
         paddingLeft: 8 + depth * INDENT,
         borderRadius: 3,
-        cursor: 'default',
+        cursor: onClick ? 'pointer' : 'default',
+        background: isSelected ? 'rgba(59,130,246,0.12)' : 'transparent',
+        borderLeft: isSelected ? '2px solid #3b82f6' : '2px solid transparent',
+        transition: 'background 0.1s',
       }}
     >
       {/* tree guide line */}
@@ -37,7 +43,7 @@ function LayerRow({ label, depth, isGroup = false, isPlaceholder = false }: Laye
         style={{
           fontSize: 10,
           fontWeight: isGroup ? 600 : 400,
-          color: isPlaceholder ? '#3f3f46' : isGroup ? '#71717a' : '#a1a1aa',
+          color: isPlaceholder ? '#3f3f46' : isSelected ? '#93c5fd' : isGroup ? '#71717a' : '#a1a1aa',
           fontStyle: isPlaceholder ? 'italic' : 'normal',
           textTransform: 'capitalize',
           letterSpacing: isGroup ? '0.04em' : 0,
@@ -53,7 +59,7 @@ function LayerRow({ label, depth, isGroup = false, isPlaceholder = false }: Laye
 }
 
 export function Layers() {
-  const { droppedFacets } = useViewDnd()
+  const { droppedFacets, selectedFacetId, onSelectFacet } = useViewDnd()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -81,7 +87,13 @@ export function Layers() {
           <LayerRow label="empty" depth={1} isPlaceholder />
         ) : (
           droppedFacets.map((facet: DroppedFacet) => (
-            <LayerRow key={facet.id} label={facet.type.replace(/_/g, ' ')} depth={1} />
+            <LayerRow
+              key={facet.id}
+              label={facet.label || facet.type.replace(/_/g, ' ')}
+              depth={1}
+              isSelected={selectedFacetId === facet.id}
+              onClick={() => onSelectFacet(selectedFacetId === facet.id ? null : facet.id)}
+            />
           ))
         )}
       </div>
