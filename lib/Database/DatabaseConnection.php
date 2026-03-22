@@ -113,7 +113,7 @@ class DatabaseConnection
                     // pool is exhausted.  3 s is enough for localhost.
                     // The constant only exists when pdo_mysql is loaded; skip silently
                     // on environments that use a different driver (e.g. mysqlnd variants).
-                    'options' => defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
+                    'options' => class_exists('PDO') && defined('\PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
                         ? [\PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3]
                         : [],
                 ]);
