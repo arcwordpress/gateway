@@ -59,7 +59,25 @@ class SettingsRoute
 
     public function save_settings(\WP_REST_Request $request)
     {
+        // Degraded-mode fallback: if Eloquent is unavailable (no connection, missing table),
+        // persist only the port to wp_options so DatabaseConnection::boot() can pick it up
+        // on the next request and attempt a real connection with the corrected port.
+        // migrateFromOptions() will promote it to the gateway_settings table once migrations
+        // succeed. All other fields are silently ignored in this state.
         $settings = GatewaySettingsCollection::getSettings();
+
+        // $settings->exists === false means getSettings() returned the in-memory fallback.
+        if (!$settings->exists) {
+            if ($request->has_param('port')) {
+                update_option('gateway_connection_port', $request->get_param('port') ?? '');
+            }
+            return rest_ensure_response([
+                'success'          => true,
+                'message'          => __('Port saved. Reload the page to test the connection.', 'gateway'),
+                'port'             => $request->get_param('port') ?? '',
+                'has_anthropic_key' => false,
+            ]);
+        }
 
         if ($request->has_param('port')) {
             $settings->connection_port = $request->get_param('port') ?? '';

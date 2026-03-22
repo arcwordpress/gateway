@@ -159,22 +159,39 @@ class GatewaySettingsCollection extends \Gateway\Collection
      */
     public static function getSettings()
     {
-        $settings = static::find(1);
+        try {
+            $settings = static::find(1);
 
-        if (!$settings) {
-            // Create default settings if none exist
-            $settings = static::create([
-                'id' => 1,
-                'db_driver' => 'mysql',
-                'connection_port' => '',
-                'sqlite_path' => '',
-                'anthropic_api_key' => '',
-                'has_anthropic_key' => false,
-                'is_sqlite_environment' => defined('SQLITE_DB_DROPIN_VERSION'),
-            ]);
+            if (!$settings) {
+                // Create default settings if none exist
+                $settings = static::create([
+                    'id' => 1,
+                    'db_driver' => 'mysql',
+                    'connection_port' => '',
+                    'sqlite_path' => '',
+                    'anthropic_api_key' => '',
+                    'has_anthropic_key' => false,
+                    'is_sqlite_environment' => defined('SQLITE_DB_DROPIN_VERSION'),
+                ]);
+            }
+
+            return $settings;
+        } catch (\Exception $e) {
+            // DB unavailable (missing table, broken connection, etc.).
+            // Return an in-memory model with defaults so the settings page can always
+            // render. connection_port is seeded from wp_options: when the POST handler
+            // is also in degraded mode it writes there, so the value round-trips.
+            $fallback = new static();
+            $fallback->exists              = false;
+            $fallback->id                  = 1;
+            $fallback->db_driver           = 'mysql';
+            $fallback->connection_port     = get_option('gateway_connection_port', '');
+            $fallback->sqlite_path         = '';
+            $fallback->is_sqlite_environment = (bool) defined('SQLITE_DB_DROPIN_VERSION');
+            $fallback->anthropic_api_key   = '';
+            $fallback->has_anthropic_key   = false;
+            return $fallback;
         }
-
-        return $settings;
     }
 
     /**

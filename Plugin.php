@@ -380,9 +380,11 @@ class Plugin
         }
 
         // Don't attempt migrations if the DB connection is unavailable (e.g. wrong port).
-        // gateway_schema_version is intentionally left unset so the next request retries
-        // automatically once the port is corrected in Gateway Settings.
+        // Set the pending transient so the admin notice appears on every WP admin page
+        // until the connection is restored. gateway_schema_version is intentionally left
+        // unset so migrations retry automatically once the port is corrected.
         if (!Database\DatabaseConnection::testConnection()) {
+            set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
             return;
         }
 

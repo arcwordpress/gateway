@@ -42,9 +42,13 @@ class DatabaseConnection
             $sqlite_path = $row['sqlite_path']     ?? '';
         } else {
             // Fresh install or table not yet created — auto-detect.
+            // Also read the port from wp_options: the settings POST endpoint writes there
+            // as a fallback when Eloquent is unavailable (degraded mode), so that a port
+            // saved by the user in the settings UI is honoured on the very next request
+            // even before the gateway_settings table exists.
             $detected    = self::autoDetectDriver();
             $driver      = $detected['driver']   ?? 'mysql';
-            $custom_port = '';
+            $custom_port = get_option('gateway_connection_port', '');
             $sqlite_path = $detected['database'] ?? '';
             if ($driver === 'sqlite') {
                 error_log('Gateway: Auto-detected SQLite, path: ' . $sqlite_path);
