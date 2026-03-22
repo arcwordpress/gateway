@@ -21,6 +21,7 @@ import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsTopLevelPage from './pages/ViewsTopLevel'
 import FormsTopLevelPage from './pages/FormsTopLevel'
 import SettingsPage from './pages/Settings'
+import DocsPage from './pages/Docs'
 import RecordsIndexPage from './pages/records/RecordsIndex'
 import RecordsListPage from './pages/records/RecordsList'
 import RecordFormPage from './pages/records/RecordForm'
@@ -119,6 +120,12 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 })
 
+const docsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/docs',
+  component: DocsPage,
+})
+
 // ─── Records routes ───────────────────────────────────────────────────────────
 
 export const recordsIndexRoute = createRoute({
@@ -165,6 +172,7 @@ const routeTree = rootRoute.addChildren([
   viewsRoute,
   viewDesignRoute,
   settingsRoute,
+  docsRoute,
   recordsIndexRoute,
   recordsListRoute,
   recordCreateRoute,
