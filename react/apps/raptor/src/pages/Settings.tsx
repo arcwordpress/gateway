@@ -33,7 +33,7 @@ export default function Settings() {
   const { data: settings, isLoading } = useQuery<SettingsData>({
     queryKey: ['settings'],
     queryFn: async () => {
-      const response = await fetch(apiUrl('gateway/v1/settings/1'), {
+      const response = await fetch(apiUrl('gateway/v1/settings'), {
         headers: authHeaders(),
       })
       if (!response.ok) throw new Error('Failed to fetch settings')
@@ -44,8 +44,8 @@ export default function Settings() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<SettingsData>) => {
-      const response = await fetch(apiUrl('gateway/v1/settings/1'), {
-        method: 'PUT',
+      const response = await fetch(apiUrl('gateway/v1/settings'), {
+        method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(data),
       })

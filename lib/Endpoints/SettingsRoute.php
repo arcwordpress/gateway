@@ -25,7 +25,7 @@ class SettingsRoute
             'callback' => [$this, 'save_settings'],
             'permission_callback' => [$this, 'check_permissions'],
             'args' => [
-                'port' => [
+                'connection_port' => [
                     'required' => false,
                     'type' => 'string',
                     'validate_callback' => [$this, 'validate_port'],
@@ -72,8 +72,8 @@ class SettingsRoute
             // Persist connection settings to wp_options so DatabaseConnection::boot() can
             // pick them up on the next request. This is the escape hatch that lets a user
             // switch the driver back (e.g. SQLite → MySQL) even when Gateway tables are gone.
-            if ($request->has_param('port')) {
-                update_option('gateway_connection_port', $request->get_param('port') ?? '');
+            if ($request->has_param('connection_port')) {
+                update_option('gateway_connection_port', $request->get_param('connection_port') ?? '');
             }
             if ($request->has_param('db_driver')) {
                 update_option('gateway_connection_driver', sanitize_text_field($request->get_param('db_driver')));
@@ -86,17 +86,17 @@ class SettingsRoute
             return rest_ensure_response([
                 'success'          => true,
                 'message'          => __('Settings saved. Reload the page to apply.', 'gateway'),
-                'port'             => $request->get_param('port') ?? '',
+                'connection_port'  => $request->get_param('connection_port') ?? '',
                 'has_anthropic_key' => false,
             ]);
         }
 
         // Track whether the connection target is changing so we can force a migration re-run.
         $driver_changed = $request->has_param('db_driver') && $request->get_param('db_driver') !== $settings->db_driver;
-        $port_changed   = $request->has_param('port') && $request->get_param('port') !== $settings->connection_port;
+        $port_changed   = $request->has_param('connection_port') && $request->get_param('connection_port') !== $settings->connection_port;
 
-        if ($request->has_param('port')) {
-            $settings->connection_port = $request->get_param('port') ?? '';
+        if ($request->has_param('connection_port')) {
+            $settings->connection_port = $request->get_param('connection_port') ?? '';
         }
 
         if ($request->has_param('anthropic_api_key')) {
