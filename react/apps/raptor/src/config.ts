@@ -8,6 +8,10 @@ declare global {
       schemaUrl: string
       /** False when Gateway tables don't exist yet (wrong DB driver, first install, etc.) */
       dbReady?: boolean
+      /** Current DB driver from wp_options / auto-detect */
+      dbDriver?: string
+      /** Current connection port from wp_options */
+      connectionPort?: string
     }
   }
 }
@@ -21,6 +25,10 @@ export type AppConfig = {
   schemaUrl: string
   /** True when Gateway database tables exist and are ready to use */
   dbReady: boolean
+  /** Current DB driver (mysql | sqlite) */
+  dbDriver: string
+  /** Current connection port (empty string = default) */
+  connectionPort: string
 }
 
 function buildConfig(): AppConfig {
@@ -32,6 +40,8 @@ function buildConfig(): AppConfig {
       version: window.raptorConfig.version,
       schemaUrl: window.raptorConfig.schemaUrl,
       dbReady: window.raptorConfig.dbReady ?? true,
+      dbDriver: window.raptorConfig.dbDriver ?? 'mysql',
+      connectionPort: window.raptorConfig.connectionPort ?? '',
     }
   }
   return {
@@ -42,6 +52,8 @@ function buildConfig(): AppConfig {
     // Vite serves /public at root — schema lives in public/schemas/raptor/
     schemaUrl: import.meta.env.VITE_SCHEMA_URL ?? '/schemas/raptor/extension.json',
     dbReady: true,
+    dbDriver: 'mysql',
+    connectionPort: '',
   }
 }
 

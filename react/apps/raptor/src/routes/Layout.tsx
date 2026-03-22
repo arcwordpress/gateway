@@ -79,11 +79,12 @@ export default function Layout() {
   const shellHeightCss = isExpanded ? '100vh' : `${baseShellHeightPx}px`
 
   // When the database is not ready (missing tables, wrong driver, etc.) route the user
-  // to Settings immediately so they can fix the connection before the app tries to
-  // query any data. PHP passes dbReady via wp_localize_script based on current transients.
+  // to the connection recovery page immediately. That page reads from appConfig directly
+  // (PHP-injected via wp_localize_script) and makes zero API calls, so it works even
+  // when every other endpoint is returning 503.
   useEffect(() => {
-    if (!appConfig.dbReady && pathname !== '/settings') {
-      void navigate({ to: '/settings' })
+    if (!appConfig.dbReady && pathname !== '/settings/connection') {
+      void navigate({ to: '/settings/connection' })
     }
   }, [])
 

@@ -82,6 +82,7 @@ class Plugin
         new Views\ViewRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
+        new Endpoints\ConnectionRoute();
         $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
