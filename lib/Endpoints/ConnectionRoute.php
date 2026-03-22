@@ -65,12 +65,42 @@ class ConnectionRoute
 
     public function save_connection(\WP_REST_Request $request)
     {
-        if ($request->has_param('db_driver')) {
-            update_option('gateway_connection_driver', $request->get_param('db_driver'));
+        $driver = $request->has_param('db_driver')
+            ? sanitize_text_field($request->get_param('db_driver'))
+            : null;
+        $port = $request->has_param('connection_port')
+            ? (sanitize_text_field($request->get_param('connection_port')) ?? '')
+            : null;
+
+        if ($driver !== null) {
+            update_option('gateway_connection_driver', $driver);
+        }
+        if ($port !== null) {
+            update_option('gateway_connection_port', $port);
         }
 
-        if ($request->has_param('connection_port')) {
-            update_option('gateway_connection_port', $request->get_param('connection_port') ?? '');
+        // CRITICAL: boot() reads the driver/port from the gateway_settings table via $wpdb
+        // (which always points to MySQL/WordPress's database), NOT from wp_options. wp_options
+        // is only used when the table doesn't exist yet. If the row exists in MySQL but Eloquent
+        // is currently connected to a different database (e.g. SQLite), saving via Eloquent
+        // would write to the wrong database. We must write directly via $wpdb so that the very
+        // next boot() call reads the updated driver/port from MySQL's gateway_settings row.
+        global $wpdb;
+        $table = $wpdb->prefix . 'gateway_settings';
+        $wpdb->suppress_errors(true);
+        $existing = $wpdb->get_var("SELECT id FROM `{$table}` WHERE id = 1");
+        $wpdb->suppress_errors(false);
+        if ($existing) {
+            $update = [];
+            if ($driver !== null) {
+                $update['db_driver'] = $driver;
+            }
+            if ($port !== null) {
+                $update['connection_port'] = $port;
+            }
+            if (!empty($update)) {
+                $wpdb->update($table, $update, ['id' => 1]);
+            }
         }
 
         // Clear schema version so maybeRunMigrations() re-runs on next page load,
