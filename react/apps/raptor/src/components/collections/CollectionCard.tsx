@@ -44,7 +44,7 @@ export default function CollectionCard({
             <h3 className="text-zinc-100 font-semibold text-sm">{collection.title}</h3>
             <code className="text-[11px] text-zinc-500 font-mono">{collection.key}</code>
           </div>
-          {typeof collection.record_count === 'number' !== undefined && (
+          {typeof collection.record_count === 'number' && (
             <div className="text-right">
               <div className="text-xs text-zinc-500">Records</div>
               <div className="text-sm font-semibold text-zinc-200">{collection.record_count.toLocaleString()}</div>

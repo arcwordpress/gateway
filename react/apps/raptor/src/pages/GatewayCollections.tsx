@@ -74,7 +74,7 @@ function RunMigrationPanel({
               {typeof state.afterRecordCount === 'number' && (
                 <>
                   <span style={{ fontSize: 11, color: '#52525b' }}>→</span>
-                  <span style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 600 }}>{state.afterRecordCount.toLocaleString()} rows</span>
+                  <span style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 600 }}>{typeof state.afterRecordCount === 'number' ? state.afterRecordCount.toLocaleString() : '-'} rows</span>
                 </>
               )}
             </div>
