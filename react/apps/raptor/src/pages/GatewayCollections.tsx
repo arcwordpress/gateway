@@ -458,7 +458,7 @@ export default function GatewayCollections() {
 
   const [panel, setPanel] = useState<PanelState>(null)
 
-  const { data: registeredCollections = [], isLoading: isRegisteredLoading, isError: isRegisteredError } = useQuery({
+  const { data: registeredCollections = [], isLoading: isRegisteredLoading, isError: isRegisteredError } = useQuery<GatewayCollection[]>({
     queryKey: ['registered-collections'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() });
