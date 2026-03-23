@@ -1,395 +1,15 @@
-import { useState, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { apiUrl, authHeaders } from '../lib/api'
-import { useApp } from '../context/app'
-
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-type RouteInfo = {
-  type: string
-  method: string
-  route: string
-  displayRoute: string
-  namespace: string
-  path: string
-}
-
-type GatewayCollection = {
-  key: string
-  title: string
-  titlePlural: string
-  className: string
-  fqcn: string
-  table: string
-  record_count: number
-  routes: RouteInfo[]
-}
-
-type MigrationData = {
-  code: string
-  className: string
-  tableName: string
-  notes: string[]
-}
-
-type MigrationExtension = {
-  key: string
-  slug: string
-  databasePath: string
-}
-
-type MigrationPanelState = {
-  collectionKey: string
-  title: string
-  migration: MigrationData | null
-  loading: boolean
-  extensions: MigrationExtension[]
-  extensionsLoading: boolean
-  installing: boolean
-  installSuccess: { message: string; filePath: string } | null
-  runningMigration: boolean
-}
-
-type RouteTestPanelState = {
-  route: RouteInfo
-  collectionKey: string
-}
-
-type RunMigrationPanelState = {
-  collectionKey: string
-  title: string
-  table: string
-  beforeRecordCount: number
-  running: boolean
-  result: { success: boolean; message: string } | null
-  afterRecordCount: number | null
-}
-
-type PanelState =
-  | { mode: 'migration'; data: MigrationPanelState }
-  | { mode: 'routeTest'; data: RouteTestPanelState }
-  | { mode: 'runMigration'; data: RunMigrationPanelState }
-  | null
-
-// ─── Panel geometry ──────────────────────────────────────────────────────────
-
-function usePanelGeometry() {
-  const { shellTopOffset, shellHeightCss } = useApp()
-  return { top: shellTopOffset, height: shellHeightCss }
-}
-
-// ─── Panel shell ─────────────────────────────────────────────────────────────
-
-function PanelShell({
-  title,
-  sub,
-  onClose,
-  children,
-  width = 400,
-}: {
-  title: string
-  sub?: string
-  onClose: () => void
-  children: React.ReactNode
-  width?: number
-}) {
-  const { top, height } = usePanelGeometry()
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        right: 0,
-        top,
-        height,
-        width,
-        background: 'var(--app-bg)',
-        borderLeft: '1px solid #3f3f46',
-        zIndex: 50,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          padding: '16px 20px 12px',
-          borderBottom: '1px solid #3f3f46',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#e4e4e7' }}>{title}</div>
-          {sub && (
-            <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
-              {sub}
-            </div>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close panel"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#71717a',
-            cursor: 'pointer',
-            fontSize: 16,
-            lineHeight: 1,
-            padding: '2px 4px',
-            marginTop: 2,
-          }}
-        >
-          ✕
-        </button>
-      </div>
-      <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-// ─── Method badge ─────────────────────────────────────────────────────────────
-
-function MethodBadge({ method }: { method: string }) {
-  const colors: Record<string, string> = {
-    GET:    'bg-zinc-800/60 text-zinc-300 border-zinc-700/50',
-    POST:   'bg-zinc-800/60 text-zinc-200 border-zinc-700/50',
-    PUT:    'bg-zinc-900/60 text-zinc-200 border-zinc-800/50',
-    PATCH:  'bg-zinc-900/60 text-zinc-400 border-zinc-700/50',
-    DELETE: 'bg-red-900/60 text-red-300 border-red-700/50',
-  }
-  const cls = colors[method] ?? 'bg-zinc-900/60 text-zinc-300 border-zinc-700/50'
-  return (
-    <span className={`inline-flex items-center justify-center w-14 px-1.5 py-0.5 rounded text-[10px] font-bold border ${cls}`}>
-      {method}
-    </span>
-  )
-}
-
-// ─── Route type label ─────────────────────────────────────────────────────────
-
-function routeTypeLabel(type: string): string {
-  const map: Record<string, string> = {
-    get_many: 'Get Many',
-    get_one:  'Get One',
-    create:   'Create',
-    update:   'Update',
-    delete:   'Delete',
-  }
-  return map[type] ?? type
-}
-
-// ─── Migration Panel ──────────────────────────────────────────────────────────
-
-function MigrationPanel({
-  state,
-  onClose,
-  onStateChange,
-}: {
-  state: MigrationPanelState
-  onClose: () => void
-  onStateChange: (s: MigrationPanelState) => void
-}) {
-  const [copied, setCopied] = useState(false)
-  const [runResult, setRunResult] = useState<{ success: boolean; message: string } | null>(null)
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      } else {
-        const el = document.createElement('textarea')
-        el.value = text
-        el.style.position = 'fixed'
-        el.style.left = '-999999px'
-        document.body.appendChild(el)
-        el.select()
-        document.execCommand('copy')
-        document.body.removeChild(el)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      }
-    } catch {
-      alert('Failed to copy to clipboard')
-    }
-  }
-
-  const installMigration = async (extensionKey: string) => {
-    onStateChange({ ...state, installing: true, installSuccess: null })
-    try {
-      const res = await fetch(
-        apiUrl(`gateway/v1/migrations/${state.collectionKey}/install`),
-        {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({ extension: extensionKey }),
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? 'Failed to install migration')
-      onStateChange({
-        ...state,
-        installing: false,
-        installSuccess: { message: data.message, filePath: data.filePath },
-      })
-    } catch (err) {
-      alert('Error installing migration: ' + (err as Error).message)
-      onStateChange({ ...state, installing: false })
-    }
-  }
-
-  const runMigration = async () => {
-    setRunResult(null)
-    onStateChange({ ...state, runningMigration: true })
-    try {
-      const res = await fetch(
-        apiUrl(`gateway/v1/migrations/${state.collectionKey}/run`),
-        { method: 'POST', headers: authHeaders() }
-      )
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? 'Failed to run migration')
-      setRunResult({ success: true, message: data.message ?? 'Migration executed successfully!' })
-      onStateChange({ ...state, runningMigration: false })
-    } catch (err) {
-      setRunResult({ success: false, message: 'Error: ' + (err as Error).message })
-      onStateChange({ ...state, runningMigration: false })
-    }
-  }
-
-  return (
-    <PanelShell title="Database Migration" sub={state.collectionKey} onClose={onClose} width={480}>
-      {state.loading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-zinc-500 text-sm">Generating migration code…</p>
-        </div>
-      ) : state.migration ? (
-        <div className="space-y-4">
-          {/* Install success */}
-          {state.installSuccess && (
-            <div className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-700/40">
-              <p className="text-zinc-200 text-xs font-semibold mb-1">Migration Installed Successfully!</p>
-              <p className="text-zinc-300 text-xs">{state.installSuccess.message}</p>
-              <code className="text-[10px] text-zinc-500 font-mono block mt-2 bg-zinc-900/30 px-2 py-1 rounded">
-                {state.installSuccess.filePath}
-              </code>
-            </div>
-          )}
-
-          {/* Install to extension */}
-          {state.extensions.length > 0 && !state.installSuccess && (
-            <div className="p-3 rounded-lg bg-zinc-900/30 border border-zinc-800/30">
-              <p className="text-zinc-300 text-xs font-semibold mb-2">Install to Extension</p>
-              <div className="space-y-1.5">
-                {state.extensions.map((ext) => (
-                  <div
-                    key={ext.key}
-                    className="flex items-center justify-between p-2 rounded bg-zinc-900/60 border border-zinc-800/50"
-                  >
-                    <div>
-                      <div className="text-zinc-200 text-xs font-medium">{ext.slug}</div>
-                      <code className="text-[10px] text-zinc-500 font-mono">{ext.databasePath}</code>
-                    </div>
-                    <button
-                      onClick={() => void installMigration(ext.key)}
-                      disabled={state.installing}
-                      className="px-2.5 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {state.installing ? 'Installing…' : 'Install'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Manual instructions */}
-          {!state.installSuccess && (
-            <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-700/40">
-              <p className="text-zinc-300 text-xs font-semibold mb-1.5">Manual Installation</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
-                <li>
-                  Save to{' '}
-                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
-                    /lib/Database/{state.migration.className}.php
-                  </code>
-                </li>
-                <li>Require the file in your plugin</li>
-                <li>
-                  Call{' '}
-                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
-                    {state.migration.className}::create()
-                  </code>{' '}
-                  from your activation hook
-                </li>
-              </ol>
-            </div>
-          )}
-
-          {/* Notes */}
-          {state.migration.notes.length > 0 && (
-            <div className="p-3 rounded-lg bg-zinc-900/20 border border-zinc-800/30">
-              <p className="text-zinc-200 text-xs font-semibold mb-1">Notes</p>
-              <ul className="list-disc list-inside space-y-0.5">
-                {state.migration.notes.map((note, i) => (
-                  <li key={i} className="text-zinc-300 text-xs">{note}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Code */}
-          <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-zinc-300 text-xs font-semibold">Generated Code</span>
-              <button
-                onClick={() => void copyToClipboard(state.migration!.code)}
-                className="px-2.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors"
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <pre className="bg-zinc-950 text-zinc-300 p-3 rounded-lg overflow-x-auto text-[11px] leading-relaxed max-h-64 overflow-y-auto">
-              <code>{state.migration.code}</code>
-            </pre>
-          </div>
-
-          {/* Run result */}
-          {runResult && (
-            <div
-              style={{
-                padding: '10px 12px',
-                borderRadius: 6,
-                background: runResult.success ? '#18181b' : '#18181b',
-                border: `1px solid ${runResult.success ? '#3f3f46' : '#52525b'}`,
-                fontSize: 12,
-                color: runResult.success ? '#a1a1aa' : '#e4e4e7',
-              }}
-            >
-              {runResult.message}
-            </div>
-          )}
-
-          {/* Run button */}
-          <button
-            onClick={() => void runMigration()}
-            disabled={state.runningMigration}
-            className="w-full px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 text-white text-sm font-medium transition-colors"
-          >
-            {state.runningMigration ? 'Running Migration…' : runResult?.success ? 'Run Again' : 'Run Migration Now'}
-          </button>
-        </div>
-      ) : null}
-    </PanelShell>
-  )
-}
-
-// ─── Run Migration Panel ──────────────────────────────────────────────────────
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiUrl, authHeaders } from '../lib/api';
+import type { RouteInfo } from '../types/RouteInfo';
+import type { GatewayCollection } from '../types/GatewayCollection';
+import type { MigrationExtension } from '../types/MigrationExtension';
+import type { MigrationPanelState } from '../types/MigrationPanelState';
+import type { RunMigrationPanelState } from '../types/RunMigrationPanelState';
+import type { PanelState } from '../types/PanelState';
+import PanelShell from '../components/ui/PanelShell';
+import MigrationPanel from '../components/collections/migrations/MigrationPanel';
+import CollectionCard from '../components/collections/CollectionCard';
 
 function RunMigrationPanel({
   state,
@@ -411,13 +31,12 @@ function RunMigrationPanel({
       )
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? 'Failed to run migration')
-      // Refetch to get updated record count for "after" snapshot
       onRefetch()
       onStateChange({
         ...state,
         running: false,
         result: { success: true, message: data.message ?? 'Migration executed successfully!' },
-        afterRecordCount: null, // will be filled after refetch
+        afterRecordCount: null,
       })
     } catch (err) {
       onStateChange({
@@ -442,16 +61,17 @@ function RunMigrationPanel({
   return (
     <PanelShell title="Run Migration" sub={state.collectionKey} onClose={onClose} width={400}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Before / After snapshots */}
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#71717a', marginBottom: 8 }}>
-            {state.afterRecordCount !== null ? 'Before / After' : 'Before'}
+            {typeof state.afterRecordCount === 'number' ? 'Before / After' : 'Before'}
           </div>
           <div style={rowStyle}>
             <span style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace' }}>{state.table}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#a1a1aa', fontWeight: 600 }}>{state.beforeRecordCount.toLocaleString()} rows</span>
-              {state.afterRecordCount !== null && (
+              <span style={{ fontSize: 12, color: '#a1a1aa', fontWeight: 600 }}>
+                {typeof state.beforeRecordCount === 'number' ? state.beforeRecordCount.toLocaleString() : '—'} rows
+              </span>
+              {typeof state.afterRecordCount === 'number' && (
                 <>
                   <span style={{ fontSize: 11, color: '#52525b' }}>→</span>
                   <span style={{ fontSize: 12, color: '#e4e4e7', fontWeight: 600 }}>{state.afterRecordCount.toLocaleString()} rows</span>
@@ -461,12 +81,10 @@ function RunMigrationPanel({
           </div>
         </div>
 
-        {/* Description */}
         <p style={{ fontSize: 12, color: '#71717a', margin: 0 }}>
           This will create or alter the <code style={{ fontFamily: 'monospace', color: '#a1a1aa' }}>{state.table}</code> database table to match the current collection schema.
         </p>
 
-        {/* Result */}
         {state.result && (
           <div
             style={{
@@ -482,23 +100,10 @@ function RunMigrationPanel({
           </div>
         )}
 
-        {/* Run button */}
         <button
           onClick={() => void runMigration()}
           disabled={state.running}
-          style={{
-            width: '100%',
-            padding: '8px 16px',
-            borderRadius: 6,
-            background: state.running ? '#3f3f46' : '#52525b',
-            border: 'none',
-            color: '#e4e4e7',
-            fontSize: 13,
-            fontWeight: 500,
-            cursor: state.running ? 'not-allowed' : 'pointer',
-            opacity: state.running ? 0.6 : 1,
-            transition: 'background 0.2s',
-          }}
+          className="w-full px-4 py-2 rounded-md bg-zinc-600 disabled:bg-zinc-700 border-none text-zinc-200 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 transition-colors duration-200"
         >
           {state.running ? 'Running…' : state.result?.success ? 'Run Again' : 'Confirm & Run Migration'}
         </button>
@@ -506,8 +111,6 @@ function RunMigrationPanel({
     </PanelShell>
   )
 }
-
-// ─── Route Test Panel ─────────────────────────────────────────────────────────
 
 type AuthType = 'cookie' | 'basic' | 'public'
 type RequestTab = 'request' | 'response' | 'code'
@@ -851,108 +454,20 @@ function RouteTestPanel({
   )
 }
 
-// ─── Collection card ──────────────────────────────────────────────────────────
-
-function CollectionCard({
-  collection,
-  onGenerateMigration,
-  onRunMigration,
-  onTestRoute,
-}: {
-  collection: GatewayCollection
-  onGenerateMigration: () => void
-  onRunMigration: () => void
-  onTestRoute: (route: RouteInfo) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-
-  return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 overflow-hidden">
-      {/* Card header */}
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <h3 className="text-zinc-100 font-semibold text-sm">{collection.title}</h3>
-            <code className="text-[11px] text-zinc-500 font-mono">{collection.key}</code>
-          </div>
-          {collection.record_count !== undefined && (
-            <div className="text-right">
-              <div className="text-xs text-zinc-500">Records</div>
-              <div className="text-sm font-semibold text-zinc-200">{collection.record_count.toLocaleString()}</div>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-2 mb-3">
-          <div>
-            <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Class</span>
-            <code className="block text-[11px] text-zinc-400 font-mono truncate">{collection.fqcn}</code>
-          </div>
-          <div>
-            <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Table</span>
-            <code className="block text-[11px] text-zinc-400 font-mono">{collection.table}</code>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={onGenerateMigration}
-            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 transition-colors"
-          >
-            Generate Migration
-          </button>
-          <button
-            onClick={onRunMigration}
-            className="flex-1 px-2.5 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
-          >
-            Run Migration
-          </button>
-        </div>
-      </div>
-
-      {/* Routes toggle */}
-      {collection.routes.length > 0 && (
-        <>
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="w-full px-4 py-2 flex justify-between items-center border-t border-zinc-800 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors"
-          >
-            <span>{collection.routes.length} route{collection.routes.length !== 1 ? 's' : ''}</span>
-            <span>{expanded ? '▲' : '▼'}</span>
-          </button>
-
-          {expanded && (
-            <div className="border-t border-zinc-800/60 divide-y divide-zinc-800/60">
-              {collection.routes.map((route, idx) => (
-                <div key={idx} className="px-4 py-2.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <MethodBadge method={route.method} />
-                    <div className="min-w-0">
-                      <code className="text-[11px] text-zinc-300 block truncate">{route.displayRoute}</code>
-                      <span className="text-[10px] text-zinc-600">{routeTypeLabel(route.type)}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => onTestRoute(route)}
-                    className="shrink-0 px-2.5 py-1 text-[10px] rounded bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-300 border border-zinc-700/40 transition-colors"
-                  >
-                    Test
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-// ─── Main page ────────────────────────────────────────────────────────────────
-
 export default function GatewayCollections() {
+
   const [panel, setPanel] = useState<PanelState>(null)
+
+  const { data: registeredCollections = [], isLoading: isRegisteredLoading, isError: isRegisteredError } = useQuery({
+    queryKey: ['registered-collections'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      console.log('reg/res', res)
+      const items = await res.json();
+      return items ?? [];
+    },
+  });
 
   const { data, isLoading, isError, refetch } = useQuery<{ collections: GatewayCollection[] }>({
     queryKey: ['gateway-admin-data'],
@@ -962,6 +477,8 @@ export default function GatewayCollections() {
       return res.json()
     },
   })
+
+  console.log('Gateway admin-data query result:', data);
 
   const collections = data?.collections ?? []
 
@@ -1035,13 +552,9 @@ export default function GatewayCollections() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* Header */}
       <div className="shrink-0 px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
         <div>
           <h2 className="text-zinc-100 font-semibold text-base">Registered Collections</h2>
-          <p className="text-zinc-500 text-xs mt-0.5">
-            Code-based Gateway collections — read-only, managed in PHP
-          </p>
         </div>
         {!isLoading && !isError && (
           <span className="text-[11px] text-zinc-600 bg-zinc-800/60 px-2.5 py-1 rounded-full">
@@ -1050,7 +563,6 @@ export default function GatewayCollections() {
         )}
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {isLoading && (
           <div className="flex items-center justify-center py-16">
@@ -1064,7 +576,7 @@ export default function GatewayCollections() {
           </div>
         )}
 
-        {!isLoading && !isError && collections.length === 0 && (
+        {!isLoading && !isError && registeredCollections.length === 0 && (
           <div className="flex items-center justify-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
             <div className="text-center">
               <p className="text-zinc-600 text-sm">No registered collections found</p>
@@ -1075,7 +587,7 @@ export default function GatewayCollections() {
 
         {!isLoading && !isError && collections.length > 0 && (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {collections.map((col) => (
+            {registeredCollections.map((col) => (
               <CollectionCard
                 key={col.key}
                 collection={col}
@@ -1088,7 +600,6 @@ export default function GatewayCollections() {
         )}
       </div>
 
-      {/* Side panels */}
       {panel?.mode === 'migration' && (
         <MigrationPanel
           state={panel.data}

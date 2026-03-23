@@ -22,7 +22,7 @@ export function DatabaseNode({ data }: NodeProps<DbNodeData>) {
       <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#a1a1aa', wordBreak: 'break-all' }}>
         {data.tableName}
       </div>
-      {data.recordCount !== null && (
+      {typeof data.recordCount === 'number' && (
         <div style={{ marginTop: 6, fontSize: 11, color: '#71717a' }}>
           {data.recordCount.toLocaleString()} record{data.recordCount !== 1 ? 's' : ''}
         </div>

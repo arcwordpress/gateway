@@ -61,7 +61,7 @@ export default function RecordsIndex() {
                     {col.titlePlural}
                   </span>
                   <span className="shrink-0 text-xs tabular-nums font-medium text-zinc-500 bg-zinc-800 group-hover:bg-zinc-700 group-hover:text-zinc-300 px-2 py-0.5 rounded-full transition-colors">
-                    {col.record_count.toLocaleString()}
+                    {typeof col.record_count === 'number' ? col.record_count.toLocaleString() : '—'}
                   </span>
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">{col.key}</p>
