@@ -43,7 +43,6 @@ class TestConnectionRoute
             $driver = DatabaseConnection::getDriver();
             $result['driver'] = $driver;
 
-            // Get server version (driver-specific)
             if ($driver === 'sqlite') {
                 $version = $connection->selectOne('SELECT sqlite_version() as version');
                 $result['server_version'] = 'SQLite ' . $version->version;
@@ -52,7 +51,6 @@ class TestConnectionRoute
                 $result['server_version'] = $version->version;
             }
 
-            // Get table count with WordPress prefix (driver-specific)
             if ($driver === 'sqlite') {
                 $tables = $connection->select(
                     "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?",
@@ -64,7 +62,6 @@ class TestConnectionRoute
                 $result['table_count'] = count($tables);
             }
 
-            // Get custom port if set (only relevant for MySQL)
             if ($driver === 'mysql') {
                 $custom_port = GatewaySettingsCollection::getSettings()->connection_port ?? '';
                 if (!empty($custom_port)) {

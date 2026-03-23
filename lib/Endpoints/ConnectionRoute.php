@@ -4,19 +4,10 @@ namespace Gateway\Endpoints;
 
 use Gateway\Database\DatabaseConnection;
 
-// Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * GET/POST /gateway/v1/settings/connection
- *
- * Reads and writes ONLY from wp_options — zero Eloquent, zero DB queries.
- * This endpoint is guaranteed to work regardless of the database state, so
- * the user can always recover from a broken connection (wrong driver, wrong
- * port, missing tables, etc.) without needing the gateway_settings table.
- */
 class ConnectionRoute
 {
     public function __construct()
@@ -79,8 +70,6 @@ class ConnectionRoute
             update_option('gateway_connection_port', $port);
         }
 
-        // Clear schema version so maybeRunMigrations() re-runs on next page load,
-        // and clear the connection OK transient so boot() retries the connection.
         delete_option('gateway_schema_version');
         delete_transient('gateway_connection_ok');
         delete_transient('gateway_tables_missing');

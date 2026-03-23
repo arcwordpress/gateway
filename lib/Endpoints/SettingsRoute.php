@@ -59,30 +59,17 @@ class SettingsRoute
 
     public function save_settings(\WP_REST_Request $request)
     {
-        // Degraded-mode fallback: if Eloquent is unavailable (no connection, missing table),
-        // persist only the port to wp_options so DatabaseConnection::boot() can pick it up
-        // on the next request and attempt a real connection with the corrected port.
-        // migrateFromOptions() will promote it to the gateway_settings table once migrations
-        // succeed. All other fields are silently ignored in this state.
-        $settings = GatewaySettingsCollection::getSettings();
 
-        // $settings->exists === false means getSettings() returned the in-memory fallback
-        // because Eloquent could not reach the database (missing table, broken connection, etc.).
+        $settings = GatewaySettingsCollection::getSettings();
         if (!$settings->exists) {
-            // Persist connection settings to wp_options so DatabaseConnection::boot() can
-            // pick them up on the next request. This is the escape hatch that lets a user
-            // switch the driver back (e.g. SQLite → MySQL) even when Gateway tables are gone.
             if ($request->has_param('connection_port')) {
                 update_option('gateway_connection_port', $request->get_param('connection_port') ?? '');
             }
             if ($request->has_param('db_driver')) {
                 update_option('gateway_connection_driver', sanitize_text_field($request->get_param('db_driver')));
             }
-            // Clear the schema version so maybeRunMigrations() re-runs migrations against
-            // the new connection on the very next request.
             delete_option('gateway_schema_version');
             delete_transient('gateway_connection_ok');
-
             return rest_ensure_response([
                 'success'          => true,
                 'message'          => __('Settings saved. Reload the page to apply.', 'gateway'),
@@ -91,7 +78,6 @@ class SettingsRoute
             ]);
         }
 
-        // Track whether the connection target is changing so we can force a migration re-run.
         $driver_changed = $request->has_param('db_driver') && $request->get_param('db_driver') !== $settings->db_driver;
         $port_changed   = $request->has_param('connection_port') && $request->get_param('connection_port') !== $settings->connection_port;
 
@@ -100,8 +86,6 @@ class SettingsRoute
         }
 
         if ($request->has_param('anthropic_api_key')) {
-            // The GatewaySettingsCollection saving hook handles encryption and
-            // the has_anthropic_key flag automatically.
             $settings->anthropic_api_key = $request->get_param('anthropic_api_key') ?? '';
         }
 
@@ -118,15 +102,12 @@ class SettingsRoute
         }
 
         $settings->save();
-        // Keep wp_options in sync — boot() reads connection config from there.
         update_option('gateway_connection_driver', $settings->db_driver);
         update_option('gateway_connection_port',   $settings->connection_port);
         if (!empty($settings->sqlite_path)) {
             update_option('gateway_sqlite_path', $settings->sqlite_path);
         }
 
-        // When the connection target changes (driver or port), clear the schema version so
-        // maybeRunMigrations() re-runs migrations for the new database on the next request.
         if ($driver_changed || $port_changed) {
             delete_option('gateway_schema_version');
             delete_transient('gateway_connection_ok');
@@ -142,12 +123,10 @@ class SettingsRoute
 
     public function validate_port($value, $request, $param)
     {
-        // Empty is valid (means use default)
         if (empty($value)) {
             return true;
         }
 
-        // Must be numeric
         if (!is_numeric($value)) {
             return new \WP_Error(
                 'invalid_port',
@@ -172,7 +151,6 @@ class SettingsRoute
 
     public function validate_db_driver($value, $request, $param)
     {
-        // Must be either 'mysql' or 'sqlite'
         if (!in_array($value, ['mysql', 'sqlite'], true)) {
             return new \WP_Error(
                 'invalid_db_driver',

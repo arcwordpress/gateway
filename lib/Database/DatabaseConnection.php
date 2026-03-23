@@ -4,7 +4,6 @@ namespace Gateway\Database;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -13,9 +12,6 @@ class DatabaseConnection
 {
     private static $capsule = null;
 
-    /**
-     * Boot Eloquent ORM
-     */
     public static function boot()
     {
         if (self::$capsule !== null) {
@@ -26,10 +22,6 @@ class DatabaseConnection
 
         self::$capsule = new Capsule;
 
-        // wp_options is the single source of truth for connection config. It lives in
-        // MySQL (WordPress's database) and is always readable regardless of which database
-        // Eloquent is currently using. autoDetectDriver() is used only as a last-resort
-        // default when no option has ever been saved.
         $detected    = self::autoDetectDriver();
         $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
         $custom_port = get_option('gateway_connection_port', '');
@@ -37,9 +29,7 @@ class DatabaseConnection
 
         try {
             if ($driver === 'sqlite') {
-                // SQLite configuration
                 $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
-
                 self::$capsule->addConnection([
                     'driver'    => 'sqlite',
                     'database'  => $database,
@@ -47,27 +37,19 @@ class DatabaseConnection
                     'foreign_key_constraints' => true,
                 ]);
             } else {
-                // MySQL configuration (existing logic)
-                // Fix collation mismatch
                 $collation = $wpdb->collate ?: 'utf8mb4_unicode_ci';
                 if (DB_CHARSET === 'utf8' && strpos($collation, 'utf8mb4') !== false) {
                     $collation = 'utf8_general_ci';
                 }
-
-                // Parse DB_HOST for port if included (e.g., localhost:3307)
                 $host = DB_HOST;
-                $port = 3306; // Default MySQL port
-
+                $port = 3306; 
                 if (strpos(DB_HOST, ':') !== false) {
                     list($host, $port) = explode(':', DB_HOST, 2);
                     $port = intval($port);
                 }
-
-                // $custom_port was already loaded from the gateway_settings table above.
                 if (!empty($custom_port)) {
                     $port = intval($custom_port);
                 }
-
                 self::$capsule->addConnection([
                     'driver' => 'mysql',
                     'host' => $host,
@@ -78,20 +60,13 @@ class DatabaseConnection
                     'charset' => DB_CHARSET,
                     'collation' => $collation,
                     'prefix' => $wpdb->prefix,
-                    // Fail fast when the host is unreachable (e.g. wrong port in Local WP).
-                    // PDO's default is ~30 s which hangs every page load until the worker
-                    // pool is exhausted.  3 s is enough for localhost.
-                    // The constant only exists when pdo_mysql is loaded; skip silently
-                    // on environments that use a different driver (e.g. mysqlnd variants).
                     'options' => class_exists('PDO') && defined('\PDO::MYSQL_ATTR_CONNECT_TIMEOUT')
                         ? [\PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 3]
                         : [],
                 ]);
             }
-
             self::$capsule->setAsGlobal();
             self::$capsule->bootEloquent();
-
             do_action('gateway_eloquent_booted', self::$capsule);
         } catch (\Exception $e) {
             error_log('Gateway database connection failed: ' . $e->getMessage());
@@ -100,11 +75,6 @@ class DatabaseConnection
         return self::$capsule;
     }
 
-    /**
-     * Auto-detect the appropriate database driver
-     *
-     * @return array Configuration array with driver and database path
-     */
     public static function autoDetectDriver()
     {
         if (self::isSQLiteEnvironment()) {
@@ -126,37 +96,26 @@ class DatabaseConnection
      */
     public static function isSQLiteEnvironment()
     {
-        // Check for DB_ENGINE constant (set by SQLite integration plugin)
-        if (defined('DB_ENGINE') && DB_ENGINE === 'sqlite') {
-            error_log('Gateway: SQLite detected via DB_ENGINE constant');
+        $driver = function_exists('get_option') ? get_option('gateway_connection_driver', '') : '';
+        if ($driver === 'mysql') {
+            return false;
+        }
+        if ($driver === 'sqlite') {
             return true;
         }
 
-        // Check if db.php drop-in exists (SQLite integration)
-        if (file_exists(WP_CONTENT_DIR . '/db.php')) {
-            $db_php_content = @file_get_contents(WP_CONTENT_DIR . '/db.php');
-            if ($db_php_content && stripos($db_php_content, 'sqlite') !== false) {
-                error_log('Gateway: SQLite detected via db.php drop-in');
+        // 2. Constant check
+        if (defined('DB_ENGINE')) {
+            if (DB_ENGINE === 'mysql') {
+                return false;
+            }
+            if (DB_ENGINE === 'sqlite') {
                 return true;
             }
         }
-
-        // Check for SQLite database file in common locations
-        $sqlite_path = self::findSQLiteDatabase();
-        if ($sqlite_path && file_exists($sqlite_path)) {
-            error_log('Gateway: SQLite detected via database file at: ' . $sqlite_path);
-            return true;
-        }
-
-        error_log('Gateway: SQLite not detected. WP_CONTENT_DIR: ' . WP_CONTENT_DIR);
         return false;
     }
 
-    /**
-     * Find SQLite database file path
-     *
-     * @return string Path to SQLite database
-     */
     public static function findSQLiteDatabase()
     {
         $sqlite_paths = [
@@ -171,30 +130,20 @@ class DatabaseConnection
             }
         }
 
-        // Default to Playground standard location
         return WP_CONTENT_DIR . '/database/.ht.sqlite';
     }
 
-    /**
-     * Get the Capsule instance
-     */
     public static function getCapsule()
     {
         return self::$capsule;
     }
 
-    /**
-     * Get the current database driver
-     *
-     * @return string 'mysql' or 'sqlite'
-     */
     public static function getDriver()
     {
         if (self::$capsule !== null) {
             return self::$capsule->getConnection()->getDriverName();
         }
 
-        // Capsule not yet booted — read directly from gateway_settings via $wpdb.
         global $wpdb;
         $table = $wpdb->prefix . 'gateway_settings';
         $wpdb->suppress_errors(true);
@@ -204,74 +153,41 @@ class DatabaseConnection
         return $driver ?: 'mysql';
     }
 
-    /**
-     * Test if database connection is available
-     *
-     * @return bool True if connection is working, false otherwise
-     */
     public static function testConnection()
     {
-        try {
-            if (self::$capsule === null) {
+        $detected    = self::autoDetectDriver();
+        $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
+        $custom_port = get_option('gateway_connection_port', '3306');
+        $sqlite_path = get_option('gateway_sqlite_path', $detected['database'] ?? '');
+
+        error_log('driver is ' . $driver);
+        error_log('custom_port is ' . $custom_port);
+
+        if ($driver === 'sqlite') {
+            $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
+            return file_exists($database) && is_readable($database);
+        } else {
+            $host = DB_HOST;
+            $port = 3306;
+            if (strpos(DB_HOST, ':') !== false) {
+                list($host, $port) = explode(':', DB_HOST, 2);
+                $port = intval($port);
+            }
+            if (!empty($custom_port)) {
+                $port = intval($custom_port);
+            }
+            $dsn = "mysql:host=$host;port=$port;dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            try {
+                $pdo = new \PDO($dsn, DB_USER, DB_PASSWORD, [
+                    \PDO::ATTR_TIMEOUT => 3,
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                ]);
+                $pdo->query('SELECT 1');
+                return true;
+            } catch (\Exception $e) {
+                error_log('Gateway config test failed: ' . $e->getMessage());
                 return false;
             }
-
-            // Try a simple query to test the connection
-            self::$capsule->getConnection()->getPdo();
-            return true;
-        } catch (\Exception $e) {
-            error_log('Gateway database connection test failed: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Test database connection with a lightweight query
-     *
-     * The connect timeout is enforced by the PDO::MYSQL_ATTR_CONNECT_TIMEOUT
-     * option set in boot(), so this will return false quickly when the host
-     * is unreachable rather than blocking for 30 s.
-     *
-     * @return bool True if connection and a simple query both succeed
-     */
-    public static function testConnectionWithTimeout($timeout = 5)
-    {
-        try {
-            if (self::$capsule === null) {
-                return false;
-            }
-
-            $driver = self::getDriver();
-
-            // Get PDO connection and perform a simple query
-            $pdo = self::$capsule->getConnection()->getPdo();
-
-            // Quick test query appropriate for driver
-            if ($driver === 'mysql') {
-                $pdo->query('SELECT 1');
-            } else {
-                // SQLite - just getting PDO is usually enough
-                // But we can also test with a query
-                $pdo->query('SELECT 1');
-            }
-
-            return true;
-        } catch (\PDOException $e) {
-            // Log specific PDO errors with error codes
-            $code = $e->getCode();
-            $message = 'Gateway database connection test failed';
-
-            if ($code === 2002 || $code === 'HY000') {
-                $message .= ' (server unreachable)';
-            } elseif ($code === 1045) {
-                $message .= ' (authentication failed)';
-            }
-
-            error_log($message . ': ' . $e->getMessage());
-            return false;
-        } catch (\Exception $e) {
-            error_log('Gateway database connection test failed: ' . $e->getMessage());
-            return false;
         }
     }
 }

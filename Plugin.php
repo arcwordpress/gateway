@@ -51,7 +51,6 @@ class Plugin
     private $collectionRoutes;
     private $adminDataRoute;
     private $settingsRoute;
-    private $testConnectionRoute;
     private $migrationGeneratorRoute;
     private $migrationRunnerRoute;
     private $mazeRoutes;
@@ -71,20 +70,39 @@ class Plugin
 
     private function __construct()
     {
-        $this->dbConnection = Database\DatabaseConnection::testConnection();
+
+        $connection_ok = get_transient('gateway_connection_ok');
+
+        if ($connection_ok === false || $connection_ok === '0') {
+            $this->dbConnection = Database\DatabaseConnection::testConnection();
+            if ($this->dbConnection) {
+                set_transient('gateway_connection_ok', '1', 30 * MINUTE_IN_SECONDS);
+            } else {
+                set_transient('gateway_connection_ok', '0', MINUTE_IN_SECONDS);
+            }
+        } else {
+            $this->dbConnection = true;
+        }
+
         if (!$this->dbConnection) {
             error_log('Gateway: Database connection failed in constructor. Plugin will load in degraded mode.');
             add_action('admin_notices', [$this, 'showConnectionNotice']);
             $this->raptorEndpoints();
+            new Endpoints\ConnectionRoute();
             Admin\Page::init();
         } else {
             $this->bootEloquent();
             $this->init();
         }
+
     }
 
     private function init()
     {
+
+        error_log('INIT running at 103');
+
+        $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
         $this->viewRegistry = new Views\ViewRegistry();
         $this->facetRegistry = new Views\Facets\FacetRegistry();
@@ -96,7 +114,7 @@ class Plugin
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         new Endpoints\ConnectionRoute();
-        $this->testConnectionRoute = new Endpoints\TestConnectionRoute();
+        new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         new Endpoints\CoreCollectionUserRoute();
@@ -253,30 +271,34 @@ class Plugin
 
     private function maybeRunMigrations(): void
     {
-        $stored = get_option('gateway_schema_version', '');
-        if ($stored === GATEWAY_VERSION) {
-            if ($this->coreTablesExist()) {
-                return;
-            }
-        }
+        $stored_version  = get_option('gateway_tables_schema', '');
+        $current_version = GATEWAY_VERSION;
 
-        if (!Database\DatabaseConnection::testConnection()) {
-            set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
-            set_transient('gateway_connection_ok', '0', 60);
+        error_log("[Gateway] maybeRunMigrations: stored_version={$stored_version}, current_version={$current_version}");
+
+        if ($stored_version === $current_version && $this->coreTablesExist()) {
+            error_log("[Gateway] maybeRunMigrations: Schema up to date and tables exist. Setting transient and returning.");
+            set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
             return;
         }
 
+        error_log("[Gateway] maybeRunMigrations: Running migrations...");
         $success = Database\MigrationHooks::runCoreMigrations();
 
-        if (!$success || !$this->coreTablesExist()) {
-            set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
-            return;
+        if (!$success) {
+            error_log("[Gateway] maybeRunMigrations: runCoreMigrations() returned false.");
         }
-
-        delete_transient('gateway_migrations_pending');
-        delete_transient('gateway_tables_missing');
-        delete_transient('gateway_connection_ok');
-        update_option('gateway_schema_version', GATEWAY_VERSION, false);
+        if (!$this->coreTablesExist()) {
+            error_log("[Gateway] maybeRunMigrations: coreTablesExist() returned false.");
+        }
+        if ($success && $this->coreTablesExist()) {
+            error_log("[Gateway] maybeRunMigrations: Migration succeeded and tables exist. Updating schema version and setting transient.");
+            update_option('gateway_tables_schema', $current_version, false);
+            set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
+        } else {
+            error_log("[Gateway] maybeRunMigrations: Migration failed or tables missing. Setting transient to false.");
+            set_transient('gateway_tables_installed', false, DAY_IN_SECONDS);
+        }
     }
 
     private function coreTablesExist(): bool
@@ -284,13 +306,29 @@ class Plugin
         try {
             $capsule = Database\DatabaseConnection::getCapsule();
             if ($capsule === null) {
+                error_log('NO CAPSULE AT 305');
                 return false;
             }
-            global $wpdb;
+
             $schema = $capsule->getConnection()->getSchemaBuilder();
-            return $schema->hasTable($wpdb->prefix . 'gateway_settings')
-                && $schema->hasTable($wpdb->prefix . 'gateway_raptor_extension');
+            if (!$schema || !is_object($schema)) {
+                error_log('[Gateway] Schema builder is not valid.');
+                return false;
+            }
+
+            $settings_table  = 'gateway_settings';
+            $extension_table = 'gateway_raptor_extension';
+
+
+            $has_settings = $schema->hasTable($settings_table);
+            $has_extension = $schema->hasTable($extension_table);
+
+            error_log("[Gateway] Checking table: {$settings_table} exists? " . ($has_settings ? 'YES' : 'NO'));
+            error_log("[Gateway] Checking table: {$extension_table} exists? " . ($has_extension ? 'YES' : 'NO'));
+
+            return $has_settings && $has_extension;
         } catch (\Exception $e) {
+            error_log('[Gateway] Exception in coreTablesExist: ' . $e->getMessage());
             return false;
         }
     }
@@ -298,19 +336,16 @@ class Plugin
     public function activate()
     {
         if (!Database\DatabaseConnection::testConnection()) {
-            set_transient('gateway_migrations_pending', true, DAY_IN_SECONDS);
+
             return;
         }
 
-        delete_transient('gateway_migrations_pending');
         $success = Database\MigrationHooks::runCoreMigrations();
 
         if (!$success) {
             set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
             return;
         }
-
-        delete_transient('gateway_tables_missing');
 
         try {
             $this->createDatabaseSettingsIfMissing();
@@ -362,8 +397,6 @@ class Plugin
         if (!$settings) {
             Collections\GatewaySettingsCollection::create([
                 'id'                    => 1,
-                'db_driver'             => $driver,
-                'connection_port'       => '',
                 'sqlite_path'           => $sqlite_path,
                 'anthropic_api_key'     => '',
                 'has_anthropic_key'     => false,
