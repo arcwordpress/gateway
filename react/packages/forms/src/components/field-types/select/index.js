@@ -1,6 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
+import { normalizeOptions } from '../../../utils/normalizeOptions';
 import './style.css';
 
 const SelectControl = ({ config = {} }) => {
@@ -15,14 +16,7 @@ const SelectControl = ({ config = {} }) => {
 
   const fieldError = formState.errors[name];
 
-  let options = config.options || [];
-
-  if (!Array.isArray(options) && typeof options === 'object') {
-    options = Object.entries(options).map(([value, label]) => ({
-      value,
-      label
-    }));
-  }
+  const options = normalizeOptions(config.options);
 
   const {
     label,
@@ -72,14 +66,7 @@ const SelectFieldTypeDisplay = ({ value, config }) => {
     return <span className="select-field__display select-field__display--empty">-</span>;
   }
 
-  let options = config?.options || [];
-
-  if (!Array.isArray(options) && typeof options === 'object') {
-    options = Object.entries(options).map(([val, label]) => ({
-      value: val,
-      label
-    }));
-  }
+  const options = normalizeOptions(config?.options);
 
   const selectedOption = options.find(option => {
     const optionValue = typeof option === 'object' ? option.value : option;

@@ -1,17 +1,18 @@
 import { useEffect, useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
+import { normalizeOptions } from '../../../utils/normalizeOptions';
 import './style.css';
 
 // Button Group Control Component (for button rendering)
 const ButtonGroupControl = ({ config = {} }) => {
   const { register, watch, setValue } = useGatewayForm();
-  const { name, options = [] } = config;
+  const { name } = config;
 
   const currentValue = watch(name);
 
   // Normalize options to {label, value} format
-  const normalizedOptions = options.map(option => {
+  const normalizedOptions = normalizeOptions(config.options).map(option => {
     if (typeof option === 'string') {
       return { label: option, value: option };
     }
@@ -88,11 +89,8 @@ export const ButtonGroupFieldTypeDisplay = ({ value, config }) => {
     return <span className="button-group-field__display button-group-field__display--empty">-</span>;
   }
 
-  // Get options from config
-  const options = config?.options || [];
-
   // Normalize options to {label, value} format
-  const normalizedOptions = options.map(option => {
+  const normalizedOptions = normalizeOptions(config?.options).map(option => {
     if (typeof option === 'string') {
       return { label: option, value: option };
     }

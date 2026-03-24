@@ -1,6 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
+import { normalizeOptions } from '../../../utils/normalizeOptions';
 import './radio-style.css';
 
 const RadioControl = ({ config = {} }) => {
@@ -18,13 +19,12 @@ const RadioControl = ({ config = {} }) => {
   const {
     label,
     required = false,
-    options = [],
     layout = 'vertical',
     help = '',
     default: defaultValue
   } = config;
 
-  const normalizedOptions = options.map(option => {
+  const normalizedOptions = normalizeOptions(config.options).map(option => {
     if (typeof option === 'string') {
       return { label: option, value: option };
     }
@@ -73,8 +73,7 @@ const RadioFieldTypeDisplay = ({ value, config }) => {
     return <span className="radio-field__display radio-field__display--empty">-</span>;
   }
 
-  const options = config?.options || [];
-  const normalizedOptions = options.map(option => {
+  const normalizedOptions = normalizeOptions(config?.options).map(option => {
     if (typeof option === 'string') {
       return { label: option, value: option };
     }
