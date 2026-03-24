@@ -147,7 +147,7 @@ export default function ExtensionEdit() {
       </div>
 
       {isError && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-900 text-red-300 text-sm">
           Could not load extension data.
         </div>
       )}
@@ -199,7 +199,7 @@ export default function ExtensionEdit() {
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title <span className="text-red-400">*</span></label>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Title <span className="text-red-300/70">*</span></label>
                 <input type="text" value={title} disabled={isBusy} onChange={(e) => setTitle(e.target.value)} className={baseInput} />
               </div>
               <div>
@@ -237,7 +237,7 @@ export default function ExtensionEdit() {
           )}
 
           {updateMutation.isError && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div className="p-3 rounded-lg bg-red-950/50 border border-red-900 text-red-300 text-sm">
               {(updateMutation.error as Error).message}
             </div>
           )}
@@ -278,7 +278,7 @@ export default function ExtensionEdit() {
           <div className={`mb-4 p-3 rounded-lg text-xs border ${
             buildResult.success
               ? 'bg-zinc-800/50 border-zinc-700 text-zinc-300'
-              : 'bg-red-500/10 border-red-500/20 text-red-400'
+              : 'bg-red-950/50 border-red-900 text-red-300'
           }`}>
             {buildResult.success ? (
               <>
@@ -296,7 +296,7 @@ export default function ExtensionEdit() {
         )}
 
         {buildMutation.isError && (
-          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          <div className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-900 text-red-300 text-xs">
             {(buildMutation.error as Error).message}
           </div>
         )}
@@ -311,14 +311,14 @@ export default function ExtensionEdit() {
       </div>
 
       {/* ── Delete ────────────────────────────────────────────────────────── */}
-      <div className="mt-4 p-4 rounded-xl border border-red-500/20 bg-red-500/5">
-        <p className="text-sm font-medium text-red-400 mb-1">Danger zone</p>
+      <div className="mt-4 p-4 rounded-xl border border-red-900/50 bg-red-950/20">
+        <p className="text-sm font-medium text-red-300 mb-1">Danger zone</p>
         <p className="text-xs text-zinc-500 mb-3">
           Deletes this extension record and its generated plugin directory. This cannot be undone.
         </p>
 
         {deleteMutation.isError && (
-          <p className="text-xs text-red-400 mb-2">{(deleteMutation.error as Error).message}</p>
+          <p className="text-xs text-red-300 mb-2">{(deleteMutation.error as Error).message}</p>
         )}
 
         {confirmDelete ? (
@@ -326,7 +326,7 @@ export default function ExtensionEdit() {
             <button
               onClick={() => deleteMutation.mutate()}
               disabled={isBusy}
-              className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+              className="px-4 py-1.5 rounded-lg bg-red-800 hover:bg-red-700 disabled:opacity-50 text-zinc-100 text-sm font-medium transition-colors"
             >
               {deleteMutation.isPending ? 'Deleting…' : 'Yes, delete'}
             </button>
@@ -341,7 +341,7 @@ export default function ExtensionEdit() {
         ) : (
           <button
             onClick={() => setConfirmDelete(true)}
-            className="px-4 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm transition-colors"
+            className="px-4 py-1.5 rounded-lg border border-red-900/60 text-red-300/80 hover:bg-red-950/50 text-sm transition-colors"
           >
             Delete Extension
           </button>

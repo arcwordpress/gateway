@@ -217,7 +217,7 @@ export function RelationshipForm({
       {/* Type */}
       <div>
         <label className="block text-xs font-medium text-zinc-400 mb-2">
-          Type <span className="text-red-400">*</span>
+          Type <span className="text-red-800">*</span>
         </label>
         <div className="space-y-1.5">
           {REL_TYPES.map((rt) => (
@@ -254,7 +254,7 @@ export function RelationshipForm({
       {/* Method name */}
       <div>
         <label className="block text-xs font-medium text-zinc-400 mb-1">
-          Method Name <span className="text-red-400">*</span>
+          Method Name <span className="text-red-800">*</span>
         </label>
         <input
           type="text"
