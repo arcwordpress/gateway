@@ -125,7 +125,6 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       <header className="flex justify-between items-center gap-6 mb-10">
         <div>
           <h2 className="!text-white text-xl font-medium">Form List</h2>
-          <span className="text-xs text-zinc-500 font-mono">→ \Gateway\Form</span>
         </div>
         <button
           className="text-3xl disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
