@@ -14,24 +14,6 @@ function CollectionName() {
   return <h1 className="!text-zinc-300 text-2xl font-bold">{collection?.title}</h1>
 }
 
-function Files() {
-  return (
-    <div className="mt-8">
-      <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
-      <article>
-        <ul>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg hover:underline hover:text-zinc-300 transition-colors">Form.php</h3>
-          </li>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg hover:underline hover:text-zinc-300 transition-colors">FormMigration.php</h3>
-          </li>
-        </ul>
-      </article>
-    </div>
-  )
-}
-
 function FormsContent({ editSurface, setEditSurface }: {
   editSurface: SurfaceState
   setEditSurface: (s: SurfaceState) => void
@@ -60,7 +42,6 @@ function FormsContent({ editSurface, setEditSurface }: {
             </div>
             <div className="flex flex-col gap-8">
               <Editor setEditSurface={setEditSurface} />
-              <Files />
             </div>
           </div>
         </BuilderLeftPanel>

@@ -74,14 +74,6 @@ export type CollectionFieldDef = {
   options?: { value: string; label: string }[]
 }
 
-export type OutputFile = {
-  filename: string
-  relative: string
-  path: string
-  type: 'collection_class' | 'json_schema'
-  exists: boolean
-}
-
 export type Collection = {
   id: number
   collection_key: string
@@ -92,7 +84,6 @@ export type Collection = {
   form_list: { id: number; forms: Form[] } | null
   view_list: { id: number; views: View[] } | null
   fields?: Record<string, CollectionFieldDef>
-  output_files?: OutputFile[] | null
 }
 
 // ─── Field Type Definition ────────────────────────────────────────────────────
