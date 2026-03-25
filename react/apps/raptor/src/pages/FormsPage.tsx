@@ -19,24 +19,6 @@ function TopBar() {
   )
 }
 
-function Files() {
-  return (
-    <div>
-      <h2 className="!text-white text-xl font-medium mb-6">Output Files</h2>
-      <article>
-        <ul>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">Form.php</h3>
-          </li>
-          <li className="flex gap-6 items-center cursor-pointer">
-            <h3 className="!text-white text-lg">FormMigration.php</h3>
-          </li>
-        </ul>
-      </article>
-    </div>
-  )
-}
-
 function FormsContent({ editSurface, setEditSurface }: {
   editSurface: SurfaceState
   setEditSurface: (s: SurfaceState) => void
@@ -55,7 +37,6 @@ function FormsContent({ editSurface, setEditSurface }: {
       </div>
       <div className="flex flex-col gap-8 mt-12">
         <Editor setEditSurface={setEditSurface} />
-        <Files />
       </div>
 
       {editSurface && (
