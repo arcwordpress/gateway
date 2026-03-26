@@ -6,6 +6,7 @@ All notable changes to the Gateway plugin will be documented in this file.
 
 ### Changed
 - Remove \Gateway\Form namespace descriptor from Form List UI.
+- Added security advisory of known issues.
 
 ## [1.2.1-rc1-rc4] - 2026-03-22
 
