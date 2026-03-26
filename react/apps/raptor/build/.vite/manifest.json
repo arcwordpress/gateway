@@ -13,8 +13,8 @@
       "_vendor-router-Bjm7Z-uE.js"
     ]
   },
-  "_vendor-flow-DI9EAlFn.js": {
-    "file": "assets/vendor-flow-DI9EAlFn.js",
+  "_vendor-flow-CzQrZNKT.js": {
+    "file": "assets/vendor-flow-CzQrZNKT.js",
     "name": "vendor-flow",
     "imports": [
       "_vendor-router-Bjm7Z-uE.js",
@@ -47,7 +47,7 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-BhyLe1qk.js",
+    "file": "assets/main-COFRH78n.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
@@ -56,11 +56,11 @@
       "_vendor-query-DO0LhBpI.js",
       "_vendor-icons-BOpHAYGQ.js",
       "_vendor-charts-CaSBLGla.js",
-      "_vendor-flow-DI9EAlFn.js",
+      "_vendor-flow-CzQrZNKT.js",
       "_vendor-dnd-DAB07NLf.js"
     ],
     "css": [
-      "assets/main-bjHUCJAx.css"
+      "assets/main-DtW_xlab.css"
     ]
   }
 }
