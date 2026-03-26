@@ -150,7 +150,8 @@ class FileFromData
             $lines[] = $indentStr . "[";
             foreach ($item as $key => $value) {
                 $phpValue = self::valueToPhp($value);
-                $lines[] = $innerIndentStr . "'{$key}' => {$phpValue},";
+                $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '', (string) $key);
+                $lines[] = $innerIndentStr . "'{$safeKey}' => {$phpValue},";
             }
             $lines[] = $indentStr . "],";
         }
