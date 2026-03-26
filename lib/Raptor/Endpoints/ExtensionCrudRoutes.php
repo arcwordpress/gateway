@@ -22,7 +22,7 @@ class ExtensionCrudRoutes
      */
     public function registerRoutes()
     {
-        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[^/]+)/collections', [
+        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-zA-Z0-9_-]+)/collections', [
             'methods' => ['GET', 'POST'],
             'callback' => function($request) {
                 if ($request->get_method() === 'POST') {
@@ -33,7 +33,7 @@ class ExtensionCrudRoutes
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
-        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[^/]+)/collections/(?P<collection_key>[^/]+)', [
+        register_rest_route('gateway/v1', '/extensions/(?P<extension_key>[a-zA-Z0-9_-]+)/collections/(?P<collection_key>[a-zA-Z0-9_-]+)', [
             'methods' => ['PUT', 'PATCH'],
             'callback' => [$this, 'updateCollection'],
             'permission_callback' => [$this, 'checkPermissions'],
@@ -104,6 +104,13 @@ class ExtensionCrudRoutes
             ], 400);
         }
 
+        if (!$this->validateKey($extension_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid extension key'
+            ], 400);
+        }
+
         if (!isset($json_data['key']) || empty($json_data['key'])) {
             return new \WP_REST_Response([
                 'success' => false,
@@ -112,6 +119,13 @@ class ExtensionCrudRoutes
         }
 
         $collection_key = $json_data['key'];
+
+        if (!$this->validateKey($collection_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid collection key'
+            ], 400);
+        }
 
         // Build paths
         $extension_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key;
@@ -123,6 +137,15 @@ class ExtensionCrudRoutes
                 'success' => false,
                 'message' => 'Extension not found: ' . $extension_dir
             ], 404);
+        }
+
+        // Assert extension dir is within the expected base (defence-in-depth)
+        $base_extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
+        if (!$this->pathWithinBase($extension_dir, $base_extensions_dir)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid extension path'
+            ], 400);
         }
 
         // Ensure collections directory exists for this extension
@@ -251,6 +274,20 @@ class ExtensionCrudRoutes
             ], 400);
         }
 
+        if (!$this->validateKey($extension_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid extension key'
+            ], 400);
+        }
+
+        if (!empty($original_collection_key) && !$this->validateKey($original_collection_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid collection key'
+            ], 400);
+        }
+
         if (!isset($json_data['key']) || empty($json_data['key'])) {
             return new \WP_REST_Response([
                 'success' => false,
@@ -259,6 +296,14 @@ class ExtensionCrudRoutes
         }
 
         $new_collection_key = $json_data['key'];
+
+        if (!$this->validateKey($new_collection_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid collection key'
+            ], 400);
+        }
+
         $collections_dir = WP_CONTENT_DIR . '/gateway/extensions/' . $extension_key . '/collections';
 
         if (!is_dir($collections_dir)) {
@@ -266,6 +311,15 @@ class ExtensionCrudRoutes
                 'success' => false,
                 'message' => 'Collections directory not found'
             ], 404);
+        }
+
+        // Assert collections dir is within the expected base (defence-in-depth)
+        $base_extensions_dir = WP_CONTENT_DIR . '/gateway/extensions';
+        if (!$this->pathWithinBase($collections_dir, $base_extensions_dir)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid extension path'
+            ], 400);
         }
 
         $old_file_path = $collections_dir . '/' . $original_collection_key . '.json';
@@ -372,6 +426,13 @@ class ExtensionCrudRoutes
             return new \WP_REST_Response([
                 'success' => false,
                 'message' => 'Extension key is required'
+            ], 400);
+        }
+
+        if (!$this->validateKey($extension_key)) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => 'Invalid extension key'
             ], 400);
         }
 
@@ -980,5 +1041,36 @@ class ExtensionCrudRoutes
     public function checkPermissions()
     {
         return current_user_can('manage_options');
+    }
+
+    /**
+     * Validate that a key contains only safe characters (alphanumeric, hyphens, underscores).
+     * Rejects any value that could be used for path traversal or injection.
+     *
+     * @param string $key
+     * @return bool
+     */
+    private function validateKey($key)
+    {
+        return is_string($key) && preg_match('/^[a-zA-Z0-9_-]+$/', $key) === 1;
+    }
+
+    /**
+     * Assert that a resolved path is within the expected base directory.
+     * Returns false if the path escapes the base or cannot be resolved.
+     *
+     * @param string $path      Absolute path to validate (must already exist)
+     * @param string $base_dir  Absolute base directory
+     * @return bool
+     */
+    private function pathWithinBase($path, $base_dir)
+    {
+        $real_base = realpath($base_dir);
+        $real_path = realpath($path);
+        if ($real_base === false || $real_path === false) {
+            return false;
+        }
+        // Append DIRECTORY_SEPARATOR so a base of /foo/bar doesn't match /foo/barbaz
+        return strpos($real_path . DIRECTORY_SEPARATOR, $real_base . DIRECTORY_SEPARATOR) === 0;
     }
 }
