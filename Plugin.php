@@ -147,6 +147,7 @@ class Plugin
         Blocks\BlockInit::init();
         Blocks\JsonBlock\JsonBlockRegistrar::init();
         Blocks\BlockBindings::init();
+        Integrations\Breakdance\Breakdance::init();
 
         $this->patternRegistry->init();
         AppTemplate::init();
