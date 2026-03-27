@@ -58,7 +58,8 @@ class TestConnectionRoute
                 );
                 $result['table_count'] = count($tables);
             } else {
-                $tables = $connection->select("SHOW TABLES LIKE ?", [$wpdb->esc_like($wpdb->prefix) . '%']);
+                $likePattern = $connection->getPdo()->quote($wpdb->esc_like($wpdb->prefix) . '%');
+                $tables = $connection->select("SHOW TABLES LIKE " . $likePattern);
                 $result['table_count'] = count($tables);
             }
 
