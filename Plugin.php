@@ -155,6 +155,10 @@ class Plugin
         add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
         add_action('gateway_loaded', [$this, 'seedCollections'], 20);
 
+        add_action('init', function () {
+            do_action('gateway_loaded');
+        }, 5);
+
     }
 
     public function raptorEndpoints() 
@@ -205,6 +209,34 @@ class Plugin
                 );
             }
         }
+    }
+
+    public function registerCollections(): void
+    {
+        $map = self::getCoreCollectionMap();
+        foreach ($map as $key => $class) {
+            if (Collections\Gateway\CollectionUser::isActive($key)) {
+                $class::register();
+            }
+        }
+    }
+
+    public static function getCoreCollectionMap(): array
+    {
+        return [
+            'wp_post'              => Collections\WP\Post::class,
+            'wp_postmeta'          => Collections\WP\PostMeta::class,
+            'wp_user'              => Collections\WP\User::class,
+            'wp_usermeta'          => Collections\WP\UserMeta::class,
+            'wp_comment'           => Collections\WP\Comment::class,
+            'wp_commentmeta'       => Collections\WP\CommentMeta::class,
+            'wp_term'              => Collections\WP\Term::class,
+            'wp_termmeta'          => Collections\WP\TermMeta::class,
+            'wp_term_taxonomy'     => Collections\WP\TermTaxonomy::class,
+            'wp_term_relationship' => Collections\WP\TermRelationship::class,
+            'wp_option'            => Collections\WP\Option::class,
+            'wp_link'              => Collections\WP\Link::class,
+        ];
     }
 
     public function seedCollections()
