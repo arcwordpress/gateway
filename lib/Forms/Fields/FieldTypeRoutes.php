@@ -10,7 +10,6 @@ class FieldTypeRoutes
 
     public function __construct()
     {
-        $this->fieldTypeRegistry = \Gateway\Plugin::getInstance()->getFieldTypeRegistry();
         $this->register();
     }
 
@@ -21,6 +20,8 @@ class FieldTypeRoutes
 
     public function registerRoutes()
     {
+        $this->fieldTypeRegistry = \Gateway\Plugin::getInstance()->getFieldTypeRegistry();
+
         // GET /gateway/v1/field-types - Get all field types with their configurations
         register_rest_route(
             $this->namespace,
