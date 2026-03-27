@@ -162,7 +162,7 @@ add_action('save_post_' . GATEWAY_COLLECTION_CPT, function($post_id, $post, $upd
     
 }, 10, 3);
 
-function gateway_rest_dispatch_filter() 
+function gateway_rest_dispatch_filter()
 {
     add_filter('rest_dispatch_request', function ($result, $request, $route, $handler) {
         if ($result !== null || strpos($route, '/gateway/v1') !== 0) {
@@ -184,4 +184,26 @@ function gateway_rest_dispatch_filter()
         }
     }, 10, 4);
 }
+
+/**
+ * Normalize rest_url() to use https:// when PHP detects an SSL connection.
+ *
+ * In Local WP (and similar reverse-proxy HTTPS setups), WP_HOME / WP_SITEURL
+ * may be hardcoded to http:// in wp-config.php even after HTTPS is enabled.
+ * That causes rest_url() to return an http:// base URL while the admin page
+ * is served over https://, so the JS apps send REST requests to http://.
+ * Browsers then either block those requests as mixed content, or follow the
+ * nginx HTTP→HTTPS redirect — which strips the X-WP-Nonce header — causing
+ * WordPress's rest_cookie_check_errors to return 403 for every Gateway route.
+ *
+ * Forcing the scheme to https:// when is_ssl() is true ensures requests go
+ * directly to the HTTPS endpoint with the nonce header intact, matching the
+ * cookie (SECURE_AUTH_COOKIE) that WordPress set during login.
+ */
+add_filter('rest_url', function ($url) {
+    if (is_ssl()) {
+        return set_url_scheme($url, 'https');
+    }
+    return $url;
+});
 
