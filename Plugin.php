@@ -108,6 +108,7 @@ class Plugin
         $this->facetRegistry = new Views\Facets\FacetRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
+        new Forms\Fields\FieldTypeRoutes();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
         new Views\ViewRoutes();
