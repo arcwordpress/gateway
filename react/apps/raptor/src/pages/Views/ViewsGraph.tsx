@@ -9,12 +9,14 @@ import {
   Controls,
   Background,
   BackgroundVariant,
+  Panel,
 } from '@xyflow/react'
 import { useNavigate } from '@tanstack/react-router'
 import { FIELD_GRAPH_NODE_TYPES, RecordsCtx, RecordsCtxValue, RecordsStatus, AdminCollectionInfo } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { useCollection, useViews } from './ViewsPageContext'
+import { useUserLayout } from '../../lib/useUserLayout'
 import { Field, View } from '../../lib/object_types'
 
 function toSchemaProps(columns: string[]) {
@@ -42,8 +44,6 @@ function normalizeColumns(view: View, fields: Field[]): string[] {
     return trimmed
   }
 
-  // Respect explicit per-view settings: if columns is an array (even empty),
-  // use it exactly. Only fallback when columns is missing/undefined.
   if (Array.isArray(view.columns)) {
     const normalized = view.columns.map(resolve).filter(Boolean)
     return Array.from(new Set(normalized))
@@ -68,6 +68,8 @@ export function Graph() {
   const { views } = useViews()
   const navigate = useNavigate()
   const collKey = collection?.collection_key ?? ''
+  const routeKey = collKey ? `collections-${collKey}-views` : 'collections-unknown-views'
+  const { savedNodes, saveLayout, resetLayout } = useUserLayout(routeKey)
 
   const allFields = collection?.field_list?.fields ?? []
 
@@ -126,9 +128,6 @@ export function Graph() {
     fetchTrigger === 0             ? 'idle'      :
     recentRecords.length === 0     ? 'empty'     : 'loaded'
 
-  // Layout: all nodes in one horizontal row spaced 400px apart.
-  // Collection occupies slot 0 but is raised 140px above the view row so its
-  // edge hangs down over the other items.
   const VIEW_ROW_Y = 140
   const COLLECTION_Y = 0
   const SLOT_W = 400
@@ -155,7 +154,6 @@ export function Graph() {
     const viewNodeId = `view-${view.view_key}`
     const isExpanded = expandedViews.has(view.view_key)
 
-    // Each view occupies its own slot in the row, starting at slot 1
     viewNodes.push({
       id: viewNodeId,
       type: 'viewNode',
@@ -171,10 +169,8 @@ export function Graph() {
       position: { x: (idx + 1) * SLOT_W, y: VIEW_ROW_Y },
     })
 
-    // Direct smoothstep edge from collection down to each view
     viewEdges.push({ id: `e-collection-${view.view_key}`, source: 'collection', target: viewNodeId, type: 'smoothstep' })
 
-    // If expanded, show schema and preview
     if (isExpanded) {
       const viewColumns = normalizeColumns(view, allFields)
       const schemaProps = toSchemaProps(viewColumns)
@@ -214,15 +210,31 @@ export function Graph() {
     }
   })
 
-  const computedNodes: Node[] = [...baseNodes, ...viewNodes]
+  // Apply saved positions on top of default computed positions when available
+  const withSavedPositions = (nodes: Node[]): Node[] =>
+    nodes.map((n) => {
+      const saved = savedNodes?.find((s) => s.id === n.id)
+      return saved ? { ...n, position: { x: saved.x, y: saved.y } } : n
+    })
 
+  const computedNodes: Node[] = withSavedPositions([...baseNodes, ...viewNodes])
   const computedEdges: Edge[] = viewEdges
 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, views, expandedViews])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, views, expandedViews])               // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setGraphNodes(withSavedPositions([...baseNodes, ...viewNodes]))
+  }, [adminData, recordsData, collection, views, expandedViews, savedNodes])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData, views, expandedViews])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleNodeDragStop = useCallback(
+    (_: React.MouseEvent, _node: Node, allNodes: Node[]) => {
+      saveLayout(allNodes)
+    },
+    [saveLayout],
+  )
 
   const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 
@@ -235,6 +247,7 @@ export function Graph() {
           nodeTypes={FIELD_GRAPH_NODE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeDragStop={handleNodeDragStop}
           defaultEdgeOptions={{ type: 'smoothstep' }}
           fitView
           proOptions={{ hideAttribution: true }}
@@ -242,6 +255,24 @@ export function Graph() {
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
           <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
           <SharedMiniMap />
+          {savedNodes !== null && (
+            <Panel position="bottom-left">
+              <button
+                onClick={resetLayout}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: 11,
+                  borderRadius: 6,
+                  border: '1px solid #3f3f46',
+                  background: 'transparent',
+                  color: '#a1a1aa',
+                  cursor: 'pointer',
+                }}
+              >
+                Reset Layout
+              </button>
+            </Panel>
+          )}
         </ReactFlow>
       </div>
     </RecordsCtx.Provider>

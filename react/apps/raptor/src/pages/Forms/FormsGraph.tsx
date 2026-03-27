@@ -1,10 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   useNodesState,
   useEdgesState,
   type Node,
   type Edge,
-  type NodeChange,
   ReactFlow,
   Controls,
   Background,
@@ -14,13 +13,15 @@ import {
 import { FIELD_GRAPH_NODE_TYPES } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import { useCollection, useForms } from './FormsPageContext'
+import { useUserLayout } from '../../lib/useUserLayout'
 import '@xyflow/react/dist/style.css'
 
 export function Graph() {
   const { collection } = useCollection()
   const { forms } = useForms()
-  const [layoutMode, setLayoutMode] = useState<'auto' | 'saved'>('auto')
-  const savedPositionsRef = useRef<Record<string, { x: number; y: number }>>({})
+  const collKey = collection?.collection_key ?? ''
+  const routeKey = collKey ? `collections-${collKey}-forms` : 'collections-unknown-forms'
+  const { savedNodes, saveLayout, resetLayout } = useUserLayout(routeKey)
   const [selectedForm, setSelectedForm] = useState<{ title: string; formKey: string } | null>(null)
 
   const baseNodes: Node[] = [
@@ -57,38 +58,31 @@ export function Graph() {
     })),
   ]
 
-  const computedNodes: Node[] = [...baseNodes, ...formNodes]
+  // Apply saved positions on top of default computed positions when available
+  const computedNodes: Node[] = [...baseNodes, ...formNodes].map((n) => {
+    const saved = savedNodes?.find((s) => s.id === n.id)
+    return saved ? { ...n, position: { x: saved.x, y: saved.y } } : n
+  })
 
   const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
   useEffect(() => {
-    if (layoutMode === 'auto') {
-      setGraphNodes(computedNodes)
-    } else {
-      setGraphNodes(
-        computedNodes.map((n) => {
-          const saved = savedPositionsRef.current[n.id]
-          return saved ? { ...n, position: saved } : n
-        })
-      )
-    }
-  }, [collection, forms, layoutMode])  // eslint-disable-line react-hooks/exhaustive-deps
+    setGraphNodes(
+      [...baseNodes, ...formNodes].map((n) => {
+        const saved = savedNodes?.find((s) => s.id === n.id)
+        return saved ? { ...n, position: { x: saved.x, y: saved.y } } : n
+      })
+    )
+  }, [collection, forms, savedNodes])  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { setGraphEdges(computedEdges) }, [forms])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      if (layoutMode === 'saved') {
-        changes.forEach((change) => {
-          if (change.type === 'position' && change.position) {
-            savedPositionsRef.current[change.id] = change.position
-          }
-        })
-      }
-      onNodesChange(changes)
+  const handleNodeDragStop = useCallback(
+    (_: React.MouseEvent, _node: Node, allNodes: Node[]) => {
+      saveLayout(allNodes)
     },
-    [layoutMode, onNodesChange]
+    [saveLayout],
   )
 
   const handleNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
@@ -108,8 +102,9 @@ export function Graph() {
         nodes={graphNodes}
         edges={graphEdges}
         nodeTypes={FIELD_GRAPH_NODE_TYPES}
-        onNodesChange={handleNodesChange}
+        onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeDragStop={handleNodeDragStop}
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         fitView
@@ -118,22 +113,24 @@ export function Graph() {
         <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
         <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
         <SharedMiniMap />
-        <Panel position="bottom-left">
-          <button
-            onClick={() => setLayoutMode((m) => (m === 'auto' ? 'saved' : 'auto'))}
-            style={{
-              padding: '4px 10px',
-              fontSize: 11,
-              borderRadius: 6,
-              border: '1px solid #3f3f46',
-              background: layoutMode === 'saved' ? '#3f3f46' : 'transparent',
-              color: '#a1a1aa',
-              cursor: 'pointer',
-            }}
-          >
-            {layoutMode === 'auto' ? 'Auto Layout' : 'Saved Layout'}
-          </button>
-        </Panel>
+        {savedNodes !== null && (
+          <Panel position="bottom-left">
+            <button
+              onClick={resetLayout}
+              style={{
+                padding: '4px 10px',
+                fontSize: 11,
+                borderRadius: 6,
+                border: '1px solid #3f3f46',
+                background: 'transparent',
+                color: '#a1a1aa',
+                cursor: 'pointer',
+              }}
+            >
+              Reset Layout
+            </button>
+          </Panel>
+        )}
       </ReactFlow>
 
       {selectedForm && (

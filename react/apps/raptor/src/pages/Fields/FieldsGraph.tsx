@@ -4,13 +4,14 @@ import {
   useNodesState, useEdgesState,
   type Node, type Edge,
 } from '@xyflow/react'
-import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
+import { ReactFlow, Controls, Background, BackgroundVariant, Panel } from '@xyflow/react'
 import { JsonSchemaProp, RecordsStatus, RecordsCtxValue, RecordsCtx, FIELD_GRAPH_NODE_TYPES, AdminCollectionInfo } from '../../components/graph_node_types'
 import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 import { Field } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { useApp } from '../../context/app'
 import { useCollection, useFields } from './FieldsPageContext'
+import { useUserLayout } from '../../lib/useUserLayout'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,6 +70,8 @@ export function Graph() {
   const { collection } = useCollection()
   const { fields }     = useFields()
   const collKey = collection?.collection_key ?? ''
+  const routeKey = collKey ? `collections-${collKey}-fields` : 'collections-unknown-fields'
+  const { savedNodes, saveLayout, resetLayout } = useUserLayout(routeKey)
   const graphContainerRef = useRef<HTMLDivElement | null>(null)
   const [_graphHeightPx, setGraphHeightPx] = useState(480)
 
@@ -86,7 +89,6 @@ export function Graph() {
 
   const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null
 
-  // Initialize to 1 so records fetch automatically on mount; increment on each manual refresh
   const [fetchTrigger, setFetchTrigger] = useState(1)
   const { data: recordsData, isFetching: recordsFetching } = useQuery<Record<string, unknown>[]>({
     queryKey: ['collection-recent-records', collKey, fetchTrigger],
@@ -125,41 +127,48 @@ export function Graph() {
   const totalRecordWidth = slicedRecords.length * RECORD_SPACING
   const recordStartX     = RECORDS_X - totalRecordWidth / 2 + RECORD_SPACING / 2
 
-  const computedNodes: Node[] = [
-    {
-      id: '1',
-      type: 'collectionRootNode',
-      data: { title: collection?.title ?? collKey, collKey },
-      position: { x: ROOT_X, y: 0 },
-    },
-    {
-      id: 'node-db-table',
-      type: 'databaseNode',
-      data: { tableName, recordCount: adminData?.record_count ?? null },
-      position: { x: DB_X, y: 160 },
-    },
-    {
-      id: 'node-schema',
-      type: 'jsonSchemaNode',
-      data: { title: collection?.title ?? collKey, properties: schemaProps },
-      position: { x: SCHEMA_X, y: 160 },
-    },
-    {
-      id: 'node-records',
-      type: 'recordsContainerNode',
-      data: { count: recentRecords.length },
-      position: { x: RECORDS_X, y: 320 },
-    },
-    ...slicedRecords.map((rec, i) => ({
-      id: `record-${rec['id'] ?? i}`,
-      type: 'recordNode' as const,
-      data: {
-        recordId: (rec['id'] as number | string) ?? i + 1,
-        label: recordLabel(rec),
+  const buildNodes = (): Node[] => {
+    const defaults: Node[] = [
+      {
+        id: '1',
+        type: 'collectionRootNode',
+        data: { title: collection?.title ?? collKey, collKey },
+        position: { x: ROOT_X, y: 0 },
       },
-      position: { x: recordStartX + i * RECORD_SPACING, y: 480 },
-    })),
-  ]
+      {
+        id: 'node-db-table',
+        type: 'databaseNode',
+        data: { tableName, recordCount: adminData?.record_count ?? null },
+        position: { x: DB_X, y: 160 },
+      },
+      {
+        id: 'node-schema',
+        type: 'jsonSchemaNode',
+        data: { title: collection?.title ?? collKey, properties: schemaProps },
+        position: { x: SCHEMA_X, y: 160 },
+      },
+      {
+        id: 'node-records',
+        type: 'recordsContainerNode',
+        data: { count: recentRecords.length },
+        position: { x: RECORDS_X, y: 320 },
+      },
+      ...slicedRecords.map((rec, i) => ({
+        id: `record-${rec['id'] ?? i}`,
+        type: 'recordNode' as const,
+        data: {
+          recordId: (rec['id'] as number | string) ?? i + 1,
+          label: recordLabel(rec),
+        },
+        position: { x: recordStartX + i * RECORD_SPACING, y: 480 },
+      })),
+    ]
+
+    return defaults.map((n) => {
+      const saved = savedNodes?.find((s) => s.id === n.id)
+      return saved ? { ...n, position: { x: saved.x, y: saved.y } } : n
+    })
+  }
 
   const computedEdges: Edge[] = [
     { id: 'e-root-db',     source: '1',             target: 'node-db-table' },
@@ -172,11 +181,18 @@ export function Graph() {
     })),
   ]
 
-  const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(computedNodes)
+  const [graphNodes, setGraphNodes, onNodesChange] = useNodesState(buildNodes())
   const [graphEdges, setGraphEdges, onEdgesChange] = useEdgesState(computedEdges)
 
-  useEffect(() => { setGraphNodes(computedNodes) }, [adminData, recordsData, collection, fields])  // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                     // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphNodes(buildNodes()) }, [adminData, recordsData, collection, fields, savedNodes])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setGraphEdges(computedEdges) }, [adminData, recordsData])                                 // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleNodeDragStop = useCallback(
+    (_: React.MouseEvent, _node: Node, allNodes: Node[]) => {
+      saveLayout(allNodes)
+    },
+    [saveLayout],
+  )
 
   const recordsCtxValue: RecordsCtxValue = { status: recordsStatus, count: recentRecords.length, onRefresh: handleRefresh }
 
@@ -211,12 +227,31 @@ export function Graph() {
           nodeTypes={FIELD_GRAPH_NODE_TYPES}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeDragStop={handleNodeDragStop}
           fitView
           proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
           <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
           <SharedMiniMap />
+          {savedNodes !== null && (
+            <Panel position="bottom-left">
+              <button
+                onClick={resetLayout}
+                style={{
+                  padding: '4px 10px',
+                  fontSize: 11,
+                  borderRadius: 6,
+                  border: '1px solid #3f3f46',
+                  background: 'transparent',
+                  color: '#a1a1aa',
+                  cursor: 'pointer',
+                }}
+              >
+                Reset Layout
+              </button>
+            </Panel>
+          )}
         </ReactFlow>
       </div>
     </RecordsCtx.Provider>
