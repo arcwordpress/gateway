@@ -10,6 +10,7 @@ import {
   type Node,
   type Edge,
   type Connection,
+  Panel,
 } from '@xyflow/react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +30,7 @@ import {
   EditRelationshipPanel,
   type Relationship,
 } from '../components/RelationshipPanels'
+import { useUserLayout } from '../lib/useUserLayout'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -464,6 +466,7 @@ export default function CollectionsViewer() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [activeExtensionId, setActiveExtensionId] = useState<number | null>(null)
+  const { savedNodes, saveLayout, resetLayout } = useUserLayout('collections')
 
   // Try to get active extension from URL params if available
   useEffect(() => {
@@ -570,6 +573,12 @@ export default function CollectionsViewer() {
 
     const laidOut = layoutCollectionsDagre(hierarchyNodes, hierarchyEdges)
 
+    // Apply saved positions on top of Dagre positions when available
+    const withSaved = laidOut.map((n) => {
+      const saved = savedNodes?.find((s) => s.id === n.id)
+      return saved ? { ...n, position: { x: saved.x, y: saved.y } } : n
+    })
+
     // Relationship edges
     const relEdges: Edge[] = []
     for (const col of cols) {
@@ -592,9 +601,16 @@ export default function CollectionsViewer() {
       }
     }
 
-    setNodes(laidOut)
+    setNodes(withSaved)
     setEdges([...hierarchyEdges, ...relEdges])
-  }, [collections, extensions, activeExtensionId, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
+  }, [collections, extensions, activeExtensionId, savedNodes, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
+
+  const handleNodeDragStop = useCallback(
+    (_: React.MouseEvent, _node: Node, allNodes: Node[]) => {
+      saveLayout(allNodes)
+    },
+    [saveLayout],
+  )
 
   return (
     <>
@@ -607,6 +623,7 @@ export default function CollectionsViewer() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onEdgeClick={onEdgeClick}
+            onNodeDragStop={handleNodeDragStop}
             nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
             edgeTypes={COLLECTIONS_GRAPH_EDGE_TYPES}
             connectionMode={ConnectionMode.Loose}
@@ -617,6 +634,24 @@ export default function CollectionsViewer() {
             <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
             <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
             <SharedMiniMap />
+            {savedNodes !== null && (
+              <Panel position="bottom-left">
+                <button
+                  onClick={resetLayout}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: 11,
+                    borderRadius: 6,
+                    border: '1px solid #3f3f46',
+                    background: 'transparent',
+                    color: '#a1a1aa',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Reset Layout
+                </button>
+              </Panel>
+            )}
           </ReactFlow>
       }
 
