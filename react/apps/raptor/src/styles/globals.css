@@ -130,6 +130,19 @@
   color: #f4f4f5 !important;
 }
 
+/* ── Interactive element cursors ─────────────────────────────────────────── */
+/*                                                                              */
+/* Unlayered (like all rules in this file) so it wins over WP admin defaults  */
+/* inside our scope without !important. Excludes :disabled so browser default  */
+/* and any disabled:cursor-* Tailwind utilities apply naturally without the    */
+/* ! prefix.                                                                    */
+#gateway-raptor-root button:not(:disabled),
+#gateway-raptor-root [role="button"]:not([aria-disabled="true"]),
+#gateway-raptor-root input[type="submit"]:not(:disabled),
+#gateway-raptor-root select:not(:disabled) {
+  cursor: pointer;
+}
+
 /* Keep sidebar links controlled by app classes, not WP admin active/pressed link styles. */
 #gateway-raptor-root .gateway-sidebar-link,
 #gateway-raptor-root .gateway-sidebar-link:visited,
