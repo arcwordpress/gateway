@@ -157,7 +157,7 @@ class DatabaseConnection
     {
         $detected    = self::autoDetectDriver();
         $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
-        $custom_port = get_option('gateway_connection_port', '3306');
+        $custom_port = get_option('gateway_connection_port', '');
         $sqlite_path = get_option('gateway_sqlite_path', $detected['database'] ?? '');
 
         error_log('driver is ' . $driver);
