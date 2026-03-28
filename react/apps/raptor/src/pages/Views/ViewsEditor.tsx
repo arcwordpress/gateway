@@ -4,6 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { Plus } from 'lucide-react'
 import { View } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { HandleIcon } from '../../components/HandleIcon'
@@ -130,11 +131,11 @@ export function ViewsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
       <header className="flex justify-between items-center gap-6 mb-10">
         <h2 className="!text-white text-xl font-medium">View List</h2>
         <button
-          className="text-3xl disabled:opacity-50"
+          className="disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !viewListId}
           onClick={handleAdd}
         >
-          +
+          <Plus size={20} strokeWidth={2} />
         </button>
       </header>
 
