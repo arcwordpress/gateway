@@ -77,7 +77,6 @@ export function GlobalViewsGraph({ collections }: { collections: Collection[] })
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           fitView
-          proOptions={{ hideAttribution: true }}
         >
           <Background variant={BackgroundVariant.Dots} />
           <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />

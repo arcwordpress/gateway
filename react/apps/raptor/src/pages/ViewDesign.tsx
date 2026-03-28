@@ -494,7 +494,6 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
-            proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={24} color="#2d3139" />
             <Controls />

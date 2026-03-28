@@ -108,7 +108,6 @@ export function Graph() {
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         fitView
-        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
         <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
