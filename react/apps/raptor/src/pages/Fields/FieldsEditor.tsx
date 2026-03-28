@@ -9,7 +9,7 @@ import { ControlledForm, useFieldType } from '@arcwp/gateway-forms'
 import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 import { useApp } from '../../context/app'
 import { HandleIcon } from '../../components/HandleIcon'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
@@ -233,10 +233,12 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
       <header className="flex justify-between items-center gap-4 mb-6">
         <h2 className="!text-white text-base font-semibold">Field List</h2>
         <button
-          className="text-3xl disabled:opacity-50"
+          className="disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !fieldListId}
           onClick={() => addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: fields.length })}
-        >+</button>
+        >
+          <Plus size={20} strokeWidth={2} />
+        </button>
       </header>
       {!fieldListId && (
         <p className="mb-6 text-xs text-zinc-400">
