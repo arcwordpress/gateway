@@ -1003,7 +1003,6 @@ export default function Collections() {
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.25 }}
-            proOptions={{ hideAttribution: true }}
           >
             <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
             <Controls />
