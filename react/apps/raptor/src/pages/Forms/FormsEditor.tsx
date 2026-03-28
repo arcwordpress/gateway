@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Plus } from 'lucide-react'
 import { Form } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { HandleIcon } from '../../components/HandleIcon'
@@ -127,11 +127,11 @@ export function FormsList({ setEditSurface }: { setEditSurface: (s: SurfaceState
           <h2 className="!text-white text-xl font-medium">Form List</h2>
         </div>
         <button
-          className="text-3xl disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
+          className="disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !formListId}
           onClick={handleAdd}
         >
-          +
+          <Plus size={20} strokeWidth={2} />
         </button>
       </header>
 
