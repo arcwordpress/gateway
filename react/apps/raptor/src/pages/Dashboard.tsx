@@ -2,14 +2,13 @@ import { Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { LayoutGrid, ArrowLeftRight, Database, Layers, Eye, FileText } from 'lucide-react'
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts'
+import * as RechartsLib from 'recharts'
+
+// Cast to any: monorepo has dual @types/react versions (workspace root vs raptor).
+// After running `npm install` at the react/ root the overrides block deduplicates
+// @types/react and these components can be imported directly again.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } = RechartsLib as any
 import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
@@ -66,7 +65,7 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
         <XAxis
           dataKey="week"
           tickFormatter={(w: string) => w.slice(5).replace('-', '/')}
-          tick={{ fontSize: 11, fill: '#71717a', angle: -35, textAnchor: 'end', dy: 16 } as React.SVGProps<SVGTextElement>}
+          tick={{ fontSize: 11, fill: '#71717a', angle: -35, textAnchor: 'end', dy: 16 }}
           axisLine={false}
           tickLine={false}
           interval={0}
