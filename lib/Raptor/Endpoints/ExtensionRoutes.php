@@ -140,11 +140,17 @@ class ExtensionRoutes
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
         );
 
+        $activationResult = null;
+        if ($scaffoldResult['success']) {
+            $activationResult = $builder->activatePlugin($pluginSlug);
+        }
+
         return new \WP_REST_Response([
-            'success'   => true,
-            'message'   => 'Extension created.',
-            'extension' => $extension->toArray(),
-            'scaffold'  => $scaffoldResult,
+            'success'    => true,
+            'message'    => 'Extension created.',
+            'extension'  => $extension->toArray(),
+            'scaffold'   => $scaffoldResult,
+            'activation' => $activationResult,
         ], 201);
     }
 
@@ -198,8 +204,17 @@ class ExtensionRoutes
         if ($extension instanceof \WP_REST_Response) return $extension;
 
         $key        = $extension->extension_key;
-        $pluginDir  = WP_PLUGIN_DIR . '/' . (new RaptorBuilder())->toPluginSlug($key);
+        $builder    = new RaptorBuilder();
+        $pluginSlug = $builder->toPluginSlug($key);
+        $pluginDir  = WP_PLUGIN_DIR . '/' . $pluginSlug;
         $dirDeleted = false;
+
+        // Deactivate the plugin before removing its files.
+        $pluginFile = $pluginSlug . '/' . $pluginSlug . '.php';
+        if (!function_exists('deactivate_plugins')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        deactivate_plugins($pluginFile);
 
         if (is_dir($pluginDir)) {
             $dirDeleted = $this->deleteDirectory($pluginDir);

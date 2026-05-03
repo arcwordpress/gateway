@@ -75,6 +75,8 @@ class RaptorBuilder
             }
         }
 
+        $activationResult = $this->activatePlugin($pluginSlug);
+
         return [
             'success'          => true,
             'plugin_slug'      => $pluginSlug,
@@ -85,7 +87,35 @@ class RaptorBuilder
             'collection_count' => count($collectionResults),
             'views'            => $viewResults,
             'view_count'       => count($viewResults),
+            'activation'       => $activationResult,
         ];
+    }
+
+    /**
+     * Activate the generated plugin in WordPress so its collections register on next load.
+     */
+    public function activatePlugin(string $pluginSlug): array
+    {
+        $pluginFile = $pluginSlug . '/' . $pluginSlug . '.php';
+
+        if (!function_exists('activate_plugin')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        if (is_plugin_active($pluginFile)) {
+            error_log("[Gateway] RaptorBuilder: Plugin {$pluginFile} is already active.");
+            return ['activated' => false, 'already_active' => true];
+        }
+
+        $result = activate_plugin($pluginFile);
+
+        if (is_wp_error($result)) {
+            error_log("[Gateway] RaptorBuilder: Failed to activate plugin {$pluginFile}: " . $result->get_error_message());
+            return ['activated' => false, 'error' => $result->get_error_message()];
+        }
+
+        error_log("[Gateway] RaptorBuilder: Plugin {$pluginFile} activated successfully.");
+        return ['activated' => true];
     }
 
     /**
