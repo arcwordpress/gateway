@@ -1,4 +1,4 @@
-export default function InstallSuccess({state}) {
+export default function InstallSuccess({state}: {state: unknown}) {
 
     return (
         <div className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-700/40">
