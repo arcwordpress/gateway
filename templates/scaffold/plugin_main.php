@@ -14,6 +14,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Global constants — defined here so they are available before the class loads
+define('{{CONSTANT_PREFIX}}_VERSION', '1.0.0');
+define('{{CONSTANT_PREFIX}}_DIR', plugin_dir_path(__FILE__));
+define('{{CONSTANT_PREFIX}}_URL', plugin_dir_url(__FILE__));
+
 // Register SPL autoloader FIRST, before the class is used
 spl_autoload_register(function($class) {
     // Only autoload classes in this namespace
@@ -41,17 +46,12 @@ spl_autoload_register(function($class) {
  * Main plugin class for {{PROJECT_NAME}}
  */
 class Plugin {
-    
-    /**
-     * Plugin version
-     */
-    const VERSION = '1.0.0';
-    
+
     /**
      * Singleton instance
      */
     private static $instance = null;
-    
+
     /**
      * Get singleton instance
      */
@@ -61,24 +61,14 @@ class Plugin {
         }
         return self::$instance;
     }
-    
+
     /**
      * Constructor - initialize the plugin
      */
     private function __construct() {
-        $this->define_constants();
         $this->init();
     }
-    
-    /**
-     * Define plugin constants
-     */
-    private function define_constants() {
-        define('{{CONSTANT_PREFIX}}_VERSION', self::VERSION);
-        define('{{CONSTANT_PREFIX}}_DIR', plugin_dir_path(__FILE__));
-        define('{{CONSTANT_PREFIX}}_URL', plugin_dir_url(__FILE__));
-    }
-    
+
     /**
      * Initialize plugin
      */
