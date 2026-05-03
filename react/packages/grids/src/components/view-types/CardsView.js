@@ -1,5 +1,7 @@
 import { useState } from '@wordpress/element';
 import Modal from '../Dialog';
+import { useGridContext } from '../../context/GridContext';
+import { getLabelField } from '../../services/columnGenerator';
 import '../dialog.css';
 
 /**
@@ -16,6 +18,8 @@ const CardsView = ({
 }) => {
   const [internalSelectedRecord, setInternalSelectedRecord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { collection } = useGridContext();
+  const { fieldKey: labelKey, status: labelStatus } = getLabelField(collection);
 
   // Use external or internal state
   const selectedRecord = externalSelectedRecord !== undefined ? externalSelectedRecord : internalSelectedRecord;
@@ -67,8 +71,12 @@ const CardsView = ({
             onClick={() => handleViewRecord(record)}
           >
             <div className="cards-view__card-header">
+              <span className="grid__id-badge">#{record.id}</span>
               <div className="cards-view__card-title">
-                {record.title || record.name || `Record ${record.id}`}
+                {labelStatus === 'none'
+                  ? <span className="grid__no-label">No default label field set for this collection.</span>
+                  : (record[labelKey] || <span className="grid__no-label grid__no-label--empty">—</span>)
+                }
               </div>
             </div>
             <div className="cards-view__card-body">
@@ -77,11 +85,6 @@ const CardsView = ({
                   {record.description}
                 </div>
               )}
-              <div className="cards-view__card-meta">
-                <span className="cards-view__card-meta-item">
-                  ID: {record.id}
-                </span>
-              </div>
             </div>
             <div className="cards-view__card-footer">
               <button

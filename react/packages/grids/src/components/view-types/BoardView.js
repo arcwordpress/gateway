@@ -1,6 +1,7 @@
 import { useMemo } from '@wordpress/element';
 import Board from '@asseinfo/react-kanban';
 import { useGridContext } from '../../context/GridContext';
+import { getLabelField } from '../../services/columnGenerator';
 import { collectionApi } from '@arcwp/gateway-data';
 
 const UNCATEGORIZED_LANE_ID = 'uncategorized';
@@ -25,6 +26,7 @@ const BoardView = ({
 
   // Get namespace and route from context (if available)
   const gridContext = useGridContext();
+  const { fieldKey: labelKey, status: labelStatus } = getLabelField(gridContext?.collection);
 
   // Helper function to extract group ID from record - JUST THE ID
   const getGroupId = (record, field) => {
@@ -160,7 +162,7 @@ const BoardView = ({
               }
               return {
                 id: record.id,
-                title: record.title || record.name || `Record ${record.id}`,
+                title: labelStatus !== 'none' && labelKey ? (record[labelKey] || `#${record.id}`) : `#${record.id}`,
                 description: record.description || '',
                 record,
               };

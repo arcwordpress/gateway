@@ -80,13 +80,13 @@
 
 .image-field__button--select {
   padding: 0.5rem 1rem;
-  background-color: var(--gty-accent);
-  color: white;
-  border-color: var(--gty-accent);
+  background-color: var(--gty-bg-hover);
+  color: var(--gty-text);
+  border-color: var(--gty-border-strong);
 }
 
 .image-field__button--select:hover {
-  background-color: var(--gty-accent-hover);
+  background-color: var(--gty-bg-overlay);
 }
 
 .image-field__id {

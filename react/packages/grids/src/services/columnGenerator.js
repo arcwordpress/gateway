@@ -6,6 +6,27 @@ import { getFieldTypeDisplay } from '@arcwp/gateway-forms';
  */
 
 /**
+ * Resolve the label field for a collection.
+ * Returns { fieldKey: string|null, status: 'configured'|'auto'|'none' }
+ * - 'configured': collection.grid.labelField is explicitly set
+ * - 'auto': title or name field found in collection.fields
+ * - 'none': no label field available
+ */
+export const getLabelField = (collection) => {
+  if (!collection) return { fieldKey: null, status: 'none' };
+
+  if (collection?.grid?.labelField) {
+    return { fieldKey: collection.grid.labelField, status: 'configured' };
+  }
+
+  const fields = collection?.fields || {};
+  if (fields.title) return { fieldKey: 'title', status: 'auto' };
+  if (fields.name) return { fieldKey: 'name', status: 'auto' };
+
+  return { fieldKey: null, status: 'none' };
+};
+
+/**
  * Generate base columns from collection configuration
  * @param {Object} collection - Collection metadata with fields and grid config
  * @returns {Array} Array of TanStack Table column definitions
@@ -17,7 +38,11 @@ export const generateColumns = (collection) => {
 
   // Priority 1: Use grid.columns if defined
   if (collection?.grid?.columns && Array.isArray(collection.grid.columns)) {
-    baseColumns = collection.grid.columns.map((colDef) => ({
+    const { fieldKey: configuredLabelKey } = getLabelField(collection);
+    const skipFields = new Set(['id', configuredLabelKey].filter(Boolean));
+    baseColumns = collection.grid.columns
+      .filter((colDef) => !skipFields.has(colDef.field))
+      .map((colDef) => ({
       accessorKey: colDef.field,
       header: colDef.label || colDef.field,
       enableSorting: colDef.sortable !== false, // Default to true unless explicitly false
@@ -70,7 +95,12 @@ export const generateColumns = (collection) => {
   }
   // Priority 2: Use collection fields (auto-generate, limited to 5)
   else if (collection?.fields && Object.keys(collection.fields).length > 0) {
-    const fieldEntries = Object.entries(collection.fields).slice(0, 5); // Limit to first 5
+    const { fieldKey: autoLabelKey } = getLabelField(collection);
+    // Exclude fields that will be shown as dedicated ID/Label columns
+    const skipKeys = new Set(['id', autoLabelKey].filter(Boolean));
+    const fieldEntries = Object.entries(collection.fields)
+      .filter(([key]) => !skipKeys.has(key))
+      .slice(0, 5);
     baseColumns = fieldEntries.map(([key, field]) => ({
       accessorKey: key,
       header: field.label || key,
@@ -118,5 +148,43 @@ export const generateColumns = (collection) => {
     }));
   }
 
-  return baseColumns;
+  // Build the ID column (always first)
+  const idColumn = {
+    id: '__id',
+    accessorKey: 'id',
+    header: 'ID',
+    enableSorting: true,
+    enableColumnFilter: false,
+    size: 80,
+    cell: ({ getValue }) => (
+      <span className="grid__id-badge">#{getValue()}</span>
+    ),
+  };
+
+  // Build the Label column (always second)
+  const { fieldKey: labelKey, status: labelStatus } = getLabelField(collection);
+
+  const labelColumn = {
+    id: '__label',
+    accessorKey: labelKey || 'id',
+    header: 'Label',
+    enableSorting: !!labelKey,
+    enableColumnFilter: !!labelKey,
+    cell: ({ row }) => {
+      if (labelStatus === 'none') {
+        return (
+          <span className="grid__no-label">
+            No default label field set for this collection.
+          </span>
+        );
+      }
+      const value = row.original[labelKey];
+      if (value === null || value === undefined || value === '') {
+        return <span className="grid__no-label grid__no-label--empty">—</span>;
+      }
+      return String(value);
+    },
+  };
+
+  return [idColumn, labelColumn, ...baseColumns];
 };
