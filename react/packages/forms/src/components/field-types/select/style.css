@@ -2,56 +2,58 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--gty-text-sub);
   margin-bottom: 0.25rem;
 }
 
 .select-field__required {
-  color: #ef4444;
+  color: var(--gty-error);
   margin-left: 0.25rem;
 }
 
 .select-field__select {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
+  background-color: var(--gty-bg-surface);
+  color: var(--gty-text);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .select-field__select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
-  border-color: #3b82f6;
+  box-shadow: var(--gty-focus-ring);
+  border-color: var(--gty-border-focus);
 }
 
 .select-field__select--error {
-  border-color: #ef4444;
+  border-color: var(--gty-error);
 }
 
 .select-field__select--error:focus {
-  box-shadow: 0 0 0 2px #ef4444;
-  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
+  border-color: var(--gty-error);
 }
 
 .select-field__help {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .select-field__error {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--gty-error);
 }
 
 .select-field__display {
-  color: #1d2327;
+  color: var(--gty-text);
 }
 
 .select-field__display--empty {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
   font-style: italic;
 }

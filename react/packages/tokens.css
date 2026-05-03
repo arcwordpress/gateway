@@ -1,0 +1,71 @@
+/* Gateway Design Tokens — Dark Mode */
+:root {
+  /* ── Backgrounds ─────────────────────────────────── */
+  --gty-bg-base:    #18181b;   /* page / deepest background */
+  --gty-bg-surface: #27272a;   /* card, panel, input background */
+  --gty-bg-hover:   #3f3f46;   /* hover state, chip background */
+  --gty-bg-overlay: #52525b;   /* tooltip, highest elevation */
+
+  /* ── Borders ─────────────────────────────────────── */
+  --gty-border:        #3f3f46;
+  --gty-border-strong: #52525b;
+  --gty-border-focus:  #3b82f6;
+
+  /* ── Text ────────────────────────────────────────── */
+  --gty-text:         #f4f4f5;  /* primary */
+  --gty-text-sub:     #d4d4d8;  /* secondary */
+  --gty-text-muted:   #a1a1aa;  /* muted / help text */
+  --gty-text-faint:   #71717a;  /* faintest / placeholder / disabled */
+
+  /* ── Focus ring ──────────────────────────────────── */
+  --gty-focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.45);
+
+  /* ── Accent (blue) ───────────────────────────────── */
+  --gty-accent:       #3b82f6;
+  --gty-accent-hover: #2563eb;
+  --gty-accent-dim:   #60a5fa;  /* lighter blue for links on dark */
+
+  /* ── Links ───────────────────────────────────────── */
+  --gty-link:         #60a5fa;
+  --gty-link-hover:   #93c5fd;
+  --gty-link-visited: #a78bfa;
+
+  /* ── Semantic: success ───────────────────────────── */
+  --gty-success:        #4ade80;
+  --gty-success-bg:     #052e16;
+  --gty-success-border: #166534;
+
+  /* ── Semantic: warning ───────────────────────────── */
+  --gty-warning:        #fbbf24;
+  --gty-warning-bg:     #1a1000;
+  --gty-warning-border: #78350f;
+
+  /* ── Semantic: error ─────────────────────────────── */
+  --gty-error:        #f87171;
+  --gty-error-bg:     #450a0a;
+  --gty-error-border: #7f1d1d;
+
+  /* ── Admin package compat vars ───────────────────── */
+  --gty-admin-primary-color:   #e4e4e7;   /* text on dark header */
+  --gty-admin-accent-color:    #3b82f6;
+  --gty-admin-app-bg-color:    #18181b;
+  --gty-admin-header-bg-color: #1d2327;
+
+  /* ── Grids package compat vars ───────────────────── */
+  --gty-admin-dark:         #18181b;
+  --gty-admin-light:        #a1a1aa;
+  --gty-admin-almost-white: #27272a;
+  --gty-admin-accent:       #3b82f6;
+
+  /* ── Typography ──────────────────────────────────── */
+  --font-lexend: 'Lexend Exa', sans-serif;
+  --font-geist:  'Geist', sans-serif;
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --gty-space-1:  0.25rem;
+  --gty-space-2:  0.5rem;
+  --gty-space-3:  0.75rem;
+  --gty-space-4:  1rem;
+  --gty-space-8:  2rem;
+  --gty-space-16: 4rem;
+}

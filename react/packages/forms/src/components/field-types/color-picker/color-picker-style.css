@@ -2,12 +2,12 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--gty-text-sub);
   margin-bottom: 0.5rem;
 }
 
 .color-picker-field__required {
-  color: #ef4444;
+  color: var(--gty-error);
   margin-left: 0.25rem;
 }
 
@@ -25,8 +25,8 @@
   width: 3rem;
   height: 3rem;
   border-radius: 0.375rem;
-  border: 2px solid #d1d5db;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--gty-border);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: all 0.2s;
   background: none;
@@ -38,7 +38,7 @@
 }
 
 .color-picker-field__preview--error {
-  border-color: #ef4444;
+  border-color: var(--gty-error);
 }
 
 .color-picker-field__overlay {
@@ -52,10 +52,10 @@
   z-index: 20;
   margin-top: 0.5rem;
   padding: 0.75rem;
-  background: #ffffff;
+  background: var(--gty-bg-surface);
   border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--gty-border);
 }
 
 .color-picker-field__picker {
@@ -72,8 +72,10 @@
 .color-picker-field__input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
+  background-color: var(--gty-bg-surface);
+  color: var(--gty-text);
   font-family: monospace;
   text-transform: uppercase;
   outline: none;
@@ -82,17 +84,17 @@
 
 .color-picker-field__input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
-  border-color: #3b82f6;
+  box-shadow: var(--gty-focus-ring);
+  border-color: var(--gty-border-focus);
 }
 
 .color-picker-field__input--error {
-  border-color: #ef4444;
+  border-color: var(--gty-error);
 }
 
 .color-picker-field__input--error:focus {
-  box-shadow: 0 0 0 2px #ef4444;
-  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
+  border-color: var(--gty-error);
 }
 
 .color-picker-field__swatches {
@@ -104,7 +106,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 0.25rem;
-  border: 2px solid #d1d5db;
+  border: 2px solid var(--gty-border);
   cursor: pointer;
   transition: transform 0.2s;
   background: none;
@@ -116,20 +118,20 @@
 }
 
 .color-picker-field__swatch--selected {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px #bfdbfe;
+  border-color: var(--gty-border-focus);
+  box-shadow: var(--gty-focus-ring);
 }
 
 .color-picker-field__help {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .color-picker-field__error {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--gty-error);
 }
 
 .color-picker-field__display {
@@ -139,7 +141,7 @@
 }
 
 .color-picker-field__display--empty {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
   font-style: italic;
 }
 
@@ -148,7 +150,7 @@
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 0.25rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--gty-border);
   vertical-align: middle;
 }
 
@@ -156,5 +158,5 @@
   font-family: monospace;
   text-transform: uppercase;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--gty-text-sub);
 }

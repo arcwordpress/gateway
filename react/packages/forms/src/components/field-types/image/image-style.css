@@ -2,29 +2,29 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--gty-text-sub);
   margin-bottom: 0.25rem;
 }
 
 .image-field__required {
-  color: #ef4444;
+  color: var(--gty-error);
   margin-left: 0.25rem;
 }
 
 .image-field__help {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
   margin-bottom: 0.5rem;
 }
 
 .image-field__container {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--gty-border);
   border-radius: 0.375rem;
   padding: 1rem;
 }
 
 .image-field__container--error {
-  border-color: #ef4444;
+  border-color: var(--gty-error);
 }
 
 .image-field__preview {
@@ -59,39 +59,39 @@
 }
 
 .image-field__button--change {
-  background-color: #f3f4f6;
-  color: #374151;
-  border-color: #d1d5db;
+  background-color: var(--gty-bg-hover);
+  color: var(--gty-text);
+  border-color: var(--gty-border);
 }
 
 .image-field__button--change:hover {
-  background-color: #e5e7eb;
+  background-color: var(--gty-bg-overlay);
 }
 
 .image-field__button--remove {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border-color: #fecaca;
+  background-color: var(--gty-error-bg);
+  color: var(--gty-error);
+  border-color: var(--gty-error-border);
 }
 
 .image-field__button--remove:hover {
-  background-color: #fee2e2;
+  background-color: rgba(127, 29, 29, 0.5);
 }
 
 .image-field__button--select {
   padding: 0.5rem 1rem;
-  background-color: #2563eb;
+  background-color: var(--gty-accent);
   color: white;
-  border-color: #2563eb;
+  border-color: var(--gty-accent);
 }
 
 .image-field__button--select:hover {
-  background-color: #1d4ed8;
+  background-color: var(--gty-accent-hover);
 }
 
 .image-field__id {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .image-field__empty {
@@ -102,27 +102,27 @@
   margin: 0 auto;
   height: 3rem;
   width: 3rem;
-  color: #9ca3af;
+  color: var(--gty-text-faint);
 }
 
 .image-field__empty-description {
   margin-top: 0.5rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .image-field__error {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--gty-error);
 }
 
 .image-field__display {
-  color: #1d2327;
+  color: var(--gty-text);
 }
 
 .image-field__display--empty {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
   font-style: italic;
 }
 

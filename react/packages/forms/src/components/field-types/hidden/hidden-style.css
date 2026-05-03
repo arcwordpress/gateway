@@ -3,10 +3,10 @@
 }
 
 .hidden-field__display {
-  color: #1d2327;
+  color: var(--gty-text);
 }
 
 .hidden-field__display--empty {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
   font-style: italic;
 }
