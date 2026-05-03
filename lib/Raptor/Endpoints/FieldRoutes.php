@@ -242,6 +242,7 @@ class FieldRoutes
     /**
      * Rebuild the extension that owns this field's collection, if any.
      * Chain: field → field_list → collection → extension.
+     * Wrapped in try/catch so a builder failure never corrupts the REST response.
      */
     private function triggerBuildFromField(RaptorField $field): void
     {
@@ -252,8 +253,14 @@ class FieldRoutes
             $extension = $field->fieldList->collection->extension;
         }
 
-        if ($extension) {
+        if (!$extension) {
+            return;
+        }
+
+        try {
             (new RaptorBuilder())->build($extension->extension_key);
+        } catch (\Throwable $e) {
+            error_log('[Gateway] FieldRoutes: build failed after field save — ' . $e->getMessage());
         }
     }
 

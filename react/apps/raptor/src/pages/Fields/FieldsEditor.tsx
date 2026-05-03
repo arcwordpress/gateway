@@ -20,6 +20,28 @@ function formatFieldTypeLabel(type: string): string {
   return type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
+/**
+ * Safely parse a fetch Response as JSON.
+ * Throws a descriptive Error if the response is non-OK or the body isn't valid JSON
+ * (e.g. a PHP fatal error returns an empty or HTML body).
+ */
+async function parseJsonResponse(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text()
+  let parsed: Record<string, unknown>
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    const preview = text.slice(0, 120).replace(/\s+/g, ' ')
+    throw new Error(
+      `Server returned non-JSON response (HTTP ${res.status})${preview ? `: ${preview}` : ''}`
+    )
+  }
+  if (!res.ok) {
+    throw new Error((parsed.message as string | undefined) ?? `HTTP ${res.status}`)
+  }
+  return parsed
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FieldRenderer = ({ config }: { config: any }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -195,8 +217,8 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
         headers: authHeaders(),
         body: JSON.stringify({ field_list_id: fieldListId, ...data }),
       })
-      const json = await res.json()
-      if (!json.success) throw new Error(json.message ?? 'Failed to create field')
+      const json = await parseJsonResponse(res)
+      if (!json.success) throw new Error(json.message as string ?? 'Failed to create field')
       return json.field as Field
     },
     onSuccess: (field) => {
@@ -299,8 +321,8 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
         headers: authHeaders(),
         body: JSON.stringify({ name, type, label, config: extras }),
       })
-      const json = await res.json()
-      if (!json.success) throw new Error(json.message ?? 'Failed to update field')
+      const json = await parseJsonResponse(res)
+      if (!json.success) throw new Error(json.message as string ?? 'Failed to update field')
       return json.field as Field
     },
     onSuccess: (updated) => {
@@ -389,8 +411,8 @@ export function DeleteConfirmation({ field, onClose }: { field: Field; onClose: 
         method: 'DELETE',
         headers: authHeaders(),
       })
-      const json = await res.json()
-      if (!json.success) throw new Error(json.message ?? 'Failed to delete field')
+      const json = await parseJsonResponse(res)
+      if (!json.success) throw new Error(json.message as string ?? 'Failed to delete field')
     },
     onSuccess: () => {
       deleteField(field.name)
