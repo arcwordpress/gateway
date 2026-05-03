@@ -139,6 +139,7 @@
 
 /* Pagination Button */
 .table-view__btn {
+<<<<<<< HEAD
   padding: 0.25rem 0.75rem !important;
   border: 1px solid #3f3f46 !important;
   border-radius: 0.25rem !important;
@@ -146,6 +147,15 @@
   color: #e4e4e7 !important;
   font-size: 0.875rem !important;
   cursor: pointer !important;
+=======
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #3f3f46;
+  border-radius: 0.25rem;
+  background-color: #27272a;
+  color: #e4e4e7;color: #e4e4e7;
+  font-size: 0.875rem;
+  cursor: pointer;
+>>>>>>> 930e97a5 (Update styles in packages.)
   transition: background-color 0.15s ease-in-out;
   box-shadow: none !important;
   text-decoration: none !important;
@@ -153,6 +163,7 @@
 }
 
 .table-view__btn:hover:not(:disabled) {
+<<<<<<< HEAD
   background-color: #3f3f46 !important;
   color: #e4e4e7 !important;
   border-color: #52525b !important;
@@ -169,6 +180,14 @@
   cursor: not-allowed !important;
   box-shadow: none !important;
   text-shadow: none !important;
+=======
+  background-color: #3f3f46;
+  color: #e4e4e7 !important;
+}
+
+.table-view__btn:disabled {
+  cursor: not-allowed;
+>>>>>>> 930e97a5 (Update styles in packages.)
 }
 
 .table-view__btn--pagination {

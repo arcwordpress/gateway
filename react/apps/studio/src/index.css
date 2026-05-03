@@ -72,8 +72,8 @@
 }
 
 .gty-dashboard__view-button:hover {
-  color: #374151;
-  background-color: #e5e7eb;
+  color: white !important;
+  background-color: black !important;
 }
 
 .gty-dashboard__view-button--active {
@@ -220,8 +220,8 @@
 }
 
 .gty-nav__link:hover {
-  color: #374151;
-  border-bottom-color: #d1d5db;
+  color: white !important;
+  border-bottom-color: black !important;
 }
 
 /* Main Content Styles */
