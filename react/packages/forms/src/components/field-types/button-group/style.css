@@ -59,15 +59,15 @@
 }
 
 .button-group-field__button--selected {
-  background-color: var(--gty-accent);
-  color: #ffffff;
-  border-color: var(--gty-accent);
+  background-color: var(--gty-bg-overlay);
+  color: var(--gty-text);
+  border-color: var(--gty-border-strong);
   z-index: 10;
 }
 
 .button-group-field__button--selected:hover {
-  background-color: var(--gty-accent);
-  color: #ffffff;
+  background-color: var(--gty-bg-overlay);
+  color: var(--gty-text);
 }
 
 .button-group-field__help {

@@ -133,13 +133,13 @@
 }
 
 .oembed-field__button--submit {
-  background-color: var(--gty-accent);
-  color: white;
-  border-color: var(--gty-accent);
+  background-color: var(--gty-bg-hover);
+  color: var(--gty-text);
+  border-color: var(--gty-border-strong);
 }
 
 .oembed-field__button--submit:hover:not(:disabled) {
-  background-color: var(--gty-accent-hover);
+  background-color: var(--gty-bg-overlay);
 }
 
 .oembed-field__button:disabled {

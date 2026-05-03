@@ -169,14 +169,14 @@
 
 .gallery-field__button--edit,
 .gallery-field__button--add {
-  background-color: var(--gty-accent);
-  color: white;
-  border-color: var(--gty-accent);
+  background-color: var(--gty-bg-hover);
+  color: var(--gty-text);
+  border-color: var(--gty-border-strong);
 }
 
 .gallery-field__button--edit:hover,
 .gallery-field__button--add:hover {
-  background-color: var(--gty-accent-hover);
+  background-color: var(--gty-bg-overlay);
 }
 
 .gallery-field__button--clear {

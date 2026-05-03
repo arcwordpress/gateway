@@ -39,7 +39,7 @@
   appearance: none;
   width: 1rem;
   height: 1rem;
-  background-color: var(--gty-accent);
+  background-color: var(--gty-bg-overlay);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -47,7 +47,7 @@
 .range-field__slider::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
-  background-color: var(--gty-accent);
+  background-color: var(--gty-bg-overlay);
   border-radius: 50%;
   cursor: pointer;
   border: none;

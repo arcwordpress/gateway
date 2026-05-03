@@ -68,14 +68,14 @@
 }
 
 .wysiwyg-field__toolbar-button--active {
-  background-color: var(--gty-accent);
-  border-color: var(--gty-accent);
-  color: #ffffff;
+  background-color: var(--gty-bg-overlay);
+  border-color: var(--gty-border-strong);
+  color: var(--gty-text);
 }
 
 .wysiwyg-field__toolbar-button--active:hover {
-  background-color: var(--gty-accent-hover);
-  border-color: var(--gty-accent-hover);
+  background-color: var(--gty-bg-overlay);
+  border-color: var(--gty-border-strong);
 }
 
 .wysiwyg-field__toolbar-separator {

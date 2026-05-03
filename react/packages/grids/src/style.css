@@ -237,13 +237,13 @@
 }
 
 .grid__btn--view {
-  background-color: var(--gty-accent) !important;
-  color: #fff !important;
+  background-color: var(--gty-bg-hover) !important;
+  color: var(--gty-text) !important;
 }
 
 .grid__btn--view:hover {
-  background-color: var(--gty-accent-hover) !important;
-  color: #fff !important;
+  background-color: var(--gty-bg-overlay) !important;
+  color: var(--gty-text) !important;
 }
 
 .grid__btn--edit {
@@ -608,8 +608,8 @@
   padding: 0.5em 1em;
   border: none;
   border-radius: 4px;
-  background: var(--gty-accent);
-  color: #fff;
+  background: var(--gty-bg-hover);
+  color: var(--gty-text);
   font-weight: bold;
   cursor: pointer;
   transition: background 0.2s;
@@ -760,9 +760,9 @@
   align-items: center !important;
   gap: 0.5em !important;
   padding: 0.5rem 1rem !important;
-  background-color: var(--gty-accent) !important;
-  color: #fff !important;
-  border: none !important;
+  background-color: var(--gty-bg-hover) !important;
+  color: var(--gty-text) !important;
+  border: 1px solid var(--gty-border-strong) !important;
   border-radius: 0.25rem !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
@@ -774,8 +774,8 @@
 }
 
 .gty-dashboard__create-button:hover {
-  background-color: var(--gty-accent-hover) !important;
-  color: #fff !important;
+  background-color: var(--gty-bg-overlay) !important;
+  color: var(--gty-text) !important;
 }
 
 .gty-grid__filters-header {

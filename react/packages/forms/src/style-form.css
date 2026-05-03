@@ -42,9 +42,9 @@
 }
 
 .gty-form__submit {
-  background: var(--gty-accent);
-  color: #fff;
-  border: none;
+  background: var(--gty-bg-hover);
+  color: var(--gty-text);
+  border: 1px solid var(--gty-border-strong);
   padding: 12px 0;
   border-radius: 4px;
   font-weight: 500;
@@ -53,7 +53,7 @@
 }
 
 .gty-form__submit:hover {
-  background: var(--gty-accent-hover);
+  background: var(--gty-bg-overlay);
 }
 
 .gty-form__submit:disabled {
