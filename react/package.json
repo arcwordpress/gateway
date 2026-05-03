@@ -1,0 +1,11 @@
+{
+  "name": "@arcwp/gateway-react",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix packages/data run build && npm --prefix packages/admin run build && npm --prefix packages/forms run build && npm --prefix packages/grids run build",
+    "build:data": "npm --prefix packages/data run build",
+    "build:admin": "npm --prefix packages/admin run build",
+    "build:forms": "npm --prefix packages/forms run build",
+    "build:grids": "npm --prefix packages/grids run build"
+  }
+}
