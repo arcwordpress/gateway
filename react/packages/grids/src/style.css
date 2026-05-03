@@ -158,9 +158,14 @@
   border-color: #52525b !important;
 }
 
-.table-view__btn:disabled {
-  opacity: 0.5 !important;
+.table-view__btn:disabled,
+.table-view__btn[disabled] {
+  background-color: #27272a !important;
+  color: #52525b !important;
+  border-color: #3f3f46 !important;
+  opacity: 1 !important;
   cursor: not-allowed !important;
+  box-shadow: none !important;
 }
 
 .table-view__btn--pagination {
