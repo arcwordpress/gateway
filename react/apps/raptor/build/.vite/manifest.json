@@ -1,66 +1,66 @@
 {
-  "_vendor-charts-CaSBLGla.js": {
-    "file": "assets/vendor-charts-CaSBLGla.js",
+  "_vendor-charts-CX_74Zla.js": {
+    "file": "assets/vendor-charts-CX_74Zla.js",
     "name": "vendor-charts",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js"
+      "_vendor-router-BSt0fcEC.js"
     ]
   },
-  "_vendor-dnd-DAB07NLf.js": {
-    "file": "assets/vendor-dnd-DAB07NLf.js",
+  "_vendor-dnd-DgyHwxlN.js": {
+    "file": "assets/vendor-dnd-DgyHwxlN.js",
     "name": "vendor-dnd",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js"
+      "_vendor-router-BSt0fcEC.js"
     ]
   },
-  "_vendor-flow-DI9EAlFn.js": {
-    "file": "assets/vendor-flow-DI9EAlFn.js",
+  "_vendor-flow-C2HbqlSL.js": {
+    "file": "assets/vendor-flow-C2HbqlSL.js",
     "name": "vendor-flow",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js",
-      "_vendor-charts-CaSBLGla.js"
+      "_vendor-router-BSt0fcEC.js",
+      "_vendor-charts-CX_74Zla.js"
     ]
   },
-  "_vendor-icons-BOpHAYGQ.js": {
-    "file": "assets/vendor-icons-BOpHAYGQ.js",
+  "_vendor-icons-ku-d5FRB.js": {
+    "file": "assets/vendor-icons-ku-d5FRB.js",
     "name": "vendor-icons",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js"
+      "_vendor-router-BSt0fcEC.js"
     ]
   },
-  "_vendor-query-DO0LhBpI.js": {
-    "file": "assets/vendor-query-DO0LhBpI.js",
+  "_vendor-query-Dq2OLnV9.js": {
+    "file": "assets/vendor-query-Dq2OLnV9.js",
     "name": "vendor-query",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js"
+      "_vendor-router-BSt0fcEC.js"
     ]
   },
-  "_vendor-react-bj4cP4yt.js": {
-    "file": "assets/vendor-react-bj4cP4yt.js",
+  "_vendor-react-C5VpSLMe.js": {
+    "file": "assets/vendor-react-C5VpSLMe.js",
     "name": "vendor-react",
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js"
+      "_vendor-router-BSt0fcEC.js"
     ]
   },
-  "_vendor-router-Bjm7Z-uE.js": {
-    "file": "assets/vendor-router-Bjm7Z-uE.js",
+  "_vendor-router-BSt0fcEC.js": {
+    "file": "assets/vendor-router-BSt0fcEC.js",
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-BJdEv9l9.js",
+    "file": "assets/main-BSlBRP6O.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
     "imports": [
-      "_vendor-router-Bjm7Z-uE.js",
-      "_vendor-query-DO0LhBpI.js",
-      "_vendor-icons-BOpHAYGQ.js",
-      "_vendor-charts-CaSBLGla.js",
-      "_vendor-flow-DI9EAlFn.js",
-      "_vendor-dnd-DAB07NLf.js"
+      "_vendor-router-BSt0fcEC.js",
+      "_vendor-query-Dq2OLnV9.js",
+      "_vendor-icons-ku-d5FRB.js",
+      "_vendor-charts-CX_74Zla.js",
+      "_vendor-flow-C2HbqlSL.js",
+      "_vendor-dnd-DgyHwxlN.js"
     ],
     "css": [
-      "assets/main-4YQwGkQ-.css"
+      "assets/main-BZVxIf4J.css"
     ]
   }
 }
