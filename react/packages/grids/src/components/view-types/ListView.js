@@ -1,5 +1,7 @@
 import { useState } from '@wordpress/element';
 import Modal from '../Dialog';
+import { useGridContext } from '../../context/GridContext';
+import { getLabelField } from '../../services/columnGenerator';
 import '../dialog.css';
 
 /**
@@ -16,6 +18,8 @@ const ListView = ({
 }) => {
   const [internalSelectedRecord, setInternalSelectedRecord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { collection } = useGridContext();
+  const { fieldKey: labelKey, status: labelStatus } = getLabelField(collection);
 
   // Use external or internal state
   const selectedRecord = externalSelectedRecord !== undefined ? externalSelectedRecord : internalSelectedRecord;
@@ -67,17 +71,20 @@ const ListView = ({
             onClick={() => handleViewRecord(record)}
           >
             <div className="list-view__item-content">
-              <div className="list-view__item-title">
-                {record.title || record.name || `Record ${record.id}`}
+              <div className="list-view__item-header">
+                <span className="grid__id-badge">#{record.id}</span>
+                <div className="list-view__item-title">
+                  {labelStatus === 'none'
+                    ? <span className="grid__no-label">No default label field set for this collection.</span>
+                    : (record[labelKey] || <span className="grid__no-label grid__no-label--empty">—</span>)
+                  }
+                </div>
               </div>
               {record.description && (
                 <div className="list-view__item-description">
                   {record.description}
                 </div>
               )}
-              <div className="list-view__item-meta">
-                ID: {record.id}
-              </div>
             </div>
             <div className="list-view__item-actions">
               <button

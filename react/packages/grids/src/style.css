@@ -814,3 +814,35 @@
   align-items: center;
   gap: 1rem;
 }
+
+/* ID badge — shown left of label in all view types and table columns */
+.grid__id-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gty-text-faint);
+  background-color: var(--gty-bg-overlay);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.35rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* Warning shown when no label field is configured for a collection */
+.grid__no-label {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--gty-warning);
+}
+
+.grid__no-label--empty {
+  color: var(--gty-text-faint);
+  font-style: normal;
+}
+
+/* List view header row: id badge + title inline */
+.list-view__item-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
