@@ -2,12 +2,12 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--gty-text-sub);
   margin-bottom: 0.5rem;
 }
 
 .radio-field__required {
-  color: #ef4444;
+  color: var(--gty-error);
   margin-left: 0.25rem;
 }
 
@@ -31,39 +31,39 @@
 .radio-field__input {
   width: 1rem;
   height: 1rem;
-  color: #2563eb;
-  border-color: #d1d5db;
+  accent-color: var(--gty-accent);
+  border-color: var(--gty-border);
 }
 
 .radio-field__input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
+  box-shadow: var(--gty-focus-ring);
 }
 
 .radio-field__option-label {
   margin-left: 0.5rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--gty-text);
   cursor: pointer;
 }
 
 .radio-field__help {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .radio-field__error {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--gty-error);
 }
 
 .radio-field__display {
-  color: #1d2327;
+  color: var(--gty-text);
 }
 
 .radio-field__display--empty {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
   font-style: italic;
 }

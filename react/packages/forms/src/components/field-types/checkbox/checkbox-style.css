@@ -6,19 +6,19 @@
 .checkbox-field__input {
   height: 1rem;
   width: 1rem;
-  color: #2563eb;
-  border: 1px solid #d1d5db;
+  accent-color: var(--gty-accent);
+  border: 1px solid var(--gty-border);
   border-radius: 0.25rem;
   cursor: pointer;
 }
 
 .checkbox-field__input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
+  box-shadow: var(--gty-focus-ring);
 }
 
 .checkbox-field__input--error {
-  border-color: #ef4444;
+  border-color: var(--gty-error);
 }
 
 .checkbox-field__label {
@@ -26,13 +26,12 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: white !important;
-  border-bottom-color: black !important;
+  color: var(--gty-text);
   cursor: pointer;
 }
 
 .checkbox-field__required {
-  color: #ef4444;
+  color: var(--gty-error);
   margin-left: 0.25rem;
 }
 
@@ -40,14 +39,14 @@
   margin-top: 0.25rem;
   margin-left: 1.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--gty-text-muted);
 }
 
 .checkbox-field__error {
   margin-top: 0.25rem;
   margin-left: 1.5rem;
   font-size: 0.875rem;
-  color: #dc2626;
+  color: var(--gty-error);
 }
 
 .checkbox-field__display {
@@ -56,9 +55,9 @@
 }
 
 .checkbox-field__display--checked {
-  color: #2563eb;
+  color: var(--gty-accent);
 }
 
 .checkbox-field__display--unchecked {
-  color: #9ca3af;
+  color: var(--gty-text-faint);
 }

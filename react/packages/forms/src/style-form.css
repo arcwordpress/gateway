@@ -24,25 +24,25 @@
 }
 
 .gty-form__alert--warning {
-  background: #fffbe6;
-  border: 1px solid #ffe58f;
-  color: #ad8b00;
+  background: var(--gty-warning-bg);
+  border: 1px solid var(--gty-warning-border);
+  color: var(--gty-warning);
 }
 
 .gty-form__alert--error {
-  background: #fff1f0;
-  border: 1px solid #ffa39e;
-  color: #cf1322;
+  background: var(--gty-error-bg);
+  border: 1px solid var(--gty-error-border);
+  color: var(--gty-error);
 }
 
 .gty-form__alert--success {
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
-  color: #389e0d;
+  background: var(--gty-success-bg);
+  border: 1px solid var(--gty-success-border);
+  color: var(--gty-success);
 }
 
 .gty-form__submit {
-  background: #1677ff;
+  background: var(--gty-accent);
   color: #fff;
   border: none;
   padding: 12px 0;
@@ -52,7 +52,12 @@
   transition: background 0.2s;
 }
 
+.gty-form__submit:hover {
+  background: var(--gty-accent-hover);
+}
+
 .gty-form__submit:disabled {
-  background: #d9d9d9;
+  background: var(--gty-bg-overlay);
+  color: var(--gty-text-faint);
   cursor: not-allowed;
 }
