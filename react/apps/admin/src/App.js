@@ -1,12 +1,12 @@
 import { HashRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { useEffect, lazy, Suspense } from '@wordpress/element';
 import Header from '@arcwp/gateway-admin';
-import Dashboard from './pages/Dashboard';
-import Collections from './pages/Collections';
-import CollectionDetail from './pages/CollectionDetail';
-import Settings from './pages/Settings';
-import Chat from './pages/Chat';
 
-import { useEffect } from 'react';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Collections = lazy(() => import('./pages/Collections'));
+const CollectionDetail = lazy(() => import('./pages/CollectionDetail'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Chat = lazy(() => import('./pages/Chat'));
 
 function App() {
   useEffect(() => {
@@ -80,13 +80,15 @@ function App() {
           </Header.Buttons>
         </Header>
         <main className="gty-admin-app__main">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:collectionKey" element={<CollectionDetail />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/chat" element={<Chat />} />
-          </Routes>
+          <Suspense fallback={<div className="gty-admin-app__loading">Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/collections" element={<Collections />} />
+              <Route path="/collections/:collectionKey" element={<CollectionDetail />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/chat" element={<Chat />} />
+            </Routes>
+          </Suspense>
         </main>
         <div className="gty-admin-version-label">GATEWAY V{window.gatewayAdminScript?.version || '1.1.6'}</div>
       </div>
