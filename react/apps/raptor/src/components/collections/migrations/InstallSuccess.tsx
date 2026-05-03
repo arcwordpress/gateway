@@ -1,4 +1,6 @@
-export default function InstallSuccess({state}: {state: unknown}) {
+export default function InstallSuccess({state}: {state: {installSuccess: {message: string; filePath: string} | null}}) {
+
+  if (!state.installSuccess) return null
 
     return (
         <div className="p-3 rounded-lg bg-zinc-800/40 border border-zinc-700/40">
