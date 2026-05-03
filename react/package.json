@@ -1,11 +1,14 @@
 {
   "name": "@arcwp/gateway-react",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "npm --prefix packages/data run build && npm --prefix packages/admin run build && npm --prefix packages/forms run build && npm --prefix packages/grids run build",
-    "build:data": "npm --prefix packages/data run build",
-    "build:admin": "npm --prefix packages/admin run build",
-    "build:forms": "npm --prefix packages/forms run build",
-    "build:grids": "npm --prefix packages/grids run build"
+    "build": "npm run build -w packages/data && npm run build -w packages/admin && npm run build -w packages/forms && npm run build -w packages/grids",
+    "build:data": "npm run build -w packages/data",
+    "build:admin": "npm run build -w packages/admin",
+    "build:forms": "npm run build -w packages/forms",
+    "build:grids": "npm run build -w packages/grids"
   }
 }
