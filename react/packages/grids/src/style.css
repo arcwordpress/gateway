@@ -51,18 +51,21 @@
 
 /* Table Head */
 .table-view__thead {
-  background-color: #18181b;
+  background-color: #18181b !important;
 }
 
 /* Table Header Cell */
 .table-view__th {
-  padding: 0.75rem 1.5rem;
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #a1a1aa;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  padding: 0.75rem 1.5rem !important;
+  text-align: left !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #a1a1aa !important;
+  background-color: #18181b !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Header Content */
@@ -88,23 +91,27 @@
 
 /* Table Body */
 .table-view__tbody {
-  background-color: #27272a;
+  background-color: #27272a !important;
 }
 
 /* Table Row */
 .table-view__row {
-  border-top: 1px solid #3f3f46;
+  border-top: 1px solid #3f3f46 !important;
+  background-color: transparent !important;
 }
 
 .table-view__row--body:hover {
-  background-color: #3f3f46;
+  background-color: #3f3f46 !important;
 }
 
 /* Table Data Cell */
 .table-view__td {
-  padding: 1rem 1.5rem;
-  font-size: 0.875rem;
-  color: #e4e4e7;
+  padding: 1rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  color: #e4e4e7 !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   max-width: 28rem;
 }
 
@@ -132,23 +139,28 @@
 
 /* Pagination Button */
 .table-view__btn {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid #3f3f46;
-  border-radius: 0.25rem;
-  background-color: #27272a;
-  color: #e4e4e7;
-  font-size: 0.875rem;
-  cursor: pointer;
+  padding: 0.25rem 0.75rem !important;
+  border: 1px solid #3f3f46 !important;
+  border-radius: 0.25rem !important;
+  background-color: #27272a !important;
+  color: #e4e4e7 !important;
+  font-size: 0.875rem !important;
+  cursor: pointer !important;
   transition: background-color 0.15s ease-in-out;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
 }
 
 .table-view__btn:hover:not(:disabled) {
-  background-color: #3f3f46;
+  background-color: #3f3f46 !important;
+  color: #e4e4e7 !important;
+  border-color: #52525b !important;
 }
 
 .table-view__btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
 }
 
 .table-view__btn--pagination {
@@ -176,25 +188,28 @@
 
 /* Select Dropdown */
 .table-view__select {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #3f3f46;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  background-color: #27272a;
-  color: #e4e4e7;
-  outline: none;
-  cursor: pointer;
+  padding: 0.25rem 0.5rem !important;
+  border: 1px solid #3f3f46 !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+  background-color: #27272a !important;
+  color: #e4e4e7 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
 }
 
 .table-view__select:focus {
-  outline: none;
-  ring: 1px;
-  ring-color: #3b82f6;
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #52525b !important;
 }
 
 /* Grid Component Styles */
 .grid {
-
+  background-color: #1d2327;
+  color: #e4e4e7;
+  box-sizing: border-box;
 }
 
 /* Grid Actions */
@@ -206,17 +221,45 @@
 
 /* Grid Buttons */
 .grid__btn {
-  padding: 0.25rem 0.75rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  border: none !important;
+  border-radius: 0.25rem !important;
+  cursor: pointer !important;
   transition: all 0.15s ease-in-out;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+}
+
+.grid__btn--view {
+  background-color: #2271b1 !important;
+  color: #fff !important;
+}
+
+.grid__btn--view:hover {
+  background-color: #135e96 !important;
+  color: #fff !important;
+}
+
+.grid__btn--edit {
+  background-color: #3f3f46 !important;
+  color: #e4e4e7 !important;
+}
+
+.grid__btn--edit:hover {
+  background-color: #52525b !important;
+  color: #e4e4e7 !important;
 }
 
 .grid__btn--delete {
-  background-color: transparent;
+  background-color: transparent !important;
+  color: #a1a1aa !important;
+}
+
+.grid__btn--delete:hover {
+  color: #f87171 !important;
 }
 
 .grid__btn--cancel {
@@ -682,14 +725,54 @@
   min-width: 240px;
   max-width: 320px;
   padding: 0.5rem 1rem !important;
-  font-size: 1rem;
-  font-weight: 500;
-  background-color: transparent !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  background-color: #27272a !important;
   color: #e4e4e7 !important;
-  font-family: var(--font-lexend);
+  font-family: var(--font-lexend) !important;
   border: solid 1px #3f3f46 !important;
-  border-radius: 0px !important;
+  border-radius: 0 !important;
   line-height: normal !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+.grid__search-input::placeholder {
+  color: #71717a !important;
+  opacity: 1 !important;
+}
+
+.grid__search-input:focus {
+  border-color: #52525b !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background-color: #27272a !important;
+  color: #e4e4e7 !important;
+}
+
+.gty-dashboard__create-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5em !important;
+  padding: 0.5rem 1rem !important;
+  background-color: #2271b1 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease-in-out;
+  box-shadow: none !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+}
+
+.gty-dashboard__create-button:hover {
+  background-color: #135e96 !important;
+  color: #fff !important;
 }
 
 .gty-grid__filters-header {
