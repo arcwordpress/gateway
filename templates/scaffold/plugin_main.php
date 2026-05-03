@@ -102,9 +102,11 @@ class Plugin {
             // Build fully qualified class name
             $class_name = '{{NAMESPACE}}\\Collections\\' . $filename;
             
-            // Check if class exists and has register method
+            // Check if class exists, has register method, and is toggled on
             if (class_exists($class_name) && method_exists($class_name, 'register')) {
-                $class_name::register();
+                if (!isset($class_name::$registered) || $class_name::$registered) {
+                    $class_name::register();
+                }
             }
         }
     }

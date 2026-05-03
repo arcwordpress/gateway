@@ -70,14 +70,17 @@ class FileFromData
             $relationshipMethods = self::generateRelationshipMethods($collectionData['relationships'], $pluginNamespace);
         }
 
+        $registered = isset($collectionData['registered']) ? (bool) $collectionData['registered'] : true;
+
         // Replace placeholders
         $replacements = [
-            '{{NAMESPACE}}' => $pluginNamespace,
-            '{{CLASS_NAME}}' => $className,
-            '{{COLLECTION_KEY}}' => $collectionData['key'],
-            '{{COLLECTION_TITLE}}' => $title,
-            '{{FIELDS_JSON}}' => $fieldsPhp,
+            '{{NAMESPACE}}'            => $pluginNamespace,
+            '{{CLASS_NAME}}'           => $className,
+            '{{COLLECTION_KEY}}'       => $collectionData['key'],
+            '{{COLLECTION_TITLE}}'     => $title,
+            '{{FIELDS_JSON}}'          => $fieldsPhp,
             '{{RELATIONSHIP_METHODS}}' => $relationshipMethods,
+            '{{REGISTERED}}'           => $registered ? 'true' : 'false',
         ];
         
         $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);

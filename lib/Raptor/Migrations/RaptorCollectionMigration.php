@@ -31,6 +31,7 @@ class RaptorCollectionMigration
             title varchar(200) NOT NULL DEFAULT '',
             description text NULL,
             status varchar(50) NOT NULL DEFAULT 'active',
+            registered tinyint(1) NOT NULL DEFAULT 1,
             relationships longtext NULL,
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

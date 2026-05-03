@@ -41,6 +41,7 @@ class RaptorCollection extends \Gateway\Collection
 
     protected $casts = [
         'relationships' => 'array',
+        'registered'    => 'boolean',
     ];
 
     /**
@@ -73,6 +74,12 @@ class RaptorCollection extends \Gateway\Collection
                 ['value' => 'inactive', 'label' => 'Inactive'],
             ],
         ],
+        [
+            'name'    => 'registered',
+            'type'    => 'checkbox',
+            'label'   => 'Registered',
+            'default' => true,
+        ],
     ];
 
     public function getFillable(): array
@@ -83,6 +90,7 @@ class RaptorCollection extends \Gateway\Collection
             'title',
             'description',
             'status',
+            'registered',
             'relationships',
         ];
     }
