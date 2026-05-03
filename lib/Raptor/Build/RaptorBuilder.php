@@ -201,6 +201,7 @@ class RaptorBuilder
         $collectionData = [
             'key'           => $collection->collection_key,
             'title'         => $collection->title,
+            'registered'    => isset($collection->registered) ? (bool) $collection->registered : true,
             'relationships' => $collection->relationships ?? [],
             'fields'        => $dedupedFields->toArray(),
         ];

@@ -149,6 +149,7 @@ class CollectionRoutes
                 'title'          => $title,
                 'description'    => sanitize_textarea_field($data['description'] ?? ''),
                 'status'         => 'active',
+                'registered'     => isset($data['registered']) ? (bool) $data['registered'] : true,
             ]);
 
             // Build the extension if this collection has one
@@ -221,6 +222,9 @@ class CollectionRoutes
             }
             if (isset($data['status'])) {
                 $update['status'] = sanitize_text_field($data['status']);
+            }
+            if (array_key_exists('registered', $data)) {
+                $update['registered'] = (bool) $data['registered'];
             }
             if (array_key_exists('relationships', $data)) {
                 $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
