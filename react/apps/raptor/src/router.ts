@@ -29,8 +29,6 @@ import RecordFormPage from './pages/records/RecordForm'
 import RecordViewPage from './pages/records/RecordView'
 import CollectionsRelationshipsPage from './pages/CollectionsRelationshipsPage'
 import PackagesTopLevelPage from './pages/PackagesTopLevel'
-import PackageCreatePage from './pages/PackageCreate'
-import PackageEditPage from './pages/PackageEdit'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -106,17 +104,6 @@ const packagesRoute = createRoute({
   component: PackagesTopLevelPage,
 })
 
-const packageCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/packages/create',
-  component: PackageCreatePage,
-})
-
-const packageEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/packages/$packageKey/edit',
-  component: PackageEditPage,
-})
 
 export const viewsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -196,8 +183,6 @@ const routeTree = rootRoute.addChildren([
   viewsTopLevelRoute,
   extensionsRoute,
   packagesRoute,
-  packageCreateRoute,
-  packageEditRoute,
   fieldsRoute,
   formsRoute,
   viewsRoute,

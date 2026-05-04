@@ -5,7 +5,7 @@ export type PackageNodeData = {
   label: string
   packageKey: string
   icon: string
-  onEdit?: (key: string) => void
+  onSelect?: (key: string) => void
 }
 
 export type PackageNodeType = Node<PackageNodeData, 'packageNode'>
@@ -13,6 +13,7 @@ export type PackageNodeType = Node<PackageNodeData, 'packageNode'>
 export function PackageNode({ data }: NodeProps<PackageNodeType>) {
   return (
     <div
+      onClick={() => data.onSelect?.(data.packageKey)}
       style={{
         background: 'var(--node-bg)',
         border: '1px solid var(--node-border-color)',
@@ -22,6 +23,7 @@ export function PackageNode({ data }: NodeProps<PackageNodeType>) {
         fontSize: 13,
         fontWeight: 600,
         minWidth: 160,
+        cursor: data.onSelect ? 'pointer' : 'default',
       }}
     >
       <Handle type="target" position={Position.Left} />
@@ -36,27 +38,6 @@ export function PackageNode({ data }: NodeProps<PackageNodeType>) {
       <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#71717a', marginTop: 3, fontWeight: 400 }}>
         {data.packageKey}
       </div>
-      {data.onEdit && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            data.onEdit?.(data.packageKey)
-          }}
-          style={{
-            marginTop: 8,
-            padding: '4px 8px',
-            fontSize: 11,
-            fontWeight: 600,
-            border: 'none',
-            borderRadius: 4,
-            background: '#52525b',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          Edit Package
-        </button>
-      )}
     </div>
   )
 }

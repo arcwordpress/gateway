@@ -4,6 +4,18 @@ namespace Gateway\Raptor\Endpoints;
 
 use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Collections\RaptorFieldList;
+use Gateway\Raptor\Collections\RaptorField;
+use Gateway\Raptor\Collections\RaptorViewList;
+use Gateway\Raptor\Collections\RaptorView;
+use Gateway\Raptor\Collections\RaptorViewRender;
+use Gateway\Raptor\Collections\RaptorFacetList;
+use Gateway\Raptor\Collections\RaptorFacet;
+use Gateway\Raptor\Collections\RaptorFormList;
+use Gateway\Raptor\Collections\RaptorForm;
+use Gateway\Raptor\Collections\RaptorFormField;
+use Gateway\Raptor\Collections\RaptorUserLayout;
+use Gateway\Raptor\Collections\RaptorUserLayoutNode;
 use Gateway\Raptor\Build\RaptorBuilder;
 
 if (!defined('ABSPATH')) {
@@ -220,6 +232,9 @@ class ExtensionRoutes
             $dirDeleted = $this->deleteDirectory($pluginDir);
         }
 
+        // Cascade-delete all Raptor child records for this extension.
+        $this->cascadeDeleteExtension($extension->id);
+
         $extension->delete();
 
         return new \WP_REST_Response([
@@ -228,6 +243,69 @@ class ExtensionRoutes
             'dir_deleted'  => $dirDeleted,
             'plugin_dir'   => $pluginDir,
         ], 200);
+    }
+
+    /**
+     * Delete all Raptor records owned by an extension in leaf-to-root order.
+     * Uses bulk whereIn deletes to avoid N+1 queries.
+     */
+    private function cascadeDeleteExtension(int $extensionId): void
+    {
+        $collections = RaptorCollection::where('extension_id', $extensionId)->get();
+
+        if ($collections->isEmpty()) {
+            return;
+        }
+
+        $collectionIds  = $collections->pluck('id')->toArray();
+        $collectionKeys = $collections->pluck('collection_key')->toArray();
+
+        // ── Fields ────────────────────────────────────────────────────────────
+        $fieldListIds = RaptorFieldList::whereIn('collection_id', $collectionIds)->pluck('id')->toArray();
+        if ($fieldListIds) {
+            RaptorField::whereIn('field_list_id', $fieldListIds)->delete();
+            RaptorFieldList::whereIn('id', $fieldListIds)->delete();
+        }
+
+        // ── Views (renders → facets → views → view lists) ─────────────────────
+        $viewListIds = RaptorViewList::whereIn('collection_id', $collectionIds)->pluck('id')->toArray();
+        if ($viewListIds) {
+            $viewIds = RaptorView::whereIn('view_list_id', $viewListIds)->pluck('id')->toArray();
+            if ($viewIds) {
+                $facetListIds = RaptorFacetList::whereIn('view_id', $viewIds)->pluck('id')->toArray();
+                if ($facetListIds) {
+                    RaptorFacet::whereIn('facet_list_id', $facetListIds)->delete();
+                    RaptorFacetList::whereIn('id', $facetListIds)->delete();
+                }
+                RaptorViewRender::whereIn('view_id', $viewIds)->delete();
+                RaptorView::whereIn('id', $viewIds)->delete();
+            }
+            RaptorViewList::whereIn('id', $viewListIds)->delete();
+        }
+
+        // ── Forms (form fields → forms → form lists) ──────────────────────────
+        $formListIds = RaptorFormList::whereIn('collection_id', $collectionIds)->pluck('id')->toArray();
+        if ($formListIds) {
+            $formIds = RaptorForm::whereIn('form_list_id', $formListIds)->pluck('id')->toArray();
+            if ($formIds) {
+                RaptorFormField::whereIn('form_id', $formIds)->delete();
+                RaptorForm::whereIn('id', $formIds)->delete();
+            }
+            RaptorFormList::whereIn('id', $formListIds)->delete();
+        }
+
+        // ── User layouts keyed to these collections ────────────────────────────
+        foreach ($collectionKeys as $collKey) {
+            $layoutIds = RaptorUserLayout::where('route_key', 'LIKE', '%' . $collKey . '%')
+                ->pluck('id')->toArray();
+            if ($layoutIds) {
+                RaptorUserLayoutNode::whereIn('layout_id', $layoutIds)->delete();
+                RaptorUserLayout::whereIn('id', $layoutIds)->delete();
+            }
+        }
+
+        // ── Collections ───────────────────────────────────────────────────────
+        RaptorCollection::whereIn('id', $collectionIds)->delete();
     }
 
     public function buildExtension(\WP_REST_Request $request): \WP_REST_Response

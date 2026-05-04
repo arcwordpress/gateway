@@ -79,11 +79,15 @@ class PackageRoutes
 
     public function createPackage(\WP_REST_Request $request): \WP_REST_Response
     {
-        $data  = $request->get_json_params() ?? [];
-        $label = sanitize_text_field($data['label'] ?? '');
+        $data         = $request->get_json_params() ?? [];
+        $label        = sanitize_text_field($data['label'] ?? '');
+        $extensionKey = sanitize_text_field($data['extension_key'] ?? '');
 
         if (!$label) {
             return new \WP_REST_Response(['success' => false, 'message' => 'Label is required.'], 400);
+        }
+        if (!$extensionKey) {
+            return new \WP_REST_Response(['success' => false, 'message' => 'Extension is required — packages must belong to an extension.'], 400);
         }
 
         $rawKey = $data['package_key'] ?? $data['key'] ?? '';
