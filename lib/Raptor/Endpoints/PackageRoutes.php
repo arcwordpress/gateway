@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorPackage;
 
 if (!defined('ABSPATH')) {
@@ -63,17 +64,37 @@ class PackageRoutes
                 'permission_callback' => [$this, 'checkPermissions'],
             ],
         ]);
+
+        register_rest_route('gateway/v1', '/raptor/package/(?P<package_key>[a-zA-Z0-9_\-]+)/collections', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getPackageCollections'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+            [
+                'methods'             => 'PUT',
+                'callback'            => [$this, 'setPackageCollections'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
     }
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
 
     public function getPackages(\WP_REST_Request $request): \WP_REST_Response
     {
-        $packages = RaptorPackage::orderBy('created_at', 'asc')->get();
+        $packages = RaptorPackage::with('collections')->orderBy('created_at', 'asc')->get();
+
+        $result = $packages->map(function ($pkg) {
+            $arr = $pkg->toArray();
+            $arr['collection_keys'] = $pkg->collections->pluck('collection_key')->toArray();
+            $arr['has_collections'] = !empty($arr['collection_keys']);
+            return $arr;
+        });
 
         return new \WP_REST_Response([
             'success'  => true,
-            'packages' => $packages->toArray(),
+            'packages' => $result->values(),
         ], 200);
     }
 
@@ -133,9 +154,101 @@ class PackageRoutes
         $package = $this->findOrFail($request->get_param('package_key'));
         if ($package instanceof \WP_REST_Response) return $package;
 
+        $arr = $package->toArray();
+        $arr['collection_keys']  = $package->collections()->pluck('collection_key')->toArray();
+        $arr['has_collections']  = !empty($arr['collection_keys']);
+
         return new \WP_REST_Response([
             'success' => true,
-            'package' => $package->toArray(),
+            'package' => $arr,
+        ], 200);
+    }
+
+    /**
+     * GET /raptor/package/{key}/collections
+     *
+     * Returns all collections for the package's extension, each annotated with:
+     *   - is_assigned:    bool  — whether it belongs to this package
+     *   - other_packages: array — package_keys of other packages that include it
+     */
+    public function getPackageCollections(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $package = $this->findOrFail($request->get_param('package_key'));
+        if ($package instanceof \WP_REST_Response) return $package;
+
+        $assignedIds = $package->collections()->pluck('gateway_raptor_collection.id')->toArray();
+
+        // Only collections within the same extension
+        if (!$package->extension_key) {
+            return new \WP_REST_Response(['success' => true, 'collections' => []], 200);
+        }
+
+        $ext = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $package->extension_key)->first();
+        if (!$ext) {
+            return new \WP_REST_Response(['success' => true, 'collections' => []], 200);
+        }
+
+        $collections = RaptorCollection::where('extension_id', $ext->id)
+            ->with('packages')
+            ->orderBy('title')
+            ->get();
+
+        $result = $collections->map(function ($col) use ($assignedIds, $package) {
+            $otherPkgs = $col->packages
+                ->where('package_key', '!=', $package->package_key)
+                ->pluck('package_key')
+                ->values()
+                ->toArray();
+
+            return [
+                'collection_key' => $col->collection_key,
+                'title'          => $col->title,
+                'status'         => $col->status,
+                'is_assigned'    => in_array($col->id, $assignedIds, true),
+                'other_packages' => $otherPkgs,
+            ];
+        });
+
+        return new \WP_REST_Response([
+            'success'     => true,
+            'collections' => $result->values(),
+        ], 200);
+    }
+
+    /**
+     * PUT /raptor/package/{key}/collections
+     *
+     * Body: { "collection_keys": ["key1", "key2"] }
+     * Replaces the full set of collections assigned to this package.
+     */
+    public function setPackageCollections(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $package = $this->findOrFail($request->get_param('package_key'));
+        if ($package instanceof \WP_REST_Response) return $package;
+
+        $data            = $request->get_json_params() ?? [];
+        $collectionKeys  = array_filter(array_map('sanitize_text_field', (array) ($data['collection_keys'] ?? [])));
+
+        $ids = RaptorCollection::whereIn('collection_key', $collectionKeys)
+            ->pluck('id', 'collection_key');
+
+        // Build sync data with position from the submitted order
+        $syncData = [];
+        foreach ($collectionKeys as $position => $key) {
+            if (isset($ids[$key])) {
+                $syncData[$ids[$key]] = ['position' => $position];
+            }
+        }
+
+        $package->collections()->sync($syncData);
+
+        $arr = $package->fresh()->toArray();
+        $arr['collection_keys'] = $package->collections()->pluck('collection_key')->toArray();
+        $arr['has_collections'] = !empty($arr['collection_keys']);
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'package' => $arr,
         ], 200);
     }
 

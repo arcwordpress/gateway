@@ -95,6 +95,16 @@ class RaptorCollection extends \Gateway\Collection
         ];
     }
 
+    public function packages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            RaptorPackage::class,
+            'gateway_raptor_package_collection',
+            'collection_id',
+            'package_id'
+        );
+    }
+
     public function extension(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(RaptorExtension::class, 'extension_id', 'id');

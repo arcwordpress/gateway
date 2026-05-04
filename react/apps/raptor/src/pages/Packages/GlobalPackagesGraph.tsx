@@ -12,6 +12,8 @@ export type PackageRecord = {
   extension_key: string | null
   label: string
   icon: string
+  has_collections: boolean
+  collection_keys: string[]
 }
 
 export type ExtensionRecord = {
