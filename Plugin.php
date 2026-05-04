@@ -354,15 +354,17 @@ class Plugin
 
             $settings_table  = 'gateway_settings';
             $extension_table = 'gateway_raptor_extension';
+            $package_table   = 'gateway_raptor_package';
 
-
-            $has_settings = $schema->hasTable($settings_table);
+            $has_settings  = $schema->hasTable($settings_table);
             $has_extension = $schema->hasTable($extension_table);
+            $has_package   = $schema->hasTable($package_table);
 
             error_log("[Gateway] Checking table: {$settings_table} exists? " . ($has_settings ? 'YES' : 'NO'));
             error_log("[Gateway] Checking table: {$extension_table} exists? " . ($has_extension ? 'YES' : 'NO'));
+            error_log("[Gateway] Checking table: {$package_table} exists? " . ($has_package ? 'YES' : 'NO'));
 
-            return $has_settings && $has_extension;
+            return $has_settings && $has_extension && $has_package;
         } catch (\Exception $e) {
             error_log('[Gateway] Exception in coreTablesExist: ' . $e->getMessage());
             return false;
