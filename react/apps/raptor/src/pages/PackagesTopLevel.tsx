@@ -215,6 +215,7 @@ export default function PackagesTopLevel() {
       )}
       {panel?.mode === 'edit' && (
         <PackagePanel
+          key={panel.packageKey}
           mode="edit"
           packageKey={panel.packageKey}
           onClose={closePanel}

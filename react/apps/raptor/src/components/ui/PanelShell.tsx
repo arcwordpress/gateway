@@ -22,6 +22,7 @@ export default function PanelShell({
 
   return (
     <div
+      className="panel-slide-in"
       style={{
         position: 'fixed',
         right: 0,
