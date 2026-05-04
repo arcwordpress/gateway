@@ -32,11 +32,8 @@ class RaptorBuilder
      */
     public function build(string $extensionKey): array
     {
-        error_log("[Gateway] RaptorBuilder::build called for extension_key={$extensionKey}");
-
         $extension = RaptorExtension::where('extension_key', $extensionKey)->first();
         if (!$extension) {
-            error_log("[Gateway] RaptorBuilder::build: extension '{$extensionKey}' not found in DB");
             return ['success' => false, 'error' => "Extension '{$extensionKey}' not found."];
         }
 
@@ -65,11 +62,8 @@ class RaptorBuilder
         $viewResults = [];
         foreach ($collections as $collection) {
             if (!$collection->viewList) {
-                error_log("[Gateway] RaptorBuilder::build: collection_key={$collection->collection_key} has no viewList, skipping views");
                 continue;
             }
-            $viewCount = $collection->viewList->views->count();
-            error_log("[Gateway] RaptorBuilder::build: collection_key={$collection->collection_key} has {$viewCount} view(s)");
             foreach ($collection->viewList->views as $view) {
                 $viewResults[] = $this->buildView($view, $collection, $pluginSlug, $namespace);
             }
@@ -103,18 +97,15 @@ class RaptorBuilder
         }
 
         if (is_plugin_active($pluginFile)) {
-            error_log("[Gateway] RaptorBuilder: Plugin {$pluginFile} is already active.");
             return ['activated' => false, 'already_active' => true];
         }
 
         $result = activate_plugin($pluginFile);
 
         if (is_wp_error($result)) {
-            error_log("[Gateway] RaptorBuilder: Failed to activate plugin {$pluginFile}: " . $result->get_error_message());
             return ['activated' => false, 'error' => $result->get_error_message()];
         }
 
-        error_log("[Gateway] RaptorBuilder: Plugin {$pluginFile} activated successfully.");
         return ['activated' => true];
     }
 
@@ -226,7 +217,6 @@ class RaptorBuilder
      */
     private function buildView(RaptorView $view, RaptorCollection $collection, string $pluginSlug, string $namespace): array
     {
-        error_log("[Gateway] RaptorBuilder::buildView called for view_key={$view->view_key} collection_key={$collection->collection_key} plugin={$pluginSlug}");
 
         $viewData = [
             'view_key'       => $view->view_key,
