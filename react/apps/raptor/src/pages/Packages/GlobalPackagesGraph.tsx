@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import {
   useNodesState, useEdgesState,
   type Node, type Edge,
@@ -23,17 +22,17 @@ export type ExtensionRecord = {
 export function GlobalPackagesGraph({
   packages,
   extensions,
+  onPackageSelect,
 }: {
   packages: PackageRecord[]
   extensions: ExtensionRecord[]
+  onPackageSelect: (key: string) => void
 }) {
-  const navigate = useNavigate()
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
 
   const extMap = new Map(extensions.map((e) => [e.extension_key, e]))
 
-  // Group packages by extension_key (null → 'unassigned')
   const groups = new Map<string | null, PackageRecord[]>()
   for (const pkg of packages) {
     const k = pkg.extension_key ?? null
@@ -47,17 +46,13 @@ export function GlobalPackagesGraph({
     const ext = extKey ? extMap.get(extKey) : null
     const groupNodeId = extKey ? `ext-${extKey}` : 'ext-unassigned'
 
-    // Use extensionNode so the header reads "Extension" not "Collection"
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: {
-        title: ext?.title ?? 'No Extension',
-        extKey: extKey ?? '',
-        isActive: false,
-      },
+      data: { title: ext?.title ?? 'No Extension', extKey: extKey ?? '', isActive: false },
       position: { x: 0, y: yOffset },
     })
+
     pkgs.forEach((pkg, idx) => {
       const nodeId = `pkg-${pkg.package_key}`
       computedNodes.push({
@@ -67,11 +62,8 @@ export function GlobalPackagesGraph({
           label: pkg.label,
           packageKey: pkg.package_key,
           icon: pkg.icon ?? 'dashicons-admin-generic',
-          onEdit: (key: string) => {
-            void navigate({ to: `/packages/${key}/edit` as never })
-          },
+          onSelect: onPackageSelect,
         },
-        // Lay packages out to the right of the extension node, stacked vertically
         position: { x: 260, y: yOffset + idx * 100 },
       })
       computedEdges.push({

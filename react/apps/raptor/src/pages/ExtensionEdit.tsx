@@ -127,7 +127,15 @@ export default function ExtensionEdit() {
       return json
     },
     onSuccess: () => {
+      // Invalidate every cache that holds extension or collection data so
+      // diagram nodes, stats, and collection lists don't show stale records.
       queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-extension', key] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-collections-nested'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['extension-fields'] })
       void navigate({ to: '/extensions' })
     },
   })
