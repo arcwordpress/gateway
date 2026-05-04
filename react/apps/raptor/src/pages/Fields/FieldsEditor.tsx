@@ -161,7 +161,7 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
     <li
       ref={setNodeRef}
       style={style}
-      className={`group relative flex gap-2 items-center border border-zinc-700 px-2 py-1.5 rounded transition-opacity ${
+      className={`relative flex gap-2 items-center border border-zinc-700 px-2 py-1.5 rounded ${
         isDragging ? 'bg-zinc-900/50' : 'hover:bg-zinc-900/30'
       }`}
     >
@@ -170,7 +170,7 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
       </div>
       <span className="text-xs text-zinc-200 truncate flex-1 min-w-0">{field.label}</span>
       <span className="text-[10px] text-zinc-500 shrink-0">{field.type}</span>
-      <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity shrink-0">
+      <div className="flex gap-1 shrink-0">
         <button
           onClick={() => moveField(field.name, 'up')}
           className="px-1.5 py-0.5 text-xs rounded bg-zinc-700 hover:bg-zinc-600 text-white transition-colors"
