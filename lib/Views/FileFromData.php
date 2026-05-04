@@ -78,17 +78,22 @@ class FileFromData
 
         chmod($filePath, 0644);
 
-        error_log("[Gateway] Generated view class: {$filePath}");
         return true;
     }
 
     /**
      * Convert key to PascalCase class name.
-     * Example: article_list -> ArticleList
+     * Numeric-only segments are prefixed with 'N' to avoid collisions:
+     *   view_1_4  → ViewN1N4   (distinct from view_14 → ViewN14)
+     *   article_list → ArticleList  (unchanged for text segments)
      */
     private static function keyToClassName(string $key): string
     {
-        return str_replace('_', '', ucwords($key, '_'));
+        $parts = explode('_', $key);
+        $parts = array_map(function (string $part): string {
+            return ctype_digit($part) ? ('N' . $part) : ucfirst($part);
+        }, $parts);
+        return implode('', $parts);
     }
 
     /**

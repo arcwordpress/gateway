@@ -98,7 +98,6 @@ class FileFromData
 
         $fieldCount = isset($collectionData['fields']) ? count($collectionData['fields']) : 0;
         $relationshipCount = isset($collectionData['relationships']) ? count($collectionData['relationships']) : 0;
-        error_log("[Gateway] Generated collection class: {$filePath} with {$fieldCount} fields and {$relationshipCount} relationships");
         return true;
     }
     
@@ -111,7 +110,11 @@ class FileFromData
      */
     private static function keyToClassName($key)
     {
-        return str_replace('_', '', ucwords($key, '_'));
+        $parts = explode('_', $key);
+        $parts = array_map(function (string $part): string {
+            return ctype_digit($part) ? ('N' . $part) : ucfirst($part);
+        }, $parts);
+        return implode('', $parts);
     }
     
     /**

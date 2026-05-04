@@ -14,10 +14,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Global constants — defined here so they are available before the class loads
-define('{{CONSTANT_PREFIX}}_VERSION', '1.0.0');
-define('{{CONSTANT_PREFIX}}_DIR', plugin_dir_path(__FILE__));
-define('{{CONSTANT_PREFIX}}_URL', plugin_dir_url(__FILE__));
+// Global constants — guard against redefinition when the file is included
+// more than once (e.g. Windows path-separator differences + activate_plugin).
+defined('{{CONSTANT_PREFIX}}_VERSION') || define('{{CONSTANT_PREFIX}}_VERSION', '1.0.0');
+defined('{{CONSTANT_PREFIX}}_DIR')     || define('{{CONSTANT_PREFIX}}_DIR',     plugin_dir_path(__FILE__));
+defined('{{CONSTANT_PREFIX}}_URL')     || define('{{CONSTANT_PREFIX}}_URL',     plugin_dir_url(__FILE__));
 
 // Register SPL autoloader FIRST, before the class is used
 spl_autoload_register(function($class) {
@@ -45,6 +46,7 @@ spl_autoload_register(function($class) {
 /**
  * Main plugin class for {{PROJECT_NAME}}
  */
+if (!class_exists('{{NAMESPACE}}\\Plugin')) :
 class Plugin {
 
     /**
@@ -151,6 +153,7 @@ class Plugin {
         }
     }
 }
+endif; // class_exists guard
 
 /**
  * Initialize the plugin with timing-safe Gateway dependency check.
@@ -163,12 +166,12 @@ class Plugin {
  * - 'gateway_plugin_loaded': Fires right after Gateway's plugin file loads (earliest)
  * - 'gateway_loaded': Fires on WordPress 'init' (use for collection registration)
  */
-add_action('plugins_loaded', function() {
-    // Safety check: ensure Gateway is active
-    if (!class_exists('\Gateway\Plugin')) {
-        return;
-    }
-
-    // Initialize the extension
-    Plugin::instance();
-}, 0); // Priority 0 to run as early as possible within plugins_loaded
+if (!defined('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED')) {
+    define('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED', true);
+    add_action('plugins_loaded', function() {
+        if (!class_exists('\Gateway\Plugin')) {
+            return;
+        }
+        Plugin::instance();
+    }, 0);
+}
