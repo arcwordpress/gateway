@@ -24,7 +24,7 @@ export function PackageNode({ data }: NodeProps<PackageNodeType>) {
         minWidth: 160,
       }}
     >
-      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={Position.Left} />
       <NodeTypeHeader label="Package" />
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span

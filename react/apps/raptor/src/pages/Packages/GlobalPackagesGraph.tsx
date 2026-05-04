@@ -33,7 +33,7 @@ export function GlobalPackagesGraph({
 
   const extMap = new Map(extensions.map((e) => [e.extension_key, e]))
 
-  // Group packages: keyed by extension_key (null → 'unassigned')
+  // Group packages by extension_key (null → 'unassigned')
   const groups = new Map<string | null, PackageRecord[]>()
   for (const pkg of packages) {
     const k = pkg.extension_key ?? null
@@ -47,18 +47,17 @@ export function GlobalPackagesGraph({
     const ext = extKey ? extMap.get(extKey) : null
     const groupNodeId = extKey ? `ext-${extKey}` : 'ext-unassigned'
 
-    // Extension (or "Unassigned") root node
+    // Use extensionNode so the header reads "Extension" not "Collection"
     computedNodes.push({
       id: groupNodeId,
-      type: 'collectionRootNode',
+      type: 'extensionNode',
       data: {
-        title: ext?.title ?? 'Unassigned',
-        collKey: extKey ?? '',
+        title: ext?.title ?? 'No Extension',
+        extKey: extKey ?? '',
+        isActive: false,
       },
       position: { x: 0, y: yOffset },
     })
-    yOffset += 80
-
     pkgs.forEach((pkg, idx) => {
       const nodeId = `pkg-${pkg.package_key}`
       computedNodes.push({
@@ -72,7 +71,8 @@ export function GlobalPackagesGraph({
             void navigate({ to: `/packages/${key}/edit` as never })
           },
         },
-        position: { x: idx * 210, y: yOffset },
+        // Lay packages out to the right of the extension node, stacked vertically
+        position: { x: 260, y: yOffset + idx * 100 },
       })
       computedEdges.push({
         id: `edge-${groupNodeId}-${nodeId}`,
@@ -82,7 +82,7 @@ export function GlobalPackagesGraph({
       })
     })
 
-    yOffset += 160
+    yOffset += Math.max(pkgs.length, 1) * 100 + 40
   })
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
