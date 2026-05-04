@@ -112,6 +112,6 @@ class RaptorPackage extends \Gateway\Collection
             'gateway_raptor_package_collection',
             'package_id',
             'collection_id'
-        )->withPivot('position')->orderBy('gateway_raptor_package_collection.position');
+        )->withPivot('position')->orderByPivot('position');
     }
 }
