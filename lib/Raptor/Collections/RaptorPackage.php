@@ -104,4 +104,14 @@ class RaptorPackage extends \Gateway\Collection
             'status',
         ];
     }
+
+    public function collections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            RaptorCollection::class,
+            'gateway_raptor_package_collection',
+            'package_id',
+            'collection_id'
+        )->withPivot('position')->orderBy('gateway_raptor_package_collection.position');
+    }
 }

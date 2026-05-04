@@ -186,6 +186,11 @@ export default function PackagesTopLevel() {
                     <p className="font-medium text-zinc-200 group-hover:text-zinc-100">{pkg.label || pkg.package_key}</p>
                     <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.package_key}</p>
                   </div>
+                  {!pkg.has_collections && (
+                    <span title="No collections assigned" className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
+                      no collections
+                    </span>
+                  )}
                   <ArrowIcon />
                 </button>
               ))}
