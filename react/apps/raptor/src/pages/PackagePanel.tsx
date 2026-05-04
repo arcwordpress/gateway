@@ -208,6 +208,10 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
     <PanelShell title={data?.package?.label || packageKey} sub={packageKey} onClose={onClose}>
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div>
+          <p className={lbl}>ID</p>
+          <p className="text-xs font-mono text-zinc-500 mt-0.5">{packageKey}</p>
+        </div>
+        <div>
           <label className={lbl}>Label <span className="text-red-400">*</span></label>
           <input {...register('label')} className={inp} />
         </div>
