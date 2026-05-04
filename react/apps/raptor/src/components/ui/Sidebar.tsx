@@ -21,6 +21,11 @@ function getIsActive(to: string, pathname: string): boolean {
     return pathname === '/views' || /^\/collections\/[^/]+\/views/.test(pathname)
   }
 
+  // For /packages, match the top-level and all nested package routes
+  if (to === '/packages') {
+    return pathname === '/packages' || pathname.startsWith('/packages/')
+  }
+
   // For /records, match the index and all nested record routes
   if (to === '/records') {
     return pathname === '/records' || pathname.startsWith('/records/')
@@ -75,6 +80,7 @@ export default function Sidebar({
         <SectionLabel label="Structure" />
         <NavLink to="/" label="Dashboard" />
         <NavLink to="/extensions" label="Extensions" />
+        <NavLink to="/packages" label="Packages" />
         <NavLink to="/collections" label="Collections" />
 
         <SectionLabel label="Builders" />

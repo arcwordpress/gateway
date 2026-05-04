@@ -177,6 +177,7 @@ class Plugin
         new Raptor\Endpoints\ViewRenderRoutes();
         new Raptor\Endpoints\FacetRoutes();
         new Raptor\Endpoints\UserLayoutRoutes();
+        new Raptor\Endpoints\PackageRoutes();
     }
 
     public function seedBlockTypes()

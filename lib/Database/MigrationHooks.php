@@ -81,6 +81,7 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorFacetMigration::create();
             \Gateway\Raptor\Migrations\RaptorUserLayoutMigration::create();
             \Gateway\Raptor\Migrations\RaptorUserLayoutNodeMigration::create();
+            \Gateway\Raptor\Migrations\RaptorPackageMigration::create();
             return true;
         } catch (\Exception $e) {
             error_log('Gateway: runCoreMigrations failed: ' . $e->getMessage());
