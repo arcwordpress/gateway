@@ -125,6 +125,6 @@ export { PackageNode } from './PackageNode'
 export type { PackageNodeType, PackageNodeData } from './PackageNode'
 
 export const PACKAGES_GRAPH_NODE_TYPES: NodeTypes = {
-  collectionRootNode: CollectionRootNode,
-  packageNode:        PackageNode,
+  extensionNode: ExtensionNode,
+  packageNode:   PackageNode,
 }

@@ -39,6 +39,14 @@ function PackagesTopBar({
         ))}
       </select>
 
+      <Link
+        to={'/packages/create' as never}
+        className="flex items-center gap-1 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 text-xs text-white font-medium transition-colors"
+      >
+        <span className="text-sm leading-none">+</span>
+        New Package
+      </Link>
+
       <div className="ml-auto flex gap-1 border border-zinc-700 rounded p-1 bg-zinc-900/50">
         <button
           onClick={() => onViewModeChange('graph')}
