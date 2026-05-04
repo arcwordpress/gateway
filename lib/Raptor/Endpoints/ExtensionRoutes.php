@@ -142,27 +142,14 @@ class ExtensionRoutes
             'status'          => 'active',
         ]);
 
-        // Scaffold the plugin directory + main file immediately on creation.
-        $pluginSlug     = $builder->toPluginSlug($key);
-        $constantPrefix = strtoupper($key);
-        $projectName    = $title;
-        $pluginDir      = WP_PLUGIN_DIR . '/' . $pluginSlug;
-
-        $scaffoldResult = $builder->scaffoldPlugin(
-            $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
-        );
-
-        $activationResult = null;
-        if ($scaffoldResult['success']) {
-            $activationResult = $builder->activatePlugin($pluginSlug);
-        }
+        // Build the plugin (scaffold + generate files + activate) immediately on creation.
+        $buildResult = $builder->build($key);
 
         return new \WP_REST_Response([
-            'success'    => true,
-            'message'    => 'Extension created.',
-            'extension'  => $extension->toArray(),
-            'scaffold'   => $scaffoldResult,
-            'activation' => $activationResult,
+            'success'   => true,
+            'message'   => 'Extension created.',
+            'extension' => $extension->toArray(),
+            'build'     => $buildResult,
         ], 201);
     }
 
