@@ -70,6 +70,7 @@ class Plugin
 
     private function __construct()
     {
+        self::$instance = $this;
 
         $connection_ok = get_transient('gateway_connection_ok');
 
@@ -99,9 +100,6 @@ class Plugin
 
     private function init()
     {
-
-        error_log('INIT running at 103');
-
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
         $this->viewRegistry = new Views\ViewRegistry();
