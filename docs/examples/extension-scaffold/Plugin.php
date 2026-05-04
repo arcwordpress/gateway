@@ -93,6 +93,12 @@ class Plugin
      */
     private function init()
     {
+        // Bail if Gateway is not running — gateway_core_active() is provided
+        // by Gateway's functions.php and returns false when the plugin is inactive.
+        if (!function_exists('gateway_core_active') || !gateway_core_active()) {
+            return;
+        }
+
         // Register activation hook for running migrations
         register_activation_hook(__FILE__, [$this, 'activate']);
 
@@ -192,5 +198,8 @@ class Plugin
     }
 }
 
-// Self-initialize the plugin
-Plugin::instance();
+// Bootstrap via gateway_plugin_loaded so the extension never initialises
+// unless Gateway itself is active and fully loaded.
+add_action('gateway_plugin_loaded', function () {
+    Plugin::instance();
+}, 10);

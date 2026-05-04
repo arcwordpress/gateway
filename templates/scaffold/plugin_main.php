@@ -75,9 +75,15 @@ class Plugin {
      * Initialize plugin
      */
     private function init() {
+        // Bail if Gateway is not running — gateway_core_active() is provided
+        // by Gateway's functions.php and returns false when the plugin is inactive.
+        if (!function_exists('gateway_core_active') || !gateway_core_active()) {
+            return;
+        }
+
         // Register activation hook
         register_activation_hook(__FILE__, [$this, 'activate']);
-        
+
         // Register collections and views when Gateway is loaded
         add_action('gateway_loaded', [$this, 'register_collections']);
         add_action('gateway_loaded', [$this, 'register_views']);
@@ -156,22 +162,20 @@ class Plugin {
 endif; // class_exists guard
 
 /**
- * Initialize the plugin with timing-safe Gateway dependency check.
+ * Bootstrap: only initialise when Gateway itself has loaded.
  *
- * We use plugins_loaded (priority 0) to ensure Gateway has had a chance to load first,
- * regardless of plugin loading order. This is more reliable than checking class_exists
- * at the top of the file, which can fail if this extension loads before Gateway.
+ * 'gateway_plugin_loaded' is fired by Gateway at the very end of its own
+ * plugin file (Plugin.php). Hooking here means:
+ *   - If Gateway is inactive this action never fires → extension stays dormant.
+ *   - If Gateway is active we are guaranteed its autoloader and core classes
+ *     are available before our init() runs.
  *
- * Hooks available for extensions:
- * - 'gateway_plugin_loaded': Fires right after Gateway's plugin file loads (earliest)
- * - 'gateway_loaded': Fires on WordPress 'init' (use for collection registration)
+ * Do NOT call Plugin::instance() unconditionally or on plugins_loaded — that
+ * would run before Gateway is ready and requires a fragile class_exists guard.
  */
 if (!defined('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED')) {
     define('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED', true);
-    add_action('plugins_loaded', function() {
-        if (!class_exists('\Gateway\Plugin')) {
-            return;
-        }
+    add_action('gateway_plugin_loaded', function() {
         Plugin::instance();
-    }, 0);
+    }, 10);
 }
