@@ -14,6 +14,7 @@ import { RenderStrategyNode } from './RenderStrategyNode'
 import { RenderOutputNode } from './RenderOutputNode'
 import { FormListLabelNode } from './FormListLabelNode'
 import { FormNode } from './FormNode'
+import { PackageNode } from './PackageNode'
 
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
@@ -119,3 +120,11 @@ export const COLLECTIONS_GRAPH_EDGE_TYPES: EdgeTypes = {
 
 // Export Collections Viewer layout utilities
 export { NODE_DIMS, layoutWithDagre, layoutCollectionsLR, layoutCollectionsDagre } from './layoutWithDagre'
+
+export { PackageNode } from './PackageNode'
+export type { PackageNodeType, PackageNodeData } from './PackageNode'
+
+export const PACKAGES_GRAPH_NODE_TYPES: NodeTypes = {
+  collectionRootNode: CollectionRootNode,
+  packageNode:        PackageNode,
+}
