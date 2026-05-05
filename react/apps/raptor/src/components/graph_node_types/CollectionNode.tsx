@@ -40,21 +40,35 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         fontWeight: data.isActive ? 600 : 400,
       }}
     >
-      {(data.handles ?? [{ id: 'h-top', type: 'target' as const, position: Position.Top }]).map((h) => (
+      {/* Invisible slot handles — used only for routing stored edges across the side */}
+      {(data.handles ?? []).map((h) => (
+        <Handle
+          key={h.id}
+          id={h.id}
+          type={h.type}
+          position={h.position}
+          style={{ ...h.style, width: 1, height: 1, minWidth: 0, minHeight: 0, border: 'none', background: 'none', opacity: 0 }}
+        />
+      ))}
+
+      {/* Visible connector handles — one per side, always present, used to drag new relationships */}
+      {([
+        { id: 'conn-top',    type: 'source' as const, position: Position.Top    },
+        { id: 'conn-right',  type: 'source' as const, position: Position.Right  },
+        { id: 'conn-bottom', type: 'source' as const, position: Position.Bottom },
+        { id: 'conn-left',   type: 'source' as const, position: Position.Left   },
+      ]).map((h) => (
         <Handle
           key={h.id}
           id={h.id}
           type={h.type}
           position={h.position}
           style={{
-            ...h.style,
-            width: 1,
-            height: 1,
-            minWidth: 0,
-            minHeight: 0,
-            border: 'none',
-            background: 'none',
-            opacity: 0,
+            width: 8,
+            height: 8,
+            background: '#18181b',
+            border: '1.5px solid #52525b',
+            borderRadius: '50%',
           }}
         />
       ))}
