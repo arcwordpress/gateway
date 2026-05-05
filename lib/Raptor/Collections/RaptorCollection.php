@@ -23,6 +23,9 @@ if (!defined('ABSPATH')) {
  * @property string   $title           Human-readable name
  * @property string   $description
  * @property string   $status          "active" | "inactive"
+ *
+ * @property-read RaptorExtension|null                                      $extension
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorPackage>   $packages
  */
 class RaptorCollection extends \Gateway\Collection
 {

@@ -24,15 +24,19 @@ if (!defined('ABSPATH')) {
  * The WordPress admin menu URL for a package is:
  *   admin.php?page=gateway-package-{package_key}
  *
- * @property int         $id
- * @property string      $package_key  Slug identifier, e.g. "my-package"
- * @property string      $label        Human-readable name
- * @property string      $description
- * @property string      $icon         WordPress dashicon class
- * @property int         $position     WordPress admin menu position
- * @property string      $capability   WordPress capability required to access
- * @property string|null $parent       Parent menu slug for submenus; null = top-level
- * @property string      $status       "active" | "inactive"
+ * @property int              $id
+ * @property string           $package_key   Slug identifier, e.g. "my-package"
+ * @property string|null      $extension_key FK to gateway_raptor_extension.extension_key
+ * @property string           $label         Human-readable name
+ * @property string           $description
+ * @property string           $icon          WordPress dashicon class
+ * @property int              $position      WordPress admin menu position
+ * @property string           $capability    WordPress capability required to access
+ * @property string|null      $parent        Parent menu slug for submenus; null = top-level
+ * @property string           $status        "active" | "inactive"
+ *
+ * @property-read RaptorExtension|null                                       $extension
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorCollection> $collections
  */
 class RaptorPackage extends \Gateway\Collection
 {
@@ -103,6 +107,11 @@ class RaptorPackage extends \Gateway\Collection
             'parent',
             'status',
         ];
+    }
+
+    public function extension(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(RaptorExtension::class, 'extension_key', 'extension_key');
     }
 
     public function collections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

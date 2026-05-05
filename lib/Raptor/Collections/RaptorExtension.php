@@ -28,6 +28,9 @@ if (!defined('ABSPATH')) {
  * @property string $min_wp_version
  * @property string $namespace      PHP namespace for the generated plugin
  * @property string $status         "active" | "inactive"
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorPackage>    $packages
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorCollection> $collections
  */
 class RaptorExtension extends \Gateway\Collection
 {
@@ -120,5 +123,15 @@ class RaptorExtension extends \Gateway\Collection
             'namespace',
             'status',
         ];
+    }
+
+    public function packages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorPackage::class, 'extension_key', 'extension_key');
+    }
+
+    public function collections(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorCollection::class, 'extension_id', 'id');
     }
 }

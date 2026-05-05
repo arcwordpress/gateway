@@ -178,17 +178,12 @@ class PackageRoutes
 
         $assignedIds = $package->collections()->pluck('gateway_raptor_collection.id')->toArray();
 
-        // Only collections within the same extension
-        if (!$package->extension_key) {
+        // Only collections within the same extension — use the relationship
+        if (!$package->extension_key || !$package->extension) {
             return new \WP_REST_Response(['success' => true, 'collections' => []], 200);
         }
 
-        $ext = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $package->extension_key)->first();
-        if (!$ext) {
-            return new \WP_REST_Response(['success' => true, 'collections' => []], 200);
-        }
-
-        $collections = RaptorCollection::where('extension_id', $ext->id)
+        $collections = $package->extension->collections()
             ->with('packages')
             ->orderBy('title')
             ->get();
