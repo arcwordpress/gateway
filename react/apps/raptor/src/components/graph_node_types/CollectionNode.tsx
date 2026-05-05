@@ -41,7 +41,22 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
       }}
     >
       {(data.handles ?? [{ id: 'h-top', type: 'target' as const, position: Position.Top }]).map((h) => (
-        <Handle key={h.id} id={h.id} type={h.type} position={h.position} style={h.style} />
+        <Handle
+          key={h.id}
+          id={h.id}
+          type={h.type}
+          position={h.position}
+          style={{
+            ...h.style,
+            width: 1,
+            height: 1,
+            minWidth: 0,
+            minHeight: 0,
+            border: 'none',
+            background: 'none',
+            opacity: 0,
+          }}
+        />
       ))}
 
       <NodeTypeHeader label="Collection" menu={dotMenu} />

@@ -28,7 +28,7 @@ class PackageRegistry
         }
 
         if (isset($this->packages[$key])) {
-            throw new \InvalidArgumentException("Package '{$key}' is already registered");
+            return $this->packages[$key];
         }
 
         $this->packages[$key] = $package;

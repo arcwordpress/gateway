@@ -27,7 +27,7 @@ class RaptorPackageMigration
         $sql = "CREATE TABLE $table_name (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             package_key varchar(200) NOT NULL DEFAULT '',
-            extension_key varchar(200) NULL DEFAULT NULL,
+            extension_id bigint(20) unsigned NULL,
             label varchar(200) NOT NULL DEFAULT '',
             description text NULL,
             icon varchar(200) NOT NULL DEFAULT 'dashicons-admin-generic',

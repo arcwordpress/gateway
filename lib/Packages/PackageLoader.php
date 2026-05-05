@@ -26,12 +26,13 @@ class PackageLoader
                 require_once ABSPATH . 'wp-admin/includes/plugin.php';
             }
 
-            $records  = RaptorPackage::where('status', 'active')->get();
+            $records  = RaptorPackage::with('extension')->where('status', 'active')->get();
             $registry = Plugin::getInstance()->getPackageRegistry();
 
             foreach ($records as $record) {
                 // Only register the package when the owning extension plugin is active.
-                if (!self::extensionIsActive($record->extension_key)) {
+                $extKey = $record->extension ? $record->extension->extension_key : null;
+                if (!self::extensionIsActive($extKey)) {
                     continue;
                 }
 
