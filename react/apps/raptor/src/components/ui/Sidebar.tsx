@@ -77,8 +77,9 @@ export default function Sidebar({
     <nav className="flex-1 flex flex-col justify-between min-h-0">
       {/* Top navigation items - scrollable */}
       <div className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        <SectionLabel label="Structure" />
         <NavLink to="/" label="Dashboard" />
+
+        <SectionLabel label="Structure" />
         <NavLink to="/extensions" label="Extensions" />
         <NavLink to="/packages" label="Packages" />
         <NavLink to="/collections" label="Collections" />
