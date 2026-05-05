@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import {
   useNodesState, useEdgesState,
-  type Node, type Edge,
+  type Node, type Edge, type NodeTypes,
 } from '@xyflow/react'
 import { ReactFlow, Controls, Background, BackgroundVariant } from '@xyflow/react'
 import { PACKAGES_GRAPH_NODE_TYPES } from '../../components/graph_node_types'
@@ -9,7 +9,7 @@ import { SharedMiniMap } from '../../components/graph/SharedMiniMap'
 
 export type PackageRecord = {
   package_key: string
-  extension_key: string | null
+  extension_id: number | null
   label: string
   icon: string
   has_collections: boolean
@@ -17,8 +17,36 @@ export type PackageRecord = {
 }
 
 export type ExtensionRecord = {
+  id: number
   extension_key: string
   title: string
+}
+
+// ─── Empty-hint node ──────────────────────────────────────────────────────
+
+function EmptyHintNode() {
+  return (
+    <div
+      style={{
+        background: 'var(--node-bg)',
+        border: '1px dashed #3f3f46',
+        borderRadius: 8,
+        padding: '10px 16px',
+        minWidth: 200,
+        color: '#52525b',
+        fontSize: 11,
+        textAlign: 'center',
+        pointerEvents: 'none',
+      }}
+    >
+      No packages — use <strong style={{ color: '#71717a' }}>+ New Package</strong> to get started
+    </div>
+  )
+}
+
+const NODE_TYPES: NodeTypes = {
+  ...PACKAGES_GRAPH_NODE_TYPES,
+  emptyHintNode: EmptyHintNode,
 }
 
 export function GlobalPackagesGraph({
@@ -33,50 +61,71 @@ export function GlobalPackagesGraph({
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
 
-  const extMap = new Map(extensions.map((e) => [e.extension_key, e]))
+  const extMap = new Map(extensions.map((e) => [e.id, e]))
 
-  const groups = new Map<string | null, PackageRecord[]>()
+  // Always seed a group for every visible extension so the graph shows
+  // extension nodes even when they have no packages yet.
+  const groups = new Map<number | null, PackageRecord[]>()
+  for (const ext of extensions) {
+    groups.set(ext.id, [])
+  }
   for (const pkg of packages) {
-    const k = pkg.extension_key ?? null
+    const k = pkg.extension_id ?? null
     if (!groups.has(k)) groups.set(k, [])
     groups.get(k)!.push(pkg)
   }
 
   let yOffset = 0
 
-  groups.forEach((pkgs, extKey) => {
-    const ext = extKey ? extMap.get(extKey) : null
-    const groupNodeId = extKey ? `ext-${extKey}` : 'ext-unassigned'
+  groups.forEach((pkgs, extId) => {
+    const ext = extId !== null ? extMap.get(extId) : null
+    const groupNodeId = extId !== null ? `ext-${extId}` : 'ext-unassigned'
 
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: { title: ext?.title ?? '', extKey: extKey ?? '', isActive: false },
+      data: { title: ext?.title ?? '', extKey: ext?.extension_key ?? '', isActive: false },
       position: { x: 0, y: yOffset },
     })
 
-    pkgs.forEach((pkg, idx) => {
-      const nodeId = `pkg-${pkg.package_key}`
+    if (pkgs.length === 0) {
+      const emptyId = `empty-${groupNodeId}`
       computedNodes.push({
-        id: nodeId,
-        type: 'packageNode',
-        data: {
-          label: pkg.label,
-          packageKey: pkg.package_key,
-          icon: pkg.icon ?? 'dashicons-admin-generic',
-          onSelect: onPackageSelect,
-        },
-        position: { x: 260, y: yOffset + idx * 100 },
+        id: emptyId,
+        type: 'emptyHintNode',
+        data: {},
+        position: { x: 260, y: yOffset + 10 },
       })
       computedEdges.push({
-        id: `edge-${groupNodeId}-${nodeId}`,
+        id: `edge-${groupNodeId}-${emptyId}`,
         source: groupNodeId,
-        target: nodeId,
-        style: { stroke: '#3f3f46' },
+        target: emptyId,
+        style: { stroke: '#3f3f46', strokeDasharray: '4 4' },
       })
-    })
-
-    yOffset += Math.max(pkgs.length, 1) * 100 + 40
+      yOffset += 100 + 40
+    } else {
+      pkgs.forEach((pkg, idx) => {
+        const nodeId = `pkg-${pkg.package_key}`
+        computedNodes.push({
+          id: nodeId,
+          type: 'packageNode',
+          data: {
+            label: pkg.label,
+            packageKey: pkg.package_key,
+            icon: pkg.icon ?? 'dashicons-admin-generic',
+            onSelect: onPackageSelect,
+          },
+          position: { x: 260, y: yOffset + idx * 100 },
+        })
+        computedEdges.push({
+          id: `edge-${groupNodeId}-${nodeId}`,
+          source: groupNodeId,
+          target: nodeId,
+          style: { stroke: '#3f3f46' },
+        })
+      })
+      yOffset += Math.max(pkgs.length, 1) * 100 + 40
+    }
   })
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(computedNodes)
@@ -93,7 +142,7 @@ export function GlobalPackagesGraph({
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        nodeTypes={PACKAGES_GRAPH_NODE_TYPES}
+        nodeTypes={NODE_TYPES}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
