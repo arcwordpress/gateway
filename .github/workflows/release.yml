@@ -59,7 +59,7 @@ jobs:
           git add gateway.zip
           git diff --cached --quiet || git commit -m "Release ${VERSION}"
           git tag ${VERSION}
-          git push -u origin HEAD:main
+          git push origin main
           git push origin ${VERSION}
 
           gh release create ${VERSION} gateway.zip \
