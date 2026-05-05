@@ -52,6 +52,16 @@ class RaptorBuilder
 
         $packages = $extension->packages()->where('status', 'active')->get();
 
+        $packagesDir = $pluginDir . '/lib/Packages';
+        if (is_dir($packagesDir)) {
+            $activeFiles = $packages->map(fn($p) => $this->packageKeyToClassName($p->package_key) . '.php')->toArray();
+            foreach (glob($packagesDir . '/*.php') ?: [] as $file) {
+                if (!in_array(basename($file), $activeFiles, true)) {
+                    @unlink($file);
+                }
+            }
+        }
+
         $packageResults = [];
         foreach ($packages as $package) {
             $packageResults[] = $this->buildPackage($package, $pluginDir, $namespace);

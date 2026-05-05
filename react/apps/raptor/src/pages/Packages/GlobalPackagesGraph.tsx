@@ -65,14 +65,14 @@ export function GlobalPackagesGraph({
 
   // Always seed a group for every visible extension so the graph shows
   // extension nodes even when they have no packages yet.
-  const groups = new Map<number | null, PackageRecord[]>()
+  const groups = new Map<number, PackageRecord[]>()
   for (const ext of extensions) {
     groups.set(ext.id, [])
   }
   for (const pkg of packages) {
-    const k = pkg.extension_id ?? null
-    if (!groups.has(k)) groups.set(k, [])
-    groups.get(k)!.push(pkg)
+    if (pkg.extension_id !== null && groups.has(pkg.extension_id)) {
+      groups.get(pkg.extension_id)!.push(pkg)
+    }
   }
 
   let yOffset = 0
@@ -84,7 +84,7 @@ export function GlobalPackagesGraph({
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: { title: ext?.title ?? '', extKey: ext?.extension_key ?? '', isActive: false },
+      data: { title: ext?.title || ext?.extension_key || '', extKey: ext?.extension_key ?? '', isActive: false },
       position: { x: 0, y: yOffset },
     })
 
@@ -104,6 +104,8 @@ export function GlobalPackagesGraph({
       })
       yOffset += 100 + 40
     } else {
+      const nodeHeights = pkgs.map((pkg) => 80 + (pkg.collection_keys?.length ?? 0) * 22)
+      let localY = 0
       pkgs.forEach((pkg, idx) => {
         const nodeId = `pkg-${pkg.package_key}`
         computedNodes.push({
@@ -116,7 +118,7 @@ export function GlobalPackagesGraph({
             collectionKeys: pkg.collection_keys,
             onSelect: onPackageSelect,
           },
-          position: { x: 260, y: yOffset + idx * 100 },
+          position: { x: 260, y: yOffset + localY },
         })
         computedEdges.push({
           id: `edge-${groupNodeId}-${nodeId}`,
@@ -124,8 +126,9 @@ export function GlobalPackagesGraph({
           target: nodeId,
           style: { stroke: '#3f3f46' },
         })
+        localY += nodeHeights[idx] + 20
       })
-      yOffset += Math.max(pkgs.length, 1) * 100 + 40
+      yOffset += localY + 20
     }
   })
 
