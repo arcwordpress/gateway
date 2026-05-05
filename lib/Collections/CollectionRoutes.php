@@ -143,12 +143,22 @@ class CollectionRoutes
 
                 // Filter by package if specified
                 if ($packageFilter !== null && $packageFilter !== '') {
-                    $collectionPackage = method_exists($collection, 'getPackage')
-                        ? $collection->getPackage()
-                        : 'default';
+                    $pkg = Plugin::getInstance()->getPackageRegistry()->get($packageFilter);
 
-                    if ($collectionPackage !== $packageFilter) {
-                        continue;
+                    if ($pkg !== null && !empty($pkg->getCollections())) {
+                        // Package declares an explicit collection list — use it as the filter
+                        $collectionKey = method_exists($collection, 'getKey') ? $collection->getKey() : null;
+                        if (!in_array($collectionKey, $pkg->getCollections(), true)) {
+                            continue;
+                        }
+                    } else {
+                        // Fall back to the collection's own package declaration
+                        $collectionPackage = method_exists($collection, 'getPackage')
+                            ? $collection->getPackage()
+                            : 'default';
+                        if ($collectionPackage !== $packageFilter) {
+                            continue;
+                        }
                     }
                 }
 
