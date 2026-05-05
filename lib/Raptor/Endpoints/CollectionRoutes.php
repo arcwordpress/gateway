@@ -93,7 +93,7 @@ class CollectionRoutes
                 'success'     => true,
                 'collections' => $collections->toArray(),
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'    => 'gateway_tables_missing',
                 'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
@@ -169,7 +169,7 @@ class CollectionRoutes
             }
 
             return new \WP_REST_Response($response, 201);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'    => 'gateway_tables_missing',
                 'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
@@ -195,7 +195,7 @@ class CollectionRoutes
                     ['output_files'  => $outputFiles],
                 ),
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'    => 'gateway_tables_missing',
                 'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
@@ -247,7 +247,7 @@ class CollectionRoutes
             }
 
             return new \WP_REST_Response($response, 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'    => 'gateway_tables_missing',
                 'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
@@ -274,7 +274,7 @@ class CollectionRoutes
                 'success' => true,
                 'message' => 'Collection deleted.',
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new \WP_REST_Response([
                 'code'    => 'gateway_tables_missing',
                 'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',

@@ -81,9 +81,6 @@ class Plugin {
             return;
         }
 
-        // Register activation hook
-        register_activation_hook(__FILE__, [$this, 'activate']);
-
         // Register packages, collections and views when Gateway is loaded
         add_action('gateway_loaded', [$this, 'register_packages']);
         add_action('gateway_loaded', [$this, 'register_collections']);
@@ -160,25 +157,6 @@ class Plugin {
         }
     }
 
-    /**
-     * Activation hook callback — creates any registered pages if they don't exist.
-     */
-    public function activate() {
-        $pages_dir = plugin_dir_path(__FILE__) . 'lib/Pages';
-
-        if (!is_dir($pages_dir)) {
-            return;
-        }
-
-        foreach (glob($pages_dir . '/*.php') as $file) {
-            $filename   = basename($file, '.php');
-            $class_name = '{{NAMESPACE}}\\Pages\\' . $filename;
-
-            if (class_exists($class_name)) {
-                (new $class_name())->create();
-            }
-        }
-    }
 }
 endif; // class_exists guard
 

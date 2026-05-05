@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorPackage;
 
@@ -142,6 +143,8 @@ class PackageRoutes
             'status'      => 'active',
         ]);
 
+        $this->rebuildExtension($package->extension_key);
+
         return new \WP_REST_Response([
             'success' => true,
             'message' => 'Package created.',
@@ -237,6 +240,8 @@ class PackageRoutes
 
         $package->collections()->sync($syncData);
 
+        $this->rebuildExtension($package->extension_key);
+
         $arr = $package->fresh()->toArray();
         $arr['collection_keys'] = $package->collections()->pluck('collection_key')->toArray();
         $arr['has_collections'] = !empty($arr['collection_keys']);
@@ -270,6 +275,8 @@ class PackageRoutes
 
         $package->update($update);
 
+        $this->rebuildExtension($package->fresh()->extension_key);
+
         return new \WP_REST_Response([
             'success' => true,
             'package' => $package->fresh()->toArray(),
@@ -281,7 +288,10 @@ class PackageRoutes
         $package = $this->findOrFail($request->get_param('package_key'));
         if ($package instanceof \WP_REST_Response) return $package;
 
+        $extKey = $package->extension_key;
         $package->delete();
+
+        $this->rebuildExtension($extKey);
 
         return new \WP_REST_Response([
             'success' => true,
@@ -316,6 +326,13 @@ class PackageRoutes
         $key = strtolower($key);
         $key = preg_replace('/[^a-z0-9\-_]/', '', $key);
         return (string) substr(trim($key, '-_'), 0, 200);
+    }
+
+    private function rebuildExtension(?string $extensionKey): void
+    {
+        if ($extensionKey) {
+            (new RaptorBuilder())->build($extensionKey);
+        }
     }
 
     public function checkPermissions(): bool

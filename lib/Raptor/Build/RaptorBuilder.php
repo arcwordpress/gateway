@@ -132,7 +132,7 @@ class RaptorBuilder
         RaptorExtension $extension
     ): array {
         // Create directory structure
-        foreach (['lib/Packages', 'lib/Collections', 'lib/Views', 'lib/Pages', 'schemas'] as $subDir) {
+        foreach (['lib/Packages', 'lib/Collections', 'lib/Views', 'schemas'] as $subDir) {
             if (!is_dir($pluginDir . '/' . $subDir)) {
                 if (!wp_mkdir_p($pluginDir . '/' . $subDir)) {
                     return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
@@ -196,7 +196,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class {$className} extends \\Gateway\\Package
+class {$className} extends \\Gateway\\Package\\Package
 {
     protected \$key         = '{$key}';
     protected \$label       = '{$label}';
