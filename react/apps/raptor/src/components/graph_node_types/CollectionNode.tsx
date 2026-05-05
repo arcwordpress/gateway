@@ -8,7 +8,7 @@ export type CollNodeType = Node<
     collKey: string
     isActive: boolean
     fields?: Array<{ name: string; label?: string; type?: string }>
-    handles?: Array<{ id: string; type: 'source' | 'target'; position: Position }>
+    handles?: Array<{ id: string; type: 'source' | 'target'; position: Position; style?: React.CSSProperties }>
     onEdit?: () => void
     onDelete?: () => void
     onNavigateFields?: () => void
@@ -41,7 +41,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
       }}
     >
       {(data.handles ?? [{ id: 'h-top', type: 'target' as const, position: Position.Top }]).map((h) => (
-        <Handle key={h.id} id={h.id} type={h.type} position={h.position} />
+        <Handle key={h.id} id={h.id} type={h.type} position={h.position} style={h.style} />
       ))}
 
       <NodeTypeHeader label="Collection" menu={dotMenu} />

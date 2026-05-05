@@ -60,6 +60,24 @@ const NODE_TYPES: NodeTypes = {
   collectionNode: CollectionNode as React.ComponentType<any>,
 }
 
+// ─── Handle slot config ───────────────────────────────────────────────────────
+
+// Number of independent attachment points per side.
+// Edges are distributed round-robin so they fan out instead of stacking.
+const SLOTS = 5
+const SLOT_PCT = ['15%', '30%', '50%', '70%', '85%']
+
+function makeHandles() {
+  const h: CollNodeType['data']['handles'] = []
+  for (let s = 0; s < SLOTS; s++) {
+    h.push({ id: `h-top-${s}`,    type: 'target', position: Position.Top,    style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-right-${s}`,  type: 'source', position: Position.Right,  style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-bottom-${s}`, type: 'source', position: Position.Bottom, style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-left-${s}`,   type: 'target', position: Position.Left,   style: { top:    SLOT_PCT[s] } })
+  }
+  return h
+}
+
 // ─── Main viewer ─────────────────────────────────────────────────────────────
 
 export default function CollectionsRelationshipsViewer() {
@@ -122,12 +140,7 @@ export default function CollectionsRelationshipsViewer() {
         title:    col.title,
         collKey:  col.collection_key,
         isActive: false,
-        handles: [
-          { id: 'h-top',    type: 'target' as const, position: Position.Top },
-          { id: 'h-right',  type: 'source' as const, position: Position.Right },
-          { id: 'h-bottom', type: 'source' as const, position: Position.Bottom },
-          { id: 'h-left',   type: 'target' as const, position: Position.Left },
-        ],
+        handles:  makeHandles(),
       } satisfies CollNodeType['data'],
       position: gridPos(i),
     }))
@@ -146,15 +159,17 @@ export default function CollectionsRelationshipsViewer() {
       }))
     })
 
-    // Count how many edges connect each unordered node pair so we can
-    // spread them apart when multiple relationships share the same endpoints.
-    const pairCount: Record<string, number> = {}
-    for (const col of cols) {
-      for (const rel of col.relationships ?? []) {
-        const key = [rel.source, rel.target].sort().join('||')
-        pairCount[key] = (pairCount[key] ?? 0) + 1
-      }
+    // Per-node, per-side slot counter — edges are distributed round-robin so
+    // they spread across the side instead of all exiting the same point.
+    const sideSlot: Record<string, number> = {}
+    const nextSlot = (nodeId: string, side: string) => {
+      const key = `${nodeId}::${side}`
+      const s = (sideSlot[key] ?? 0) % SLOTS
+      sideSlot[key] = s + 1
+      return s
     }
+
+    // Pair index for curvature staggering (same two nodes → arc further out)
     const pairIndex: Record<string, number> = {}
 
     const relEdges: Edge[] = []
@@ -169,21 +184,15 @@ export default function CollectionsRelationshipsViewer() {
         const srcPos = posMap[srcId] ?? { x: 0, y: 0 }
         const tgtPos = posMap[tgtId] ?? { x: 0, y: 0 }
 
-        // Alternate routing axis for each additional edge between the same pair
-        // so they take distinct paths rather than layering on top of each other.
-        let srcHandle: string, tgtHandle: string
-        if (idx % 2 === 0) {
-          // Even index → horizontal routing (left ↔ right handles)
-          srcHandle = srcPos.x <= tgtPos.x ? 'h-right' : 'h-left'
-          tgtHandle = srcPos.x <= tgtPos.x ? 'h-left'  : 'h-right'
-        } else {
-          // Odd index → vertical routing (top ↔ bottom handles)
-          srcHandle = srcPos.y <= tgtPos.y ? 'h-bottom' : 'h-top'
-          tgtHandle = srcPos.y <= tgtPos.y ? 'h-top'    : 'h-bottom'
-        }
+        // Pick exit/entry side based on relative position, then claim a slot
+        const goRight = srcPos.x <= tgtPos.x
+        const srcSide = goRight ? 'right' : 'left'
+        const tgtSide = goRight ? 'left'  : 'right'
+        const srcHandle = `h-${srcSide}-${nextSlot(srcId, srcSide)}`
+        const tgtHandle = `h-${tgtSide}-${nextSlot(tgtId, tgtSide)}`
 
-        // Stagger curvature so additional same-pair edges arc further out
-        const curvature = 0.25 + idx * 0.2
+        // Stagger curvature for same-pair edges so they arc apart
+        const curvature = 0.25 + idx * 0.15
 
         const visual = REL_VISUAL[rel.type] ?? { color: '#71717a', labelBg: '#18181b' }
 
@@ -199,10 +208,10 @@ export default function CollectionsRelationshipsViewer() {
           labelBgPadding:      [5, 3] as [number, number],
           labelBgBorderRadius: 4,
           style:               {
-            stroke:           visual.color,
-            strokeWidth:      1.5,
-            strokeDasharray:  visual.dash,
-            cursor:           'pointer',
+            stroke:          visual.color,
+            strokeWidth:     1.5,
+            strokeDasharray: visual.dash,
+            cursor:          'pointer',
           },
           type:        'default',
           pathOptions: { curvature },
