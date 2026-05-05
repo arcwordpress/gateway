@@ -2,6 +2,11 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.2.2] - 2026-05-05
+
+### Changed
+- Prepare release 1.2.2.
+
 ## [1.2.1-rc5] - 2026-03-26
 
 ### Changed
