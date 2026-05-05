@@ -24,7 +24,17 @@ import {
   CreateRelationshipPanel,
   EditRelationshipPanel,
   type Relationship,
+  type RelType,
 } from '../components/RelationshipPanels'
+
+// ─── Per-type visual config ───────────────────────────────────────────────────
+
+const REL_VISUAL: Record<RelType, { color: string; dash?: string; labelBg: string }> = {
+  belongsTo:     { color: '#f59e0b',               labelBg: '#431407' },  // amber  – solid
+  hasMany:       { color: '#60a5fa', dash: '7 4',  labelBg: '#172554' },  // blue   – long dash
+  hasOne:        { color: '#34d399', dash: '2 3',  labelBg: '#064e3b' },  // emerald– dotted
+  belongsToMany: { color: '#c084fc', dash: '10 3 2 3', labelBg: '#3b0764' }, // purple – dash-dot
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -48,6 +58,24 @@ type PanelState =
 
 const NODE_TYPES: NodeTypes = {
   collectionNode: CollectionNode as React.ComponentType<any>,
+}
+
+// ─── Handle slot config ───────────────────────────────────────────────────────
+
+// Number of independent attachment points per side.
+// Edges are distributed round-robin so they fan out instead of stacking.
+const SLOTS = 5
+const SLOT_PCT = ['15%', '30%', '50%', '70%', '85%']
+
+function makeHandles() {
+  const h: CollNodeType['data']['handles'] = []
+  for (let s = 0; s < SLOTS; s++) {
+    h.push({ id: `h-top-${s}`,    type: 'target', position: Position.Top,    style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-right-${s}`,  type: 'source', position: Position.Right,  style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-bottom-${s}`, type: 'source', position: Position.Bottom, style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-left-${s}`,   type: 'target', position: Position.Left,   style: { top:    SLOT_PCT[s] } })
+  }
+  return h
 }
 
 // ─── Main viewer ─────────────────────────────────────────────────────────────
@@ -112,12 +140,7 @@ export default function CollectionsRelationshipsViewer() {
         title:    col.title,
         collKey:  col.collection_key,
         isActive: false,
-        handles: [
-          { id: 'h-top',    type: 'target' as const, position: Position.Top },
-          { id: 'h-right',  type: 'source' as const, position: Position.Right },
-          { id: 'h-bottom', type: 'source' as const, position: Position.Bottom },
-          { id: 'h-left',   type: 'target' as const, position: Position.Left },
-        ],
+        handles:  makeHandles(),
       } satisfies CollNodeType['data'],
       position: gridPos(i),
     }))
@@ -136,16 +159,43 @@ export default function CollectionsRelationshipsViewer() {
       }))
     })
 
-    // Build relationship edges with position-based handle routing (right→left when source is left of target)
+    // Per-node, per-side slot counter — edges are distributed round-robin so
+    // they spread across the side instead of all exiting the same point.
+    const sideSlot: Record<string, number> = {}
+    const nextSlot = (nodeId: string, side: string) => {
+      const key = `${nodeId}::${side}`
+      const s = (sideSlot[key] ?? 0) % SLOTS
+      sideSlot[key] = s + 1
+      return s
+    }
+
+    // Pair index for curvature staggering (same two nodes → arc further out)
+    const pairIndex: Record<string, number> = {}
+
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId   = `col-${rel.source}`
-        const tgtId   = `col-${rel.target}`
-        const srcX    = posMap[srcId]?.x ?? 0
-        const tgtX    = posMap[tgtId]?.x ?? 0
-        const srcHandle = srcX <= tgtX ? 'h-right' : 'h-left'
-        const tgtHandle = srcX <= tgtX ? 'h-left'  : 'h-right'
+        const srcId  = `col-${rel.source}`
+        const tgtId  = `col-${rel.target}`
+        const pairKey = [rel.source, rel.target].sort().join('||')
+        const idx    = pairIndex[pairKey] ?? 0
+        pairIndex[pairKey] = idx + 1
+
+        const srcPos = posMap[srcId] ?? { x: 0, y: 0 }
+        const tgtPos = posMap[tgtId] ?? { x: 0, y: 0 }
+
+        // Pick exit/entry side based on relative position, then claim a slot
+        const goRight = srcPos.x <= tgtPos.x
+        const srcSide = goRight ? 'right' : 'left'
+        const tgtSide = goRight ? 'left'  : 'right'
+        const srcHandle = `h-${srcSide}-${nextSlot(srcId, srcSide)}`
+        const tgtHandle = `h-${tgtSide}-${nextSlot(tgtId, tgtSide)}`
+
+        // Stagger curvature for same-pair edges so they arc apart
+        const curvature = 0.25 + idx * 0.15
+
+        const visual = REL_VISUAL[rel.type] ?? { color: '#71717a', labelBg: '#18181b' }
+
         relEdges.push({
           id:                  `rel-${rel.id}`,
           source:              srcId,
@@ -153,13 +203,19 @@ export default function CollectionsRelationshipsViewer() {
           sourceHandle:        srcHandle,
           targetHandle:        tgtHandle,
           label:               REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
-          labelStyle:          { fill: '#a1a1aa', fontSize: 10 },
-          labelBgStyle:        { fill: 'var(--node-bg)', fillOpacity: 1 },
-          labelBgPadding:      [4, 3] as [number, number],
-          labelBgBorderRadius: 3,
-          style:               { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
-          type:                'smoothstep',
-          data:                rel,
+          labelStyle:          { fill: visual.color, fontSize: 10, fontWeight: 600 },
+          labelBgStyle:        { fill: visual.labelBg, fillOpacity: 0.9 },
+          labelBgPadding:      [5, 3] as [number, number],
+          labelBgBorderRadius: 4,
+          style:               {
+            stroke:          visual.color,
+            strokeWidth:     1.5,
+            strokeDasharray: visual.dash,
+            cursor:          'pointer',
+          },
+          type:        'default',
+          pathOptions: { curvature },
+          data:        rel,
         })
       }
     }
