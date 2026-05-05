@@ -196,7 +196,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class {$className} extends \\Gateway\\Package
+class {$className} extends \\Gateway\\Package\\Package
 {
     protected \$key         = '{$key}';
     protected \$label       = '{$label}';

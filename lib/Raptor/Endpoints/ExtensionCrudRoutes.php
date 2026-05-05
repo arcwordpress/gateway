@@ -705,7 +705,7 @@ class ExtensionCrudRoutes
                 'plugin_slug' => $plugin_slug
             ];
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [
                 'success' => false,
                 'error' => 'Exception during plugin generation: ' . $e->getMessage()
@@ -766,7 +766,7 @@ class ExtensionCrudRoutes
                 'error' => null
             ];
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [
                 'activated' => false,
                 'error' => 'Exception during plugin activation: ' . $e->getMessage()
@@ -859,7 +859,7 @@ class ExtensionCrudRoutes
                 ];
             }
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("[Gateway] Migration error: " . $e->getMessage());
             return [
                 'success' => false,
