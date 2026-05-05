@@ -111,8 +111,10 @@ export default function PackagesTopLevel() {
     },
   })
 
+  const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
+
   const visiblePackages = selectedExtKey
-    ? allPackages.filter((p) => p.extension_key === selectedExtKey)
+    ? allPackages.filter((p) => p.extension_id === selectedExt?.id)
     : allPackages
 
   const openNew = () => {
@@ -170,8 +172,13 @@ export default function PackagesTopLevel() {
           )}
 
           {visiblePackages.length === 0 ? (
-            <div className="rounded border border-zinc-800 bg-zinc-900/40 p-4 text-sm text-zinc-400">
-              No packages found{selectedExtKey ? ' for this extension' : ''}.
+            <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/30 p-10 flex flex-col items-center gap-2 text-center">
+              <p className="text-sm font-medium text-zinc-300">No packages yet</p>
+              <p className="text-xs text-zinc-500">
+                {selectedExtKey
+                  ? 'Click + New Package above to create the first package for this extension.'
+                  : 'Select an extension in the top bar, then create a package.'}
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -210,10 +217,11 @@ export default function PackagesTopLevel() {
       />
 
       {/* ── Right panel ────────────────────────────────────────────────── */}
-      {panel?.mode === 'create' && selectedExtKey && (
+      {panel?.mode === 'create' && selectedExt && (
         <PackagePanel
           mode="create"
-          extensionKey={selectedExtKey}
+          extensionId={selectedExt.id}
+          extensionTitle={selectedExt.title || selectedExt.extension_key}
           onClose={closePanel}
           onCreated={(key) => { closePanel(); openEdit(key) }}
         />

@@ -24,7 +24,7 @@ type CollectionStatus = {
 }
 
 export type PackagePanelProps =
-  | { mode: 'create'; extensionKey: string; onClose: () => void; onCreated: (key: string) => void }
+  | { mode: 'create'; extensionId: number; extensionTitle: string; onClose: () => void; onCreated: (key: string) => void }
   | { mode: 'edit'; packageKey: string; onClose: () => void; onDeleted: () => void }
 
 // ─── Styles ────────────────────────────────────────────────────────────────
@@ -82,6 +82,9 @@ function PackageFields({ register }: { register: ReturnType<typeof useForm<FormV
 
 function CollectionsTab({ packageKey }: { packageKey: string }) {
   const queryClient = useQueryClient()
+  // Local optimistic state so toggling feels instant
+  const [localAssigned, setLocalAssigned] = useState<string[] | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data, isLoading } = useQuery<{ success: boolean; collections: CollectionStatus[] }>({
     queryKey: ['package-collections', packageKey],
@@ -107,21 +110,27 @@ function CollectionsTab({ packageKey }: { packageKey: string }) {
       return json
     },
     onSuccess: () => {
+      setLocalAssigned(null)
       queryClient.invalidateQueries({ queryKey: ['package-collections', packageKey] })
       queryClient.invalidateQueries({ queryKey: ['packages', packageKey] })
       queryClient.invalidateQueries({ queryKey: ['packages'] })
     },
+    onError: () => setLocalAssigned(null),
   })
 
   const collections = data?.collections ?? []
-  const assigned = collections.filter((c) => c.is_assigned).map((c) => c.collection_key)
+  const serverAssigned = collections.filter((c) => c.is_assigned).map((c) => c.collection_key)
+  const assigned = localAssigned ?? serverAssigned
   const hasNone = !isLoading && assigned.length === 0
 
-  const toggle = (key: string, current: boolean) => {
-    const next = current
+  const toggle = (key: string) => {
+    const next = assigned.includes(key)
       ? assigned.filter((k) => k !== key)
       : [...assigned, key]
-    mutation.mutate(next)
+    setLocalAssigned(next)
+    // Debounce the actual save so rapid toggles don't each trigger a rebuild
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => mutation.mutate(next), 600)
   }
 
   if (isLoading) {
@@ -152,11 +161,13 @@ function CollectionsTab({ packageKey }: { packageKey: string }) {
         <p className="mb-2 text-xs text-red-400">{(mutation.error as Error).message}</p>
       )}
 
-      {collections.map((col) => (
+      {collections.map((col) => {
+        const isAssigned = assigned.includes(col.collection_key)
+        return (
         <label
           key={col.collection_key}
           className={`group flex items-start gap-3 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
-            col.is_assigned
+            isAssigned
               ? 'border-zinc-600 bg-zinc-800/60'
               : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
           } ${col.status === 'inactive' ? 'opacity-50' : ''}`}
@@ -164,12 +175,12 @@ function CollectionsTab({ packageKey }: { packageKey: string }) {
           <div className="mt-0.5 flex-shrink-0">
             <div
               className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                col.is_assigned
+                isAssigned
                   ? 'border-zinc-400 bg-zinc-600'
                   : 'border-zinc-600 bg-zinc-900 group-hover:border-zinc-500'
               }`}
             >
-              {col.is_assigned && (
+              {isAssigned && (
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -179,9 +190,8 @@ function CollectionsTab({ packageKey }: { packageKey: string }) {
           <input
             type="checkbox"
             className="sr-only"
-            checked={col.is_assigned}
-            disabled={mutation.isPending}
-            onChange={() => toggle(col.collection_key, col.is_assigned)}
+            checked={isAssigned}
+            onChange={() => toggle(col.collection_key)}
           />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-zinc-200 leading-tight">{col.title || col.collection_key}</p>
@@ -202,14 +212,15 @@ function CollectionsTab({ packageKey }: { packageKey: string }) {
             <span className="text-[9px] uppercase tracking-wider text-zinc-600 mt-0.5">inactive</span>
           )}
         </label>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
 // ─── Create panel ──────────────────────────────────────────────────────────
 
-function CreatePanel({ extensionKey, onClose, onCreated }: Extract<PackagePanelProps, { mode: 'create' }>) {
+function CreatePanel({ extensionId, extensionTitle, onClose, onCreated }: Extract<PackagePanelProps, { mode: 'create' }>) {
   const queryClient = useQueryClient()
   const { register, watch } = useForm<FormValues>({
     defaultValues: { label: '', description: '', icon: 'dashicons-admin-generic', position: 20, capability: 'manage_options', parent: '' },
@@ -224,7 +235,7 @@ function CreatePanel({ extensionKey, onClose, onCreated }: Extract<PackagePanelP
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
-          extension_key: extensionKey,
+          extension_id:  extensionId,
           label:         v.label.trim(),
           description:   v.description.trim(),
           icon:          v.icon || 'dashicons-admin-generic',
@@ -258,7 +269,7 @@ function CreatePanel({ extensionKey, onClose, onCreated }: Extract<PackagePanelP
   }, [values.label, values.description, values.icon, values.position, values.capability, values.parent])
 
   return (
-    <PanelShell title="New Package" sub={`extension: ${extensionKey}`} onClose={onClose}>
+    <PanelShell title="New Package" sub={extensionTitle} onClose={onClose}>
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div>
           <label className={lbl}>Label <span className="text-red-400">*</span></label>
@@ -291,7 +302,7 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
   const initialisedRef = useRef(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { data } = useQuery<{ package: { label: string; description: string; icon: string; position: number; capability: string; parent: string | null; extension_key: string; has_collections: boolean; collection_keys: string[] } }>({
+  const { data } = useQuery<{ package: { label: string; description: string; icon: string; position: number; capability: string; parent: string | null; extension_id: number | null; has_collections: boolean; collection_keys: string[] } }>({
     queryKey: ['packages', packageKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}`), { headers: authHeaders() })
