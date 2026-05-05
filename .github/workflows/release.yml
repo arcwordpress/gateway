@@ -12,12 +12,10 @@ permissions:
 jobs:
   build-release:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
         if: hashFiles('package.json') != ''
@@ -54,7 +52,7 @@ jobs:
           zip -r $GITHUB_WORKSPACE/gateway.zip gateway
 
       - name: Create GitHub Release (Private Repo)
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: gateway.zip
           generate_release_notes: true
@@ -64,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gateway
           path: gateway.zip
