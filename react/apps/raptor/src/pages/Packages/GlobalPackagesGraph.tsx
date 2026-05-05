@@ -51,7 +51,7 @@ export function GlobalPackagesGraph({
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: { title: ext?.title ?? 'No Extension', extKey: extKey ?? '', isActive: false },
+      data: { title: ext?.title ?? '', extKey: extKey ?? '', isActive: false },
       position: { x: 0, y: yOffset },
     })
 

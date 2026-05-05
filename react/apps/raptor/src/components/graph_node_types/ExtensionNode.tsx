@@ -45,10 +45,12 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
     >
       <Handle type="source" position={Position.Right} />
       <NodeTypeHeader label="Extension" menu={manageBtn} />
-      <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: 4 }}>
-        {data.extKey}
-      </div>
-      <div>{data.title}</div>
+      {data.extKey && (
+        <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: data.title ? 4 : 0 }}>
+          {data.extKey}
+        </div>
+      )}
+      {data.title && <div>{data.title}</div>}
 
       {data.onCreate && (
         <div style={{ marginTop: 8, display: 'flex', justifyContent: 'flex-end' }}>

@@ -24,7 +24,17 @@ import {
   CreateRelationshipPanel,
   EditRelationshipPanel,
   type Relationship,
+  type RelType,
 } from '../components/RelationshipPanels'
+
+// ─── Per-type visual config ───────────────────────────────────────────────────
+
+const REL_VISUAL: Record<RelType, { color: string; dash?: string; labelBg: string }> = {
+  belongsTo:     { color: '#f59e0b',               labelBg: '#431407' },  // amber  – solid
+  hasMany:       { color: '#60a5fa', dash: '7 4',  labelBg: '#172554' },  // blue   – long dash
+  hasOne:        { color: '#34d399', dash: '2 3',  labelBg: '#064e3b' },  // emerald– dotted
+  belongsToMany: { color: '#c084fc', dash: '10 3 2 3', labelBg: '#3b0764' }, // purple – dash-dot
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -136,16 +146,47 @@ export default function CollectionsRelationshipsViewer() {
       }))
     })
 
-    // Build relationship edges with position-based handle routing (right→left when source is left of target)
+    // Count how many edges connect each unordered node pair so we can
+    // spread them apart when multiple relationships share the same endpoints.
+    const pairCount: Record<string, number> = {}
+    for (const col of cols) {
+      for (const rel of col.relationships ?? []) {
+        const key = [rel.source, rel.target].sort().join('||')
+        pairCount[key] = (pairCount[key] ?? 0) + 1
+      }
+    }
+    const pairIndex: Record<string, number> = {}
+
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId   = `col-${rel.source}`
-        const tgtId   = `col-${rel.target}`
-        const srcX    = posMap[srcId]?.x ?? 0
-        const tgtX    = posMap[tgtId]?.x ?? 0
-        const srcHandle = srcX <= tgtX ? 'h-right' : 'h-left'
-        const tgtHandle = srcX <= tgtX ? 'h-left'  : 'h-right'
+        const srcId  = `col-${rel.source}`
+        const tgtId  = `col-${rel.target}`
+        const pairKey = [rel.source, rel.target].sort().join('||')
+        const idx    = pairIndex[pairKey] ?? 0
+        pairIndex[pairKey] = idx + 1
+
+        const srcPos = posMap[srcId] ?? { x: 0, y: 0 }
+        const tgtPos = posMap[tgtId] ?? { x: 0, y: 0 }
+
+        // Alternate routing axis for each additional edge between the same pair
+        // so they take distinct paths rather than layering on top of each other.
+        let srcHandle: string, tgtHandle: string
+        if (idx % 2 === 0) {
+          // Even index → horizontal routing (left ↔ right handles)
+          srcHandle = srcPos.x <= tgtPos.x ? 'h-right' : 'h-left'
+          tgtHandle = srcPos.x <= tgtPos.x ? 'h-left'  : 'h-right'
+        } else {
+          // Odd index → vertical routing (top ↔ bottom handles)
+          srcHandle = srcPos.y <= tgtPos.y ? 'h-bottom' : 'h-top'
+          tgtHandle = srcPos.y <= tgtPos.y ? 'h-top'    : 'h-bottom'
+        }
+
+        // Stagger curvature so additional same-pair edges arc further out
+        const curvature = 0.25 + idx * 0.2
+
+        const visual = REL_VISUAL[rel.type] ?? { color: '#71717a', labelBg: '#18181b' }
+
         relEdges.push({
           id:                  `rel-${rel.id}`,
           source:              srcId,
@@ -153,13 +194,19 @@ export default function CollectionsRelationshipsViewer() {
           sourceHandle:        srcHandle,
           targetHandle:        tgtHandle,
           label:               REL_TYPES.find((r) => r.value === rel.type)?.label ?? rel.type,
-          labelStyle:          { fill: '#a1a1aa', fontSize: 10 },
-          labelBgStyle:        { fill: 'var(--node-bg)', fillOpacity: 1 },
-          labelBgPadding:      [4, 3] as [number, number],
-          labelBgBorderRadius: 3,
-          style:               { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
-          type:                'smoothstep',
-          data:                rel,
+          labelStyle:          { fill: visual.color, fontSize: 10, fontWeight: 600 },
+          labelBgStyle:        { fill: visual.labelBg, fillOpacity: 0.9 },
+          labelBgPadding:      [5, 3] as [number, number],
+          labelBgBorderRadius: 4,
+          style:               {
+            stroke:           visual.color,
+            strokeWidth:      1.5,
+            strokeDasharray:  visual.dash,
+            cursor:           'pointer',
+          },
+          type:        'default',
+          pathOptions: { curvature },
+          data:        rel,
         })
       }
     }
