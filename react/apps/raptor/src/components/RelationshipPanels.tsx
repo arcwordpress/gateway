@@ -151,6 +151,7 @@ export function RelationshipForm({
   collections,
   initial,
   onSave,
+  onCancel,
   onDelete,
   isPending,
   isError,
@@ -161,6 +162,7 @@ export function RelationshipForm({
   collections: CollectionStub[]
   initial?: Relationship
   onSave: (rel: Omit<Relationship, 'id' | 'source' | 'target'>) => void
+  onCancel: () => void
   onDelete?: () => void
   isPending: boolean
   isError: boolean
@@ -323,6 +325,14 @@ export function RelationshipForm({
         >
           {isPending ? 'Saving…' : initial ? 'Save Changes' : 'Add Relationship'}
         </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isPending}
+          className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-zinc-400 text-xs font-medium transition-colors"
+        >
+          Cancel
+        </button>
         {onDelete && (
           <button
             type="button"
@@ -333,7 +343,7 @@ export function RelationshipForm({
             Delete
           </button>
         )}
-        </div>
+      </div>
     </form>
   )
 }
@@ -386,6 +396,7 @@ export function CreateRelationshipPanel({
         targetKey={targetKey}
         collections={collections}
         onSave={(fields) => mutation.mutate(fields)}
+        onCancel={onClose}
         isPending={mutation.isPending}
         isError={mutation.isError}
         errorMessage={(mutation.error as Error | null)?.message}
@@ -460,6 +471,7 @@ export function EditRelationshipPanel({
         collections={collections}
         initial={rel}
         onSave={(fields) => saveMutation.mutate(fields)}
+        onCancel={onClose}
         onDelete={() => deleteMutation.mutate()}
         isPending={isPending}
         isError={saveMutation.isError || deleteMutation.isError}
