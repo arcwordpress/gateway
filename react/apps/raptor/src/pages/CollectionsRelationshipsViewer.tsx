@@ -36,6 +36,10 @@ const REL_VISUAL: Record<RelType, { color: string; dash?: string; labelBg: strin
   belongsToMany: { color: '#c084fc', dash: '10 3 2 3', labelBg: '#3b0764' }, // purple – dash-dot
 }
 
+// pathOptions is a React Flow runtime prop for bezier edges but isn't in the
+// base Edge type — extend locally and cast when passing to setEdges.
+type BezierEdge = Edge & { pathOptions?: { curvature?: number } }
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type Collection = {
@@ -172,7 +176,7 @@ export default function CollectionsRelationshipsViewer() {
     // Pair index for curvature staggering (same two nodes → arc further out)
     const pairIndex: Record<string, number> = {}
 
-    const relEdges: Edge[] = []
+    const relEdges: BezierEdge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
         const srcId  = `col-${rel.source}`
@@ -220,7 +224,7 @@ export default function CollectionsRelationshipsViewer() {
       }
     }
 
-    setEdges(relEdges)
+    setEdges(relEdges as Edge[])
   }, [collections, setNodes, setEdges])
 
   const activeRel = panel?.mode === 'edit' ? panel.rel : null

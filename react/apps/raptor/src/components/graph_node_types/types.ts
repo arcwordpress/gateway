@@ -44,7 +44,7 @@ export type CollNodeType = Node<
     collKey: string
     isActive: boolean
     fields?: Array<{ name: string; label?: string; type?: string }>
-    handles?: Array<{ id: string; type: 'source' | 'target'; position: import('@xyflow/react').Position }>
+    handles?: Array<{ id: string; type: 'source' | 'target'; position: import('@xyflow/react').Position; style?: React.CSSProperties }>
     onNavigateFields?: () => void
     onNavigateViews?: () => void
     onNavigateForms?: () => void
