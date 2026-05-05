@@ -117,6 +117,10 @@ export default function PackagesTopLevel() {
     ? allPackages.filter((p) => p.extension_id === selectedExt?.id)
     : allPackages
 
+  const visibleExtensions = selectedExtKey && selectedExt
+    ? [selectedExt]
+    : extensions
+
   const openNew = () => {
     if (!selectedExtKey) return
     setPanel({ mode: 'create' })
@@ -135,7 +139,7 @@ export default function PackagesTopLevel() {
       >
         <GlobalPackagesGraph
           packages={visiblePackages}
-          extensions={extensions}
+          extensions={visibleExtensions}
           onPackageSelect={openEdit}
         />
       </div>
