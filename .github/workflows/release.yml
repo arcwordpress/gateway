@@ -48,12 +48,12 @@ jobs:
         run: |
           VERSION=${GITHUB_REF_NAME%-public}
 
-          git clone https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git public-repo
+          git clone https://oauth2:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git public-repo
           cd public-repo
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git
+          git remote set-url origin https://oauth2:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git
 
           cp $GITHUB_WORKSPACE/gateway.zip .
           git add gateway.zip
