@@ -90,7 +90,6 @@ class Plugin
         if (!$this->dbConnection) {
             error_log('Gateway: Database connection failed in constructor. Plugin will load in degraded mode.');
             add_action('admin_notices', [$this, 'showConnectionNotice']);
-            $this->raptorEndpoints();
             new Endpoints\ConnectionRoute();
             Admin\Page::init();
         } else {
