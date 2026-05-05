@@ -1,4 +1,4 @@
-name: Build and Release
+name: Package and Release
 
 on:
   push:
@@ -17,41 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        if: hashFiles('package.json') != ''
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: Install dependencies
-        if: hashFiles('package.json') != ''
-        run: npm ci
-
-      - name: Build production assets
-        if: hashFiles('package.json') != ''
-        run: npm run build
-
-      - name: Setup PHP
-        if: hashFiles('composer.json') != ''
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Install Composer dependencies
-        if: hashFiles('composer.json') != ''
-        run: composer install --no-dev --optimize-autoloader
-
-      - name: Create clean build directory
+      - name: Create release zip
         run: |
           mkdir -p /tmp/gateway
           rsync -av --exclude-from='.distignore' --exclude='.git' ./ /tmp/gateway/
+          cd /tmp && zip -r $GITHUB_WORKSPACE/gateway.zip gateway
 
-      - name: Create zip from build directory
-        run: |
-          cd /tmp
-          zip -r $GITHUB_WORKSPACE/gateway.zip gateway
-
-      - name: Create GitHub Release (Private Repo)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: gateway.zip
@@ -62,40 +34,35 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: gateway
           path: gateway.zip
           retention-days: 30
 
-      # Public release steps
       - name: Push to Public Release Repo
         if: endsWith(github.ref_name, '-public')
         env:
           PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
           GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          # Extract clean version (remove -public suffix)
           VERSION=${GITHUB_REF_NAME%-public}
-          
-          # Clone public repo
+
           git clone https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git public-repo
           cd public-repo
-          
-          # Copy zip
-          cp $GITHUB_WORKSPACE/gateway.zip .
-          
-          # Commit and tag
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/arcwordpress/gateway-dev.git
+
+          cp $GITHUB_WORKSPACE/gateway.zip .
           git add gateway.zip
-          git commit -m "Release ${VERSION}"
+          git diff --cached --quiet || git commit -m "Release ${VERSION}"
           git tag ${VERSION}
-          git push origin main
+          git push -u origin HEAD:main
           git push origin ${VERSION}
-          
-          # Create GitHub release in public repo
+
           gh release create ${VERSION} gateway.zip \
+            --repo arcwordpress/gateway-dev \
             --title "Release ${VERSION}" \
             --generate-notes
