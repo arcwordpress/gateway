@@ -72,12 +72,18 @@ class FileFromData
 
         $registered = isset($collectionData['registered']) ? (bool) $collectionData['registered'] : true;
 
+        $packageKey     = $collectionData['package_key'] ?? null;
+        $packageProperty = $packageKey
+            ? "    protected \$package = '" . addslashes($packageKey) . "';\n"
+            : '';
+
         // Replace placeholders
         $replacements = [
             '{{NAMESPACE}}'            => $pluginNamespace,
             '{{CLASS_NAME}}'           => $className,
             '{{COLLECTION_KEY}}'       => $collectionData['key'],
             '{{COLLECTION_TITLE}}'     => $title,
+            '{{PACKAGE_PROPERTY}}'     => $packageProperty,
             '{{FIELDS_JSON}}'          => $fieldsPhp,
             '{{RELATIONSHIP_METHODS}}' => $relationshipMethods,
             '{{REGISTERED}}'           => $registered ? 'true' : 'false',

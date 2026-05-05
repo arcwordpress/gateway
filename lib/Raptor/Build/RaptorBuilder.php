@@ -68,7 +68,7 @@ class RaptorBuilder
         }
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
-            ->with(['fieldList.fields', 'viewList.views.viewRenders', 'viewList.views.facetList.facets'])
+            ->with(['fieldList.fields', 'viewList.views.viewRenders', 'viewList.views.facetList.facets', 'packages'])
             ->orderBy('id')
             ->get();
 
@@ -295,6 +295,9 @@ PHP;
             'registered'    => isset($collection->registered) ? (bool) $collection->registered : true,
             'relationships' => $collection->relationships ?? [],
             'fields'        => $dedupedFields->toArray(),
+            'package_key'   => $collection->relationLoaded('packages')
+                                   ? optional($collection->packages->first())->package_key
+                                   : null,
         ];
 
         $classResult     = \Gateway\Collections\FileFromData::generateCollectionClass(
