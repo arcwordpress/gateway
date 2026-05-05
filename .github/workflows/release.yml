@@ -12,6 +12,8 @@ permissions:
 jobs:
   build-release:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
@@ -21,7 +23,7 @@ jobs:
         if: hashFiles('package.json') != ''
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install dependencies
         if: hashFiles('package.json') != ''
@@ -52,7 +54,7 @@ jobs:
           zip -r $GITHUB_WORKSPACE/gateway.zip gateway
 
       - name: Create GitHub Release (Private Repo)
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: gateway.zip
           generate_release_notes: true
