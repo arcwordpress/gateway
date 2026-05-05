@@ -40,6 +40,7 @@ type Extension = {
   title: string
   description: string
   status: string
+  collections?: { id: number; collection_key: string; title: string }[]
 }
 
 
@@ -540,7 +541,14 @@ export default function CollectionsViewer() {
         position: { x: 0, y: 0 },
       })
 
-      for (const col of cols.filter((c) => c.extension_id === ext.id)) {
+      // Use the extension's collections relationship (from the route) to build edges;
+      // fall back to extension_id matching when the route omits the relation.
+      const extCollKeys = new Set((ext.collections ?? []).map((c) => c.collection_key))
+      const matchCol = extCollKeys.size > 0
+        ? (c: Collection) => extCollKeys.has(c.collection_key)
+        : (c: Collection) => c.extension_id === ext.id
+
+      for (const col of cols.filter(matchCol)) {
         const colId = `col-${col.collection_key}`
         const colIsActive = activeExtensionId === col.extension_id
 
@@ -565,7 +573,7 @@ export default function CollectionsViewer() {
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
           target:       colId,
-          targetHandle: 'h-top',
+          targetHandle: 'conn-left',
           type:         'smoothstep',
         })
       }
