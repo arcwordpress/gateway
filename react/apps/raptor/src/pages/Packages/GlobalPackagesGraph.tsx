@@ -104,6 +104,8 @@ export function GlobalPackagesGraph({
       })
       yOffset += 100 + 40
     } else {
+      const nodeHeights = pkgs.map((pkg) => 80 + (pkg.collection_keys?.length ?? 0) * 22)
+      let localY = 0
       pkgs.forEach((pkg, idx) => {
         const nodeId = `pkg-${pkg.package_key}`
         computedNodes.push({
@@ -116,7 +118,7 @@ export function GlobalPackagesGraph({
             collectionKeys: pkg.collection_keys,
             onSelect: onPackageSelect,
           },
-          position: { x: 260, y: yOffset + idx * 100 },
+          position: { x: 260, y: yOffset + localY },
         })
         computedEdges.push({
           id: `edge-${groupNodeId}-${nodeId}`,
@@ -124,8 +126,9 @@ export function GlobalPackagesGraph({
           target: nodeId,
           style: { stroke: '#3f3f46' },
         })
+        localY += nodeHeights[idx] + 20
       })
-      yOffset += Math.max(pkgs.length, 1) * 100 + 40
+      yOffset += localY + 20
     }
   })
 
