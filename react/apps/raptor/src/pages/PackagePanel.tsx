@@ -8,6 +8,7 @@ import { apiUrl, authHeaders } from '../lib/api'
 
 type FormValues = {
   label: string
+  package_key: string
   description: string
   icon: string
   position: number
@@ -25,7 +26,7 @@ type CollectionStatus = {
 
 export type PackagePanelProps =
   | { mode: 'create'; extensionId: number; extensionTitle: string; onClose: () => void; onCreated: (key: string) => void }
-  | { mode: 'edit'; packageKey: string; onClose: () => void; onDeleted: () => void }
+  | { mode: 'edit'; packageKey: string; onClose: () => void; onDeleted: () => void; onKeyChange?: (newKey: string) => void }
 
 // ─── Styles ────────────────────────────────────────────────────────────────
 
@@ -291,18 +292,18 @@ function CreatePanel({ extensionId, extensionTitle, onClose, onCreated }: Extrac
 
 type EditTab = 'settings' | 'collections'
 
-function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps, { mode: 'edit' }>) {
+function EditPanel({ packageKey, onClose, onDeleted, onKeyChange }: Extract<PackagePanelProps, { mode: 'edit' }>) {
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<EditTab>('settings')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { register, reset, watch } = useForm<FormValues>({
-    defaultValues: { label: '', description: '', icon: 'dashicons-admin-generic', position: 20, capability: 'manage_options', parent: '' },
+    defaultValues: { label: '', package_key: '', description: '', icon: 'dashicons-admin-generic', position: 20, capability: 'manage_options', parent: '' },
   })
   const values = watch()
   const initialisedRef = useRef(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { data } = useQuery<{ package: { label: string; description: string; icon: string; position: number; capability: string; parent: string | null; extension_id: number | null; has_collections: boolean; collection_keys: string[] } }>({
+  const { data } = useQuery<{ package: { package_key: string; label: string; description: string; icon: string; position: number; capability: string; parent: string | null; extension_id: number | null; has_collections: boolean; collection_keys: string[] } }>({
     queryKey: ['packages', packageKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}`), { headers: authHeaders() })
@@ -316,7 +317,7 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
   useEffect(() => {
     if (!data?.package) return
     const p = data.package
-    reset({ label: p.label ?? '', description: p.description ?? '', icon: p.icon ?? 'dashicons-admin-generic', position: p.position ?? 20, capability: p.capability ?? 'manage_options', parent: p.parent ?? '' })
+    reset({ label: p.label ?? '', package_key: p.package_key ?? '', description: p.description ?? '', icon: p.icon ?? 'dashicons-admin-generic', position: p.position ?? 20, capability: p.capability ?? 'manage_options', parent: p.parent ?? '' })
     initialisedRef.current = true
   }, [data, reset])
 
@@ -325,13 +326,19 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
       const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ label: v.label.trim(), description: v.description.trim(), icon: v.icon || 'dashicons-admin-generic', position: v.position || 20, capability: v.capability || 'manage_options', parent: v.parent.trim() || null }),
+        body: JSON.stringify({ label: v.label.trim(), package_key: v.package_key.trim() || undefined, description: v.description.trim(), icon: v.icon || 'dashicons-admin-generic', position: v.position || 20, capability: v.capability || 'manage_options', parent: v.parent.trim() || null }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to save')
       return json
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['packages'] }),
+    onSuccess: (json) => {
+      queryClient.invalidateQueries({ queryKey: ['packages'] })
+      const newKey = json.package?.package_key
+      if (newKey && newKey !== packageKey) {
+        onKeyChange?.(newKey)
+      }
+    },
   })
 
   const deleteMutation = useMutation({
@@ -353,7 +360,7 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
     timerRef.current = setTimeout(() => saveMutation.mutate(values), 700)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.label, values.description, values.icon, values.position, values.capability, values.parent])
+  }, [values.label, values.package_key, values.description, values.icon, values.position, values.capability, values.parent])
 
   const hasNoCollections = data?.package && !data.package.has_collections
 
@@ -385,12 +392,12 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
         <>
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
             <div>
-              <p className={lbl}>ID</p>
-              <p className="text-xs font-mono text-zinc-500 mt-0.5">{packageKey}</p>
-            </div>
-            <div>
               <label className={lbl}>Label <span className="text-red-400">*</span></label>
               <input {...register('label')} className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Key</label>
+              <input {...register('package_key')} className={`${inp} font-mono`} />
             </div>
             <PackageFields register={register} />
             <div className="pt-1">
@@ -405,7 +412,7 @@ function EditPanel({ packageKey, onClose, onDeleted }: Extract<PackagePanelProps
           <div className="mt-5 pt-4 border-t border-zinc-800">
             <p className="text-xs text-zinc-500 mb-1">Admin URL</p>
             <code className="text-[10px] text-zinc-400 font-mono break-all">
-              admin.php?page=gateway-package-{packageKey}
+              admin.php?page=gateway-package-{values.package_key || packageKey}
             </code>
           </div>
 

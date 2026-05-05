@@ -187,6 +187,11 @@ class RaptorBuilder
         $position = (int) ($package->position ?? 20);
         $key      = addslashes($package->package_key);
 
+        $collectionKeys    = $package->collections()->pluck('collection_key')->toArray();
+        $collectionsExport = count($collectionKeys) > 0
+            ? "['" . implode("', '", array_map('addslashes', $collectionKeys)) . "']"
+            : '[]';
+
         $code = <<<PHP
 <?php
 
@@ -205,6 +210,7 @@ class {$className} extends \\Gateway\\Package\\Package
     protected \$position    = {$position};
     protected \$capability  = '{$cap}';
     protected \$parent      = {$parent};
+    protected \$collections = {$collectionsExport};
 }
 PHP;
 
@@ -217,9 +223,24 @@ PHP;
     }
 
     /**
+     * Delete the generated PHP file for a package (used before renaming).
+     */
+    public function deletePackageFile(RaptorPackage $package, RaptorExtension $extension): void
+    {
+        $pluginSlug = $this->toPluginSlug($extension->extension_key);
+        $pluginDir  = WP_PLUGIN_DIR . '/' . $pluginSlug;
+        $className  = $this->packageKeyToClassName($package->package_key);
+        $file       = $pluginDir . '/lib/Packages/' . $className . '.php';
+
+        if (file_exists($file)) {
+            @unlink($file);
+        }
+    }
+
+    /**
      * Convert a package_key like "my-package" or "my_package" to "MyPackage".
      */
-    private function packageKeyToClassName(string $key): string
+    public function packageKeyToClassName(string $key): string
     {
         return str_replace(['-', '_', ' '], '', ucwords($key, '-_ '));
     }

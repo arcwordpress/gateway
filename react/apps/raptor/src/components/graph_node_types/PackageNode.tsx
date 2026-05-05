@@ -5,6 +5,7 @@ export type PackageNodeData = {
   label: string
   packageKey: string
   icon: string
+  collectionKeys?: string[]
   onSelect?: (key: string) => void
 }
 
@@ -38,6 +39,15 @@ export function PackageNode({ data }: NodeProps<PackageNodeType>) {
       <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#71717a', marginTop: 3, fontWeight: 400 }}>
         {data.packageKey}
       </div>
+      {data.collectionKeys && data.collectionKeys.length > 0 && (
+        <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {data.collectionKeys.map((ck) => (
+            <div key={ck} style={{ fontSize: 10, fontFamily: 'monospace', color: '#52525b', background: '#27272a', borderRadius: 4, padding: '1px 5px' }}>
+              {ck}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

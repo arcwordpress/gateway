@@ -117,6 +117,10 @@ export default function PackagesTopLevel() {
     ? allPackages.filter((p) => p.extension_id === selectedExt?.id)
     : allPackages
 
+  const visibleExtensions = selectedExtKey && selectedExt
+    ? [selectedExt]
+    : extensions
+
   const openNew = () => {
     if (!selectedExtKey) return
     setPanel({ mode: 'create' })
@@ -135,7 +139,7 @@ export default function PackagesTopLevel() {
       >
         <GlobalPackagesGraph
           packages={visiblePackages}
-          extensions={extensions}
+          extensions={visibleExtensions}
           onPackageSelect={openEdit}
         />
       </div>
@@ -192,6 +196,13 @@ export default function PackagesTopLevel() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-zinc-200 group-hover:text-zinc-100">{pkg.label || pkg.package_key}</p>
                     <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.package_key}</p>
+                    {pkg.collection_keys.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {pkg.collection_keys.map((ck) => (
+                          <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {!pkg.has_collections && (
                     <span title="No collections assigned" className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
@@ -233,6 +244,7 @@ export default function PackagesTopLevel() {
           packageKey={panel.packageKey}
           onClose={closePanel}
           onDeleted={closePanel}
+          onKeyChange={(newKey) => setPanel({ mode: 'edit', packageKey: newKey })}
         />
       )}
     </BuilderLayout>
