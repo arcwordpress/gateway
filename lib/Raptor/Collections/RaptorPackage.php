@@ -21,12 +21,9 @@ if (!defined('ABSPATH')) {
  *       protected $parent      = null;
  *   }
  *
- * The WordPress admin menu URL for a package is:
- *   admin.php?page=gateway-package-{package_key}
- *
  * @property int              $id
  * @property string           $package_key   Slug identifier, e.g. "my-package"
- * @property string|null      $extension_key FK to gateway_raptor_extension.extension_key
+ * @property int|null         $extension_id  FK to gateway_raptor_extension.id
  * @property string           $label         Human-readable name
  * @property string           $description
  * @property string           $icon          WordPress dashicon class
@@ -98,7 +95,7 @@ class RaptorPackage extends \Gateway\Collection
     {
         return [
             'package_key',
-            'extension_key',
+            'extension_id',
             'label',
             'description',
             'icon',
@@ -111,7 +108,7 @@ class RaptorPackage extends \Gateway\Collection
 
     public function extension(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(RaptorExtension::class, 'extension_key', 'extension_key');
+        return $this->belongsTo(RaptorExtension::class, 'extension_id', 'id');
     }
 
     public function collections(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

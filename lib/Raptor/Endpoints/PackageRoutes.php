@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Endpoints;
 
 use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Collections\RaptorPackage;
 
 if (!defined('ABSPATH')) {
@@ -13,18 +14,14 @@ if (!defined('ABSPATH')) {
 /**
  * REST API routes for Raptor-managed packages.
  *
- * Each package record is the DB-backed equivalent of:
- *   class MyPackage extends \Gateway\Package { protected $key = 'my-package'; ... }
- *
- * The WordPress admin menu URL for a package is:
- *   admin.php?page=gateway-package-{package_key}
- *
  * Endpoints:
- *   GET    /gateway/v1/raptor/package              — list all
- *   POST   /gateway/v1/raptor/package              — create
- *   GET    /gateway/v1/raptor/package/{key}        — get one
- *   PATCH  /gateway/v1/raptor/package/{key}        — update metadata
- *   DELETE /gateway/v1/raptor/package/{key}        — delete record
+ *   GET    /gateway/v1/raptor/package                          — list all
+ *   POST   /gateway/v1/raptor/package                          — create
+ *   GET    /gateway/v1/raptor/package/{key}                    — get one
+ *   PATCH  /gateway/v1/raptor/package/{key}                    — update metadata
+ *   DELETE /gateway/v1/raptor/package/{key}                    — delete
+ *   GET    /gateway/v1/raptor/package/{key}/collections        — list assignable collections
+ *   PUT    /gateway/v1/raptor/package/{key}/collections        — sync assigned collections
  */
 class PackageRoutes
 {
@@ -101,49 +98,43 @@ class PackageRoutes
 
     public function createPackage(\WP_REST_Request $request): \WP_REST_Response
     {
-        $data         = $request->get_json_params() ?? [];
-        $label        = sanitize_text_field($data['label'] ?? '');
-        $extensionKey = sanitize_text_field($data['extension_key'] ?? '');
+        $data  = $request->get_json_params() ?? [];
+        $label = sanitize_text_field($data['label'] ?? '');
 
         if (!$label) {
             return new \WP_REST_Response(['success' => false, 'message' => 'Label is required.'], 400);
         }
-        if (!$extensionKey) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Extension is required — packages must belong to an extension.'], 400);
+
+        // Resolve extension — accept extension_id (int) or extension_key (string)
+        $extension = $this->resolveExtension($data);
+        if (!$extension) {
+            return new \WP_REST_Response(['success' => false, 'message' => 'A valid extension is required.'], 400);
         }
 
         $rawKey = $data['package_key'] ?? $data['key'] ?? '';
         $key    = $rawKey ? $this->sanitizeKey($rawKey) : $this->labelToKey($label);
 
         if (!$key) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => 'Could not generate a valid package key from the given label.',
-            ], 400);
+            return new \WP_REST_Response(['success' => false, 'message' => 'Could not generate a valid package key.'], 400);
         }
 
         if (RaptorPackage::where('package_key', $key)->exists()) {
-            return new \WP_REST_Response([
-                'success' => false,
-                'message' => "A package with key \"{$key}\" already exists.",
-            ], 409);
+            return new \WP_REST_Response(['success' => false, 'message' => "Package key \"{$key}\" already exists."], 409);
         }
-
-        $extensionKey = sanitize_text_field($data['extension_key'] ?? '') ?: null;
 
         $package = RaptorPackage::create([
             'package_key'  => $key,
-            'extension_key' => $extensionKey,
+            'extension_id' => $extension->id,
             'label'        => $label,
-            'description' => sanitize_textarea_field($data['description'] ?? ''),
-            'icon'        => sanitize_text_field($data['icon'] ?? 'dashicons-admin-generic'),
-            'position'    => intval($data['position'] ?? 20),
-            'capability'  => sanitize_text_field($data['capability'] ?? 'manage_options'),
-            'parent'      => sanitize_text_field($data['parent'] ?? '') ?: null,
-            'status'      => 'active',
+            'description'  => sanitize_textarea_field($data['description'] ?? ''),
+            'icon'         => sanitize_text_field($data['icon'] ?? 'dashicons-admin-generic'),
+            'position'     => intval($data['position'] ?? 20),
+            'capability'   => sanitize_text_field($data['capability'] ?? 'manage_options'),
+            'parent'       => sanitize_text_field($data['parent'] ?? '') ?: null,
+            'status'       => 'active',
         ]);
 
-        $this->rebuildExtension($package->extension_key);
+        $this->rebuildExtension($extension);
 
         return new \WP_REST_Response([
             'success' => true,
@@ -158,33 +149,29 @@ class PackageRoutes
         if ($package instanceof \WP_REST_Response) return $package;
 
         $arr = $package->toArray();
-        $arr['collection_keys']  = $package->collections()->pluck('collection_key')->toArray();
-        $arr['has_collections']  = !empty($arr['collection_keys']);
+        $arr['collection_keys'] = $package->collections()->pluck('collection_key')->toArray();
+        $arr['has_collections'] = !empty($arr['collection_keys']);
 
-        return new \WP_REST_Response([
-            'success' => true,
-            'package' => $arr,
-        ], 200);
+        return new \WP_REST_Response(['success' => true, 'package' => $arr], 200);
     }
 
     /**
      * GET /raptor/package/{key}/collections
      *
-     * Returns all collections for the package's extension, each annotated with:
-     *   - is_assigned:    bool  — whether it belongs to this package
-     *   - other_packages: array — package_keys of other packages that include it
+     * Returns all collections for the package's extension, annotated with:
+     *   - is_assigned:    bool  — whether assigned to this package
+     *   - other_packages: array — other package_keys that include this collection
      */
     public function getPackageCollections(\WP_REST_Request $request): \WP_REST_Response
     {
         $package = $this->findOrFail($request->get_param('package_key'));
         if ($package instanceof \WP_REST_Response) return $package;
 
-        $assignedIds = $package->collections()->pluck('gateway_raptor_collection.id')->toArray();
-
-        // Only collections within the same extension — use the relationship
-        if (!$package->extension_key || !$package->extension) {
+        if (!$package->extension_id || !$package->extension) {
             return new \WP_REST_Response(['success' => true, 'collections' => []], 200);
         }
+
+        $assignedIds = $package->collections()->pluck('gateway_raptor_collection.id')->toArray();
 
         $collections = $package->extension->collections()
             ->with('packages')
@@ -192,25 +179,20 @@ class PackageRoutes
             ->get();
 
         $result = $collections->map(function ($col) use ($assignedIds, $package) {
-            $otherPkgs = $col->packages
-                ->where('package_key', '!=', $package->package_key)
-                ->pluck('package_key')
-                ->values()
-                ->toArray();
-
             return [
                 'collection_key' => $col->collection_key,
                 'title'          => $col->title,
                 'status'         => $col->status,
                 'is_assigned'    => in_array($col->id, $assignedIds, true),
-                'other_packages' => $otherPkgs,
+                'other_packages' => $col->packages
+                    ->where('package_key', '!=', $package->package_key)
+                    ->pluck('package_key')
+                    ->values()
+                    ->toArray(),
             ];
         });
 
-        return new \WP_REST_Response([
-            'success'     => true,
-            'collections' => $result->values(),
-        ], 200);
+        return new \WP_REST_Response(['success' => true, 'collections' => $result->values()], 200);
     }
 
     /**
@@ -224,13 +206,12 @@ class PackageRoutes
         $package = $this->findOrFail($request->get_param('package_key'));
         if ($package instanceof \WP_REST_Response) return $package;
 
-        $data            = $request->get_json_params() ?? [];
-        $collectionKeys  = array_filter(array_map('sanitize_text_field', (array) ($data['collection_keys'] ?? [])));
+        $data           = $request->get_json_params() ?? [];
+        $collectionKeys = array_filter(array_map('sanitize_text_field', (array) ($data['collection_keys'] ?? [])));
 
         $ids = RaptorCollection::whereIn('collection_key', $collectionKeys)
             ->pluck('id', 'collection_key');
 
-        // Build sync data with position from the submitted order
         $syncData = [];
         foreach ($collectionKeys as $position => $key) {
             if (isset($ids[$key])) {
@@ -240,16 +221,13 @@ class PackageRoutes
 
         $package->collections()->sync($syncData);
 
-        $this->rebuildExtension($package->extension_key);
+        $this->rebuildExtension($package->extension);
 
         $arr = $package->fresh()->toArray();
         $arr['collection_keys'] = $package->collections()->pluck('collection_key')->toArray();
         $arr['has_collections'] = !empty($arr['collection_keys']);
 
-        return new \WP_REST_Response([
-            'success' => true,
-            'package' => $arr,
-        ], 200);
+        return new \WP_REST_Response(['success' => true, 'package' => $arr], 200);
     }
 
     public function updatePackage(\WP_REST_Request $request): \WP_REST_Response
@@ -260,11 +238,13 @@ class PackageRoutes
         $data   = $request->get_json_params() ?? [];
         $update = [];
 
-        $stringFields = ['label', 'description', 'icon', 'capability', 'status', 'extension_key'];
-        foreach ($stringFields as $field) {
+        foreach (['label', 'description', 'icon', 'capability', 'status'] as $field) {
             if (isset($data[$field])) {
                 $update[$field] = sanitize_text_field($data[$field]);
             }
+        }
+        if (isset($data['description'])) {
+            $update['description'] = sanitize_textarea_field($data['description']);
         }
         if (isset($data['position'])) {
             $update['position'] = intval($data['position']);
@@ -272,15 +252,19 @@ class PackageRoutes
         if (array_key_exists('parent', $data)) {
             $update['parent'] = sanitize_text_field($data['parent']) ?: null;
         }
+        if (isset($data['extension_id'])) {
+            $update['extension_id'] = intval($data['extension_id']) ?: null;
+        } elseif (isset($data['extension_key'])) {
+            $ext = RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
+            $update['extension_id'] = $ext ? $ext->id : null;
+        }
 
         $package->update($update);
+        $package->refresh();
 
-        $this->rebuildExtension($package->fresh()->extension_key);
+        $this->rebuildExtension($package->extension);
 
-        return new \WP_REST_Response([
-            'success' => true,
-            'package' => $package->fresh()->toArray(),
-        ], 200);
+        return new \WP_REST_Response(['success' => true, 'package' => $package->toArray()], 200);
     }
 
     public function deletePackage(\WP_REST_Request $request): \WP_REST_Response
@@ -288,22 +272,17 @@ class PackageRoutes
         $package = $this->findOrFail($request->get_param('package_key'));
         if ($package instanceof \WP_REST_Response) return $package;
 
-        $extKey = $package->extension_key;
+        $extension = $package->extension;
         $package->delete();
 
-        $this->rebuildExtension($extKey);
+        $this->rebuildExtension($extension);
 
-        return new \WP_REST_Response([
-            'success' => true,
-            'message' => 'Package deleted.',
-        ], 200);
+        return new \WP_REST_Response(['success' => true, 'message' => 'Package deleted.'], 200);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    /**
-     * @return RaptorPackage|\WP_REST_Response
-     */
+    /** @return RaptorPackage|\WP_REST_Response */
     private function findOrFail(string $key)
     {
         $package = RaptorPackage::where('package_key', $key)->first();
@@ -311,6 +290,28 @@ class PackageRoutes
             return new \WP_REST_Response(['success' => false, 'message' => 'Package not found.'], 404);
         }
         return $package;
+    }
+
+    /**
+     * Resolve a RaptorExtension from request data.
+     * Accepts extension_id (int) or extension_key (string).
+     */
+    private function resolveExtension(array $data): ?RaptorExtension
+    {
+        if (!empty($data['extension_id'])) {
+            return RaptorExtension::find((int) $data['extension_id']);
+        }
+        if (!empty($data['extension_key'])) {
+            return RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
+        }
+        return null;
+    }
+
+    private function rebuildExtension(?RaptorExtension $extension): void
+    {
+        if ($extension) {
+            (new RaptorBuilder())->build($extension->extension_key);
+        }
     }
 
     private function labelToKey(string $label): string
@@ -326,13 +327,6 @@ class PackageRoutes
         $key = strtolower($key);
         $key = preg_replace('/[^a-z0-9\-_]/', '', $key);
         return (string) substr(trim($key, '-_'), 0, 200);
-    }
-
-    private function rebuildExtension(?string $extensionKey): void
-    {
-        if ($extensionKey) {
-            (new RaptorBuilder())->build($extensionKey);
-        }
     }
 
     public function checkPermissions(): bool

@@ -127,7 +127,7 @@ class RaptorExtension extends \Gateway\Collection
 
     public function packages(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(RaptorPackage::class, 'extension_key', 'extension_key');
+        return $this->hasMany(RaptorPackage::class, 'extension_id', 'id');
     }
 
     public function collections(): \Illuminate\Database\Eloquent\Relations\HasMany

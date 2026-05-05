@@ -82,6 +82,7 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorUserLayoutMigration::create();
             \Gateway\Raptor\Migrations\RaptorUserLayoutNodeMigration::create();
             \Gateway\Raptor\Migrations\RaptorPackageMigration::create();
+            \Gateway\Raptor\Migrations\RaptorPackageExtensionIdMigration::create();
             \Gateway\Raptor\Migrations\RaptorPackageCollectionMigration::create();
             return true;
         } catch (\Exception $e) {
