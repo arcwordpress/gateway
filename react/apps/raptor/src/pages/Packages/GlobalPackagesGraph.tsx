@@ -65,14 +65,14 @@ export function GlobalPackagesGraph({
 
   // Always seed a group for every visible extension so the graph shows
   // extension nodes even when they have no packages yet.
-  const groups = new Map<number | null, PackageRecord[]>()
+  const groups = new Map<number, PackageRecord[]>()
   for (const ext of extensions) {
     groups.set(ext.id, [])
   }
   for (const pkg of packages) {
-    const k = pkg.extension_id ?? null
-    if (!groups.has(k)) groups.set(k, [])
-    groups.get(k)!.push(pkg)
+    if (pkg.extension_id !== null && groups.has(pkg.extension_id)) {
+      groups.get(pkg.extension_id)!.push(pkg)
+    }
   }
 
   let yOffset = 0
@@ -84,7 +84,7 @@ export function GlobalPackagesGraph({
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: { title: ext?.title ?? '', extKey: ext?.extension_key ?? '', isActive: false },
+      data: { title: ext?.title || ext?.extension_key || '', extKey: ext?.extension_key ?? '', isActive: false },
       position: { x: 0, y: yOffset },
     })
 
