@@ -3,6 +3,8 @@
  * Plugin Name: Gateway
  * Description: Gateway plugin
  * Version: 1.2.2
+ * Requires at least: 7.0
+ * Requires PHP: 8.2
  * Author: ARCWP
  * Author URI: https://arcwp.ca
  * Text Domain: gateway
