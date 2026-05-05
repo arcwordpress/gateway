@@ -238,6 +238,19 @@ class PackageRoutes
         $data   = $request->get_json_params() ?? [];
         $update = [];
 
+        if (isset($data['package_key'])) {
+            $newKey = $this->sanitizeKey($data['package_key']);
+            if ($newKey && $newKey !== $package->package_key) {
+                if (RaptorPackage::where('package_key', $newKey)->where('id', '!=', $package->id)->exists()) {
+                    return new \WP_REST_Response(['success' => false, 'message' => "Package key \"{$newKey}\" already exists."], 409);
+                }
+                if ($package->extension) {
+                    (new RaptorBuilder())->deletePackageFile($package, $package->extension);
+                }
+                $update['package_key'] = $newKey;
+            }
+        }
+
         foreach (['label', 'description', 'icon', 'capability', 'status'] as $field) {
             if (isset($data[$field])) {
                 $update[$field] = sanitize_text_field($data[$field]);

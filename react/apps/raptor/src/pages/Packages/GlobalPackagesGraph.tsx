@@ -113,6 +113,7 @@ export function GlobalPackagesGraph({
             label: pkg.label,
             packageKey: pkg.package_key,
             icon: pkg.icon ?? 'dashicons-admin-generic',
+            collectionKeys: pkg.collection_keys,
             onSelect: onPackageSelect,
           },
           position: { x: 260, y: yOffset + idx * 100 },
