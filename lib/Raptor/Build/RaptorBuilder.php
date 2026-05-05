@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Build;
 
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
+use Gateway\Raptor\Collections\RaptorPackage;
 use Gateway\Raptor\Collections\RaptorView;
 
 if (!defined('ABSPATH')) {
@@ -49,6 +50,13 @@ class RaptorBuilder
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
         );
 
+        $packages = $extension->packages()->where('status', 'active')->get();
+
+        $packageResults = [];
+        foreach ($packages as $package) {
+            $packageResults[] = $this->buildPackage($package, $pluginDir, $namespace);
+        }
+
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with(['fieldList.fields', 'viewList.views.viewRenders', 'viewList.views.facetList.facets'])
             ->orderBy('id')
@@ -77,6 +85,8 @@ class RaptorBuilder
             'plugin_dir'       => $pluginDir,
             'namespace'        => $namespace,
             'scaffold'         => $scaffoldResult,
+            'packages'         => $packageResults,
+            'package_count'    => count($packageResults),
             'collections'      => $collectionResults,
             'collection_count' => count($collectionResults),
             'views'            => $viewResults,
@@ -122,7 +132,7 @@ class RaptorBuilder
         RaptorExtension $extension
     ): array {
         // Create directory structure
-        foreach (['lib/Collections', 'lib/Views', 'lib/Pages', 'schemas'] as $subDir) {
+        foreach (['lib/Packages', 'lib/Collections', 'lib/Views', 'lib/Pages', 'schemas'] as $subDir) {
             if (!is_dir($pluginDir . '/' . $subDir)) {
                 if (!wp_mkdir_p($pluginDir . '/' . $subDir)) {
                     return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
@@ -153,6 +163,65 @@ class RaptorBuilder
         }
 
         return ['success' => true, 'skipped' => false, 'plugin_file' => $pluginFile];
+    }
+
+    /**
+     * Generate a PHP class file for a Raptor-managed package and write it to lib/Packages/.
+     * The generated class extends \Gateway\Package so the extension's register_packages()
+     * can instantiate and register it — making the package lifecycle tied to the extension plugin.
+     */
+    private function buildPackage(RaptorPackage $package, string $pluginDir, string $namespace): array
+    {
+        $className  = $this->packageKeyToClassName($package->package_key);
+        $packagesDir = $pluginDir . '/lib/Packages';
+
+        if (!is_dir($packagesDir) && !wp_mkdir_p($packagesDir)) {
+            return ['success' => false, 'package_key' => $package->package_key, 'error' => 'Failed to create Packages directory.'];
+        }
+
+        $parent   = $package->parent   ? var_export($package->parent,   true) : 'null';
+        $desc     = addslashes($package->description ?? '');
+        $label    = addslashes($package->label       ?? '');
+        $icon     = addslashes($package->icon        ?? 'dashicons-admin-generic');
+        $cap      = addslashes($package->capability  ?? 'manage_options');
+        $position = (int) ($package->position ?? 20);
+        $key      = addslashes($package->package_key);
+
+        $code = <<<PHP
+<?php
+
+namespace {$namespace}\\Packages;
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class {$className} extends \\Gateway\\Package
+{
+    protected \$key         = '{$key}';
+    protected \$label       = '{$label}';
+    protected \$description = '{$desc}';
+    protected \$icon        = '{$icon}';
+    protected \$position    = {$position};
+    protected \$capability  = '{$cap}';
+    protected \$parent      = {$parent};
+}
+PHP;
+
+        $file = $packagesDir . '/' . $className . '.php';
+        if (file_put_contents($file, $code) === false) {
+            return ['success' => false, 'package_key' => $package->package_key, 'error' => 'Failed to write package file.'];
+        }
+
+        return ['success' => true, 'package_key' => $package->package_key, 'class' => $className, 'file' => $file];
+    }
+
+    /**
+     * Convert a package_key like "my-package" or "my_package" to "MyPackage".
+     */
+    private function packageKeyToClassName(string $key): string
+    {
+        return str_replace(['-', '_', ' '], '', ucwords($key, '-_ '));
     }
 
     /**
