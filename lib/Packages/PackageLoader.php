@@ -10,26 +10,56 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Loads all active Raptor-managed packages from the database and registers
+ * Loads active Raptor-managed packages from the database and registers
  * them with PackageRegistry so PackageMenus creates their admin menus.
+ *
+ * A package is only registered when its extension's WordPress plugin is
+ * currently active — mirroring the behavior of code-defined packages, which
+ * only exist while their plugin is loaded.
  */
 class PackageLoader
 {
     public static function load(): void
     {
         try {
+            if (!function_exists('is_plugin_active')) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+
             $records  = RaptorPackage::where('status', 'active')->get();
             $registry = Plugin::getInstance()->getPackageRegistry();
 
             foreach ($records as $record) {
+                // Only register the package when the owning extension plugin is active.
+                if (!self::extensionIsActive($record->extension_key)) {
+                    continue;
+                }
+
                 if ($registry->has($record->package_key)) {
                     continue;
                 }
+
                 $package = new DatabasePackage($record->toArray());
                 $registry->register($package);
             }
         } catch (\Exception $e) {
             error_log('[Gateway] PackageLoader::load failed: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Returns true when the WordPress plugin generated for the given extension
+     * key is currently active. Packages with no extension key are never shown.
+     */
+    private static function extensionIsActive(?string $extensionKey): bool
+    {
+        if (!$extensionKey) {
+            return false;
+        }
+
+        $slug       = str_replace('_', '-', $extensionKey);
+        $pluginFile = $slug . '/' . $slug . '.php';
+
+        return is_plugin_active($pluginFile);
     }
 }

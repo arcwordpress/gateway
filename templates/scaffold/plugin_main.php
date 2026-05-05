@@ -84,11 +84,32 @@ class Plugin {
         // Register activation hook
         register_activation_hook(__FILE__, [$this, 'activate']);
 
-        // Register collections and views when Gateway is loaded
+        // Register packages, collections and views when Gateway is loaded
+        add_action('gateway_loaded', [$this, 'register_packages']);
         add_action('gateway_loaded', [$this, 'register_collections']);
         add_action('gateway_loaded', [$this, 'register_views']);
     }
-    
+
+    /**
+     * Register all packages from lib/Packages directory
+     */
+    public function register_packages() {
+        $packages_dir = plugin_dir_path(__FILE__) . 'lib/Packages';
+
+        if (!is_dir($packages_dir)) {
+            return;
+        }
+
+        foreach (glob($packages_dir . '/*.php') as $file) {
+            $filename   = basename($file, '.php');
+            $class_name = '{{NAMESPACE}}\\Packages\\' . $filename;
+
+            if (class_exists($class_name) && method_exists($class_name, 'register')) {
+                (new $class_name())->register();
+            }
+        }
+    }
+
     /**
      * Register all collections from lib/Collections directory
      */
