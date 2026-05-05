@@ -89,7 +89,9 @@ class ExtensionRoutes
 
     public function getExtensions(\WP_REST_Request $request): \WP_REST_Response
     {
-        $extensions = RaptorExtension::orderBy('created_at', 'asc')->get();
+        $extensions = RaptorExtension::with(['collections' => function ($query) {
+            $query->select(['id', 'collection_key', 'title', 'extension_id']);
+        }])->orderBy('created_at', 'asc')->get();
 
         return new \WP_REST_Response([
             'success'    => true,

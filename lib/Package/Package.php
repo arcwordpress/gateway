@@ -88,7 +88,11 @@ class Package
      */
     public function register()
     {
-        return \Gateway\Plugin::getInstance()->getPackageRegistry()->register($this);
+        $registry = \Gateway\Plugin::getInstance()->getPackageRegistry();
+        if ($registry === null) {
+            return $this;
+        }
+        return $registry->register($this);
     }
 
     /**
