@@ -61,17 +61,19 @@ export function GlobalPackagesGraph({
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
 
-  const extMap = new Map(extensions.map((e) => [e.id, e]))
+  const extMap = new Map(extensions.map((e) => [Number(e.id), e]))
 
   // Always seed a group for every visible extension so the graph shows
   // extension nodes even when they have no packages yet.
+  // Use Number() coercion so string IDs from JSON match numeric keys.
   const groups = new Map<number, PackageRecord[]>()
   for (const ext of extensions) {
-    groups.set(ext.id, [])
+    groups.set(Number(ext.id), [])
   }
   for (const pkg of packages) {
-    if (pkg.extension_id !== null && groups.has(pkg.extension_id)) {
-      groups.get(pkg.extension_id)!.push(pkg)
+    const extId = pkg.extension_id !== null ? Number(pkg.extension_id) : null
+    if (extId !== null && groups.has(extId)) {
+      groups.get(extId)!.push(pkg)
     }
   }
 
