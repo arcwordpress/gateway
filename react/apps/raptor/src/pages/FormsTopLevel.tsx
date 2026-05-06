@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useWorkspace } from '../context/workspace'
 import { GlobalFormsGraph } from './Forms/GlobalFormsGraph'
 import { BuilderLayout } from './Builders/BuilderLayout'
+import { BuilderSkeleton } from './Builders/BuilderSkeleton'
 import { BuilderTopBar } from './Builders/BuilderTopBar'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 import type { Collection } from '../lib/object_types'
@@ -13,25 +14,23 @@ export default function FormsTopLevelPage() {
   const navigate = useNavigate()
   const { activeCollectionKey, collections: workspaceCollections, isCollectionsLoading } = useWorkspace()
 
+  const activeExists = !isCollectionsLoading && workspaceCollections.some((c) => c.collection_key === activeCollectionKey)
   useEffect(() => {
-    if (!activeCollectionKey || isCollectionsLoading) return
-    const exists = workspaceCollections.some((c) => c.collection_key === activeCollectionKey)
-    if (!exists) return
+    if (!activeCollectionKey || !activeExists) return
     void navigate({
       to: '/collections/$collectionKey/forms',
       params: { collectionKey: activeCollectionKey },
     })
-  }, [activeCollectionKey, isCollectionsLoading, navigate, workspaceCollections])
+  }, [activeCollectionKey, activeExists, navigate])
 
-  const { data: collections = [] } = useQuery<Collection[]>({
+  const { data: collections = [], isLoading: isNestedLoading } = useQuery<Collection[]>({
     queryKey: COLLECTIONS_NESTED_KEY,
     queryFn: fetchCollectionsWithNested,
     staleTime: 30_000,
-    enabled: !activeCollectionKey,
   })
 
-  if (activeCollectionKey) {
-    return <div className="p-8 text-zinc-400">Opening active collection forms...</div>
+  if (isCollectionsLoading || isNestedLoading || (activeCollectionKey && activeExists)) {
+    return <BuilderSkeleton />
   }
 
   const groups = collections

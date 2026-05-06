@@ -86,16 +86,29 @@ class CollectionRoutes
 
             $collections = $query->get();
 
-            // Always eager-load pivot relationships so the graph can render edges.
-            $collections->load('collectionRelationships.targetCollection');
+            // Eager-load pivot relationships — wrapped so a missing table (pre-migration)
+            // degrades gracefully instead of returning 503.
+            try {
+                $collections->load('collectionRelationships.targetCollection');
+            } catch (\Throwable $e) {
+                // relationship table not yet migrated — continue without rels
+            }
 
             if ($request->get_param('with_nested')) {
-                $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                try {
+                    $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                } catch (\Throwable $e) {
+                    // nested tables not yet migrated — return without nested data
+                }
             }
 
             $output = $collections->map(function (RaptorCollection $col) {
                 $arr = $col->toArray();
-                $arr['relationships'] = RelationshipController::toApiArray($col);
+                try {
+                    $arr['relationships'] = RelationshipController::toApiArray($col);
+                } catch (\Throwable $e) {
+                    $arr['relationships'] = [];
+                }
                 return $arr;
             })->values()->all();
 
@@ -153,17 +166,21 @@ class CollectionRoutes
                 $extensionId = $ext ? $ext->id : null;
             }
 
-            $packageKey = !empty($data['package_key']) ? sanitize_text_field($data['package_key']) : null;
-
-            $collection = CollectionController::create([
+            $createData = [
                 'collection_key' => $key,
                 'extension_id'   => $extensionId,
-                'package_key'    => $packageKey,
                 'title'          => $title,
                 'description'    => sanitize_textarea_field($data['description'] ?? ''),
                 'status'         => 'active',
                 'registered'     => isset($data['registered']) ? (bool) $data['registered'] : true,
-            ]);
+            ];
+            // Only include package_key when the column exists (post-migration)
+            $packageKey = !empty($data['package_key']) ? sanitize_text_field($data['package_key']) : null;
+            if ($packageKey !== null) {
+                $createData['package_key'] = $packageKey;
+            }
+
+            $collection = CollectionController::create($createData);
 
             // Build the extension if this collection has one
             $buildResult = null;
@@ -246,8 +263,9 @@ class CollectionRoutes
             if (isset($data['relationships'])) {
                 $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
             }
-            if (array_key_exists('package_key', $data)) {
-                $update['package_key'] = $data['package_key'] ? sanitize_text_field($data['package_key']) : null;
+            // Only set package_key if the column exists (post-migration) and a value was supplied
+            if (!empty($data['package_key'])) {
+                $update['package_key'] = sanitize_text_field($data['package_key']);
             }
 
             $collection->update($update);
