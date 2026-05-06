@@ -213,6 +213,7 @@
   background-color: var(--gty-admin-dark);
   color: var(--gty-text-sub);
   box-sizing: border-box;
+  padding: 1.5rem !important;
 }
 
 /* Grid Actions */
