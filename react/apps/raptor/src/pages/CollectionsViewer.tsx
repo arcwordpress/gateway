@@ -647,7 +647,7 @@ export default function CollectionsViewer() {
           source:       extId,
           target:       colId,
           targetHandle: 'h-top',
-          type:         'default',
+          type:         'busEdge',
         })
       }
     }

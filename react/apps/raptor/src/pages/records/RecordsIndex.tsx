@@ -1,27 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { apiUrl, authHeaders } from '../../lib/api'
-
-type AdminCollection = {
-  key: string
-  titlePlural: string
-  record_count: number
-}
+import { useWorkspace } from '../../context/workspace'
 
 export default function RecordsIndex() {
   const navigate = useNavigate()
+  const { collections: workspaceCollections, isCollectionsLoading } = useWorkspace()
 
-  const { data, isLoading } = useQuery<{ collections: AdminCollection[] }>({
-    queryKey: ['gateway-admin-data'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
-    staleTime: 60_000,
-  })
-
-  const collections = data?.collections ?? []
+  const isLoading = isCollectionsLoading
+  const collections = workspaceCollections.map((c) => ({
+    key: c.collection_key,
+    titlePlural: c.title,
+    record_count: null as number | null,
+  }))
 
   return (
     <div className="h-full overflow-auto bg-[var(--app-bg)]">
