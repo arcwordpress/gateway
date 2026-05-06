@@ -4,45 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import PanelShell from '../components/ui/PanelShell'
 import { apiUrl, authHeaders } from '../lib/api'
 
-// ─── Read-only collections list ────────────────────────────────────────────
-
-function CollectionsList({ packageKey }: { packageKey: string }) {
-  const { data, isLoading } = useQuery<{ success: boolean; collections: { collection_key: string; title: string; status: string; is_assigned: boolean }[] }>({
-    queryKey: ['package-collections', packageKey],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}/collections`), {
-        headers: authHeaders(),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
-    enabled: !!packageKey,
-  })
-
-  const assigned = (data?.collections ?? []).filter((c) => c.is_assigned)
-
-  if (isLoading) return <p className="text-xs text-zinc-500 py-2">Loading…</p>
-  if (assigned.length === 0) {
-    return (
-      <p className="text-xs text-zinc-500 py-2">
-        No collections assigned. Edit a collection to assign it here.
-      </p>
-    )
-  }
-
-  return (
-    <div className="space-y-1">
-      {assigned.map((col) => (
-        <div key={col.collection_key} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/40">
-          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 flex-shrink-0" />
-          <span className="text-xs text-zinc-200 flex-1">{col.title || col.collection_key}</span>
-          <span className="text-[10px] font-mono text-zinc-600">{col.collection_key}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 type FormValues = {
@@ -269,12 +230,6 @@ function EditPanel({ packageKey, onClose, onDeleted, onKeyChange }: Extract<Pack
           />
         </div>
       </form>
-
-      {/* Collections (read-only — assign from collection edit) */}
-      <div className="mt-5 pt-4 border-t border-zinc-800">
-        <p className="text-xs font-medium text-zinc-400 mb-2">Collections</p>
-        <CollectionsList packageKey={packageKey} />
-      </div>
 
       {/* Admin URL */}
       <div className="mt-5 pt-4 border-t border-zinc-800">

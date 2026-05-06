@@ -16,6 +16,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { GraphSkeleton } from '../components/graph/GraphSkeleton'
@@ -53,6 +54,7 @@ type Collection = {
   description: string
   status: string
   extension_id: number | null
+  package_key: string | null
   relationships: Relationship[] | null
   field_list: { id: number; fields: CollectionField[] } | null
 }
@@ -173,7 +175,19 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [description, setDesc] = useState('')
+  const [packageKey, setPackageKey] = useState('')
   const key = toKey(title)
+
+  const { data: packages = [] } = useQuery<{ package_key: string; label: string }[]>({
+    queryKey: ['packages', 'for-extension', extensionId],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json()
+      return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extensionId))
+    },
+    enabled: !!extensionId,
+  })
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -185,6 +199,7 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
           description: description.trim(),
           collection_key: key,
           extension_id: extensionId,
+          package_key: packageKey || null,
         }),
       })
       const json = await res.json()
@@ -192,7 +207,9 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      void queryClient.invalidateQueries({ queryKey: ['packages'] })
       onClose()
     },
   })
@@ -245,6 +262,25 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
           />
         </div>
 
+        {packages.length > 0 && (
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1">Package</label>
+            <select
+              value={packageKey}
+              disabled={mutation.isPending}
+              onChange={(e) => setPackageKey(e.target.value)}
+              className={baseInput}
+            >
+              <option value="">— none —</option>
+              {packages.map((p) => (
+                <option key={p.package_key} value={p.package_key}>
+                  {p.label || p.package_key}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {mutation.isError && (
           <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
             {(mutation.error as Error).message}
@@ -278,6 +314,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const queryClient = useQueryClient()
   const [title, setTitle] = useState('')
   const [description, setDesc] = useState('')
+  const [packageKey, setPackageKey] = useState<string>('')
 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
@@ -292,10 +329,24 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     enabled: !!collKey,
   })
 
+  const { data: packages = [] } = useQuery<{ package_key: string; label: string; extension_id: number | null }[]>({
+    queryKey: ['packages', 'for-extension', collection?.extension_id],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json()
+      const extId = collection?.extension_id
+      if (!extId) return []
+      return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extId))
+    },
+    enabled: !!collection?.extension_id,
+  })
+
   useEffect(() => {
     if (!collection) return
     setTitle(collection.title ?? '')
     setDesc(collection.description ?? '')
+    setPackageKey(collection.package_key ?? '')
   }, [collection])
 
   const mutation = useMutation({
@@ -303,14 +354,16 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim(), package_key: packageKey || null }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update')
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      void queryClient.invalidateQueries({ queryKey: ['packages'] })
       onClose()
     },
   })
@@ -334,6 +387,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
           <>
             <div className="h-8 rounded-lg bg-zinc-900 animate-pulse" />
             <div className="h-16 rounded-lg bg-zinc-900 animate-pulse" />
+            <div className="h-8 rounded-lg bg-zinc-900 animate-pulse" />
           </>
         ) : (
           <>
@@ -359,6 +413,24 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
                 className={baseTextarea}
               />
             </div>
+            {packages.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Package</label>
+                <select
+                  value={packageKey}
+                  disabled={mutation.isPending}
+                  onChange={(e) => setPackageKey(e.target.value)}
+                  className={baseInput}
+                >
+                  <option value="">— none —</option>
+                  {packages.map((p) => (
+                    <option key={p.package_key} value={p.package_key}>
+                      {p.label || p.package_key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </>
         )}
 
@@ -418,7 +490,8 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       onClose()
     },
   })
@@ -477,7 +550,7 @@ export default function CollectionsViewer() {
   }, [])
 
   const { data: extensions, isLoading: isExtLoading } = useQuery<Extension[]>({
-    queryKey: ['raptor-extensions'],
+    queryKey: ['extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
       if (!res.ok) return []
@@ -546,7 +619,7 @@ export default function CollectionsViewer() {
       const extCollKeys = new Set((ext.collections ?? []).map((c) => c.collection_key))
       const matchCol = extCollKeys.size > 0
         ? (c: Collection) => extCollKeys.has(c.collection_key)
-        : (c: Collection) => c.extension_id === ext.id
+        : (c: Collection) => Number(c.extension_id) === Number(ext.id)
 
       for (const col of cols.filter(matchCol)) {
         const colId = `col-${col.collection_key}`
@@ -572,6 +645,7 @@ export default function CollectionsViewer() {
         hierarchyEdges.push({
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
+          sourceHandle: 'conn-bottom',
           target:       colId,
           targetHandle: 'conn-top',
           type:         'smoothstep',

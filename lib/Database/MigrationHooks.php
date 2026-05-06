@@ -85,6 +85,7 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorPackageExtensionIdMigration::create();
             \Gateway\Raptor\Migrations\RaptorPackageCollectionMigration::create();
             \Gateway\Raptor\Migrations\RaptorCollectionRelationshipMigration::create();
+            \Gateway\Raptor\Migrations\RaptorCollectionPackageKeyMigration::create();
             return true;
         } catch (\Exception $e) {
             error_log('Gateway: runCoreMigrations failed: ' . $e->getMessage());

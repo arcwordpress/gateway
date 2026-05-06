@@ -153,9 +153,12 @@ class CollectionRoutes
                 $extensionId = $ext ? $ext->id : null;
             }
 
+            $packageKey = !empty($data['package_key']) ? sanitize_text_field($data['package_key']) : null;
+
             $collection = CollectionController::create([
                 'collection_key' => $key,
                 'extension_id'   => $extensionId,
+                'package_key'    => $packageKey,
                 'title'          => $title,
                 'description'    => sanitize_textarea_field($data['description'] ?? ''),
                 'status'         => 'active',
@@ -196,8 +199,8 @@ class CollectionRoutes
             }
 
             $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
-            $collection->loadMissing(['packages', 'collectionRelationships.targetCollection']);
-            $packageKey  = optional($collection->packages->first())->package_key;
+            $collection->loadMissing(['collectionRelationships.targetCollection']);
+            $packageKey  = $collection->package_key;
 
             return new \WP_REST_Response([
                 'success'    => true,
@@ -240,29 +243,14 @@ class CollectionRoutes
             if (array_key_exists('registered', $data)) {
                 $update['registered'] = (bool) $data['registered'];
             }
-            if (array_key_exists('relationships', $data)) {
+            if (isset($data['relationships'])) {
                 $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
+            }
+            if (array_key_exists('package_key', $data)) {
+                $update['package_key'] = $data['package_key'] ? sanitize_text_field($data['package_key']) : null;
             }
 
             $collection->update($update);
-
-            // Handle package assignment: one collection = one package.
-            if (array_key_exists('package_key', $data)) {
-                $newPackageKey = $data['package_key'] ? sanitize_text_field($data['package_key']) : null;
-                $collection->refresh();
-                $collection->loadMissing('packages');
-
-                // Detach from all current packages first.
-                $collection->packages()->detach();
-
-                if ($newPackageKey) {
-                    $pkg = \Gateway\Raptor\Collections\RaptorPackage::where('package_key', $newPackageKey)->first();
-                    if ($pkg) {
-                        $maxPos = $pkg->collections()->max('position') ?? -1;
-                        $pkg->collections()->attach($collection->id, ['position' => $maxPos + 1]);
-                    }
-                }
-            }
 
             $buildResult = null;
             if ($collection->extension_id) {
