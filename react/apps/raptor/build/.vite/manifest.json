@@ -13,8 +13,8 @@
       "_vendor-router-Bjm7Z-uE.js"
     ]
   },
-  "_vendor-flow-Bjwh0sC_.js": {
-    "file": "assets/vendor-flow-Bjwh0sC_.js",
+  "_vendor-flow-BbLLgOf9.js": {
+    "file": "assets/vendor-flow-BbLLgOf9.js",
     "name": "vendor-flow",
     "imports": [
       "_vendor-router-Bjm7Z-uE.js",
@@ -47,7 +47,7 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-CRX8fWs-.js",
+    "file": "assets/main-haz2dO0O.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
@@ -56,7 +56,7 @@
       "_vendor-query-DO0LhBpI.js",
       "_vendor-icons-BOpHAYGQ.js",
       "_vendor-charts-Bc740nTK.js",
-      "_vendor-flow-Bjwh0sC_.js",
+      "_vendor-flow-BbLLgOf9.js",
       "_vendor-dnd-DAB07NLf.js"
     ],
     "css": [
