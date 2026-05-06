@@ -1,13 +1,6 @@
 /* Dashboard Component Styles */
 .gty-dashboard {
-  padding: 0 1rem;
-}
-
-@media (min-width: 640px) {
-  .gty-dashboard {
-    padding-left: 0;
-    padding-right: 0;
-  }
+  padding: 8px;
 }
 
 .gty-dashboard__no-collections {

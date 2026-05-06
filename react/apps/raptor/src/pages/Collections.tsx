@@ -19,7 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
-import { apiUrl, authHeaders, generateId } from '../lib/api'
+import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
 import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
@@ -27,13 +27,13 @@ import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 type Relationship = {
-  id: string
-  source: string
-  target: string
-  type: 'belongsTo' | 'hasMany' | 'hasOne'
-  methodName: string
-  foreignKey: string
-  ownerKey: string
+  id: number
+  source_key: string
+  target_key: string
+  type: 'belongsTo' | 'hasMany' | 'hasOne' | 'belongsToMany'
+  method_name: string
+  foreign_key: string
+  owner_key: string
 }
 
 type FieldDef = {
@@ -66,13 +66,16 @@ type PackageOption = {
 
 type PanelState =
   | { mode: 'create' }
-  | { mode: 'edit';         key: string }
-  | { mode: 'delete';       key: string }
-  | { mode: 'relationship'; sourceKey: string; targetKey: string }
+  | { mode: 'edit';               key: string }
+  | { mode: 'delete';             key: string }
+  | { mode: 'relationship';       sourceKey: string; targetKey: string }
+  | { mode: 'deleteRelationship'; relId: number; sourceKey: string; label: string }
   | null
 
+type RelHandle = { relId: number; targetKey: string; label: string }
+
 type RootNodeType = Node<Record<string, never>, 'collectionsRootNode'>
-type CollNodeType = Node<{ title: string; collKey: string; extKey: string }, 'collectionNode'>
+type CollNodeType = Node<{ title: string; collKey: string; extKey: string; rels: RelHandle[] }, 'collectionNode'>
 type ActNodeType  = Node<{ actions: { label: string; onClick: () => void }[] }, 'actionsNode'>
 
 function toKey(title: string): string {
@@ -110,8 +113,12 @@ function CollectionsRootNode(_: NodeProps<RootNodeType>) {
 
 // ─── Custom node: Collection ─────────────────────────────────────────────────
 
+const REL_HANDLE_SPACING = 18 // px between per-relationship handles
+
 function CollectionNode({ data }: NodeProps<CollNodeType>) {
   const navigate = useNavigate()
+  const nodeHeight = Math.max(54, 36 + data.rels.length * REL_HANDLE_SPACING)
+
   return (
     <div
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,33 +129,65 @@ function CollectionNode({ data }: NodeProps<CollNodeType>) {
         borderRadius: 8,
         padding: '8px 14px',
         width: 180,
+        minHeight: nodeHeight,
         color: '#e4e4e7',
         fontSize: 13,
         cursor: 'pointer',
+        position: 'relative',
       }}
     >
       {/* Vertical hierarchy handles */}
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="target" position={Position.Top} id="top" />
+      <Handle type="source" position={Position.Bottom} id="bottom" />
 
-      {/* Relationship handles on sides */}
+      {/* Generic "draw new relationship" handle — blue dot on the right */}
       <Handle
-        id="left"
+        id="new-rel"
         type="source"
+        position={Position.Right}
+        style={{
+          bottom: 8,
+          top: 'auto',
+          background: '#3b82f6',
+          width: 9,
+          height: 9,
+          border: '1px solid #1d4ed8',
+        }}
+      />
+
+      {/* Incoming relationship target handle on the left */}
+      <Handle
+        id="rel-target"
+        type="target"
         position={Position.Left}
         style={{ background: '#71717a', width: 8, height: 8 }}
       />
-      <Handle
-        id="right"
-        type="source"
-        position={Position.Right}
-        style={{ background: '#71717a', width: 8, height: 8 }}
-      />
+
+      {/* Per-relationship source handles — stacked on the right */}
+      {data.rels.map((rel, i) => (
+        <Handle
+          key={rel.relId}
+          id={`rel-src-${rel.relId}`}
+          type="source"
+          position={Position.Right}
+          style={{
+            top: 12 + i * REL_HANDLE_SPACING,
+            background: '#71717a',
+            width: 8,
+            height: 8,
+          }}
+        />
+      ))}
 
       <div style={{ fontWeight: 500 }}>{data.title}</div>
       <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
         {data.collKey}
       </div>
+      {data.rels.length > 0 && (
+        <div style={{ fontSize: 10, color: '#52525b', marginTop: 4 }}>
+          {data.rels.length} relation{data.rels.length !== 1 ? 's' : ''}
+        </div>
+      )}
     </div>
   )
 }
@@ -217,7 +256,7 @@ const nodeTypes: NodeTypes = {
 
 const NODE_DIMS: Record<string, { w: number; h: number }> = {
   collectionsRootNode: { w: 130, h: 42 },
-  collectionNode:      { w: 180, h: 54 },
+  collectionNode:      { w: 180, h: 60 },
   actionsNode:         { w: 140, h: 80 },
 }
 
@@ -691,9 +730,10 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
 // ─── Relationship panel ───────────────────────────────────────────────────────
 
 const REL_TYPES: { value: Relationship['type']; label: string; hint: string }[] = [
-  { value: 'belongsTo', label: 'Belongs To',  hint: 'Source has the foreign key → target' },
-  { value: 'hasMany',   label: 'Has Many',    hint: 'Target has the foreign key → source (collection)' },
-  { value: 'hasOne',    label: 'Has One',     hint: 'Target has the foreign key → source (single)' },
+  { value: 'hasMany',       label: 'Has Many',        hint: 'One source → many targets (target has FK)' },
+  { value: 'belongsTo',     label: 'Belongs To',      hint: 'Source has the foreign key → one target' },
+  { value: 'hasOne',        label: 'Has One',         hint: 'One source → one target (target has FK)' },
+  { value: 'belongsToMany', label: 'Belongs To Many', hint: 'Many-to-many via a pivot/junction table' },
 ]
 
 function RelationshipPanel({
@@ -708,7 +748,7 @@ function RelationshipPanel({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
-  const [type, setType] = useState<Relationship['type']>('belongsTo')
+  const [type, setType] = useState<Relationship['type']>('hasMany')
   const [methodName, setMethodName] = useState('')
   const [foreignKey, setForeignKey] = useState('')
   const [ownerKey, setOwnerKey] = useState('id')
@@ -718,32 +758,20 @@ function RelationshipPanel({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      // Fetch current relationships for source collection
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}/relationships`), {
+        method: 'POST',
         headers: authHeaders(),
+        body: JSON.stringify({
+          target_key:  targetKey,
+          type,
+          method_name: methodName.trim(),
+          foreign_key: foreignKey.trim(),
+          owner_key:   ownerKey.trim() || 'id',
+        }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      const existing: Relationship[] = json.collection?.relationships ?? []
-
-      const newRel: Relationship = {
-        id:         generateId(),
-        source:     sourceKey,
-        target:     targetKey,
-        type,
-        methodName: methodName.trim(),
-        foreignKey: foreignKey.trim(),
-        ownerKey:   ownerKey.trim() || 'id',
-      }
-
-      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
-        method: 'PATCH',
-        headers: authHeaders(),
-        body: JSON.stringify({ relationships: [...existing, newRel] }),
-      })
-      const patchJson = await patchRes.json()
-      if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to save relationship')
-      return patchJson
+      if (!json.success) throw new Error(json.message ?? 'Failed to save relationship')
+      return json
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
@@ -844,7 +872,7 @@ function RelationshipPanel({
             type="text"
             value={foreignKey}
             disabled={mutation.isPending}
-            placeholder={`${targetKey}_id`}
+            placeholder={type === 'belongsTo' ? `${targetKey}_id` : `${sourceKey}_id`}
             onChange={(e) => setForeignKey(e.target.value)}
             className={baseInput}
           />
@@ -886,6 +914,70 @@ function RelationshipPanel({
           </button>
         </div>
       </form>
+    </PanelShell>
+  )
+}
+
+// ─── Delete relationship panel ────────────────────────────────────────────────
+
+function DeleteRelationshipPanel({
+  relId,
+  sourceKey,
+  label,
+  onClose,
+}: {
+  relId: number
+  sourceKey: string
+  label: string
+  onClose: () => void
+}) {
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(
+        apiUrl(`gateway/v1/raptor/collection/${sourceKey}/relationships/${relId}`),
+        { method: 'DELETE', headers: authHeaders() }
+      )
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed to delete')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      onClose()
+    },
+  })
+
+  return (
+    <PanelShell title="Delete Relationship" sub={label} onClose={onClose}>
+      <p className="text-sm text-zinc-300 mb-1">Remove this relationship?</p>
+      <p className="text-xs text-zinc-500 mb-6">
+        This deletes the relationship definition. The generated PHP will be rebuilt automatically.
+        This cannot be undone.
+      </p>
+
+      {mutation.isError && (
+        <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          {(mutation.error as Error).message}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+          className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+        >
+          {mutation.isPending ? 'Deleting…' : 'Delete'}
+        </button>
+        <button
+          onClick={onClose}
+          disabled={mutation.isPending}
+          className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-sm font-medium transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
     </PanelShell>
   )
 }
@@ -941,8 +1033,33 @@ export default function Collections() {
     setPanel({ mode: 'relationship', sourceKey, targetKey })
   }, [])
 
+  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    if (!edge.id.startsWith('rel-')) return
+    const relId = parseInt(edge.id.replace(/^rel-/, ''), 10)
+    const sourceKey = (edge.source as string).replace(/^col-/, '')
+    const label = String(edge.label ?? '')
+    setPanel({ mode: 'deleteRelationship', relId, sourceKey, label })
+  }, [])
+
   useEffect(() => {
     const cols = collections ?? []
+
+    // Index outgoing relationships per collection for node data
+    const relsBySource = new Map<string, RelHandle[]>()
+    for (const col of cols) {
+      relsBySource.set(col.collection_key, [])
+    }
+    for (const col of cols) {
+      for (const rel of col.relationships ?? []) {
+        const list = relsBySource.get(rel.source_key) ?? []
+        list.push({
+          relId:     rel.id,
+          targetKey: rel.target_key,
+          label:     `${rel.type}: ${rel.method_name}`,
+        })
+        relsBySource.set(rel.source_key, list)
+      }
+    }
 
     // Hierarchy nodes / edges (used for Dagre layout)
     const hierarchyNodes: Node[] = [
@@ -976,7 +1093,12 @@ export default function Collections() {
       hierarchyNodes.push({
         id: colId,
         type: 'collectionNode',
-        data: { title: col.title, collKey: col.collection_key, extKey },
+        data: {
+          title:   col.title,
+          collKey: col.collection_key,
+          extKey,
+          rels:    relsBySource.get(col.collection_key) ?? [],
+        },
         position: { x: 0, y: 0 },
       })
       hierarchyNodes.push({
@@ -1005,20 +1127,23 @@ export default function Collections() {
       })
     }
 
-    // Relationship edges — drawn between collection nodes via side handles
+    // Relationship edges — one per pivot row, each using its own source handle
     const relEdges: Edge[] = []
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId = `col-${rel.source}`
-        const tgtId = `col-${rel.target}`
+        const srcId = `col-${rel.source_key}`
+        const tgtId = `col-${rel.target_key}`
+        if (!tgtId || tgtId === 'col-') continue
         relEdges.push({
-          id:          `rel-${rel.id}`,
-          source:      srcId,
-          target:      tgtId,
-          label:       `${rel.type}: ${rel.methodName}`,
-          labelStyle:  { fill: '#71717a', fontSize: 10 },
-          style:       { stroke: '#52525b', strokeDasharray: '5 3' },
-          type:        'straight',
+          id:           `rel-${rel.id}`,
+          source:       srcId,
+          target:       tgtId,
+          sourceHandle: `rel-src-${rel.id}`,
+          targetHandle: 'rel-target',
+          label:        `${rel.type}: ${rel.method_name}`,
+          labelStyle:   { fill: '#71717a', fontSize: 10, cursor: 'pointer' },
+          style:        { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
+          type:         'straight',
         })
       }
     }
@@ -1046,6 +1171,7 @@ export default function Collections() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onEdgeClick={onEdgeClick}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.25 }}
@@ -1066,6 +1192,14 @@ export default function Collections() {
           sourceKey={panel.sourceKey}
           targetKey={panel.targetKey}
           collections={collections ?? []}
+          onClose={closePanel}
+        />
+      )}
+      {panel?.mode === 'deleteRelationship' && (
+        <DeleteRelationshipPanel
+          relId={panel.relId}
+          sourceKey={panel.sourceKey}
+          label={panel.label}
           onClose={closePanel}
         />
       )}

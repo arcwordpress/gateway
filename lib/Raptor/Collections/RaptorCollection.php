@@ -24,8 +24,9 @@ if (!defined('ABSPATH')) {
  * @property string   $description
  * @property string   $status          "active" | "inactive"
  *
- * @property-read RaptorExtension|null                                      $extension
- * @property-read \Illuminate\Database\Eloquent\Collection<RaptorPackage>   $packages
+ * @property-read RaptorExtension|null                                             $extension
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorPackage>          $packages
+ * @property-read \Illuminate\Database\Eloquent\Collection<RaptorCollectionRelationship> $collectionRelationships
  */
 class RaptorCollection extends \Gateway\Collection
 {
@@ -96,6 +97,11 @@ class RaptorCollection extends \Gateway\Collection
             'registered',
             'relationships',
         ];
+    }
+
+    public function collectionRelationships(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaptorCollectionRelationship::class, 'source_collection_id', 'id');
     }
 
     public function packages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

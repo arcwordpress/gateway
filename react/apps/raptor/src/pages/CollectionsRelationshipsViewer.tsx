@@ -1,23 +1,26 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   ReactFlow,
+  ReactFlowProvider,
   Controls,
   Background,
   BackgroundVariant,
   ConnectionMode,
+  Panel,
   Position,
+  useReactFlow,
   useNodesState,
   useEdgesState,
   type Node,
   type Edge,
   type Connection,
+  type NodeTypes,
 } from '@xyflow/react'
 import { useQuery } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { CollectionNode } from '../components/graph_node_types'
-import type { NodeTypes } from '@xyflow/react'
 import type { CollNodeType } from '../components/graph_node_types'
 import {
   REL_TYPES,
@@ -26,6 +29,7 @@ import {
   type Relationship,
   type RelType,
 } from '../components/RelationshipPanels'
+import { useUserLayout } from '../lib/useUserLayout'
 
 // ─── Per-type visual config ───────────────────────────────────────────────────
 
@@ -82,25 +86,28 @@ function makeHandles() {
   return h
 }
 
-// ─── Main viewer ─────────────────────────────────────────────────────────────
+// ─── Inner graph (needs ReactFlow context for useReactFlow) ──────────────────
 
-export default function CollectionsRelationshipsViewer() {
-  const [panel, setPanel] = useState<PanelState>(null)
+function RelationshipsFlow({
+  collections,
+  panel,
+  setPanel,
+  savedNodes,
+  saveLayout,
+  resetLayout,
+}: {
+  collections: Collection[]
+  panel: PanelState
+  setPanel: (p: PanelState) => void
+  savedNodes: { id: string; x: number; y: number }[] | null
+  saveLayout: (nodes: Node[]) => void
+  resetLayout: () => void
+}) {
+  const rfInstance = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
-  const rememberedPositions = useRef<Map<string, { x: number; y: number }>>(new Map())
 
-  const { data: collections } = useQuery<Collection[]>({
-    queryKey: ['raptor-collections'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return json.collections as Collection[]
-    },
-  })
-
-  const closePanel = useCallback(() => setPanel(null), [])
+  const closePanel = useCallback(() => setPanel(null), [setPanel])
 
   const onConnect = useCallback((connection: Connection) => {
     const srcId = connection.source ?? ''
@@ -111,60 +118,65 @@ export default function CollectionsRelationshipsViewer() {
       sourceKey: srcId.replace(/^col-/, ''),
       targetKey: tgtId.replace(/^col-/, ''),
     })
-  }, [])
+  }, [setPanel])
 
-  const onEdgeClick = useCallback(
-    (_: React.MouseEvent, edge: Edge) => {
-      // Edge ids are `rel-{relId}`, data is embedded in edge.data
-      const relData = edge.data as Relationship | undefined
-      if (!relData) return
-      setPanel({ mode: 'edit', rel: relData })
-    },
-    [],
-  )
+  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    const relData = edge.data as Relationship | undefined
+    if (!relData) return
+    setPanel({ mode: 'edit', rel: relData })
+  }, [setPanel])
 
-  // Build nodes + edges whenever collections change
+  const onNodeDragStop = useCallback(() => {
+    // toObject() captures all current node positions from the live ReactFlow state
+    const { nodes: currentNodes } = rfInstance.toObject()
+    saveLayout(currentNodes)
+  }, [rfInstance, saveLayout])
+
+  // Build nodes + edges whenever collections or saved positions change
   useEffect(() => {
     const cols = collections ?? []
 
-    // Grid layout: square-ish grid with enough horizontal space for edge labels
-    const COLS      = Math.max(1, Math.ceil(Math.sqrt(cols.length)))
-    const COL_STRIDE = 340   // 200px node + 140px gap for edge labels
-    const ROW_STRIDE = 280   // 200px node height estimate + 80px gap
+    const COLS       = Math.max(1, Math.ceil(Math.sqrt(cols.length)))
+    const COL_STRIDE = 340
+    const ROW_STRIDE = 280
 
     const gridPos = (i: number) => ({
       x: (i % COLS) * COL_STRIDE,
       y: Math.floor(i / COLS) * ROW_STRIDE,
     })
 
-    const rawNodes: Node[] = cols.map((col, i) => ({
-      id:       `col-${col.collection_key}`,
-      type:     'collectionNode',
-      data:     {
-        title:    col.title,
-        collKey:  col.collection_key,
-        isActive: false,
-        handles:  makeHandles(),
-      } satisfies CollNodeType['data'],
-      position: gridPos(i),
-    }))
+    // Build a lookup of server-saved positions
+    const savedMap = new Map((savedNodes ?? []).map((n) => [n.id, { x: n.x, y: n.y }]))
 
-    // Build position map for handle selection (use remembered positions if user moved nodes)
-    const posMap: Record<string, { x: number; y: number }> = {}
-    rawNodes.forEach((n) => {
-      posMap[n.id] = rememberedPositions.current.get(n.id) ?? n.position
+    const rawNodes: Node[] = cols.map((col, i) => {
+      const id = `col-${col.collection_key}`
+      const pos = savedMap.get(id) ?? gridPos(i)
+      return {
+        id,
+        type: 'collectionNode',
+        data: {
+          title:    col.title,
+          collKey:  col.collection_key,
+          isActive: false,
+          handles:  makeHandles(),
+        } satisfies CollNodeType['data'],
+        position: pos,
+      }
     })
 
+    // Build position map for edge handle selection
+    const posMap: Record<string, { x: number; y: number }> = {}
+    rawNodes.forEach((n) => { posMap[n.id] = n.position })
+
+    // Preserve positions of nodes the user has already moved in this session
     setNodes((current) => {
-      current.forEach((n) => rememberedPositions.current.set(n.id, n.position))
+      const currentPosMap = new Map(current.map((n) => [n.id, n.position]))
       return rawNodes.map((n) => ({
         ...n,
-        position: rememberedPositions.current.get(n.id) ?? n.position,
+        position: currentPosMap.get(n.id) ?? n.position,
       }))
     })
 
-    // Per-node, per-side slot counter — edges are distributed round-robin so
-    // they spread across the side instead of all exiting the same point.
     const sideSlot: Record<string, number> = {}
     const nextSlot = (nodeId: string, side: string) => {
       const key = `${nodeId}::${side}`
@@ -173,32 +185,27 @@ export default function CollectionsRelationshipsViewer() {
       return s
     }
 
-    // Pair index for curvature staggering (same two nodes → arc further out)
     const pairIndex: Record<string, number> = {}
-
     const relEdges: BezierEdge[] = []
+
     for (const col of cols) {
       for (const rel of col.relationships ?? []) {
-        const srcId  = `col-${rel.source}`
-        const tgtId  = `col-${rel.target}`
-        const pairKey = [rel.source, rel.target].sort().join('||')
-        const idx    = pairIndex[pairKey] ?? 0
+        const srcId   = `col-${rel.source_key ?? rel.source}`
+        const tgtId   = `col-${rel.target_key ?? rel.target}`
+        const pairKey = [srcId, tgtId].sort().join('||')
+        const idx     = pairIndex[pairKey] ?? 0
         pairIndex[pairKey] = idx + 1
 
         const srcPos = posMap[srcId] ?? { x: 0, y: 0 }
         const tgtPos = posMap[tgtId] ?? { x: 0, y: 0 }
 
-        // Pick exit/entry side based on relative position, then claim a slot
-        const goRight = srcPos.x <= tgtPos.x
-        const srcSide = goRight ? 'right' : 'left'
-        const tgtSide = goRight ? 'left'  : 'right'
+        const goRight   = srcPos.x <= tgtPos.x
+        const srcSide   = goRight ? 'right' : 'left'
+        const tgtSide   = goRight ? 'left'  : 'right'
         const srcHandle = `h-${srcSide}-${nextSlot(srcId, srcSide)}`
         const tgtHandle = `h-${tgtSide}-${nextSlot(tgtId, tgtSide)}`
-
-        // Stagger curvature for same-pair edges so they arc apart
         const curvature = 0.25 + idx * 0.15
-
-        const visual = REL_VISUAL[rel.type] ?? { color: '#71717a', labelBg: '#18181b' }
+        const visual    = REL_VISUAL[rel.type] ?? { color: '#71717a', labelBg: '#18181b' }
 
         relEdges.push({
           id:                  `rel-${rel.id}`,
@@ -211,12 +218,7 @@ export default function CollectionsRelationshipsViewer() {
           labelBgStyle:        { fill: visual.labelBg, fillOpacity: 0.9 },
           labelBgPadding:      [5, 3] as [number, number],
           labelBgBorderRadius: 4,
-          style:               {
-            stroke:          visual.color,
-            strokeWidth:     1.5,
-            strokeDasharray: visual.dash,
-            cursor:          'pointer',
-          },
+          style:               { stroke: visual.color, strokeWidth: 1.5, strokeDasharray: visual.dash, cursor: 'pointer' },
           type:        'default',
           pathOptions: { curvature },
           data:        rel,
@@ -225,26 +227,15 @@ export default function CollectionsRelationshipsViewer() {
     }
 
     setEdges(relEdges as Edge[])
-  }, [collections, setNodes, setEdges])
+  }, [collections, savedNodes, setNodes, setEdges])
 
-  const activeRel = panel?.mode === 'edit' ? panel.rel : null
-  const activeCreate = panel?.mode === 'create' ? panel : null
+  const activeRel    = panel?.mode === 'edit'   ? panel.rel : null
+  const activeCreate = panel?.mode === 'create' ? panel     : null
 
   return (
     <>
-      {/* Hint overlay */}
-      {(collections ?? []).length === 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-            zIndex: 10,
-          }}
-        >
+      {collections.length === 0 && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 10 }}>
           <div style={{ textAlign: 'center', color: '#52525b' }}>
             <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>No collections yet</div>
             <div style={{ fontSize: 12 }}>Create Raptor Collections first, then return here to define relationships.</div>
@@ -252,21 +243,8 @@ export default function CollectionsRelationshipsViewer() {
         </div>
       )}
 
-      {(collections ?? []).length > 0 && nodes.length > 0 && edges.length === 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 60,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            pointerEvents: 'none',
-            zIndex: 10,
-            background: '#18181b',
-            border: '1px solid #27272a',
-            borderRadius: 8,
-            padding: '8px 14px',
-          }}
-        >
+      {collections.length > 0 && nodes.length > 0 && edges.length === 0 && (
+        <div style={{ position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 10, background: '#18181b', border: '1px solid #27272a', borderRadius: 8, padding: '8px 14px' }}>
           <div style={{ fontSize: 11, color: '#71717a', textAlign: 'center' }}>
             Drag a connector from one collection node to another to create a relationship
           </div>
@@ -280,6 +258,7 @@ export default function CollectionsRelationshipsViewer() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onEdgeClick={onEdgeClick}
+        onNodeDragStop={onNodeDragStop}
         nodeTypes={NODE_TYPES}
         connectionMode={ConnectionMode.Loose}
         fitView
@@ -288,23 +267,63 @@ export default function CollectionsRelationshipsViewer() {
         <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
         <Controls position="top-right" style={{ marginTop: 8, marginRight: 16 }} />
         <SharedMiniMap />
+        {savedNodes !== null && (
+          <Panel position="bottom-left">
+            <button
+              onClick={resetLayout}
+              style={{ padding: '4px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #3f3f46', background: 'transparent', color: '#a1a1aa', cursor: 'pointer' }}
+            >
+              Reset Layout
+            </button>
+          </Panel>
+        )}
       </ReactFlow>
 
       {activeCreate && (
         <CreateRelationshipPanel
           sourceKey={activeCreate.sourceKey}
           targetKey={activeCreate.targetKey}
-          collections={collections ?? []}
+          collections={collections}
           onClose={closePanel}
         />
       )}
       {activeRel && (
         <EditRelationshipPanel
           rel={activeRel}
-          collections={collections ?? []}
+          collections={collections}
           onClose={closePanel}
         />
       )}
     </>
+  )
+}
+
+// ─── Outer shell — owns data fetching and provides ReactFlow context ──────────
+
+export default function CollectionsRelationshipsViewer() {
+  const [panel, setPanel] = useState<PanelState>(null)
+  const { savedNodes, saveLayout, resetLayout } = useUserLayout('collections-relationships')
+
+  const { data: collections = [] } = useQuery<Collection[]>({
+    queryKey: ['raptor-collections'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.collections as Collection[]
+    },
+  })
+
+  return (
+    <ReactFlowProvider>
+      <RelationshipsFlow
+        collections={collections}
+        panel={panel}
+        setPanel={setPanel}
+        savedNodes={savedNodes}
+        saveLayout={saveLayout}
+        resetLayout={resetLayout}
+      />
+    </ReactFlowProvider>
   )
 }
