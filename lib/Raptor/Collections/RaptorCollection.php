@@ -91,6 +91,7 @@ class RaptorCollection extends \Gateway\Collection
         return [
             'collection_key',
             'extension_id',
+            'package_key',
             'title',
             'description',
             'status',

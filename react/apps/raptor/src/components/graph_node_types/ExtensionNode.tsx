@@ -44,6 +44,7 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
       }}
     >
       <Handle type="source" position={Position.Right} />
+      <Handle id="conn-bottom" type="source" position={Position.Bottom} />
       <NodeTypeHeader label="Extension" menu={manageBtn} />
       {data.extKey && (
         <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: data.title ? 4 : 0 }}>

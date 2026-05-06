@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiUrl, authHeaders, generateId } from '../lib/api'
+import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
 import { useApp } from '../context/app'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -437,7 +438,11 @@ export function EditRelationshipPanel({
       if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to update relationship')
       return patchJson
     },
-    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] }); onClose() },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      onClose()
+    },
   })
 
   const deleteMutation = useMutation({
@@ -458,7 +463,11 @@ export function EditRelationshipPanel({
       if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to delete relationship')
       return patchJson
     },
-    onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] }); onClose() },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      onClose()
+    },
   })
 
   const isPending = saveMutation.isPending || deleteMutation.isPending

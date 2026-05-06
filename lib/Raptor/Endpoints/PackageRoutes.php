@@ -81,11 +81,15 @@ class PackageRoutes
 
     public function getPackages(\WP_REST_Request $request): \WP_REST_Response
     {
-        $packages = RaptorPackage::with('collections')->orderBy('created_at', 'asc')->get();
+        $packages = RaptorPackage::orderBy('created_at', 'asc')->get();
+        $allCollections = \Gateway\Raptor\Collections\RaptorCollection::select('collection_key', 'package_key')
+            ->whereNotNull('package_key')
+            ->get()
+            ->groupBy('package_key');
 
-        $result = $packages->map(function ($pkg) {
+        $result = $packages->map(function ($pkg) use ($allCollections) {
             $arr = $pkg->toArray();
-            $arr['collection_keys'] = $pkg->collections->pluck('collection_key')->toArray();
+            $arr['collection_keys'] = $allCollections->get($pkg->package_key, collect())->pluck('collection_key')->toArray();
             $arr['has_collections'] = !empty($arr['collection_keys']);
             return $arr;
         });
