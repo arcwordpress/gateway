@@ -109,6 +109,7 @@ export default function Layout() {
       const json = await res.json() as { extensions?: WorkspaceExtension[] }
       return json.extensions ?? []
     },
+    staleTime: 30_000,
   })
 
   // Once the stub list is loaded, warm the nested-collections cache in the background.

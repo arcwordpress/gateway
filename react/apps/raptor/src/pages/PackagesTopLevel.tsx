@@ -108,7 +108,7 @@ export default function PackagesTopLevel() {
   const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
 
   const visiblePackages = selectedExtKey
-    ? allPackages.filter((p) => p.extension_id === selectedExt?.id)
+    ? allPackages.filter((p) => Number(p.extension_id) === Number(selectedExt?.id))
     : allPackages
 
   const visibleExtensions = selectedExtKey && selectedExt
