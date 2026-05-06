@@ -178,7 +178,7 @@ export default function Layout() {
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
-            : { minHeight: shellHeightCss, backgroundColor: 'var(--app-bg)' }
+            : { height: shellHeightCss, overflow: 'hidden', backgroundColor: 'var(--app-bg)' }
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
