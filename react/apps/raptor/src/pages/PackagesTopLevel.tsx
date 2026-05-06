@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
+import { useWorkspace } from '../context/workspace'
 import { BuilderLayout } from './Builders/BuilderLayout'
 import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './Packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
@@ -86,13 +87,9 @@ function ArrowIcon() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'raptor.packages.selectedExtKey'
-
 export default function PackagesTopLevel() {
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const [selectedExtKey, setSelectedExtKey] = useState<string | null>(
-    () => window.localStorage.getItem(STORAGE_KEY) ?? null
-  )
+  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey } = useWorkspace()
   const [panel, setPanel] = useState<PanelState>(null)
 
   const { data: allPackages = [] } = useQuery<PackageRecord[]>({
@@ -114,25 +111,6 @@ export default function PackagesTopLevel() {
       return json.extensions ?? []
     },
   })
-
-  // Persist selection across navigations
-  useEffect(() => {
-    if (selectedExtKey) {
-      window.localStorage.setItem(STORAGE_KEY, selectedExtKey)
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [selectedExtKey])
-
-  // Auto-select when there is exactly one extension and nothing is chosen yet.
-  // Also clear a stale stored key if it no longer matches any loaded extension.
-  useEffect(() => {
-    if (extensions.length === 0) return
-    const valid = extensions.some((e) => e.extension_key === selectedExtKey)
-    if (!valid) {
-      setSelectedExtKey(extensions.length === 1 ? extensions[0].extension_key : null)
-    }
-  }, [extensions, selectedExtKey])
 
   const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
 

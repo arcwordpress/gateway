@@ -186,6 +186,8 @@ class CollectionRoutes
             }
 
             $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
+            $collection->loadMissing('packages');
+            $packageKey  = optional($collection->packages->first())->package_key;
 
             return new \WP_REST_Response([
                 'success'    => true,
@@ -193,6 +195,7 @@ class CollectionRoutes
                     CollectionController::withNested($collection)->toArray(),
                     ['fields'        => $collection->getFields()],
                     ['output_files'  => $outputFiles],
+                    ['package_key'   => $packageKey],
                 ),
             ], 200);
         } catch (\Throwable $e) {
@@ -231,6 +234,24 @@ class CollectionRoutes
             }
 
             $collection->update($update);
+
+            // Handle package assignment: one collection = one package.
+            if (array_key_exists('package_key', $data)) {
+                $newPackageKey = $data['package_key'] ? sanitize_text_field($data['package_key']) : null;
+                $collection->refresh();
+                $collection->loadMissing('packages');
+
+                // Detach from all current packages first.
+                $collection->packages()->detach();
+
+                if ($newPackageKey) {
+                    $pkg = \Gateway\Raptor\Collections\RaptorPackage::where('package_key', $newPackageKey)->first();
+                    if ($pkg) {
+                        $maxPos = $pkg->collections()->max('position') ?? -1;
+                        $pkg->collections()->attach($collection->id, ['position' => $maxPos + 1]);
+                    }
+                }
+            }
 
             $buildResult = null;
             if ($collection->extension_id) {

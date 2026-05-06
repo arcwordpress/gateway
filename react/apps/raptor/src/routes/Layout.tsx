@@ -23,6 +23,9 @@ import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queri
 export default function Layout() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeCollectionKey, setActiveCollectionKey] = useState<string | null>(null)
+  const [activeExtensionKey, setActiveExtensionKey] = useState<string | null>(
+    () => window.localStorage.getItem('raptor.activeExtensionKey') ?? null
+  )
   const [baseTopOffset, setBaseTopOffset] = useState(0)
   const [baseShellHeightPx, setBaseShellHeightPx] = useState(0)
   const navigate = useNavigate()
@@ -133,6 +136,14 @@ export default function Layout() {
   }, [activeCollectionKey])
 
   useEffect(() => {
+    if (activeExtensionKey) {
+      window.localStorage.setItem('raptor.activeExtensionKey', activeExtensionKey)
+    } else {
+      window.localStorage.removeItem('raptor.activeExtensionKey')
+    }
+  }, [activeExtensionKey])
+
+  useEffect(() => {
     if (!activeCollectionKey || collections.length === 0) return
     const exists = collections.some((c) => c.collection_key === activeCollectionKey)
     if (!exists) {
@@ -150,7 +161,7 @@ export default function Layout() {
 
   return (
     <AppContext.Provider value={{ isExpanded, toggleExpand, shellTopOffset, shellHeightCss, shellHeightPx }}>
-      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading }}>
+      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading, activeExtensionKey, setActiveExtensionKey }}>
       <div
         id="gateway-raptor-canvas-host"
         className="flex items-stretch text-zinc-100 relative"
