@@ -50,8 +50,8 @@ function PackagesTopBar({
 
       <button
         onClick={onNew}
-        disabled={!selectedExtKey}
-        title={!selectedExtKey ? 'Select an extension first' : 'New Package'}
+        disabled={!selectedExt}
+        title={!selectedExt ? 'Select an extension first' : 'New Package'}
         className="flex items-center gap-1 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-medium transition-colors"
       >
         <span className="text-sm leading-none">+</span>
@@ -145,7 +145,7 @@ export default function PackagesTopLevel() {
     : extensions
 
   const openNew = () => {
-    if (!selectedExtKey) return
+    if (!selectedExt) return
     setPanel({ mode: 'create' })
   }
 
@@ -183,8 +183,8 @@ export default function PackagesTopLevel() {
             </div>
             <button
               onClick={openNew}
-              disabled={!selectedExtKey}
-              title={!selectedExtKey ? 'Select an extension first' : undefined}
+              disabled={!selectedExt}
+              title={!selectedExt ? 'Select an extension first' : undefined}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm text-white font-medium transition-colors"
             >
               <span className="text-base leading-none">+</span>

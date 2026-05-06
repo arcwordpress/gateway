@@ -352,6 +352,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
   })
@@ -602,6 +603,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
   })
