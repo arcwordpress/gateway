@@ -55,6 +55,7 @@ type Collection = {
   status: string
   extension_id: number | null
   package_key: string | null
+  label_field: string | null
   relationships: Relationship[] | null
   field_list: { id: number; fields: CollectionField[] } | null
 }
@@ -315,6 +316,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const [title, setTitle] = useState('')
   const [description, setDesc] = useState('')
   const [packageKey, setPackageKey] = useState<string>('')
+  const [labelField, setLabelField] = useState<string>('')
 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
@@ -347,6 +349,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     setTitle(collection.title ?? '')
     setDesc(collection.description ?? '')
     setPackageKey(collection.package_key ?? '')
+    setLabelField(collection.label_field ?? '')
   }, [collection])
 
   const mutation = useMutation({
@@ -354,7 +357,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ title: title.trim(), description: description.trim(), package_key: packageKey || null }),
+        body: JSON.stringify({ title: title.trim(), description: description.trim(), package_key: packageKey || null, label_field: labelField || null }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update')
@@ -426,6 +429,24 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
                   {packages.map((p) => (
                     <option key={p.package_key} value={p.package_key}>
                       {p.label || p.package_key}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {(collection?.field_list?.fields ?? []).length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Label Field</label>
+                <select
+                  value={labelField}
+                  disabled={mutation.isPending}
+                  onChange={(e) => setLabelField(e.target.value)}
+                  className={baseInput}
+                >
+                  <option value="">— default (title / label) —</option>
+                  {(collection?.field_list?.fields ?? []).map((f) => (
+                    <option key={f.name} value={f.name}>
+                      {f.label || f.name}
                     </option>
                   ))}
                 </select>

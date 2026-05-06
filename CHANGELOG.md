@@ -2,6 +2,41 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.2.3-rc2] - 2026-05-06
+
+### Fixed
+- `setPackageCollections` now syncs the `package_key` column on each collection
+  so the builder always writes `protected $package = '...'` to the generated
+  class file, even when assignment is done via the package panel pivot endpoint.
+- Collections removed from a package have their `package_key` cleared (or
+  reassigned to another package if one exists).
+
+### Added
+- `label_field` column on `gateway_raptor_collection` — lets you designate
+  which field is used as the human-readable record label when the collection
+  does not use the conventional `title` or `label` field.
+- Label Field dropdown in the collection edit form; lists all Raptor fields
+  attached via the collection's FieldList.
+
+## [1.2.3-rc1] - 2026-05-06
+
+### Fixed
+- Migrations now re-run correctly on schema version bump so new columns
+  (e.g. `package_key` on collections) are added to existing installs.
+- `getPackages` endpoint no longer returns 500 when the `package_key` column
+  is not yet present; falls back gracefully to the pivot relationship.
+- Extension→collection edges in CollectionsViewer now render as orthogonal
+  bus-style lines (trunk + branch) using the `busEdge` renderer instead of
+  bezier curves.
+- "All Records" page now lists Raptor DB-managed collections instead of only
+  class-registered collections (which were empty for Raptor installs).
+
+### Added
+- `package_key` column on `gateway_raptor_collection` table — stores the
+  package a collection belongs to, mirroring the `$package = 'events'`
+  pattern on hand-written collection classes.
+- Package select field on collection create/edit forms in CollectionsViewer.
+
 ## [1.2.2] - 2026-05-05
 
 ### Changed
