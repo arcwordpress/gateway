@@ -645,10 +645,9 @@ export default function CollectionsViewer() {
         hierarchyEdges.push({
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
-          sourceHandle: 'conn-right',
           target:       colId,
-          targetHandle: 'conn-top',
-          type:         'smoothstep',
+          targetHandle: 'h-top',
+          type:         'busEdge',
         })
       }
     }
@@ -677,7 +676,7 @@ export default function CollectionsViewer() {
           labelBgPadding:       [4, 3] as [number, number],
           labelBgBorderRadius:  3,
           style:                { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
-          type:                 'smoothstep',
+          type:                 'default',
           data:                 rel,
         })
       }

@@ -40,7 +40,10 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         fontWeight: data.isActive ? 600 : 400,
       }}
     >
-      {/* Invisible slot handles — used only for routing stored edges across the side */}
+      {/* h-top: target handle for extension→collection hierarchy edges */}
+      <Handle id="h-top" type="target" position={Position.Top} style={{ opacity: 0, width: 1, height: 1, minWidth: 0, minHeight: 0, border: 'none' }} />
+
+      {/* Invisible slot handles — used only for routing stored relationship edges */}
       {(data.handles ?? []).map((h) => (
         <Handle
           key={h.id}

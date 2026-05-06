@@ -81,23 +81,47 @@ class PackageRoutes
 
     public function getPackages(\WP_REST_Request $request): \WP_REST_Response
     {
-        $packages = RaptorPackage::orderBy('created_at', 'asc')->get();
-        $allCollections = \Gateway\Raptor\Collections\RaptorCollection::select('collection_key', 'package_key')
-            ->whereNotNull('package_key')
-            ->get()
-            ->groupBy('package_key');
+        try {
+            $packages = RaptorPackage::orderBy('created_at', 'asc')->get();
 
-        $result = $packages->map(function ($pkg) use ($allCollections) {
-            $arr = $pkg->toArray();
-            $arr['collection_keys'] = $allCollections->get($pkg->package_key, collect())->pluck('collection_key')->toArray();
-            $arr['has_collections'] = !empty($arr['collection_keys']);
-            return $arr;
-        });
+            // Try column-based lookup (post package_key migration); fall back to pivot.
+            try {
+                $allCollections = RaptorCollection::select('collection_key', 'package_key')
+                    ->whereNotNull('package_key')
+                    ->get()
+                    ->groupBy('package_key');
+                $useColumn = true;
+            } catch (\Throwable $e) {
+                $allCollections = collect();
+                $useColumn = false;
+            }
 
-        return new \WP_REST_Response([
-            'success'  => true,
-            'packages' => $result->values(),
-        ], 200);
+            $result = $packages->map(function ($pkg) use ($allCollections, $useColumn) {
+                $arr = $pkg->toArray();
+                if ($useColumn) {
+                    $arr['collection_keys'] = $allCollections->get($pkg->package_key, collect())->pluck('collection_key')->toArray();
+                } else {
+                    try {
+                        $arr['collection_keys'] = $pkg->collections()->pluck('collection_key')->toArray();
+                    } catch (\Throwable $e) {
+                        $arr['collection_keys'] = [];
+                    }
+                }
+                $arr['has_collections'] = !empty($arr['collection_keys']);
+                return $arr;
+            });
+
+            return new \WP_REST_Response([
+                'success'  => true,
+                'packages' => $result->values(),
+            ], 200);
+        } catch (\Throwable $e) {
+            return new \WP_REST_Response([
+                'success'  => false,
+                'message'  => $e->getMessage(),
+                'packages' => [],
+            ], 500);
+        }
     }
 
     public function createPackage(\WP_REST_Request $request): \WP_REST_Response

@@ -43,7 +43,7 @@ export function ExtensionNode({ data }: NodeProps<ExtNodeType>) {
         minWidth: 160,
       }}
     >
-      <Handle id="conn-right" type="source" position={Position.Right} />
+      <Handle type="source" position={Position.Right} />
       <NodeTypeHeader label="Extension" menu={manageBtn} />
       {data.extKey && (
         <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#a1a1aa', marginBottom: data.title ? 4 : 0 }}>
