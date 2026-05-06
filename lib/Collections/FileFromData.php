@@ -77,16 +77,22 @@ class FileFromData
             ? "    protected \$package = '" . addslashes($packageKey) . "';\n"
             : '';
 
+        $labelField     = $collectionData['label_field'] ?? null;
+        $labelFieldProperty = $labelField
+            ? "    protected \$labelField = '" . addslashes($labelField) . "';\n"
+            : '';
+
         // Replace placeholders
         $replacements = [
-            '{{NAMESPACE}}'            => $pluginNamespace,
-            '{{CLASS_NAME}}'           => $className,
-            '{{COLLECTION_KEY}}'       => $collectionData['key'],
-            '{{COLLECTION_TITLE}}'     => $title,
-            '{{PACKAGE_PROPERTY}}'     => $packageProperty,
-            '{{FIELDS_JSON}}'          => $fieldsPhp,
-            '{{RELATIONSHIP_METHODS}}' => $relationshipMethods,
-            '{{REGISTERED}}'           => $registered ? 'true' : 'false',
+            '{{NAMESPACE}}'              => $pluginNamespace,
+            '{{CLASS_NAME}}'             => $className,
+            '{{COLLECTION_KEY}}'         => $collectionData['key'],
+            '{{COLLECTION_TITLE}}'       => $title,
+            '{{PACKAGE_PROPERTY}}'       => $packageProperty,
+            '{{LABEL_FIELD_PROPERTY}}'   => $labelFieldProperty,
+            '{{FIELDS_JSON}}'            => $fieldsPhp,
+            '{{RELATIONSHIP_METHODS}}'   => $relationshipMethods,
+            '{{REGISTERED}}'             => $registered ? 'true' : 'false',
         ];
         
         $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);

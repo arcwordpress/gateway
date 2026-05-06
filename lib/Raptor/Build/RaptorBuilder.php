@@ -296,6 +296,7 @@ PHP;
             'relationships' => $collection->relationships ?? [],
             'fields'        => $dedupedFields->toArray(),
             'package_key'   => $collection->package_key ?? null,
+            'label_field'   => $collection->label_field ?? null,
         ];
 
         $classResult     = \Gateway\Collections\FileFromData::generateCollectionClass(
