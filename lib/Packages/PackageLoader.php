@@ -26,7 +26,7 @@ class PackageLoader
                 require_once ABSPATH . 'wp-admin/includes/plugin.php';
             }
 
-            $records  = RaptorPackage::with('extension')->where('status', 'active')->get();
+            $records  = RaptorPackage::with(['extension', 'collections'])->where('status', 'active')->get();
             $registry = Plugin::getInstance()->getPackageRegistry();
 
             foreach ($records as $record) {
@@ -40,7 +40,9 @@ class PackageLoader
                     continue;
                 }
 
-                $package = new DatabasePackage($record->toArray());
+                $data                = $record->toArray();
+                $data['collections'] = $record->collections->pluck('collection_key')->toArray();
+                $package = new DatabasePackage($data);
                 $registry->register($package);
             }
         } catch (\Exception $e) {

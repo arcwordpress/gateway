@@ -25,7 +25,8 @@ class DatabasePackage extends Package
         $this->icon       = $record['icon']        ?? 'dashicons-admin-generic';
         $this->position   = (int) ($record['position']   ?? 20);
         $this->capability = $record['capability']  ?? 'manage_options';
-        $this->parent     = $record['parent']      ?: null;
+        $this->parent      = $record['parent']       ?: null;
+        $this->collections = $record['collections'] ?? [];
 
         parent::__construct();
     }
