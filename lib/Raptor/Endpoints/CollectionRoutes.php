@@ -391,9 +391,9 @@ class CollectionRoutes
 
         global $wpdb;
 
-        // Raptor-generated migrations use the collection_key directly as the
-        // table name (no trailing 's') — see MigrationGenerator::generateFromData.
-        $prefix     = $wpdb->prefix . 'gateway_';
+        // Raptor-generated migrations create tables as {wp_prefix}{collection_key}
+        // (e.g. wp_event, wp_attendee) — see MigrationGenerator::generateFromData.
+        $prefix     = $wpdb->prefix;
         $tableNames = array_map(fn($k) => $prefix . $k, $collectionKeys);
 
         $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
