@@ -9,14 +9,19 @@ import { useApp } from '../context/app'
 export type RelType = 'belongsTo' | 'hasMany' | 'hasOne' | 'belongsToMany'
 
 export type Relationship = {
-  id: string
+  id: string | number
   source: string
   target: string
+  source_key?: string
+  target_key?: string
   type: RelType
   methodName: string
   foreignKey: string
   ownerKey: string
   pivotTable?: string
+  method_name?: string
+  foreign_key?: string
+  owner_key?: string
 }
 
 type CollectionStub = { collection_key: string; title: string }
