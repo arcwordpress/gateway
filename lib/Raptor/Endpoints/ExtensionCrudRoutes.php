@@ -490,6 +490,7 @@ class ExtensionCrudRoutes
 
         $extensions = $rows->map(function ($row) {
             return [
+                'id'             => $row->id,
                 'key'             => $row->extension_key,
                 'title'          => $row->title,
                 'description'    => $row->description,

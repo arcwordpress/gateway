@@ -573,7 +573,7 @@ export default function CollectionsViewer() {
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
           target:       colId,
-          targetHandle: 'conn-left',
+          targetHandle: 'conn-top',
           type:         'smoothstep',
         })
       }
