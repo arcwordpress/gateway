@@ -304,7 +304,11 @@ class Collection extends EloquentModel
 
     public function getGrid()
     {
-        return $this->grid;
+        $grid = $this->grid;
+        if (!empty($this->labelField)) {
+            $grid['labelField'] = $this->labelField;
+        }
+        return $grid;
     }
 
     /**
