@@ -107,7 +107,7 @@ export default function Layout() {
       const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
       if (!res.ok) return []
       const json = await res.json() as { extensions?: WorkspaceExtension[] }
-      return json.extensions ?? []
+      return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
     staleTime: 30_000,
   })
