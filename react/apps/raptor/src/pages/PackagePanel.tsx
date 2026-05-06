@@ -7,7 +7,7 @@ import { apiUrl, authHeaders } from '../lib/api'
 // ─── Read-only collections list ────────────────────────────────────────────
 
 function CollectionsList({ packageKey }: { packageKey: string }) {
-  const { data, isLoading } = useQuery<{ success: boolean; collections: { collection_key: string; title: string; status: string }[] }>({
+  const { data, isLoading } = useQuery<{ success: boolean; collections: { collection_key: string; title: string; status: string; is_assigned: boolean }[] }>({
     queryKey: ['package-collections', packageKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}/collections`), {

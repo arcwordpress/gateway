@@ -51,8 +51,8 @@ function PackagesTopBar({
 
       <button
         onClick={onNew}
-        disabled={!selectedExt}
-        title={!selectedExt ? 'Select an extension first' : 'New Package'}
+        disabled={!selectedExtKey}
+        title={!selectedExtKey ? 'Select an extension first' : 'New Package'}
         className="flex items-center gap-1 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-medium transition-colors"
       >
         <span className="text-sm leading-none">+</span>
@@ -89,7 +89,7 @@ function ArrowIcon() {
 
 export default function PackagesTopLevel() {
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey } = useWorkspace()
+  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey, extensions: workspaceExtensions } = useWorkspace()
   const [panel, setPanel] = useState<PanelState>(null)
 
   const { data: allPackages = [] } = useQuery<PackageRecord[]>({
@@ -102,15 +102,8 @@ export default function PackagesTopLevel() {
     },
   })
 
-  const { data: extensions = [] } = useQuery<ExtensionRecord[]>({
-    queryKey: ['extensions'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return json.extensions ?? []
-    },
-  })
+  // Extensions are pre-loaded at Layout level; cast to ExtensionRecord shape (same fields)
+  const extensions = workspaceExtensions as unknown as ExtensionRecord[]
 
   const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
 

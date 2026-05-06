@@ -6,7 +6,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Sidebar from '../components/ui/Sidebar'
 import { AppContext } from '../context/app'
-import { WorkspaceContext, WorkspaceCollection } from '../context/workspace'
+import { WorkspaceContext, WorkspaceCollection, WorkspaceExtension } from '../context/workspace'
 import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
 
@@ -101,6 +101,16 @@ export default function Layout() {
     },
   })
 
+  const { data: extensions = [], isLoading: isExtensionsLoading } = useQuery<WorkspaceExtension[]>({
+    queryKey: ['extensions'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json() as { extensions?: WorkspaceExtension[] }
+      return json.extensions ?? []
+    },
+  })
+
   // Once the stub list is loaded, warm the nested-collections cache in the background.
   // prefetchQuery is a no-op if the data is already fresh (staleTime: 30s).
   useEffect(() => {
@@ -161,7 +171,7 @@ export default function Layout() {
 
   return (
     <AppContext.Provider value={{ isExpanded, toggleExpand, shellTopOffset, shellHeightCss, shellHeightPx }}>
-      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading, activeExtensionKey, setActiveExtensionKey }}>
+      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading, activeExtensionKey, setActiveExtensionKey, extensions, isExtensionsLoading }}>
       <div
         id="gateway-raptor-canvas-host"
         className="flex items-stretch text-zinc-100 relative"

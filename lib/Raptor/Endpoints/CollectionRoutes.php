@@ -6,6 +6,7 @@ use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Controllers\CollectionController;
+use Gateway\Raptor\Controllers\RelationshipController;
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
@@ -85,13 +86,22 @@ class CollectionRoutes
 
             $collections = $query->get();
 
+            // Always eager-load pivot relationships so the graph can render edges.
+            $collections->load('collectionRelationships.targetCollection');
+
             if ($request->get_param('with_nested')) {
                 $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
             }
 
+            $output = $collections->map(function (RaptorCollection $col) {
+                $arr = $col->toArray();
+                $arr['relationships'] = RelationshipController::toApiArray($col);
+                return $arr;
+            })->values()->all();
+
             return new \WP_REST_Response([
                 'success'     => true,
-                'collections' => $collections->toArray(),
+                'collections' => $output,
             ], 200);
         } catch (\Throwable $e) {
             return new \WP_REST_Response([
@@ -186,16 +196,17 @@ class CollectionRoutes
             }
 
             $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
-            $collection->loadMissing('packages');
+            $collection->loadMissing(['packages', 'collectionRelationships.targetCollection']);
             $packageKey  = optional($collection->packages->first())->package_key;
 
             return new \WP_REST_Response([
                 'success'    => true,
                 'collection' => array_merge(
                     CollectionController::withNested($collection)->toArray(),
-                    ['fields'        => $collection->getFields()],
-                    ['output_files'  => $outputFiles],
-                    ['package_key'   => $packageKey],
+                    ['fields'         => $collection->getFields()],
+                    ['output_files'   => $outputFiles],
+                    ['package_key'    => $packageKey],
+                    ['relationships'  => RelationshipController::toApiArray($collection)],
                 ),
             ], 200);
         } catch (\Throwable $e) {
