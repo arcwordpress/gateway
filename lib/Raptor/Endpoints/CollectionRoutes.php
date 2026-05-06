@@ -181,10 +181,13 @@ class CollectionRoutes
                 'status'         => 'active',
                 'registered'     => isset($data['registered']) ? (bool) $data['registered'] : true,
             ];
-            // Only include package_key when the column exists (post-migration)
             $packageKey = !empty($data['package_key']) ? sanitize_text_field($data['package_key']) : null;
             if ($packageKey !== null) {
                 $createData['package_key'] = $packageKey;
+            }
+            $labelField = !empty($data['label_field']) ? sanitize_text_field($data['label_field']) : null;
+            if ($labelField !== null) {
+                $createData['label_field'] = $labelField;
             }
 
             $collection = CollectionController::create($createData);
@@ -224,7 +227,6 @@ class CollectionRoutes
 
             $outputFiles = (new RaptorBuilder())->outputFilesForCollection($collection);
             $collection->loadMissing(['collectionRelationships.targetCollection']);
-            $packageKey  = $collection->package_key;
 
             return new \WP_REST_Response([
                 'success'    => true,
@@ -232,7 +234,8 @@ class CollectionRoutes
                     CollectionController::withNested($collection)->toArray(),
                     ['fields'         => $collection->getFields()],
                     ['output_files'   => $outputFiles],
-                    ['package_key'    => $packageKey],
+                    ['package_key'    => $collection->package_key],
+                    ['label_field'    => $collection->label_field],
                     ['relationships'  => RelationshipController::toApiArray($collection)],
                 ),
             ], 200);
@@ -270,9 +273,13 @@ class CollectionRoutes
             if (isset($data['relationships'])) {
                 $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
             }
-            // Only set package_key if the column exists (post-migration) and a value was supplied
             if (!empty($data['package_key'])) {
                 $update['package_key'] = sanitize_text_field($data['package_key']);
+            }
+            if (array_key_exists('label_field', $data)) {
+                $update['label_field'] = !empty($data['label_field'])
+                    ? sanitize_text_field($data['label_field'])
+                    : null;
             }
 
             $collection->update($update);

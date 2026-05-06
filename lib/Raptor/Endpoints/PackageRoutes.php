@@ -249,6 +249,20 @@ class PackageRoutes
 
         $package->collections()->sync($syncData);
 
+        // Keep package_key column in sync so the builder writes $package to generated files.
+        if (!empty($collectionKeys)) {
+            RaptorCollection::whereIn('collection_key', $collectionKeys)
+                ->update(['package_key' => $package->package_key]);
+        }
+        // Clear package_key for collections removed from this package (that have no other package).
+        $removedKeys = RaptorCollection::where('package_key', $package->package_key)
+            ->whereNotIn('collection_key', $collectionKeys)
+            ->get();
+        foreach ($removedKeys as $col) {
+            $otherPackage = $col->packages()->where('package_key', '!=', $package->package_key)->first();
+            $col->update(['package_key' => $otherPackage ? $otherPackage->package_key : null]);
+        }
+
         $this->rebuildExtension($package->extension);
 
         $arr = $package->fresh()->toArray();
