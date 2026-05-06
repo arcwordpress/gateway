@@ -645,9 +645,8 @@ export default function CollectionsViewer() {
         hierarchyEdges.push({
           id:           `e-${extId}-${col.collection_key}`,
           source:       extId,
-          sourceHandle: 'conn-right',
           target:       colId,
-          targetHandle: 'conn-top',
+          targetHandle: 'h-top',
           type:         'smoothstep',
         })
       }
