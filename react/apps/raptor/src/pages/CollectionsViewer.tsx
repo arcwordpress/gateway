@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -188,6 +188,7 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
       return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extensionId))
     },
     enabled: !!extensionId,
+    staleTime: 30_000,
   })
 
   const mutation = useMutation({
@@ -329,6 +330,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       return json.collection as Collection
     },
     enabled: !!collKey,
+    staleTime: 15_000,
   })
 
   const { data: packages = [] } = useQuery<{ package_key: string; label: string; extension_id: number | null }[]>({
@@ -342,6 +344,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extId))
     },
     enabled: !!collection?.extension_id,
+    staleTime: 30_000,
   })
 
   useEffect(() => {
@@ -562,6 +565,9 @@ export default function CollectionsViewer() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [activeExtensionId, setActiveExtensionId] = useState<number | null>(null)
   const { savedNodes, saveLayout, resetLayout } = useUserLayout('collections')
+  // Track whether a meaningful drag occurred so we don't save on plain clicks.
+  // ReactFlow fires onNodeDragStop even for zero-distance mousedown+mouseup.
+  const dragMovedRef = useRef(false)
 
   // Try to get active extension from URL params if available
   useEffect(() => {
@@ -707,9 +713,16 @@ export default function CollectionsViewer() {
     setEdges([...hierarchyEdges, ...relEdges])
   }, [collections, extensions, activeExtensionId, savedNodes, openCreate, openEdit, openDelete, navigate, setNodes, setEdges])
 
+  const handleNodeDrag = useCallback(() => {
+    dragMovedRef.current = true
+  }, [])
+
   const handleNodeDragStop = useCallback(
     (_: React.MouseEvent, _node: Node, allNodes: Node[]) => {
-      saveLayout(allNodes)
+      if (dragMovedRef.current) {
+        saveLayout(allNodes)
+        dragMovedRef.current = false
+      }
     },
     [saveLayout],
   )
@@ -725,6 +738,7 @@ export default function CollectionsViewer() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onEdgeClick={onEdgeClick}
+            onNodeDrag={handleNodeDrag}
             onNodeDragStop={handleNodeDragStop}
             nodeTypes={COLLECTIONS_GRAPH_NODE_TYPES}
             edgeTypes={COLLECTIONS_GRAPH_EDGE_TYPES}
