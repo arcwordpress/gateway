@@ -34,7 +34,6 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         borderRadius: 8,
         padding: '8px 10px',
         width: 200,
-        overflow: 'hidden',
         color: '#e4e4e7',
         fontSize: 12,
         fontWeight: data.isActive ? 600 : 400,

@@ -391,8 +391,10 @@ class CollectionRoutes
 
         global $wpdb;
 
+        // Raptor-generated migrations use the collection_key directly as the
+        // table name (no trailing 's') — see MigrationGenerator::generateFromData.
         $prefix     = $wpdb->prefix . 'gateway_';
-        $tableNames = array_map(fn($k) => $prefix . $k . 's', $collectionKeys);
+        $tableNames = array_map(fn($k) => $prefix . $k, $collectionKeys);
 
         $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
         $rows = $wpdb->get_results(
@@ -414,7 +416,7 @@ class CollectionRoutes
 
         $counts = [];
         foreach ($collectionKeys as $key) {
-            $table          = $prefix . $key . 's';
+            $table          = $prefix . $key;
             $counts[$key]   = isset($byTable[$table]) ? $byTable[$table] : null;
         }
 
