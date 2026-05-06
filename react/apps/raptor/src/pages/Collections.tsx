@@ -52,8 +52,16 @@ type Collection = {
   title: string
   description: string
   status: string
+  extension_id: number | null
+  package_key: string | null
   relationships: Relationship[] | null
   fields?: Record<string, FieldDef>
+}
+
+type PackageOption = {
+  package_key: string
+  label: string
+  extension_id: number | null
 }
 
 type PanelState =
@@ -352,6 +360,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
   })
@@ -436,6 +445,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
 function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [formData, setFormData] = useState<Record<string, string>>({})
+  const [selectedPackageKey, setSelectedPackageKey] = useState<string>('')
 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
@@ -450,6 +460,20 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     enabled: !!collKey,
   })
 
+  const { data: allPackages = [] } = useQuery<PackageOption[]>({
+    queryKey: ['packages'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      return json.packages ?? []
+    },
+  })
+
+  const extensionPackages = collection?.extension_id
+    ? allPackages.filter((p) => p.extension_id === collection.extension_id)
+    : allPackages
+
   useEffect(() => {
     if (!collection) return
     const initial: Record<string, string> = {}
@@ -457,6 +481,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       initial[field.name] = String((collection as Record<string, unknown>)[field.name] ?? field.default ?? '')
     }
     setFormData(initial)
+    setSelectedPackageKey(collection.package_key ?? '')
   }, [collection])
 
   const mutation = useMutation({
@@ -468,7 +493,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify(trimmed),
+        body: JSON.stringify({ ...trimmed, package_key: selectedPackageKey || null }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update')
@@ -477,6 +502,8 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
       void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      void queryClient.invalidateQueries({ queryKey: ['package-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['packages'] })
       onClose()
     },
   })
@@ -545,6 +572,24 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
           ))
         )}
 
+        {/* Package assignment */}
+        <div>
+          <label className="block text-xs font-medium text-zinc-400 mb-1">Package</label>
+          <select
+            value={selectedPackageKey}
+            disabled={mutation.isPending}
+            onChange={(e) => setSelectedPackageKey(e.target.value)}
+            className={baseInput}
+          >
+            <option value="">— None —</option>
+            {extensionPackages.map((pkg) => (
+              <option key={pkg.package_key} value={pkg.package_key}>
+                {pkg.label || pkg.package_key}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {mutation.isError && (
           <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
             {(mutation.error as Error).message}
@@ -602,6 +647,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
   })

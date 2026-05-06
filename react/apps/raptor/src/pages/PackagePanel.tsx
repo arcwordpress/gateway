@@ -1,8 +1,47 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react' // useRef kept for autosave debounce
 import { useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import PanelShell from '../components/ui/PanelShell'
 import { apiUrl, authHeaders } from '../lib/api'
+
+// ─── Read-only collections list ────────────────────────────────────────────
+
+function CollectionsList({ packageKey }: { packageKey: string }) {
+  const { data, isLoading } = useQuery<{ success: boolean; collections: { collection_key: string; title: string; status: string }[] }>({
+    queryKey: ['package-collections', packageKey],
+    queryFn: async () => {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}/collections`), {
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.json()
+    },
+    enabled: !!packageKey,
+  })
+
+  const assigned = (data?.collections ?? []).filter((c) => c.is_assigned)
+
+  if (isLoading) return <p className="text-xs text-zinc-500 py-2">Loading…</p>
+  if (assigned.length === 0) {
+    return (
+      <p className="text-xs text-zinc-500 py-2">
+        No collections assigned. Edit a collection to assign it here.
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-1">
+      {assigned.map((col) => (
+        <div key={col.collection_key} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-800 bg-zinc-900/40">
+          <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 flex-shrink-0" />
+          <span className="text-xs text-zinc-200 flex-1">{col.title || col.collection_key}</span>
+          <span className="text-[10px] font-mono text-zinc-600">{col.collection_key}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -14,14 +53,6 @@ type FormValues = {
   position: number
   capability: string
   parent: string
-}
-
-type CollectionStatus = {
-  collection_key: string
-  title: string
-  status: string
-  is_assigned: boolean
-  other_packages: string[]
 }
 
 export type PackagePanelProps =
@@ -76,146 +107,6 @@ function PackageFields({ register }: { register: ReturnType<typeof useForm<FormV
         <input {...register('parent')} className={inp} placeholder="options-general.php" />
       </div>
     </>
-  )
-}
-
-// ─── Collections tab ───────────────────────────────────────────────────────
-
-function CollectionsTab({ packageKey }: { packageKey: string }) {
-  const queryClient = useQueryClient()
-  // Local optimistic state so toggling feels instant
-  const [localAssigned, setLocalAssigned] = useState<string[] | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const { data, isLoading } = useQuery<{ success: boolean; collections: CollectionStatus[] }>({
-    queryKey: ['package-collections', packageKey],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}/collections`), {
-        headers: authHeaders(),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
-    enabled: !!packageKey,
-  })
-
-  const mutation = useMutation({
-    mutationFn: async (collectionKeys: string[]) => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/package/${packageKey}/collections`), {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify({ collection_keys: collectionKeys }),
-      })
-      const json = await res.json()
-      if (!json.success) throw new Error(json.message ?? 'Failed to save')
-      return json
-    },
-    onSuccess: () => {
-      setLocalAssigned(null)
-      queryClient.invalidateQueries({ queryKey: ['package-collections', packageKey] })
-      queryClient.invalidateQueries({ queryKey: ['packages', packageKey] })
-      queryClient.invalidateQueries({ queryKey: ['packages'] })
-    },
-    onError: () => setLocalAssigned(null),
-  })
-
-  const collections = data?.collections ?? []
-  const serverAssigned = collections.filter((c) => c.is_assigned).map((c) => c.collection_key)
-  const assigned = localAssigned ?? serverAssigned
-  const hasNone = !isLoading && assigned.length === 0
-
-  const toggle = (key: string) => {
-    const next = assigned.includes(key)
-      ? assigned.filter((k) => k !== key)
-      : [...assigned, key]
-    setLocalAssigned(next)
-    // Debounce the actual save so rapid toggles don't each trigger a rebuild
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => mutation.mutate(next), 600)
-  }
-
-  if (isLoading) {
-    return <p className="text-xs text-zinc-500 py-4">Loading collections…</p>
-  }
-
-  if (collections.length === 0) {
-    return (
-      <p className="text-xs text-zinc-500 py-4">
-        No collections found for this extension. Create collections first, then assign them here.
-      </p>
-    )
-  }
-
-  return (
-    <div className="space-y-1">
-      {/* Warning when no collections assigned */}
-      {hasNone && (
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-800/60 bg-amber-950/40 px-3 py-2">
-          <span className="mt-0.5 text-amber-400 text-xs">⚠</span>
-          <p className="text-xs text-amber-300/90">
-            This package has no collections assigned. Assign at least one collection so it has content to display.
-          </p>
-        </div>
-      )}
-
-      {mutation.isError && (
-        <p className="mb-2 text-xs text-red-400">{(mutation.error as Error).message}</p>
-      )}
-
-      {collections.map((col) => {
-        const isAssigned = assigned.includes(col.collection_key)
-        return (
-        <label
-          key={col.collection_key}
-          className={`group flex items-start gap-3 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors ${
-            isAssigned
-              ? 'border-zinc-600 bg-zinc-800/60'
-              : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
-          } ${col.status === 'inactive' ? 'opacity-50' : ''}`}
-        >
-          <div className="mt-0.5 flex-shrink-0">
-            <div
-              className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                isAssigned
-                  ? 'border-zinc-400 bg-zinc-600'
-                  : 'border-zinc-600 bg-zinc-900 group-hover:border-zinc-500'
-              }`}
-            >
-              {isAssigned && (
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </div>
-          </div>
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={isAssigned}
-            onChange={() => toggle(col.collection_key)}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-zinc-200 leading-tight">{col.title || col.collection_key}</p>
-            <p className="text-[10px] font-mono text-zinc-600 mt-0.5">{col.collection_key}</p>
-            {col.other_packages.length > 0 && (
-              <p className="mt-1 text-[10px] text-zinc-500">
-                Also in:{' '}
-                {col.other_packages.map((pk, i) => (
-                  <span key={pk}>
-                    <span className="text-zinc-400 font-mono">{pk}</span>
-                    {i < col.other_packages.length - 1 && ', '}
-                  </span>
-                ))}
-              </p>
-            )}
-          </div>
-          {col.status === 'inactive' && (
-            <span className="text-[9px] uppercase tracking-wider text-zinc-600 mt-0.5">inactive</span>
-          )}
-        </label>
-        )
-      })}
-    </div>
   )
 }
 
@@ -290,11 +181,8 @@ function CreatePanel({ extensionId, extensionTitle, onClose, onCreated }: Extrac
 
 // ─── Edit panel ────────────────────────────────────────────────────────────
 
-type EditTab = 'settings' | 'collections'
-
 function EditPanel({ packageKey, onClose, onDeleted, onKeyChange }: Extract<PackagePanelProps, { mode: 'edit' }>) {
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<EditTab>('settings')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const { register, reset, watch } = useForm<FormValues>({
     defaultValues: { label: '', package_key: '', description: '', icon: 'dashicons-admin-generic', position: 20, capability: 'manage_options', parent: '' },
@@ -362,99 +250,72 @@ function EditPanel({ packageKey, onClose, onDeleted, onKeyChange }: Extract<Pack
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.label, values.package_key, values.description, values.icon, values.position, values.capability, values.parent])
 
-  const hasNoCollections = data?.package && !data.package.has_collections
-
   return (
     <PanelShell title={data?.package?.label || packageKey} sub={packageKey} onClose={onClose}>
-      {/* Tab bar */}
-      <div className="flex gap-0 border-b border-zinc-800 -mx-1 mb-4">
-        {(['settings', 'collections'] as EditTab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`relative px-4 py-2 text-xs font-medium capitalize transition-colors ${
-              tab === t ? 'text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            {t}
-            {t === 'collections' && hasNoCollections && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-1.5 h-1.5 rounded-full bg-amber-400 align-middle" />
-            )}
-            {tab === t && (
-              <span className="absolute bottom-0 left-0 right-0 h-px bg-zinc-300" />
-            )}
-          </button>
-        ))}
+      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <div>
+          <label className={lbl}>Label <span className="text-red-400">*</span></label>
+          <input {...register('label')} className={inp} />
+        </div>
+        <div>
+          <label className={lbl}>Key</label>
+          <input {...register('package_key')} className={`${inp} font-mono`} />
+        </div>
+        <PackageFields register={register} />
+        <div className="pt-1">
+          <SaveStatus
+            saving={saveMutation.isPending}
+            error={saveMutation.isError ? (saveMutation.error as Error).message : null}
+          />
+        </div>
+      </form>
+
+      {/* Collections (read-only — assign from collection edit) */}
+      <div className="mt-5 pt-4 border-t border-zinc-800">
+        <p className="text-xs font-medium text-zinc-400 mb-2">Collections</p>
+        <CollectionsList packageKey={packageKey} />
       </div>
 
-      {/* Settings tab */}
-      {tab === 'settings' && (
-        <>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            <div>
-              <label className={lbl}>Label <span className="text-red-400">*</span></label>
-              <input {...register('label')} className={inp} />
-            </div>
-            <div>
-              <label className={lbl}>Key</label>
-              <input {...register('package_key')} className={`${inp} font-mono`} />
-            </div>
-            <PackageFields register={register} />
-            <div className="pt-1">
-              <SaveStatus
-                saving={saveMutation.isPending}
-                error={saveMutation.isError ? (saveMutation.error as Error).message : null}
-              />
-            </div>
-          </form>
+      {/* Admin URL */}
+      <div className="mt-5 pt-4 border-t border-zinc-800">
+        <p className="text-xs text-zinc-500 mb-1">Admin URL</p>
+        <code className="text-[10px] text-zinc-400 font-mono break-all">
+          admin.php?page=gateway-package-{values.package_key || packageKey}
+        </code>
+      </div>
 
-          {/* Admin URL */}
-          <div className="mt-5 pt-4 border-t border-zinc-800">
-            <p className="text-xs text-zinc-500 mb-1">Admin URL</p>
-            <code className="text-[10px] text-zinc-400 font-mono break-all">
-              admin.php?page=gateway-package-{values.package_key || packageKey}
-            </code>
+      {/* Delete */}
+      <div className="mt-5 pt-4 border-t border-zinc-800">
+        <p className="text-xs font-medium text-red-400/80 mb-2">Danger zone</p>
+        {deleteMutation.isError && (
+          <p className="text-xs text-red-400 mb-2">{(deleteMutation.error as Error).message}</p>
+        )}
+        {confirmDelete ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              className="px-3 py-1 rounded bg-red-800 hover:bg-red-700 disabled:opacity-50 text-xs text-white transition-colors"
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Yes, delete'}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleteMutation.isPending}
+              className="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-400 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
-
-          {/* Delete */}
-          <div className="mt-5 pt-4 border-t border-zinc-800">
-            <p className="text-xs font-medium text-red-400/80 mb-2">Danger zone</p>
-            {deleteMutation.isError && (
-              <p className="text-xs text-red-400 mb-2">{(deleteMutation.error as Error).message}</p>
-            )}
-            {confirmDelete ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
-                  className="px-3 py-1 rounded bg-red-800 hover:bg-red-700 disabled:opacity-50 text-xs text-white transition-colors"
-                >
-                  {deleteMutation.isPending ? 'Deleting…' : 'Yes, delete'}
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  disabled={deleteMutation.isPending}
-                  className="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-400 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="px-3 py-1 rounded border border-red-900/60 text-red-400/70 hover:bg-red-950/40 text-xs transition-colors"
-              >
-                Delete Package
-              </button>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Collections tab */}
-      {tab === 'collections' && (
-        <CollectionsTab packageKey={packageKey} />
-      )}
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="px-3 py-1 rounded border border-red-900/60 text-red-400/70 hover:bg-red-950/40 text-xs transition-colors"
+          >
+            Delete Package
+          </button>
+        )}
+      </div>
     </PanelShell>
   )
 }

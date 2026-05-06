@@ -11,6 +11,8 @@ export interface WorkspaceContextValue {
   setActiveCollectionKey: (key: string | null) => void
   collections: WorkspaceCollection[]
   isCollectionsLoading: boolean
+  activeExtensionKey: string | null
+  setActiveExtensionKey: (key: string | null) => void
 }
 
 export const WorkspaceContext = createContext<WorkspaceContextValue>({
@@ -18,6 +20,8 @@ export const WorkspaceContext = createContext<WorkspaceContextValue>({
   setActiveCollectionKey: () => {},
   collections: [],
   isCollectionsLoading: false,
+  activeExtensionKey: null,
+  setActiveExtensionKey: () => {},
 })
 
 export const useWorkspace = () => useContext(WorkspaceContext)

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
+import { useWorkspace } from '../context/workspace'
 import { BuilderLayout } from './Builders/BuilderLayout'
 import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './Packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
@@ -50,8 +51,8 @@ function PackagesTopBar({
 
       <button
         onClick={onNew}
-        disabled={!selectedExtKey}
-        title={!selectedExtKey ? 'Select an extension first' : 'New Package'}
+        disabled={!selectedExt}
+        title={!selectedExt ? 'Select an extension first' : 'New Package'}
         className="flex items-center gap-1 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-medium transition-colors"
       >
         <span className="text-sm leading-none">+</span>
@@ -86,13 +87,9 @@ function ArrowIcon() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'raptor.packages.selectedExtKey'
-
 export default function PackagesTopLevel() {
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const [selectedExtKey, setSelectedExtKey] = useState<string | null>(
-    () => window.localStorage.getItem(STORAGE_KEY) ?? null
-  )
+  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey } = useWorkspace()
   const [panel, setPanel] = useState<PanelState>(null)
 
   const { data: allPackages = [] } = useQuery<PackageRecord[]>({
@@ -115,25 +112,6 @@ export default function PackagesTopLevel() {
     },
   })
 
-  // Persist selection across navigations
-  useEffect(() => {
-    if (selectedExtKey) {
-      window.localStorage.setItem(STORAGE_KEY, selectedExtKey)
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [selectedExtKey])
-
-  // Auto-select when there is exactly one extension and nothing is chosen yet.
-  // Also clear a stale stored key if it no longer matches any loaded extension.
-  useEffect(() => {
-    if (extensions.length === 0) return
-    const valid = extensions.some((e) => e.extension_key === selectedExtKey)
-    if (!valid) {
-      setSelectedExtKey(extensions.length === 1 ? extensions[0].extension_key : null)
-    }
-  }, [extensions, selectedExtKey])
-
   const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
 
   const visiblePackages = selectedExtKey
@@ -145,7 +123,7 @@ export default function PackagesTopLevel() {
     : extensions
 
   const openNew = () => {
-    if (!selectedExtKey) return
+    if (!selectedExt) return
     setPanel({ mode: 'create' })
   }
 
@@ -183,8 +161,8 @@ export default function PackagesTopLevel() {
             </div>
             <button
               onClick={openNew}
-              disabled={!selectedExtKey}
-              title={!selectedExtKey ? 'Select an extension first' : undefined}
+              disabled={!selectedExt}
+              title={!selectedExt ? 'Select an extension first' : undefined}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm text-white font-medium transition-colors"
             >
               <span className="text-base leading-none">+</span>
