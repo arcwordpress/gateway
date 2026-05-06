@@ -102,20 +102,22 @@ class CollectionRoutes
                 }
             }
 
-            // Fetch record counts in one query: SELECT table_name, table_rows FROM information_schema
-            // keyed by table name so each collection can look up its own count in O(1).
-            $recordCounts = $this->fetchRecordCounts(
-                $collections->pluck('collection_key')->toArray()
-            );
+            // Record counts are expensive (information_schema scan) — only fetch when requested.
+            $withCounts = (bool) $request->get_param('with_counts');
+            $recordCounts = $withCounts
+                ? $this->fetchRecordCounts($collections->pluck('collection_key')->toArray())
+                : [];
 
-            $output = $collections->map(function (RaptorCollection $col) use ($recordCounts) {
+            $output = $collections->map(function (RaptorCollection $col) use ($recordCounts, $withCounts) {
                 $arr = $col->toArray();
                 try {
                     $arr['relationships'] = RelationshipController::toApiArray($col);
                 } catch (\Throwable $e) {
                     $arr['relationships'] = [];
                 }
-                $arr['record_count'] = $recordCounts[$col->collection_key] ?? null;
+                if ($withCounts) {
+                    $arr['record_count'] = $recordCounts[$col->collection_key] ?? null;
+                }
                 return $arr;
             })->values()->all();
 

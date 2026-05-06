@@ -6,6 +6,22 @@ import { BuilderLayout } from './Builders/BuilderLayout'
 import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './Packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
 
+// Fetch extensions fresh on this page so we're not dependent on
+// WorkspaceContext load timing. Shares the ['extensions'] cache key
+// with the Layout query so there's no duplicate network request.
+function useExtensions() {
+  return useQuery<ExtensionRecord[]>({
+    queryKey: ['extensions'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
+      if (!res.ok) return []
+      const json = await res.json() as { extensions?: ExtensionRecord[] }
+      return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
+    },
+    staleTime: 30_000,
+  })
+}
+
 // ─── Panel state ──────────────────────────────────────────────────────────
 
 type PanelState =
@@ -89,7 +105,7 @@ function ArrowIcon() {
 
 export default function PackagesTopLevel() {
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey, extensions: workspaceExtensions } = useWorkspace()
+  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey } = useWorkspace()
   const [panel, setPanel] = useState<PanelState>(null)
 
   const { data: allPackages = [] } = useQuery<PackageRecord[]>({
@@ -98,22 +114,20 @@ export default function PackagesTopLevel() {
       const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      return json.packages ?? []
+      return (json.packages ?? []).map((p: PackageRecord) => ({ ...p, extension_id: p.extension_id !== null ? Number(p.extension_id) : null }))
     },
+    staleTime: 30_000,
   })
 
-  // Extensions are pre-loaded at Layout level; cast to ExtensionRecord shape (same fields)
-  const extensions = workspaceExtensions as unknown as ExtensionRecord[]
+  const { data: extensions = [] } = useExtensions()
 
   const selectedExt = extensions.find((e) => e.extension_key === selectedExtKey) ?? null
 
-  const visiblePackages = selectedExtKey
-    ? allPackages.filter((p) => Number(p.extension_id) === Number(selectedExt?.id))
+  const visiblePackages = selectedExt
+    ? allPackages.filter((p) => p.extension_id === selectedExt.id)
     : allPackages
 
-  const visibleExtensions = selectedExtKey && selectedExt
-    ? [selectedExt]
-    : extensions
+  const visibleExtensions = selectedExt ? [selectedExt] : extensions
 
   const openNew = () => {
     if (!selectedExt) return

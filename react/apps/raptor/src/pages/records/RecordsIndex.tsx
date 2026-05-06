@@ -12,9 +12,9 @@ export default function RecordsIndex() {
   const navigate = useNavigate()
 
   const { data, isLoading } = useQuery<{ collections: RaptorCollection[] }>({
-    queryKey: ['raptor-collections'],
+    queryKey: ['raptor-collections', 'with-counts'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/raptor/collection?with_counts=1'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     },
