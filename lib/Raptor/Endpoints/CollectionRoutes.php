@@ -391,33 +391,40 @@ class CollectionRoutes
 
         global $wpdb;
 
-        // Raptor-generated migrations create tables as {wp_prefix}{collection_key}
-        // (e.g. wp_event, wp_attendee) — see MigrationGenerator::generateFromData.
-        $prefix     = $wpdb->prefix;
-        $tableNames = array_map(fn($k) => $prefix . $k, $collectionKeys);
+        $prefix  = $wpdb->prefix;
+        $counts  = array_fill_keys($collectionKeys, null);
+        $byTable = array_combine(
+            array_map(fn($k) => $prefix . $k, $collectionKeys),
+            $collectionKeys
+        );
+        $tableNames = array_keys($byTable);
 
+        // Confirm which tables actually exist — avoids COUNT(*) errors on missing tables.
         $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
-        $rows = $wpdb->get_results(
+        $existing = $wpdb->get_col(
             $wpdb->prepare(
-                "SELECT TABLE_NAME, TABLE_ROWS
-                 FROM information_schema.TABLES
-                 WHERE TABLE_SCHEMA = DATABASE()
-                   AND TABLE_NAME IN ($placeholders)",
+                "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ($placeholders)",
                 ...$tableNames
-            ),
-            ARRAY_A
+            )
         );
 
-        // Build lookup keyed by table name.
-        $byTable = [];
-        foreach ((array) $rows as $row) {
-            $byTable[$row['TABLE_NAME']] = (int) $row['TABLE_ROWS'];
+        if (empty($existing)) {
+            return $counts;
         }
 
-        $counts = [];
-        foreach ($collectionKeys as $key) {
-            $table          = $prefix . $key;
-            $counts[$key]   = isset($byTable[$table]) ? $byTable[$table] : null;
+        // Exact COUNT(*) via UNION ALL — one round-trip, always accurate.
+        // information_schema.TABLE_ROWS is an InnoDB estimate and can be off by ≥1.
+        $unions = array_map(
+            fn($t) => "SELECT COUNT(*) AS cnt, '" . esc_sql($t) . "' AS tbl FROM `" . esc_sql($t) . "`",
+            $existing
+        );
+        $rows = $wpdb->get_results(implode(' UNION ALL ', $unions), ARRAY_A);
+
+        foreach ((array) $rows as $row) {
+            $key = $byTable[$row['tbl']] ?? null;
+            if ($key !== null) {
+                $counts[$key] = (int) $row['cnt'];
+            }
         }
 
         return $counts;
