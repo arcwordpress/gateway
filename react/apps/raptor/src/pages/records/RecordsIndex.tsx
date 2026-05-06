@@ -1,15 +1,30 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useWorkspace } from '../../context/workspace'
+import { useQuery } from '@tanstack/react-query'
+import { apiUrl, authHeaders } from '../../lib/api'
+
+type RaptorCollection = {
+  collection_key: string
+  title: string
+  record_count: number | null
+}
 
 export default function RecordsIndex() {
   const navigate = useNavigate()
-  const { collections: workspaceCollections, isCollectionsLoading } = useWorkspace()
 
-  const isLoading = isCollectionsLoading
-  const collections = workspaceCollections.map((c) => ({
+  const { data, isLoading } = useQuery<{ collections: RaptorCollection[] }>({
+    queryKey: ['raptor-collections'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.json()
+    },
+    staleTime: 30_000,
+  })
+
+  const collections = (data?.collections ?? []).map((c) => ({
     key: c.collection_key,
     titlePlural: c.title,
-    record_count: null as number | null,
+    record_count: c.record_count,
   }))
 
   return (

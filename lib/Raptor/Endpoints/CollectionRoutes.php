@@ -102,13 +102,20 @@ class CollectionRoutes
                 }
             }
 
-            $output = $collections->map(function (RaptorCollection $col) {
+            // Fetch record counts in one query: SELECT table_name, table_rows FROM information_schema
+            // keyed by table name so each collection can look up its own count in O(1).
+            $recordCounts = $this->fetchRecordCounts(
+                $collections->pluck('collection_key')->toArray()
+            );
+
+            $output = $collections->map(function (RaptorCollection $col) use ($recordCounts) {
                 $arr = $col->toArray();
                 try {
                     $arr['relationships'] = RelationshipController::toApiArray($col);
                 } catch (\Throwable $e) {
                     $arr['relationships'] = [];
                 }
+                $arr['record_count'] = $recordCounts[$col->collection_key] ?? null;
                 return $arr;
             })->values()->all();
 
@@ -355,6 +362,54 @@ class CollectionRoutes
         $key = strtolower($key);
         $key = preg_replace('/[^a-z0-9_]/', '', $key);
         return (string) substr(trim($key, '_'), 0, 200);
+    }
+
+    /**
+     * Returns a map of collection_key => record_count fetched in a single
+     * information_schema query rather than one COUNT(*) per collection.
+     *
+     * Note: information_schema.tables.TABLE_ROWS is an estimate for InnoDB.
+     * For exact counts pass $exact = true (runs one COUNT per table).
+     *
+     * @param  string[] $collectionKeys
+     * @return array<string, int|null>
+     */
+    private function fetchRecordCounts(array $collectionKeys): array
+    {
+        if (empty($collectionKeys)) {
+            return [];
+        }
+
+        global $wpdb;
+
+        $prefix     = $wpdb->prefix . 'gateway_';
+        $tableNames = array_map(fn($k) => $prefix . $k . 's', $collectionKeys);
+
+        $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT TABLE_NAME, TABLE_ROWS
+                 FROM information_schema.TABLES
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME IN ($placeholders)",
+                ...$tableNames
+            ),
+            ARRAY_A
+        );
+
+        // Build lookup keyed by table name.
+        $byTable = [];
+        foreach ((array) $rows as $row) {
+            $byTable[$row['TABLE_NAME']] = (int) $row['TABLE_ROWS'];
+        }
+
+        $counts = [];
+        foreach ($collectionKeys as $key) {
+            $table          = $prefix . $key . 's';
+            $counts[$key]   = isset($byTable[$table]) ? $byTable[$table] : null;
+        }
+
+        return $counts;
     }
 
     public function checkPermissions(): bool
