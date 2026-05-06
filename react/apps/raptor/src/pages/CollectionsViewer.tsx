@@ -647,7 +647,7 @@ export default function CollectionsViewer() {
           source:       extId,
           target:       colId,
           targetHandle: 'h-top',
-          type:         'smoothstep',
+          type:         'default',
         })
       }
     }
@@ -676,7 +676,7 @@ export default function CollectionsViewer() {
           labelBgPadding:       [4, 3] as [number, number],
           labelBgBorderRadius:  3,
           style:                { stroke: '#52525b', strokeDasharray: '5 3', cursor: 'pointer' },
-          type:                 'smoothstep',
+          type:                 'default',
           data:                 rel,
         })
       }
