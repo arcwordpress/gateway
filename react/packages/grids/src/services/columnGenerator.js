@@ -19,9 +19,20 @@ export const getLabelField = (collection) => {
     return { fieldKey: collection.grid.labelField, status: 'configured' };
   }
 
-  const fields = collection?.fields || {};
-  if (fields.title) return { fieldKey: 'title', status: 'auto' };
-  if (fields.name) return { fieldKey: 'name', status: 'auto' };
+  // Fields may be an object keyed by name (old Gateway) or an array (Raptor).
+  const fields = collection?.fields;
+  const AUTO_CANDIDATES = ['title', 'name', 'label'];
+
+  if (Array.isArray(fields)) {
+    const names = fields.map((f) => f.name);
+    for (const candidate of AUTO_CANDIDATES) {
+      if (names.includes(candidate)) return { fieldKey: candidate, status: 'auto' };
+    }
+  } else if (fields && typeof fields === 'object') {
+    for (const candidate of AUTO_CANDIDATES) {
+      if (fields[candidate]) return { fieldKey: candidate, status: 'auto' };
+    }
+  }
 
   return { fieldKey: null, status: 'none' };
 };
