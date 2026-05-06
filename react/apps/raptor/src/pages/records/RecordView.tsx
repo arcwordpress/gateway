@@ -57,7 +57,9 @@ export default function RecordView() {
         { headers: authHeaders() }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
+      const json = await res.json()
+      // Gateway record endpoints wrap the record: { success: true, data: { ...record } }
+      return (json?.data ?? json) as Record<string, unknown>
     },
     enabled: !!gwRoutes?.namespace && !!gwRoutes?.route,
     staleTime: 30_000,

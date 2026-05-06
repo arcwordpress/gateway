@@ -391,39 +391,17 @@ class CollectionRoutes
 
         global $wpdb;
 
-        $prefix  = $wpdb->prefix;
-        $counts  = array_fill_keys($collectionKeys, null);
-        $byTable = array_combine(
-            array_map(fn($k) => $prefix . $k, $collectionKeys),
-            $collectionKeys
-        );
-        $tableNames = array_keys($byTable);
+        $prefix = $wpdb->prefix;
+        $counts = array_fill_keys($collectionKeys, null);
 
-        // Confirm which tables actually exist — avoids COUNT(*) errors on missing tables.
-        $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
-        $existing = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ($placeholders)",
-                ...$tableNames
-            )
-        );
+        $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
 
-        if (empty($existing)) {
-            return $counts;
-        }
-
-        // Exact COUNT(*) via UNION ALL — one round-trip, always accurate.
-        // information_schema.TABLE_ROWS is an InnoDB estimate and can be off by ≥1.
-        $unions = array_map(
-            fn($t) => "SELECT COUNT(*) AS cnt, '" . esc_sql($t) . "' AS tbl FROM `" . esc_sql($t) . "`",
-            $existing
-        );
-        $rows = $wpdb->get_results(implode(' UNION ALL ', $unions), ARRAY_A);
-
-        foreach ((array) $rows as $row) {
-            $key = $byTable[$row['tbl']] ?? null;
-            if ($key !== null) {
-                $counts[$key] = (int) $row['cnt'];
+        foreach ($collectionKeys as $key) {
+            $table = $prefix . $key;
+            try {
+                $counts[$key] = (int) $db->table($table)->count();
+            } catch (\Throwable $e) {
+                // Table doesn't exist yet — leave as null
             }
         }
 
