@@ -50,6 +50,14 @@ class CollectionRoutes
             ],
         ]);
 
+        register_rest_route('gateway/v1', '/raptor/registered-collections', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getRegisteredCollections'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+
         register_rest_route('gateway/v1', '/raptor/collection/(?P<collection_key>[a-zA-Z0-9_\-]+)', [
             [
                 'methods'             => 'GET',
@@ -73,10 +81,69 @@ class CollectionRoutes
 
     public function getCollections(\WP_REST_Request $request): \WP_REST_Response
     {
+        try {
+            $query = RaptorCollection::orderBy('created_at', 'asc');
+
+            $extensionKey = $request->get_param('extension_key');
+            if ($extensionKey) {
+                $extension = RaptorExtension::where('extension_key', sanitize_text_field($extensionKey))->first();
+                if ($extension) {
+                    $query->where('extension_id', $extension->id);
+                }
+            }
+
+            $collections = $query->get();
+
+            try {
+                $collections->load('collectionRelationships.targetCollection');
+            } catch (\Throwable $e) {
+                // relationship table not yet migrated — continue without rels
+            }
+
+            if ($request->get_param('with_nested')) {
+                try {
+                    $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                } catch (\Throwable $e) {
+                    // nested tables not yet migrated — return without nested data
+                }
+            }
+
+            $withCounts  = (bool) $request->get_param('with_counts');
+            $recordCounts = $withCounts
+                ? $this->fetchRecordCountsByKey($collections->pluck('collection_key')->toArray())
+                : [];
+
+            $output = $collections->map(function (RaptorCollection $col) use ($recordCounts, $withCounts) {
+                $arr = $col->toArray();
+                try {
+                    $arr['relationships'] = RelationshipController::toApiArray($col);
+                } catch (\Throwable $e) {
+                    $arr['relationships'] = [];
+                }
+                if ($withCounts) {
+                    $arr['record_count'] = $recordCounts[$col->collection_key] ?? null;
+                }
+                return $arr;
+            })->values()->all();
+
+            return new \WP_REST_Response([
+                'success'     => true,
+                'collections' => $output,
+            ], 200);
+        } catch (\Throwable $e) {
+            return new \WP_REST_Response([
+                'code'    => 'gateway_tables_missing',
+                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
+            ], 503);
+        }
+    }
+
+    public function getRegisteredCollections(\WP_REST_Request $request): \WP_REST_Response
+    {
         $registry    = \Gateway\Plugin::getInstance()->getRegistry();
         $collections = array_filter($registry->getAll(), fn($col) => !$col->isHidden());
 
-        $withCounts  = (bool) $request->get_param('with_counts');
+        $withCounts   = (bool) $request->get_param('with_counts');
         $recordCounts = $withCounts ? $this->fetchRecordCounts($collections) : [];
 
         $output = array_values(array_map(function (\Gateway\Collection $col) use ($recordCounts, $withCounts) {
@@ -364,6 +431,33 @@ class CollectionRoutes
                 $counts[$col->getKey()] = (int) $db->table($col->getTable())->count();
             } catch (\Throwable $e) {
                 $counts[$col->getKey()] = null;
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @param  string[] $collectionKeys
+     * @return array<string, int|null>
+     */
+    private function fetchRecordCountsByKey(array $collectionKeys): array
+    {
+        if (empty($collectionKeys)) {
+            return [];
+        }
+
+        global $wpdb;
+
+        $prefix = $wpdb->prefix;
+        $counts = array_fill_keys($collectionKeys, null);
+        $db     = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
+
+        foreach ($collectionKeys as $key) {
+            try {
+                $counts[$key] = (int) $db->table($prefix . $key)->count();
+            } catch (\Throwable $e) {
+                // Table doesn't exist yet — leave as null
             }
         }
 
