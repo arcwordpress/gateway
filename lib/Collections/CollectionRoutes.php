@@ -155,12 +155,7 @@ class CollectionRoutes
                 $entry = $this->collectionToArray($collectionClass, $collection);
 
                 if ($withCounts) {
-                    try {
-                        $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
-                        $entry['record_count'] = (int) $db->table($collection->getTable())->count();
-                    } catch (\Throwable $e) {
-                        $entry['record_count'] = null;
-                    }
+                    $entry['record_count'] = $this->countRecords($collectionClass);
                 }
 
                 $result[] = $entry;
@@ -291,5 +286,20 @@ class CollectionRoutes
             'filters' => $filters,
             'grid' => $grid,
         ];
+    }
+
+    /**
+     * Count records for a collection using Eloquent's count().
+     *
+     * @param  string $collectionClass Fully-qualified collection class name
+     * @return int|null
+     */
+    private function countRecords(string $collectionClass): ?int
+    {
+        try {
+            return (int) $collectionClass::count();
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
