@@ -81,9 +81,19 @@ class Plugin {
             return;
         }
 
-        // Register extension, packages, collections and views on the dedicated
-        // registration hook — always fires before gateway_loaded and is guaranteed
-        // to run while registries are ready but before general-purpose listeners.
+        // If gateway_register has already fired (e.g. plugin activated mid-request
+        // via activate_plugin() after init has run), register immediately rather
+        // than waiting for a hook that will never fire again.
+        if (did_action('gateway_register')) {
+            $this->register_extension();
+            $this->register_packages();
+            $this->register_collections();
+            $this->register_views();
+            return;
+        }
+
+        // Normal path: hook into the dedicated registration action which fires
+        // just before gateway_loaded at init priority 5.
         add_action('gateway_register', [$this, 'register_extension'], 5);
         add_action('gateway_register', [$this, 'register_packages']);
         add_action('gateway_register', [$this, 'register_collections']);
@@ -171,20 +181,28 @@ class Plugin {
 endif; // class_exists guard
 
 /**
- * Bootstrap: only initialise when Gateway itself has loaded.
+ * Bootstrap: initialise once Gateway is ready.
  *
- * 'gateway_plugin_loaded' is fired by Gateway at the very end of its own
- * plugin file (Plugin.php). Hooking here means:
- *   - If Gateway is inactive this action never fires → extension stays dormant.
- *   - If Gateway is active we are guaranteed its autoloader and core classes
- *     are available before our init() runs.
+ * 'gateway_plugin_loaded' is fired synchronously at the bottom of Gateway's
+ * plugin file. Because WordPress loads plugins in alphabetical order by slug,
+ * an extension whose slug sorts after "gateway" will load AFTER that action
+ * has already fired. The did_action() guard handles that case by bootstrapping
+ * immediately instead of waiting for an action that will never fire again.
  *
- * Do NOT call Plugin::instance() unconditionally or on plugins_loaded — that
- * would run before Gateway is ready and requires a fragile class_exists guard.
+ * If Gateway is not active neither branch runs, so the extension stays dormant.
  */
 if (!defined('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED')) {
     define('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED', true);
-    add_action('gateway_plugin_loaded', function() {
-        Plugin::instance();
-    }, 10);
+
+    ${{CONSTANT_PREFIX}}_boot = function() {
+        if (function_exists('gateway_core_active') && gateway_core_active()) {
+            Plugin::instance();
+        }
+    };
+
+    if (did_action('gateway_plugin_loaded') || doing_action('gateway_plugin_loaded')) {
+        ${{CONSTANT_PREFIX}}_boot();
+    } else {
+        add_action('gateway_plugin_loaded', ${{CONSTANT_PREFIX}}_boot, 10);
+    }
 }

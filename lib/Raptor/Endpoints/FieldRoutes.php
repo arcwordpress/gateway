@@ -209,8 +209,8 @@ class FieldRoutes
             return $field;
         }
 
-        $this->triggerBuildFromField($field);
         $field->delete();
+        $this->triggerBuildFromField($field);
 
         return new \WP_REST_Response([
             'success' => true,
