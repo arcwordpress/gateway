@@ -22,7 +22,7 @@ Forms\Shortcode::init();
 **Evidence:** In the original arc-blueprint plugin (`../arc-blueprint/Plugin.php:81,84`), these init calls are present and working.
 
 **Impact:**
-- Shortcode `[blueprint_form]` is never registered (line 12 in Shortcode.php never executes)
+- Shortcode `[gateway_form]` is never registered (line 12 in Shortcode.php never executes)
 - Footer hooks never attach (lines 53-54 in Render.php never execute)
 - Scripts never enqueue
 - Forms never render
@@ -84,7 +84,7 @@ The Gutenberg block is registered in `includes/Forms/Shortcode.php:60-91` but wa
 - `register_block()` (line 60): Registers Gutenberg block (non-functional)
 - `render_block()` (line 99): Renders Gutenberg block
 
-**Shortcode:** `[blueprint_form]`
+**Shortcode:** `[gateway_form]` — see [SHORTCODE_USAGE.md](../SHORTCODE_USAGE.md)
 **Attributes:**
 - `schema` (required): Collection key
 - `record_id` (optional): For edit mode
@@ -133,7 +133,7 @@ The Gutenberg block is registered in `includes/Forms/Shortcode.php:60-91` but wa
 
 ### Expected Flow:
 1. **Plugin Init:** `Plugin.php` calls `Forms\Render::init()` and `Forms\Shortcode::init()`
-2. **Shortcode Registration:** `Shortcode::init()` registers `[blueprint_form]` shortcode
+2. **Shortcode Registration:** `Shortcode::init()` registers `[gateway_form]` (see [SHORTCODE_USAGE.md](../SHORTCODE_USAGE.md))
 3. **Content Rendering:** WordPress processes shortcode in content
 4. **Shortcode Execution:** `Shortcode::render()` validates attributes and calls `Render::form()`
 5. **HTML Output:** `Render::form()` outputs `<div data-blueprint-form data-schema="..."></div>`

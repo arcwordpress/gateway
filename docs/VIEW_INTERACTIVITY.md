@@ -33,19 +33,7 @@ The Gateway plugin now integrates WordPress Interactivity API to provide dynamic
 
 ## Usage
 
-### Frontend Shortcode
-
-Render a view on any page or post using:
-
-```php
-[gateway_view key="my-view-key"]
-```
-
-The shortcode will:
-- Load the view configuration from database
-- Generate HTML with `data-wp-interactive` directives
-- Initialize state with API route and configuration
-- Automatically fetch and display records on page load
+For shortcode usage see [SHORTCODE_USAGE.md](../SHORTCODE_USAGE.md).
 
 ### Programmatic Rendering (PHP)
 

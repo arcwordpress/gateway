@@ -166,10 +166,26 @@ export default function ExtensionEdit() {
         <Link to="/extensions" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Extensions
         </Link>
-        <h1 className="text-2xl font-semibold text-zinc-100 mt-3">
-          {extension?.title || key}
-        </h1>
-        <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
+        <div className="flex items-start justify-between mt-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-100">
+              {extension?.title || key}
+            </h1>
+            <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
+          </div>
+          <div className="flex items-center gap-1 mt-1">
+            <span className="px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-200 text-xs font-medium">
+              Settings
+            </span>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <Link
+              to={`/extensions/${key}/shortcodes` as any}
+              className="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 text-xs transition-colors"
+            >
+              Shortcodes
+            </Link>
+          </div>
+        </div>
       </div>
 
       {isError && (

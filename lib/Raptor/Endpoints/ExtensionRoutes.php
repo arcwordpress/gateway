@@ -46,6 +46,14 @@ class ExtensionRoutes
 
     public function registerRoutes(): void
     {
+        register_rest_route('gateway/v1', '/raptor/shortcodes', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getShortcodes'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+
         register_rest_route('gateway/v1', '/raptor/extension', [
             [
                 'methods'             => 'GET',
@@ -164,14 +172,44 @@ class ExtensionRoutes
         $notices = $this->repairExtensionFileIfMissing($extension);
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
+            ->with(['viewList.views'])
             ->orderBy('id')
-            ->get(['id', 'collection_key', 'title', 'description', 'status']);
+            ->get();
+
+        $builder    = new RaptorBuilder();
+        $pluginSlug = $builder->toPluginSlug($extension->extension_key);
+        $pluginFile = $pluginSlug . '/' . $pluginSlug . '.php';
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $pluginActive = is_plugin_active($pluginFile);
+
+        $formattedCollections = $collections->map(function ($col) {
+            $views = [];
+            if ($col->viewList) {
+                $views = $col->viewList->views->map(fn($v) => [
+                    'id'       => $v->id,
+                    'view_key' => $v->view_key,
+                    'title'    => $v->title,
+                    'status'   => $v->status,
+                ])->values()->toArray();
+            }
+            return [
+                'id'             => $col->id,
+                'collection_key' => $col->collection_key,
+                'title'          => $col->title,
+                'description'    => $col->description,
+                'status'         => $col->status,
+                'views'          => $views,
+            ];
+        })->toArray();
 
         return new \WP_REST_Response([
-            'success'     => true,
-            'extension'   => $extension->toArray(),
-            'collections' => $collections->toArray(),
-            'notices'     => $notices,
+            'success'       => true,
+            'extension'     => $extension->toArray(),
+            'collections'   => $formattedCollections,
+            'plugin_active' => $pluginActive,
+            'notices'       => $notices,
         ], 200);
     }
 
@@ -343,6 +381,51 @@ class ExtensionRoutes
 
         $status = $result['success'] ? 200 : 422;
         return new \WP_REST_Response($result, $status);
+    }
+
+    /**
+     * Return all shortcodes across every active extension — used when a specific
+     * extension's plugin is not active and we fall back to the global list.
+     */
+    public function getShortcodes(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $extensions = RaptorExtension::where('status', 'active')
+            ->with(['collections.viewList.views'])
+            ->orderBy('title')
+            ->get();
+
+        $shortcodes = [];
+
+        foreach ($extensions as $extension) {
+            foreach ($extension->collections as $col) {
+                $shortcodes[] = [
+                    'type'            => 'form',
+                    'title'           => $col->title ?: $col->collection_key,
+                    'key'             => $col->collection_key,
+                    'shortcode'       => '[gateway_form schema="' . $col->collection_key . '"]',
+                    'extension_key'   => $extension->extension_key,
+                    'extension_title' => $extension->title,
+                ];
+
+                if ($col->viewList) {
+                    foreach ($col->viewList->views as $view) {
+                        $shortcodes[] = [
+                            'type'            => 'view',
+                            'title'           => $view->title ?: $view->view_key,
+                            'key'             => $view->view_key,
+                            'shortcode'       => '[gateway_view key="' . $view->view_key . '"]',
+                            'extension_key'   => $extension->extension_key,
+                            'extension_title' => $extension->title,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return new \WP_REST_Response([
+            'success'    => true,
+            'shortcodes' => $shortcodes,
+        ], 200);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

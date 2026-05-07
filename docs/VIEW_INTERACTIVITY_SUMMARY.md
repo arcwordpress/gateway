@@ -65,14 +65,9 @@ A complete WordPress Interactivity API integration for the Gateway plugin's View
 **Plugin.php** (modified)
 - Added `Raptor\ViewRenderer::init()` call
 - Positioned after Render system initialization
-- Loads on every page load for shortcode support
+- Loads on every page load for frontend rendering support
 
 ## Usage Examples
-
-### Frontend Shortcode
-```php
-[gateway_view key="my-events-list"]
-```
 
 ### Programmatic PHP
 ```php
@@ -119,7 +114,7 @@ Generated HTML includes:
 
 ## Key Features
 
-✅ **Frontend Rendering** - Views work via shortcode on any page/post
+✅ **Frontend Rendering** - Views work on any page/post (see [SHORTCODE_USAGE.md](../SHORTCODE_USAGE.md))
 ✅ **Dynamic Data** - Automatically fetches records from REST API
 ✅ **Loading States** - Shows loading, error, and empty states
 ✅ **Pagination Ready** - State includes current/total pages

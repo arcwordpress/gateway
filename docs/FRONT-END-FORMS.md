@@ -7,8 +7,6 @@ This document provides comprehensive documentation on rendering Gateway forms on
 - [Overview](#overview)
 - [Setup](#setup)
 - [Usage Methods](#usage-methods)
-  - [Shortcode](#shortcode)
-  - [Gutenberg Block](#gutenberg-block)
   - [PHP Function](#php-function)
 - [Options & Attributes](#options--attributes)
 - [How It Works](#how-it-works)
@@ -58,26 +56,7 @@ This creates the necessary build files in `react/apps/form/build/`.
 
 ## Usage Methods
 
-There are two ways to render forms on the front-end:
-
-### Shortcode
-
-The simplest method for content editors.
-
-**Basic Usage:**
-```
-[blueprint_form schema="support"]
-```
-
-**With Record ID (Edit Mode):**
-```
-[blueprint_form schema="support" record_id="123"]
-```
-
-**With Custom Styling:**
-```
-[blueprint_form schema="support" class="my-custom-form" id="support-form"]
-```
+For shortcode usage see [SHORTCODE_USAGE.md](./SHORTCODE_USAGE.md).
 
 ### PHP Function
 
@@ -105,15 +84,6 @@ For programmatic rendering in templates.
 ---
 
 ## Options & Attributes
-
-### Shortcode Attributes
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `schema` | string | Yes | The collection key/schema name (e.g., "support", "contact", "leads") |
-| `record_id` | integer | No | Record ID for editing existing records. If provided, form loads in edit mode |
-| `class` | string | No | Custom CSS class(es) to add to the form container |
-| `id` | string | No | Custom HTML ID for the form container |
 
 ### PHP Function Parameters
 
@@ -243,10 +213,7 @@ class Contact extends Model
 }
 ```
 
-**Usage:**
-```
-[blueprint_form schema="contact"]
-```
+**Usage:** See [SHORTCODE_USAGE.md](./SHORTCODE_USAGE.md) for shortcode examples.
 
 ### Example 2: Support Ticket Form
 
@@ -298,7 +265,7 @@ get_header();
 
 **Shortcode with Custom Classes:**
 ```
-[blueprint_form schema="newsletter" class="newsletter-signup dark-theme shadow-lg"]
+[gateway_form schema="newsletter" class="newsletter-signup dark-theme shadow-lg"]
 ```
 
 **Additional CSS:**
