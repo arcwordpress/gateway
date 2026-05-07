@@ -601,7 +601,7 @@ export default function GatewayCollections() {
           onStateChange={(s) => setPanel({ mode: 'runMigration', data: s })}
           onRefetch={() => {
             void refetch().then((result) => {
-              const updated = result.data?.collections?.find((c) => c.key === (panel as { mode: 'runMigration'; data: RunMigrationPanelState }).data.collectionKey)
+              const updated = result.data?.find((c: GatewayCollection) => c.key === (panel as { mode: 'runMigration'; data: RunMigrationPanelState }).data.collectionKey)
               if (updated) {
                 setPanel((prev) => prev?.mode === 'runMigration'
                   ? { ...prev, data: { ...prev.data, afterRecordCount: updated.record_count } }
