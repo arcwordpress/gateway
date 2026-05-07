@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   useNodesState, useEdgesState,
   type Node, type Edge,
+  type ReactFlowInstance,
 } from '@xyflow/react'
 import { ReactFlow, Controls, Background, BackgroundVariant, Panel } from '@xyflow/react'
 import { JsonSchemaProp, RecordsStatus, RecordsCtxValue, RecordsCtx, FIELD_GRAPH_NODE_TYPES, AdminCollectionInfo } from '../../components/graph_node_types'
@@ -63,6 +64,9 @@ function fieldsToSchemaProps(fields: Field[]): JsonSchemaProp[] {
   })
 }
 
+// Left panel: left-4 (16px) + w-96 (384px) — permanently visible, so fitView must avoid it
+const LEFT_PANEL_RIGHT_EDGE = 400
+
 // ─── Graph component ──────────────────────────────────────────────────────────
 
 export function Graph() {
@@ -73,7 +77,56 @@ export function Graph() {
   const routeKey = collKey ? `collections-${collKey}-fields` : 'collections-unknown-fields'
   const { savedNodes, saveLayout, resetLayout } = useUserLayout(routeKey)
   const graphContainerRef = useRef<HTMLDivElement | null>(null)
+  const flowRef = useRef<ReactFlowInstance | null>(null)
   const [_graphHeightPx, setGraphHeightPx] = useState(480)
+
+  const fitToVisibleArea = useCallback(() => {
+    const instance = flowRef.current
+    const container = graphContainerRef.current
+    if (!instance || !container) return
+
+    const nodes = instance.getNodes()
+    if (nodes.length === 0) return
+
+    const cw = container.clientWidth
+    const ch = container.clientHeight
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    for (const node of nodes) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = (node as any).measured?.width ?? 200
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const h = (node as any).measured?.height ?? 80
+      minX = Math.min(minX, node.position.x)
+      minY = Math.min(minY, node.position.y)
+      maxX = Math.max(maxX, node.position.x + w)
+      maxY = Math.max(maxY, node.position.y + h)
+    }
+
+    if (!isFinite(minX)) return
+
+    const PAD = 40
+    const availW = cw - LEFT_PANEL_RIGHT_EDGE - PAD * 2
+    const availH = ch - PAD * 2
+    const contentW = maxX - minX
+    const contentH = maxY - minY
+
+    const zoom = Math.min(
+      availW / Math.max(contentW, 1),
+      availH / Math.max(contentH, 1),
+      2,
+    )
+
+    const x = LEFT_PANEL_RIGHT_EDGE + PAD + (availW - contentW * zoom) / 2 - minX * zoom
+    const y = PAD + (availH - contentH * zoom) / 2 - minY * zoom
+
+    instance.setViewport({ x, y, zoom }, { duration: 0 })
+  }, [])
+
+  const handleInit = useCallback((instance: ReactFlowInstance) => {
+    flowRef.current = instance
+    setTimeout(fitToVisibleArea, 50)
+  }, [fitToVisibleArea])
 
   const { data: adminData } = useQuery<AdminCollectionInfo | null>({
     queryKey: ['admin-data-collection', collKey],
@@ -228,10 +281,10 @@ export function Graph() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeDragStop={handleNodeDragStop}
-          fitView
+          onInit={handleInit}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} color="rgba(255,255,255,0.2)" />
-          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} />
+          <Controls position="top-right" style={{ marginTop: 80, marginRight: 16 }} onFitView={fitToVisibleArea} />
           <SharedMiniMap />
           {savedNodes !== null && (
             <Panel position="bottom-left">
