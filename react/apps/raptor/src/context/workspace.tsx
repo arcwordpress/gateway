@@ -1,7 +1,6 @@
 import { createContext, useContext } from 'react'
 
 export type WorkspaceCollection = {
-  id: number
   collection_key: string
   title: string
 }

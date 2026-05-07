@@ -2,30 +2,26 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../../lib/api'
 
-type RaptorCollection = {
-  collection_key: string
-  title: string
-  record_count: number | null
+type RegisteredCollection = {
+  key: string
+  titlePlural: string
+  record_count?: number | null
 }
 
 export default function RecordsIndex() {
   const navigate = useNavigate()
 
-  const { data, isLoading } = useQuery<{ collections: RaptorCollection[] }>({
-    queryKey: ['raptor-collections', 'with-counts'],
+  const { data, isLoading } = useQuery<RegisteredCollection[]>({
+    queryKey: ['registered-collections', 'with-counts'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/registered-collections?with_counts=1'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/collections?with_counts=1'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     },
     staleTime: 30_000,
   })
 
-  const collections = (data?.collections ?? []).map((c) => ({
-    key: c.collection_key,
-    titlePlural: c.title,
-    record_count: c.record_count,
-  }))
+  const collections = (data ?? [])
 
   return (
     <div className="h-full overflow-auto bg-[var(--app-bg)]">

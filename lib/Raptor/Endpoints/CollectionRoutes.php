@@ -143,17 +143,44 @@ class CollectionRoutes
         $registry    = \Gateway\Plugin::getInstance()->getRegistry();
         $collections = array_filter($registry->getAll(), fn($col) => !$col->isHidden());
 
-        $withCounts   = (bool) $request->get_param('with_counts');
-        $recordCounts = $withCounts ? $this->fetchRecordCounts($collections) : [];
+        $withNested = (bool) $request->get_param('with_nested');
 
-        $output = array_values(array_map(function (\Gateway\Collection $col) use ($recordCounts, $withCounts) {
-            $arr = [
-                'collection_key' => $col->getKey(),
-                'title'          => $col->getTitlePlural(),
-            ];
-            if ($withCounts) {
-                $arr['record_count'] = $recordCounts[$col->getKey()] ?? null;
+        $raptorMap = [];
+        if ($withNested) {
+            $keys = array_map(fn($col) => $col->getKey(), array_values($collections));
+            try {
+                $raptorCollections = RaptorCollection::whereIn('collection_key', $keys)->get();
+                $raptorCollections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                foreach ($raptorCollections as $rc) {
+                    $raptorMap[$rc->collection_key] = $rc;
+                }
+            } catch (\Throwable $e) {
+                // Raptor tables not yet migrated — return without nested data
             }
+        }
+
+        $output = array_values(array_map(function (\Gateway\Collection $col) use ($raptorMap, $withNested) {
+            $key    = $col->getKey();
+            $raptor = $raptorMap[$key] ?? null;
+
+            $arr = [
+                'id'             => $raptor?->id,
+                'collection_key' => $key,
+                'title'          => $col->getTitlePlural(),
+                'description'    => $raptor?->description ?? '',
+                'status'         => $raptor?->status ?? 'active',
+                'fields'         => $col->getFields(),
+                'field_list'     => null,
+                'view_list'      => null,
+                'form_list'      => null,
+            ];
+
+            if ($withNested && $raptor) {
+                $arr['field_list'] = $raptor->fieldList?->toArray();
+                $arr['view_list']  = $raptor->viewList?->toArray();
+                $arr['form_list']  = $raptor->formList?->toArray();
+            }
+
             return $arr;
         }, $collections));
 
