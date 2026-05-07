@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { router } from './router'
+import { SnackbarProvider } from './context/snackbar'
 import './styles/globals.css'
 import '@arcwp/gateway-grids/style.css'
 
@@ -31,7 +32,9 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <SnackbarProvider>
+          <RouterProvider router={router} />
+        </SnackbarProvider>
       </QueryClientProvider>
     </React.StrictMode>,
   )

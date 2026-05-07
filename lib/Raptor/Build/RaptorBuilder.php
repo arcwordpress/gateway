@@ -183,10 +183,13 @@ class RaptorBuilder
 
     /**
      * Find-or-create the RaptorExtensionFile record, then write lib/Extension.php
+     * Accessible publicly so callers (e.g. REST endpoints) can run a targeted repair.
+     *
+     * @public
      * for the extension — a thin subclass of \Gateway\Extension that registers
      * the plugin with Gateway's ExtensionRegistry.
      */
-    private function buildExtensionFile(string $pluginDir, string $namespace, RaptorExtension $extension): array
+    public function buildExtensionFile(string $pluginDir, string $namespace, RaptorExtension $extension): array
     {
         RaptorExtensionFile::firstOrCreate(['extension_id' => $extension->id]);
 

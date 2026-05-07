@@ -16,6 +16,7 @@ use Gateway\Raptor\Collections\RaptorForm;
 use Gateway\Raptor\Collections\RaptorFormField;
 use Gateway\Raptor\Collections\RaptorUserLayout;
 use Gateway\Raptor\Collections\RaptorUserLayoutNode;
+use Gateway\Raptor\Collections\RaptorExtensionFile;
 use Gateway\Raptor\Build\RaptorBuilder;
 
 if (!defined('ABSPATH')) {
@@ -160,6 +161,8 @@ class ExtensionRoutes
         $extension = $this->findOrFail($request->get_param('extension_key'));
         if ($extension instanceof \WP_REST_Response) return $extension;
 
+        $notices = $this->repairExtensionFileIfMissing($extension);
+
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->orderBy('id')
             ->get(['id', 'collection_key', 'title', 'description', 'status']);
@@ -168,7 +171,43 @@ class ExtensionRoutes
             'success'     => true,
             'extension'   => $extension->toArray(),
             'collections' => $collections->toArray(),
+            'notices'     => $notices,
         ], 200);
+    }
+
+    /**
+     * If the extension is missing its lib/Extension.php or RaptorExtensionFile record,
+     * regenerate the file silently and return a notice. Returns an empty array when
+     * nothing was needed or when the plugin directory does not yet exist.
+     */
+    private function repairExtensionFileIfMissing(RaptorExtension $extension): array
+    {
+        $builder    = new RaptorBuilder();
+        $pluginSlug = $builder->toPluginSlug($extension->extension_key);
+        $pluginDir  = WP_PLUGIN_DIR . '/' . $pluginSlug;
+
+        // Skip repair when the plugin hasn't been built yet — nothing to repair.
+        if (!is_dir($pluginDir)) {
+            return [];
+        }
+
+        $hasRecord = RaptorExtensionFile::where('extension_id', $extension->id)->exists();
+        $hasFile   = file_exists($pluginDir . '/lib/Extension.php');
+
+        if ($hasRecord && $hasFile) {
+            return [];
+        }
+
+        $namespace = !empty($extension->namespace)
+            ? $extension->namespace
+            : $builder->toNamespace($extension->extension_key);
+
+        $builder->buildExtensionFile($pluginDir, $namespace, $extension);
+
+        return [[
+            'type'    => 'info',
+            'message' => 'Extension file was missing and has been created.',
+        ]];
     }
 
     public function updateExtension(\WP_REST_Request $request): \WP_REST_Response

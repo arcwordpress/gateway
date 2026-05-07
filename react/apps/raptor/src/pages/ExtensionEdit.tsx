@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link, useParams } from '@tanstack/react-router'
 import { apiUrl, authHeaders } from '../lib/api'
+import { useSnackbar, type SnackType } from '../context/snackbar'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,11 @@ type Collection = {
   id: number
   collection_key: string
   title: string
+}
+
+type ServerNotice = {
+  type: string
+  message: string
 }
 
 type BuildResult = {
@@ -55,9 +61,13 @@ export default function ExtensionEdit() {
 
   // ── Load extension + collections ──────────────────────────────────────
 
+  const { addMessage } = useSnackbar()
+  const shownNotices = useRef(new Set<string>())
+
   const { data: extensionData, isLoading, isError } = useQuery<{
     extension: Extension
     collections: Collection[]
+    notices?: ServerNotice[]
   }>({
     queryKey: ['extensions', key],
     queryFn: async () => {
@@ -68,7 +78,16 @@ export default function ExtensionEdit() {
     enabled: !!key,
   })
 
-  const { extension, collections = [] } = extensionData ?? {}
+  const { extension, collections = [], notices = [] } = extensionData ?? {}
+
+  useEffect(() => {
+    for (const notice of notices) {
+      const dedupeKey = notice.message
+      if (shownNotices.current.has(dedupeKey)) continue
+      shownNotices.current.add(dedupeKey)
+      addMessage(notice.message, (notice.type as SnackType) || 'info')
+    }
+  }, [notices, addMessage])
 
   useEffect(() => {
     if (!extension) return
