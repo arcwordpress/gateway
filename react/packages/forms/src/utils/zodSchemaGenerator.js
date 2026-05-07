@@ -36,7 +36,7 @@ export const generateFieldSchema = (fieldName, fieldConfig = {}, options = {}) =
     fieldSchema = z.string();
   } else if (configType === 'range') {
     fieldSchema = z.coerce.number();
-  } else if (configType === 'relation') {
+  } else if (configType === 'relation' || configType === 'user') {
     fieldSchema = z.coerce.number().int().positive();
   } else if (configType === 'file' || configType === 'image') {
     fieldSchema = z.coerce.number().int().positive();
@@ -65,6 +65,8 @@ export const generateFieldSchema = (fieldName, fieldConfig = {}, options = {}) =
     if (!(configType === 'email' || fieldName.includes('email') || configType === 'url' || fieldName.includes('url') || fieldName.includes('website') || fieldName.includes('link'))) {
       if (configType === 'file' || configType === 'image') {
         fieldSchema = fieldSchema.or(z.literal('')).or(z.literal(0)).optional();
+      } else if (configType === 'user') {
+        fieldSchema = fieldSchema.or(z.literal(0)).nullable().optional();
       } else {
         fieldSchema = fieldSchema.optional();
       }
