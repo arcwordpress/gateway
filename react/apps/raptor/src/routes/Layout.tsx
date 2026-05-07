@@ -194,7 +194,7 @@ export default function Layout() {
         {/* ── Right column: content area ─────────── */} 
         <div className="flex flex-col flex-1 min-w-0 min-h-0 relative">
           {/* Outlet for pages */}
-          <div id="gateway-raptor-outlet" className="relative flex-1 overflow-hidden min-h-0">
+          <div id="gateway-raptor-outlet" className="relative flex-1 overflow-y-auto min-h-0">
             <Outlet />
           </div>
 
