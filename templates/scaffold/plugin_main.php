@@ -81,11 +81,13 @@ class Plugin {
             return;
         }
 
-        // Register extension first, then packages, collections and views when Gateway is loaded
-        add_action('gateway_loaded', [$this, 'register_extension'], 5);
-        add_action('gateway_loaded', [$this, 'register_packages']);
-        add_action('gateway_loaded', [$this, 'register_collections']);
-        add_action('gateway_loaded', [$this, 'register_views']);
+        // Register extension, packages, collections and views on the dedicated
+        // registration hook — always fires before gateway_loaded and is guaranteed
+        // to run while registries are ready but before general-purpose listeners.
+        add_action('gateway_register', [$this, 'register_extension'], 5);
+        add_action('gateway_register', [$this, 'register_packages']);
+        add_action('gateway_register', [$this, 'register_collections']);
+        add_action('gateway_register', [$this, 'register_views']);
     }
 
     /**

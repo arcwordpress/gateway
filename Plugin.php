@@ -158,6 +158,7 @@ class Plugin
         add_action('gateway_loaded', [$this, 'seedCollections'], 20);
 
         add_action('init', function () {
+            do_action('gateway_register');
             do_action('gateway_loaded');
         }, 5);
 
