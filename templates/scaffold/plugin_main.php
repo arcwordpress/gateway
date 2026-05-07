@@ -81,10 +81,18 @@ class Plugin {
             return;
         }
 
-        // Register packages, collections and views when Gateway is loaded
+        // Register extension first, then packages, collections and views when Gateway is loaded
+        add_action('gateway_loaded', [$this, 'register_extension'], 5);
         add_action('gateway_loaded', [$this, 'register_packages']);
         add_action('gateway_loaded', [$this, 'register_collections']);
         add_action('gateway_loaded', [$this, 'register_views']);
+    }
+
+    /**
+     * Register the extension with Gateway's ExtensionRegistry.
+     */
+    public function register_extension() {
+        Extension::register();
     }
 
     /**
