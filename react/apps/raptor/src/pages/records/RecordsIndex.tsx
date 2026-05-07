@@ -14,7 +14,7 @@ export default function RecordsIndex() {
   const { data, isLoading } = useQuery<RegisteredCollection[]>({
     queryKey: ['registered-collections', 'with-counts'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/collections?with_counts=1&include_private=true'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/collections?with_counts=1'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     },
