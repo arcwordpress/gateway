@@ -81,19 +81,6 @@ class Plugin {
             return;
         }
 
-        // If gateway_register has already fired (e.g. plugin activated mid-request
-        // via activate_plugin() after init has run), register immediately rather
-        // than waiting for a hook that will never fire again.
-        if (did_action('gateway_register')) {
-            $this->register_extension();
-            $this->register_packages();
-            $this->register_collections();
-            $this->register_views();
-            return;
-        }
-
-        // Normal path: hook into the dedicated registration action which fires
-        // just before gateway_loaded at init priority 5.
         add_action('gateway_register', [$this, 'register_extension'], 5);
         add_action('gateway_register', [$this, 'register_packages']);
         add_action('gateway_register', [$this, 'register_collections']);
