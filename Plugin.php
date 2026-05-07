@@ -311,30 +311,17 @@ class Plugin
     {
         $stored_version  = get_option('gateway_tables_schema', '');
         $current_version = GATEWAY_VERSION;
-
-        error_log("[Gateway] maybeRunMigrations: stored_version={$stored_version}, current_version={$current_version}");
-
         if ($stored_version === $current_version && $this->coreTablesExist()) {
-            error_log("[Gateway] maybeRunMigrations: Schema up to date and tables exist. Setting transient and returning.");
             set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
             return;
         }
 
-        error_log("[Gateway] maybeRunMigrations: Running migrations...");
         $success = Database\MigrationHooks::runCoreMigrations();
 
-        if (!$success) {
-            error_log("[Gateway] maybeRunMigrations: runCoreMigrations() returned false.");
-        }
-        if (!$this->coreTablesExist()) {
-            error_log("[Gateway] maybeRunMigrations: coreTablesExist() returned false.");
-        }
         if ($success && $this->coreTablesExist()) {
-            error_log("[Gateway] maybeRunMigrations: Migration succeeded and tables exist. Updating schema version and setting transient.");
             update_option('gateway_tables_schema', $current_version, false);
             set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
         } else {
-            error_log("[Gateway] maybeRunMigrations: Migration failed or tables missing. Setting transient to false.");
             set_transient('gateway_tables_installed', false, DAY_IN_SECONDS);
         }
     }
@@ -357,16 +344,11 @@ class Plugin
             $settings_table  = 'gateway_settings';
             $extension_table = 'gateway_raptor_extension';
             $package_table   = 'gateway_raptor_package';
-
             $has_settings  = $schema->hasTable($settings_table);
             $has_extension = $schema->hasTable($extension_table);
             $has_package   = $schema->hasTable($package_table);
-
-            error_log("[Gateway] Checking table: {$settings_table} exists? " . ($has_settings ? 'YES' : 'NO'));
-            error_log("[Gateway] Checking table: {$extension_table} exists? " . ($has_extension ? 'YES' : 'NO'));
-            error_log("[Gateway] Checking table: {$package_table} exists? " . ($has_package ? 'YES' : 'NO'));
-
             return $has_settings && $has_extension && $has_package;
+            
         } catch (\Exception $e) {
             error_log('[Gateway] Exception in coreTablesExist: ' . $e->getMessage());
             return false;
