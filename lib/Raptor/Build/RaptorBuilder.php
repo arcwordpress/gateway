@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Build;
 
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
+use Gateway\Raptor\Collections\RaptorExtensionFile;
 use Gateway\Raptor\Collections\RaptorPackage;
 use Gateway\Raptor\Collections\RaptorView;
 
@@ -172,7 +173,45 @@ class RaptorBuilder
             return ['success' => false, 'error' => 'Failed to write main plugin file.'];
         }
 
+        $extensionResult = $this->buildExtensionFile($pluginDir, $namespace, $extension);
+        if (!$extensionResult['success']) {
+            return $extensionResult;
+        }
+
         return ['success' => true, 'skipped' => false, 'plugin_file' => $pluginFile];
+    }
+
+    /**
+     * Find-or-create the RaptorExtensionFile record, then write lib/Extension.php
+     * Accessible publicly so callers (e.g. REST endpoints) can run a targeted repair.
+     *
+     * @public
+     * for the extension — a thin subclass of \Gateway\Extension that registers
+     * the plugin with Gateway's ExtensionRegistry.
+     */
+    public function buildExtensionFile(string $pluginDir, string $namespace, RaptorExtension $extension): array
+    {
+        RaptorExtensionFile::firstOrCreate(['extension_id' => $extension->id]);
+
+        $libDir = $pluginDir . '/lib';
+
+        if (!is_dir($libDir) && !wp_mkdir_p($libDir)) {
+            return ['success' => false, 'error' => 'Failed to create lib directory.'];
+        }
+
+        $templatePath = GATEWAY_PATH . 'templates/scaffold/extension_class.php';
+        if (!file_exists($templatePath)) {
+            return ['success' => false, 'error' => 'Extension class template not found.'];
+        }
+
+        $code = str_replace('{{NAMESPACE}}', $namespace, file_get_contents($templatePath));
+        $file = $libDir . '/Extension.php';
+
+        if (file_put_contents($file, $code) === false) {
+            return ['success' => false, 'error' => 'Failed to write Extension.php.'];
+        }
+
+        return ['success' => true, 'file' => $file];
     }
 
     /**

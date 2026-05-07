@@ -125,6 +125,11 @@ class RaptorExtension extends \Gateway\Collection
         ];
     }
 
+    public function extensionFile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RaptorExtensionFile::class, 'extension_id', 'id');
+    }
+
     public function packages(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(RaptorPackage::class, 'extension_id', 'id');
