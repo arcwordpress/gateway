@@ -73,67 +73,27 @@ class CollectionRoutes
 
     public function getCollections(\WP_REST_Request $request): \WP_REST_Response
     {
-        try {
-            $registeredKeys = \Gateway\Plugin::getInstance()->getRegistry()->getRegistered();
+        $registry    = \Gateway\Plugin::getInstance()->getRegistry();
+        $collections = array_filter($registry->getAll(), fn($col) => !$col->isHidden());
 
-            $query = RaptorCollection::whereIn('collection_key', $registeredKeys)
-                ->orderBy('created_at', 'asc');
+        $withCounts  = (bool) $request->get_param('with_counts');
+        $recordCounts = $withCounts ? $this->fetchRecordCounts($collections) : [];
 
-            $extensionKey = $request->get_param('extension_key');
-            if ($extensionKey) {
-                $extension = RaptorExtension::where('extension_key', sanitize_text_field($extensionKey))->first();
-                if ($extension) {
-                    $query->where('extension_id', $extension->id);
-                }
+        $output = array_values(array_map(function (\Gateway\Collection $col) use ($recordCounts, $withCounts) {
+            $arr = [
+                'collection_key' => $col->getKey(),
+                'title'          => $col->getTitlePlural(),
+            ];
+            if ($withCounts) {
+                $arr['record_count'] = $recordCounts[$col->getKey()] ?? null;
             }
+            return $arr;
+        }, $collections));
 
-            $collections = $query->get();
-
-            // Eager-load pivot relationships — wrapped so a missing table (pre-migration)
-            // degrades gracefully instead of returning 503.
-            try {
-                $collections->load('collectionRelationships.targetCollection');
-            } catch (\Throwable $e) {
-                // relationship table not yet migrated — continue without rels
-            }
-
-            if ($request->get_param('with_nested')) {
-                try {
-                    $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
-                } catch (\Throwable $e) {
-                    // nested tables not yet migrated — return without nested data
-                }
-            }
-
-            // Record counts are expensive (information_schema scan) — only fetch when requested.
-            $withCounts = (bool) $request->get_param('with_counts');
-            $recordCounts = $withCounts
-                ? $this->fetchRecordCounts($collections->pluck('collection_key')->toArray())
-                : [];
-
-            $output = $collections->map(function (RaptorCollection $col) use ($recordCounts, $withCounts) {
-                $arr = $col->toArray();
-                try {
-                    $arr['relationships'] = RelationshipController::toApiArray($col);
-                } catch (\Throwable $e) {
-                    $arr['relationships'] = [];
-                }
-                if ($withCounts) {
-                    $arr['record_count'] = $recordCounts[$col->collection_key] ?? null;
-                }
-                return $arr;
-            })->values()->all();
-
-            return new \WP_REST_Response([
-                'success'     => true,
-                'collections' => $output,
-            ], 200);
-        } catch (\Throwable $e) {
-            return new \WP_REST_Response([
-                'code'    => 'gateway_tables_missing',
-                'message' => 'Gateway database tables are not yet initialised. Check Gateway Settings.',
-            ], 503);
-        }
+        return new \WP_REST_Response([
+            'success'     => true,
+            'collections' => $output,
+        ], 200);
     }
 
     public function createCollection(\WP_REST_Request $request): \WP_REST_Response
@@ -386,25 +346,24 @@ class CollectionRoutes
      * @param  string[] $collectionKeys
      * @return array<string, int|null>
      */
-    private function fetchRecordCounts(array $collectionKeys): array
+    /**
+     * @param  \Gateway\Collection[] $collections
+     * @return array<string, int|null>
+     */
+    private function fetchRecordCounts(array $collections): array
     {
-        if (empty($collectionKeys)) {
+        if (empty($collections)) {
             return [];
         }
 
-        global $wpdb;
+        $db     = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
+        $counts = [];
 
-        $prefix = $wpdb->prefix;
-        $counts = array_fill_keys($collectionKeys, null);
-
-        $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
-
-        foreach ($collectionKeys as $key) {
-            $table = $prefix . $key;
+        foreach ($collections as $col) {
             try {
-                $counts[$key] = (int) $db->table($table)->count();
+                $counts[$col->getKey()] = (int) $db->table($col->getTable())->count();
             } catch (\Throwable $e) {
-                // Table doesn't exist yet — leave as null
+                $counts[$col->getKey()] = null;
             }
         }
 
