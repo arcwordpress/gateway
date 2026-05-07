@@ -453,4 +453,8 @@ class Plugin
 
 Plugin::getInstance();
 
-do_action('gateway_plugin_loaded');
+// Fire after all plugins have loaded so extensions sorted alphabetically
+// after "gateway" have already been included and can receive this action.
+add_action('plugins_loaded', function () {
+    do_action('gateway_plugin_loaded');
+}, 1);
