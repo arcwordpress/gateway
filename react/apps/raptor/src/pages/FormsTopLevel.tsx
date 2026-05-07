@@ -26,7 +26,6 @@ export default function FormsTopLevelPage() {
   const { data: collections = [], isLoading: isNestedLoading } = useQuery<Collection[]>({
     queryKey: COLLECTIONS_NESTED_KEY,
     queryFn: fetchCollectionsWithNested,
-    staleTime: 30_000,
   })
 
   if (isCollectionsLoading || isNestedLoading || (activeCollectionKey && activeExists)) {

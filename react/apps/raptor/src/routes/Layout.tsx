@@ -109,7 +109,6 @@ export default function Layout() {
       const json = await res.json() as { extensions?: WorkspaceExtension[] }
       return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
-    staleTime: 30_000,
   })
 
   // Once the stub list is loaded, warm the nested-collections cache in the background.
@@ -119,7 +118,6 @@ export default function Layout() {
       void queryClient.prefetchQuery({
         queryKey: COLLECTIONS_NESTED_KEY,
         queryFn: fetchCollectionsWithNested,
-        staleTime: 30_000,
       })
     }
   }, [collections.length, queryClient])

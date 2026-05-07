@@ -19,7 +19,7 @@ if (window.raptorConfig && !(window as Window & { gatewayAdminScript?: unknown }
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, staleTime: 30_000 },
+    queries: { retry: 1 },
   },
 })
 

@@ -347,7 +347,6 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
       return json.extension as ExtensionRecord
     },
     enabled: !!extKey,
-    staleTime: 30_000,
   })
 
   const isLoading = fieldsLoading || extLoading
@@ -462,7 +461,6 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
       return json.extension as Record<string, string>
     },
     enabled: !!extKey,
-    staleTime: 30_000,
   })
 
   const deleteMutation = useMutation({
@@ -573,7 +571,6 @@ export default function Graph() {
           const json = await res.json()
           return json.extension as ExtensionRecord
         },
-        staleTime: 30_000,
       })
     }
   }, [extensions, queryClient])

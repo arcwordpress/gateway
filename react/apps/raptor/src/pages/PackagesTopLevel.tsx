@@ -55,7 +55,6 @@ function useExtensions() {
       const json = await res.json() as { extensions?: ExtensionRecord[] }
       return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
-    staleTime: 30_000,
   })
 }
 
@@ -185,7 +184,6 @@ export default function PackagesTopLevel() {
       const json = await res.json()
       return (json.packages ?? []).map((p: PackageRecord) => ({ ...p, extension_id: p.extension_id !== null ? Number(p.extension_id) : null }))
     },
-    staleTime: 30_000,
   })
 
   const { data: extensions = [] } = useExtensions()

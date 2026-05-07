@@ -281,7 +281,6 @@ function ViewDesignContent({ collectionKey, viewKey }: { collectionKey: string; 
       return json.collections?.find(c => c.key === collectionKey) ?? null
     },
     enabled: !!collectionKey,
-    staleTime: 30_000,
   })
 
   const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null
