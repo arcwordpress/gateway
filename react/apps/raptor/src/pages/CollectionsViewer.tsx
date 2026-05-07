@@ -183,7 +183,7 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
     queryKey: ['packages', 'for-extension', extensionId],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
-      if (!res.ok) return []
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extensionId))
     },
@@ -336,7 +336,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     queryKey: ['packages', 'for-extension', collection?.extension_id],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
-      if (!res.ok) return []
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       const extId = collection?.extension_id
       if (!extId) return []
@@ -578,7 +578,7 @@ export default function CollectionsViewer() {
     queryKey: ['extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) return []
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.extensions as Extension[]
     },

@@ -232,7 +232,7 @@ function CreatePanel({ onClose }: { onClose: () => void }) {
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
       onClose()
     },
   })
@@ -337,7 +337,7 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
   })
 
   const { data: existing, isLoading: extLoading, isError } = useQuery<ExtensionRecord>({
-    queryKey: ['extensions', extKey],
+    queryKey: ['gateway-extensions', extKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
         headers: authHeaders(),
@@ -379,7 +379,7 @@ function EditPanel({ extKey, onClose }: { extKey: string; onClose: () => void })
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
       onClose()
     },
   })
@@ -451,7 +451,7 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
   const queryClient = useQueryClient()
 
   const { data: existing } = useQuery<Record<string, string>>({
-    queryKey: ['extensions', extKey],
+    queryKey: ['gateway-extensions', extKey],
     queryFn: async () => {
       const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
         headers: authHeaders(),
@@ -474,7 +474,7 @@ function DeletePanel({ extKey, onClose }: { extKey: string; onClose: () => void 
       return json
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
       onClose()
     },
   })
@@ -547,7 +547,7 @@ export default function Graph() {
   }, [queryClient])
 
   const { data: extensions, isLoading: isExtensionsLoading } = useQuery<Extension[]>({
-    queryKey: ['extensions'],
+    queryKey: ['gateway-extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/extensions'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -562,7 +562,7 @@ export default function Graph() {
     if (!extensions) return
     for (const ext of extensions) {
       queryClient.prefetchQuery({
-        queryKey: ['extensions', ext.key],
+        queryKey: ['gateway-extensions', ext.key],
         queryFn: async () => {
           const res = await fetch(apiUrl(`gateway/v1/extensions/${ext.key}`), {
             headers: authHeaders(),
