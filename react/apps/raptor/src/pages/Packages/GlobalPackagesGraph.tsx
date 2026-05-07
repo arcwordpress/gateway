@@ -52,11 +52,15 @@ const NODE_TYPES: NodeTypes = {
 export function GlobalPackagesGraph({
   packages,
   extensions,
+  selectedExtKey,
   onPackageSelect,
+  onExtensionSelect,
 }: {
   packages: PackageRecord[]
   extensions: ExtensionRecord[]
+  selectedExtKey?: string | null
   onPackageSelect: (key: string) => void
+  onExtensionSelect?: (extKey: string) => void
 }) {
   const computedNodes: Node[] = []
   const computedEdges: Edge[] = []
@@ -83,10 +87,15 @@ export function GlobalPackagesGraph({
     const ext = extId !== null ? extMap.get(extId) : null
     const groupNodeId = extId !== null ? `ext-${extId}` : 'ext-unassigned'
 
+    const extKey = ext?.extension_key ?? ''
     computedNodes.push({
       id: groupNodeId,
       type: 'extensionNode',
-      data: { title: ext?.title || ext?.extension_key || '', extKey: ext?.extension_key ?? '', isActive: false },
+      data: {
+        title: ext?.title || extKey || '',
+        extKey,
+        isActive: !!selectedExtKey && selectedExtKey === extKey,
+      },
       position: { x: 0, y: yOffset },
     })
 
@@ -151,6 +160,11 @@ export function GlobalPackagesGraph({
         nodeTypes={NODE_TYPES}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={(_, node) => {
+          if (node.type === 'extensionNode' && node.data.extKey && onExtensionSelect) {
+            onExtensionSelect(node.data.extKey as string)
+          }
+        }}
         fitView
       >
         <Background variant={BackgroundVariant.Dots} />
