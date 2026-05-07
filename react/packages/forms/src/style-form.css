@@ -41,6 +41,34 @@
   color: var(--gty-success);
 }
 
+.gty-form__validation-summary {
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: var(--gty-bg-hover);
+  border: 1px solid var(--gty-border-strong);
+  color: var(--gty-text);
+}
+
+.gty-form__validation-summary-title {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-faint);
+}
+
+.gty-form__validation-summary-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gty-form__validation-summary-item {
+  font-size: 0.875rem;
+  color: var(--gty-text);
+}
+
 .gty-form__submit {
   background: var(--gty-bg-hover);
   color: var(--gty-text);
