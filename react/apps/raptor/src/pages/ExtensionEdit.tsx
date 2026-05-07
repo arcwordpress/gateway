@@ -154,6 +154,8 @@ export default function ExtensionEdit() {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections-nested'] })
       queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
       queryClient.invalidateQueries({ queryKey: ['extension-fields'] })
+      queryClient.invalidateQueries({ queryKey: ['registered-collections'] })
+      queryClient.invalidateQueries({ queryKey: ['workspace-collections'] })
       void navigate({ to: '/extensions' })
     },
   })

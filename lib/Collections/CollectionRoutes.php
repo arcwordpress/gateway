@@ -48,7 +48,7 @@ class CollectionRoutes
         ]);
 
         // Get one collection by key
-        register_rest_route('gateway/v1', '/collections/(?P<key>[a-z_]+)', [
+        register_rest_route('gateway/v1', '/collections/(?P<key>[a-z0-9_]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getOne'],
             'permission_callback' => '__return_true',
