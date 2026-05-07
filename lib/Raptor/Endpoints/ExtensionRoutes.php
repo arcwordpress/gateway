@@ -169,7 +169,11 @@ class ExtensionRoutes
         $extension = $this->findOrFail($request->get_param('extension_key'));
         if ($extension instanceof \WP_REST_Response) return $extension;
 
-        $notices = $this->repairExtensionFileIfMissing($extension);
+        try {
+            $notices = $this->repairExtensionFileIfMissing($extension);
+        } catch (\Throwable $e) {
+            $notices = [];
+        }
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with(['viewList.views'])

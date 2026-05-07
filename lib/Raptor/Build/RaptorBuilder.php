@@ -191,7 +191,11 @@ class RaptorBuilder
      */
     public function buildExtensionFile(string $pluginDir, string $namespace, RaptorExtension $extension): array
     {
-        RaptorExtensionFile::firstOrCreate(['extension_id' => $extension->id]);
+        try {
+            RaptorExtensionFile::firstOrCreate(['extension_id' => $extension->id]);
+        } catch (\Throwable $e) {
+            // Table may not exist yet — non-fatal, file write proceeds.
+        }
 
         $libDir = $pluginDir . '/lib';
 

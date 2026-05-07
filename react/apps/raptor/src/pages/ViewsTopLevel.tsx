@@ -28,7 +28,6 @@ export default function ViewsTopLevelPage() {
   const { data: collections = [], isLoading: isNestedLoading } = useQuery<Collection[]>({
     queryKey: COLLECTIONS_NESTED_KEY,
     queryFn: fetchCollectionsWithNested,
-    staleTime: 30_000,
   })
 
   // Show skeleton while loading (either workspace collections or nested data)

@@ -188,7 +188,6 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
       return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extensionId))
     },
     enabled: !!extensionId,
-    staleTime: 30_000,
   })
 
   const mutation = useMutation({
@@ -344,7 +343,6 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       return (json.packages ?? []).filter((p: { extension_id: number }) => Number(p.extension_id) === Number(extId))
     },
     enabled: !!collection?.extension_id,
-    staleTime: 30_000,
   })
 
   useEffect(() => {

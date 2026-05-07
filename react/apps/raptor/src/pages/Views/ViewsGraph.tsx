@@ -97,7 +97,6 @@ export function Graph() {
       return json.collections?.find(c => c.key === collKey) ?? null
     },
     enabled: !!collKey,
-    staleTime: 30_000,
   })
 
   const getManyRoute = adminData?.routes.find(r => r.type === 'get_many')?.route ?? null

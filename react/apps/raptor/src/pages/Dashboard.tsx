@@ -126,7 +126,6 @@ export default function Dashboard() {
         const json = await res.json()
         return json.extensions
       },
-      staleTime: 30_000,
     })
     void queryClient.prefetchQuery({
       queryKey: ['extension-fields'],
@@ -169,7 +168,6 @@ export default function Dashboard() {
   const { data: collections = [], isLoading, dataUpdatedAt } = useQuery<Collection[]>({
     queryKey: COLLECTIONS_NESTED_KEY,
     queryFn: fetchCollectionsWithNested,
-    staleTime: 30_000,
   })
 
   const totalFields = collections.reduce((sum, collection) => sum + (collection.field_list?.fields.length ?? 0), 0)
