@@ -74,7 +74,10 @@ class CollectionRoutes
     public function getCollections(\WP_REST_Request $request): \WP_REST_Response
     {
         try {
-            $query = RaptorCollection::orderBy('created_at', 'asc');
+            $registeredKeys = \Gateway\Plugin::getInstance()->getRegistry()->getRegistered();
+
+            $query = RaptorCollection::whereIn('collection_key', $registeredKeys)
+                ->orderBy('created_at', 'asc');
 
             $extensionKey = $request->get_param('extension_key');
             if ($extensionKey) {
