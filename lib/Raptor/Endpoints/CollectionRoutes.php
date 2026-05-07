@@ -391,33 +391,18 @@ class CollectionRoutes
 
         global $wpdb;
 
-        // Raptor-generated migrations create tables as {wp_prefix}{collection_key}
-        // (e.g. wp_event, wp_attendee) — see MigrationGenerator::generateFromData.
-        $prefix     = $wpdb->prefix;
-        $tableNames = array_map(fn($k) => $prefix . $k, $collectionKeys);
+        $prefix = $wpdb->prefix;
+        $counts = array_fill_keys($collectionKeys, null);
 
-        $placeholders = implode(',', array_fill(0, count($tableNames), '%s'));
-        $rows = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT TABLE_NAME, TABLE_ROWS
-                 FROM information_schema.TABLES
-                 WHERE TABLE_SCHEMA = DATABASE()
-                   AND TABLE_NAME IN ($placeholders)",
-                ...$tableNames
-            ),
-            ARRAY_A
-        );
+        $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
 
-        // Build lookup keyed by table name.
-        $byTable = [];
-        foreach ((array) $rows as $row) {
-            $byTable[$row['TABLE_NAME']] = (int) $row['TABLE_ROWS'];
-        }
-
-        $counts = [];
         foreach ($collectionKeys as $key) {
-            $table          = $prefix . $key;
-            $counts[$key]   = isset($byTable[$table]) ? $byTable[$table] : null;
+            $table = $prefix . $key;
+            try {
+                $counts[$key] = (int) $db->table($table)->count();
+            } catch (\Throwable $e) {
+                // Table doesn't exist yet — leave as null
+            }
         }
 
         return $counts;
