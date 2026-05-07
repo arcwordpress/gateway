@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorFormList;
 
@@ -89,6 +90,8 @@ class FormListRoutes
             'collection_id' => $collection->id,
         ]);
 
+        RaptorBuilder::rebuildForCollection($collection);
+
         return new \WP_REST_Response([
             'success'   => true,
             'message'   => 'Form list created.',
@@ -135,7 +138,12 @@ class FormListRoutes
             return $list;
         }
 
+        $collection = RaptorCollection::find($list->collection_id);
         $list->delete();
+
+        if ($collection) {
+            RaptorBuilder::rebuildForCollection($collection);
+        }
 
         return new \WP_REST_Response([
             'success' => true,

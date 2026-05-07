@@ -2,6 +2,7 @@
 
 namespace Gateway\Raptor\Endpoints;
 
+use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Controllers\RelationshipController;
 
@@ -92,6 +93,8 @@ class RelationshipRoutes
 
             $rel = RelationshipController::create($collection, $targetKey, $type, $methodName, $foreignKey, $ownerKey);
 
+            RaptorBuilder::rebuildForCollection($collection);
+
             return new \WP_REST_Response([
                 'success'      => true,
                 'message'      => 'Relationship created.',
@@ -113,6 +116,8 @@ class RelationshipRoutes
             $id = (int) $request->get_param('id');
 
             RelationshipController::delete($id, $collection);
+
+            RaptorBuilder::rebuildForCollection($collection);
 
             return new \WP_REST_Response(['success' => true, 'message' => 'Relationship deleted.'], 200);
         } catch (\InvalidArgumentException $e) {
