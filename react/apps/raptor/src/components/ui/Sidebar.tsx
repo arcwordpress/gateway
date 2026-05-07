@@ -86,7 +86,7 @@ export default function Sidebar({
 
         <SectionLabel label="Builders" />
         <NavLink to="/fields" label="Fields" />
-        <NavLink to="/forms" label="Forms" />
+        {/* <NavLink to="/forms" label="Forms" /> */}
         {/* <NavLink to="/views" label="Views" /> */}
 
         <SectionLabel label="Records" />

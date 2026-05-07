@@ -14,12 +14,12 @@ import GraphPage from './pages/Graph'
 import CollectionsPageWithTabs from './pages/CollectionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
 import FieldsPage from './pages/Fields'
-import ViewsPage from './pages/Views'
-import ViewDesignPage from './pages/ViewDesign'
-import FormsPage from './pages/Forms'
+// import ViewsPage from './pages/Views'           // hidden — restore to re-enable
+// import ViewDesignPage from './pages/ViewDesign' // hidden — restore to re-enable
+// import FormsPage from './pages/Forms'           // hidden — restore to re-enable
 import FieldsTopLevelPage from './pages/FieldsTopLevel'
-import ViewsTopLevelPage from './pages/ViewsTopLevel'
-import FormsTopLevelPage from './pages/FormsTopLevel'
+// import ViewsTopLevelPage from './pages/ViewsTopLevel' // hidden — restore to re-enable
+// import FormsTopLevelPage from './pages/FormsTopLevel' // hidden — restore to re-enable
 import SettingsPage from './pages/Settings'
 import ConnectionSettingsPage from './pages/ConnectionSettings'
 import DocsPage from './pages/Docs'
@@ -74,17 +74,8 @@ const fieldsTopLevelRoute = createRoute({
   component: FieldsTopLevelPage,
 })
 
-const viewsTopLevelRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/views',
-  component: ViewsTopLevelPage,
-})
-
-const formsTopLevelRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/forms',
-  component: FormsTopLevelPage,
-})
+// const viewsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsTopLevelPage })
+// const formsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/forms', component: FormsTopLevelPage })
 
 export const fieldsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -105,23 +96,9 @@ const packagesRoute = createRoute({
 })
 
 
-export const viewsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections/$collectionKey/views',
-  component: ViewsPage,
-})
-
-export const viewDesignRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections/$collectionKey/views/$viewKey/design',
-  component: ViewDesignPage,
-})
-
-export const formsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections/$collectionKey/forms',
-  component: FormsPage,
-})
+// export const viewsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/collections/$collectionKey/views', component: ViewsPage })
+// export const viewDesignRoute = createRoute({ getParentRoute: () => rootRoute, path: '/collections/$collectionKey/views/$viewKey/design', component: ViewDesignPage })
+// export const formsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/collections/$collectionKey/forms', component: FormsPage })
 
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -179,14 +156,14 @@ const routeTree = rootRoute.addChildren([
   registeredCollectionsRoute,
   collectionsRelationshipsRoute,
   fieldsTopLevelRoute,
-  formsTopLevelRoute,
-  viewsTopLevelRoute,
+  // formsTopLevelRoute,
+  // viewsTopLevelRoute,
   extensionsRoute,
   packagesRoute,
   fieldsRoute,
-  formsRoute,
-  viewsRoute,
-  viewDesignRoute,
+  // formsRoute,
+  // viewsRoute,
+  // viewDesignRoute,
   settingsRoute,
   connectionSettingsRoute,
   docsRoute,
