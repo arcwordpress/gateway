@@ -1,5 +1,9 @@
 @import '../../tokens.css';
 
+.grid__title {
+  color: var(--gty-text);
+}
+
 /* Base TableView Styles */
 .table-view {
   width: 100%;
