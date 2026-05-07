@@ -399,6 +399,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
@@ -686,6 +687,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       queryClient.invalidateQueries({ queryKey: ['package-collections'] })
       onClose()
     },
@@ -775,6 +777,7 @@ function RelationshipPanel({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       onClose()
     },
   })
@@ -944,6 +947,7 @@ function DeleteRelationshipPanel({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
+      void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       onClose()
     },
   })

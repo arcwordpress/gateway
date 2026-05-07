@@ -51,7 +51,7 @@ function useExtensions() {
     queryKey: ['extensions'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) return []
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json() as { extensions?: ExtensionRecord[] }
       return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
