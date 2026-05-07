@@ -94,10 +94,10 @@ export default function Layout() {
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<WorkspaceCollection[]>({
     queryKey: ['raptor-collections'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/collection'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() })
       if (!res.ok) return []
-      const json = await res.json() as { collections?: WorkspaceCollection[] }
-      return json.collections ?? []
+      const json = await res.json() as Array<{ key: string; titlePlural: string }>
+      return json.map((c) => ({ collection_key: c.key, title: c.titlePlural }))
     },
   })
 

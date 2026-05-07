@@ -118,6 +118,7 @@ class CollectionRoutes
         try {
             $packageFilter  = $request->get_param('package');
             $includePrivate = (bool) $request->get_param('include_private');
+            $withCounts     = (bool) $request->get_param('with_counts');
             $collections    = $this->getRegistry()->getAll();
             $result         = [];
 
@@ -162,7 +163,18 @@ class CollectionRoutes
                     }
                 }
 
-                $result[] = $this->collectionToArray($collectionClass, $collection);
+                $entry = $this->collectionToArray($collectionClass, $collection);
+
+                if ($withCounts) {
+                    try {
+                        $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
+                        $entry['record_count'] = (int) $db->table($collection->getTable())->count();
+                    } catch (\Throwable $e) {
+                        $entry['record_count'] = null;
+                    }
+                }
+
+                $result[] = $entry;
             }
 
             return new \WP_REST_Response($result, 200);

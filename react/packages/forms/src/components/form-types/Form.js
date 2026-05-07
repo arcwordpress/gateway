@@ -195,6 +195,23 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
           )}
 
           <form onSubmit={methods.handleSubmit(onSubmit)} className="gty-form__fields">
+            {methods.formState.isSubmitted && Object.keys(methods.formState.errors).length > 0 && (
+              <div className="gty-form__validation-summary">
+                <p className="gty-form__validation-summary-title">Please fix the following before continuing:</p>
+                <ul className="gty-form__validation-summary-list">
+                  {Object.entries(methods.formState.errors).map(([fieldName, err]) => {
+                    const fieldDef = collection?.fields?.[fieldName];
+                    const label = fieldDef?.label || fieldName;
+                    return (
+                      <li key={fieldName} className="gty-form__validation-summary-item">
+                        <strong>{label}:</strong> {err?.message}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
             {Object.entries(collection.fields || {}).map(([fieldName, fieldDef]) => {
               // When fillable is present, honour it as a filter
               if (collection.fillable && Array.isArray(collection.fillable) && !collection.fillable.includes(fieldName)) {
