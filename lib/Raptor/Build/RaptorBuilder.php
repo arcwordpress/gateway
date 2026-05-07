@@ -433,6 +433,30 @@ PHP;
      * Trigger a full extension build for the extension that owns the given collection.
      * No-ops if the collection has no extension.
      */
+    /**
+     * Rebuild the extension that owns the given collection.
+     * Safe to call from any endpoint — swallows builder errors so the REST
+     * response is never corrupted by a build failure.
+     */
+    public static function rebuildForCollection(RaptorCollection $collection): void
+    {
+        if (!$collection->extension_id) {
+            return;
+        }
+
+        $collection->loadMissing('extension');
+
+        if (!$collection->extension) {
+            return;
+        }
+
+        try {
+            (new static())->build($collection->extension->extension_key);
+        } catch (\Throwable $e) {
+            error_log('[Gateway] Rebuild failed for collection ' . $collection->collection_key . ': ' . $e->getMessage());
+        }
+    }
+
     public function buildFromCollection(RaptorCollection $collection): ?array
     {
         if (!$collection->extension_id) {
