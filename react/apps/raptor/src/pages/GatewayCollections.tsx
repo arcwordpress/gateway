@@ -458,29 +458,16 @@ export default function GatewayCollections() {
 
   const [panel, setPanel] = useState<PanelState>(null)
 
-  const { data: registeredCollections = [] } = useQuery<GatewayCollection[]>({
+  const { data: registeredCollections = [], isLoading, isError, refetch } = useQuery<GatewayCollection[]>({
     queryKey: ['registered-collections'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      console.log('reg/res', res)
-      const items = await res.json();
-      return items ?? [];
-    },
-  });
-
-  const { data, isLoading, isError, refetch } = useQuery<{ collections: GatewayCollection[] }>({
-    queryKey: ['gateway-admin-data'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/collections?include_private=true'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
+      return res.json() ?? []
     },
   })
 
-  console.log('Gateway admin-data query result:', data);
-
-  const collections = data?.collections ?? []
+  const collections = registeredCollections
 
   const fetchExtensions = async (): Promise<MigrationExtension[]> => {
     try {
@@ -576,7 +563,7 @@ export default function GatewayCollections() {
           </div>
         )}
 
-        {!isLoading && !isError && registeredCollections.length === 0 && (
+        {!isLoading && !isError && collections.length === 0 && (
           <div className="flex items-center justify-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
             <div className="text-center">
               <p className="text-zinc-600 text-sm">No registered collections found</p>
