@@ -48,7 +48,7 @@ export function BuilderTopBar({ showPanel, onTogglePanel, viewMode, onViewModeCh
       >
         <option value="">All Collections</option>
         {collections.map((c) => (
-          <option key={c.id} value={c.collection_key}>
+          <option key={c.collection_key} value={c.collection_key}>
             {c.title}
           </option>
         ))}
