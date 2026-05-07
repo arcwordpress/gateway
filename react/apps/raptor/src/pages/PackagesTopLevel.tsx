@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
-import { useWorkspace } from '../context/workspace'
 import { BuilderLayout } from './Builders/BuilderLayout'
 import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './Packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
@@ -105,7 +104,7 @@ function ArrowIcon() {
 
 export default function PackagesTopLevel() {
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const { activeExtensionKey: selectedExtKey, setActiveExtensionKey: setSelectedExtKey } = useWorkspace()
+  const [selectedExtKey, setSelectedExtKey] = useState<string | null>(null)
   const [panel, setPanel] = useState<PanelState>(null)
 
   const { data: allPackages = [] } = useQuery<PackageRecord[]>({
