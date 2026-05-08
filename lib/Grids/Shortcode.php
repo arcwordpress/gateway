@@ -4,9 +4,25 @@ namespace Gateway\Grids;
 
 class Shortcode
 {
+    private static bool $scriptsEnqueued = false;
+
     public static function init(): void
     {
         add_shortcode('gateway_grid', [__CLASS__, 'render']);
+
+        // Detect shortcode presence early so scripts land in <head>
+        add_action('wp', [__CLASS__, 'maybeEnqueue']);
+    }
+
+    /**
+     * Enqueue grid scripts when the current post/page contains the shortcode.
+     */
+    public static function maybeEnqueue(): void
+    {
+        global $post;
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gateway_grid')) {
+            self::enqueueScripts();
+        }
     }
 
     public static function render($atts): string
@@ -24,9 +40,11 @@ class Shortcode
             return '<p><strong>Gateway Grid Error:</strong> No schema specified.</p>';
         }
 
-        $showFilters = filter_var($atts['showfilters'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+        // Fallback enqueue in case maybeEnqueue didn't fire (widget areas, etc.)
+        self::enqueueScripts();
 
-        $config = wp_json_encode(['showFilters' => $showFilters === 'true']);
+        $showFilters = filter_var($atts['showfilters'], FILTER_VALIDATE_BOOLEAN);
+        $config      = wp_json_encode(['showFilters' => $showFilters]);
 
         $idAttr    = !empty($atts['id'])    ? ' id="' . esc_attr($atts['id']) . '"'       : '';
         $classAttr = !empty($atts['class']) ? ' class="' . esc_attr($atts['class']) . '"' : '';
@@ -38,5 +56,43 @@ class Shortcode
             $idAttr,
             $classAttr
         );
+    }
+
+    private static function enqueueScripts(): void
+    {
+        if (self::$scriptsEnqueued) {
+            return;
+        }
+
+        $assetFile = GATEWAY_PATH . 'react/apps/grid/build/index.asset.php';
+
+        if (!file_exists($assetFile)) {
+            return;
+        }
+
+        $asset    = require $assetFile;
+        $buildUrl = GATEWAY_URL . 'react/apps/grid/build/';
+
+        wp_enqueue_script(
+            'gateway-grid',
+            $buildUrl . 'index.js',
+            $asset['dependencies'],
+            $asset['version'],
+            true
+        );
+
+        wp_localize_script('gateway-grid', 'wpApiSettings', [
+            'root'  => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest'),
+        ]);
+
+        wp_enqueue_style(
+            'gateway-grid',
+            $buildUrl . 'index.css',
+            [],
+            $asset['version']
+        );
+
+        self::$scriptsEnqueued = true;
     }
 }
