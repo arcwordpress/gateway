@@ -16,6 +16,8 @@ type Extension = {
   min_wp_version: string
   namespace: string
   status: string
+  migration_version: string | null
+  migrations_ran_at: string | null
 }
 
 type Collection = {
@@ -130,6 +132,8 @@ export default function ExtensionEdit() {
     },
     onSuccess: (result) => {
       setBuildResult(result)
+      // Refresh extension data so migration_version / migrations_ran_at update immediately
+      queryClient.invalidateQueries({ queryKey: ['extensions', key] })
     },
   })
 
@@ -311,7 +315,25 @@ export default function ExtensionEdit() {
 
       {/* ── Build ────────────────────────────────────────────────────────── */}
       <div className="mt-6 p-5 rounded-xl border border-zinc-700 bg-zinc-900">
-        <p className="text-sm font-medium text-zinc-200 mb-1">Build Plugin</p>
+        <div className="flex items-start justify-between mb-1">
+          <p className="text-sm font-medium text-zinc-200">Build Plugin</p>
+          {extension?.migration_version && (
+            <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+              Migrations: v{extension.migration_version}
+              {extension.migrations_ran_at && (
+                <span className="text-zinc-600">
+                  · {new Date(extension.migrations_ran_at + 'Z').toLocaleString([], {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                  })}
+                </span>
+              )}
+            </span>
+          )}
+          {!extension?.migration_version && !isLoading && (
+            <span className="text-xs text-zinc-600">No migrations run yet</span>
+          )}
+        </div>
         <p className="text-xs text-zinc-500 mb-4">
           Generates PHP collection classes and database migrations for all collections in this
           extension, then writes them to{' '}

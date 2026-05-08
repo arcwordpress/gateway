@@ -90,19 +90,27 @@ class RaptorBuilder
 
         $activationResult = $this->activatePlugin($pluginSlug);
 
+        // Record that migrations have been run for the current version.
+        $extension->update([
+            'migration_version' => $extension->version,
+            'migrations_ran_at' => current_time('mysql', true), // UTC
+        ]);
+
         return [
-            'success'          => true,
-            'plugin_slug'      => $pluginSlug,
-            'plugin_dir'       => $pluginDir,
-            'namespace'        => $namespace,
-            'scaffold'         => $scaffoldResult,
-            'packages'         => $packageResults,
-            'package_count'    => count($packageResults),
-            'collections'      => $collectionResults,
-            'collection_count' => count($collectionResults),
-            'views'            => $viewResults,
-            'view_count'       => count($viewResults),
-            'activation'       => $activationResult,
+            'success'             => true,
+            'plugin_slug'         => $pluginSlug,
+            'plugin_dir'          => $pluginDir,
+            'namespace'           => $namespace,
+            'scaffold'            => $scaffoldResult,
+            'packages'            => $packageResults,
+            'package_count'       => count($packageResults),
+            'collections'         => $collectionResults,
+            'collection_count'    => count($collectionResults),
+            'views'               => $viewResults,
+            'view_count'          => count($viewResults),
+            'activation'          => $activationResult,
+            'migration_version'   => $extension->version,
+            'migrations_ran_at'   => $extension->migrations_ran_at,
         ];
     }
 
