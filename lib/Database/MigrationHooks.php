@@ -88,6 +88,7 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorCollectionPackageKeyMigration::create();
             \Gateway\Raptor\Migrations\RaptorCollectionLabelFieldMigration::create();
             \Gateway\Raptor\Migrations\RaptorExtensionFileMigration::create();
+            \Gateway\Raptor\Migrations\RaptorExtensionMigrationTrackingMigration::create();
             return true;
         } catch (\Exception $e) {
             error_log('Gateway: runCoreMigrations failed: ' . $e->getMessage());

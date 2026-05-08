@@ -27,7 +27,9 @@ if (!defined('ABSPATH')) {
  * @property string $text_domain
  * @property string $min_wp_version
  * @property string $namespace      PHP namespace for the generated plugin
- * @property string $status         "active" | "inactive"
+ * @property string      $status              "active" | "inactive"
+ * @property string|null $migration_version   Extension version at which migrations were last run
+ * @property string|null $migrations_ran_at   UTC timestamp of last successful migration run
  *
  * @property-read \Illuminate\Database\Eloquent\Collection<RaptorPackage>    $packages
  * @property-read \Illuminate\Database\Eloquent\Collection<RaptorCollection> $collections
@@ -122,6 +124,8 @@ class RaptorExtension extends \Gateway\Collection
             'min_wp_version',
             'namespace',
             'status',
+            'migration_version',
+            'migrations_ran_at',
         ];
     }
 
