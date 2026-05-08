@@ -66,8 +66,6 @@ class License {
 				throw new \Exception( $activation->get_error_message() );
 			}
 			$this->client->settings()->activation_id = $activation->id;
-			// validate the release.
-			$this->validate_release();
 		} catch ( \Exception $e ) {
 			// undo activation.
 			$activation = $this->client->activation()->get();
