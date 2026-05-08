@@ -9,54 +9,30 @@
 
 namespace {{NAMESPACE}};
 
-// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Global constants — guard against redefinition when the file is included
-// more than once (e.g. Windows path-separator differences + activate_plugin).
 defined('{{CONSTANT_PREFIX}}_VERSION') || define('{{CONSTANT_PREFIX}}_VERSION', '1.0.0');
 defined('{{CONSTANT_PREFIX}}_DIR')     || define('{{CONSTANT_PREFIX}}_DIR',     plugin_dir_path(__FILE__));
 defined('{{CONSTANT_PREFIX}}_URL')     || define('{{CONSTANT_PREFIX}}_URL',     plugin_dir_url(__FILE__));
 
-// Register SPL autoloader FIRST, before the class is used
-spl_autoload_register(function($class) {
-    // Only autoload classes in this namespace
+spl_autoload_register(function ($class) {
     $namespace = '{{NAMESPACE}}\\';
     if (strpos($class, $namespace) !== 0) {
         return;
     }
-    
-    // Remove namespace prefix
-    $class_name = substr($class, strlen($namespace));
-    
-    // Convert namespace separators to directory separators
-    $class_name = str_replace('\\', '/', $class_name);
-    
-    // Build file path
-    $file = plugin_dir_path(__FILE__) . 'lib/' . $class_name . '.php';
-    
-    // Load the file if it exists
+    $file = plugin_dir_path(__FILE__) . 'lib/' . str_replace('\\', '/', substr($class, strlen($namespace))) . '.php';
     if (file_exists($file)) {
         require_once $file;
     }
 });
 
-/**
- * Main plugin class for {{PROJECT_NAME}}
- */
 if (!class_exists('{{NAMESPACE}}\\Plugin')) :
 class Plugin {
 
-    /**
-     * Singleton instance
-     */
     private static $instance = null;
 
-    /**
-     * Get singleton instance
-     */
     public static function instance() {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -64,19 +40,13 @@ class Plugin {
         return self::$instance;
     }
 
-    /**
-     * Constructor - initialize the plugin
-     */
     private function __construct() {
-        $this->init();
+        // Defer init until all plugins are loaded so gateway_core_active() is
+        // available regardless of plugin alphabetical order.
+        add_action('plugins_loaded', [$this, 'init'], 5);
     }
 
-    /**
-     * Initialize plugin
-     */
-    private function init() {
-        // Bail if Gateway is not running — gateway_core_active() is provided
-        // by Gateway's functions.php and returns false when the plugin is inactive.
+    public function init() {
         if (!function_exists('gateway_core_active') || !gateway_core_active()) {
             return;
         }
@@ -84,58 +54,32 @@ class Plugin {
         add_action('gateway_register', [$this, 'register_extension'], 5);
         add_action('gateway_register', [$this, 'register_packages']);
         add_action('gateway_register', [$this, 'register_collections']);
-        add_action('gateway_register', [$this, 'register_views']);
     }
 
-    /**
-     * Register the extension with Gateway's ExtensionRegistry.
-     */
     public function register_extension() {
         Extension::register();
     }
 
-    /**
-     * Register all packages from lib/Packages directory
-     */
     public function register_packages() {
         $packages_dir = plugin_dir_path(__FILE__) . 'lib/Packages';
-
         if (!is_dir($packages_dir)) {
             return;
         }
-
         foreach (glob($packages_dir . '/*.php') as $file) {
-            $filename   = basename($file, '.php');
-            $class_name = '{{NAMESPACE}}\\Packages\\' . $filename;
-
+            $class_name = '{{NAMESPACE}}\\Packages\\' . basename($file, '.php');
             if (class_exists($class_name) && method_exists($class_name, 'register')) {
                 (new $class_name())->register();
             }
         }
     }
 
-    /**
-     * Register all collections from lib/Collections directory
-     */
     public function register_collections() {
         $collections_dir = plugin_dir_path(__FILE__) . 'lib/Collections';
-        
-        // Check if Collections directory exists
         if (!is_dir($collections_dir)) {
             return;
         }
-        
-        // Get all PHP files in Collections directory
-        $collection_files = glob($collections_dir . '/*.php');
-        
-        foreach ($collection_files as $file) {
-            // Get filename without extension
-            $filename = basename($file, '.php');
-            
-            // Build fully qualified class name
-            $class_name = '{{NAMESPACE}}\\Collections\\' . $filename;
-            
-            // Check if class exists, has register method, and is toggled on
+        foreach (glob($collections_dir . '/*.php') as $file) {
+            $class_name = '{{NAMESPACE}}\\Collections\\' . basename($file, '.php');
             if (class_exists($class_name) && method_exists($class_name, 'register')) {
                 if (!isset($class_name::$registered) || $class_name::$registered) {
                     $class_name::register();
@@ -143,53 +87,8 @@ class Plugin {
             }
         }
     }
-    
-    /**
-     * Register all views from lib/Views directory
-     */
-    public function register_views() {
-        $views_dir = plugin_dir_path(__FILE__) . 'lib/Views';
-
-        if (!is_dir($views_dir)) {
-            return;
-        }
-
-        foreach (glob($views_dir . '/*.php') as $file) {
-            $filename   = basename($file, '.php');
-            $class_name = '{{NAMESPACE}}\\Views\\' . $filename;
-
-            if (class_exists($class_name) && method_exists($class_name, 'register')) {
-                $class_name::register();
-            }
-        }
-    }
 
 }
-endif; // class_exists guard
+endif;
 
-/**
- * Bootstrap: initialise once Gateway is ready.
- *
- * 'gateway_plugin_loaded' is fired synchronously at the bottom of Gateway's
- * plugin file. Because WordPress loads plugins in alphabetical order by slug,
- * an extension whose slug sorts after "gateway" will load AFTER that action
- * has already fired. The did_action() guard handles that case by bootstrapping
- * immediately instead of waiting for an action that will never fire again.
- *
- * If Gateway is not active neither branch runs, so the extension stays dormant.
- */
-if (!defined('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED')) {
-    define('{{CONSTANT_PREFIX}}_BOOTSTRAP_REGISTERED', true);
-
-    ${{CONSTANT_PREFIX}}_boot = function() {
-        if (function_exists('gateway_core_active') && gateway_core_active()) {
-            Plugin::instance();
-        }
-    };
-
-    if (did_action('gateway_plugin_loaded') || doing_action('gateway_plugin_loaded')) {
-        ${{CONSTANT_PREFIX}}_boot();
-    } else {
-        add_action('gateway_plugin_loaded', ${{CONSTANT_PREFIX}}_boot, 10);
-    }
-}
+Plugin::instance();
