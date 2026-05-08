@@ -30,6 +30,7 @@ class Shortcode
         $atts = shortcode_atts([
             'schema'      => '',
             'showfilters' => 'true',
+            'colors'      => 'light',   // 'light' or 'dark'
             'class'       => '',
             'id'          => '',
         ], $atts);
@@ -46,8 +47,11 @@ class Shortcode
         $showFilters = filter_var($atts['showfilters'], FILTER_VALIDATE_BOOLEAN);
         $config      = wp_json_encode(['showFilters' => $showFilters]);
 
-        $idAttr    = !empty($atts['id'])    ? ' id="' . esc_attr($atts['id']) . '"'       : '';
-        $classAttr = !empty($atts['class']) ? ' class="' . esc_attr($atts['class']) . '"' : '';
+        $themeClass = $atts['colors'] === 'dark' ? '' : 'gtw-light';
+        $classes    = trim($themeClass . ' ' . $atts['class']);
+
+        $idAttr    = !empty($atts['id'])  ? ' id="' . esc_attr($atts['id']) . '"'       : '';
+        $classAttr = $classes !== ''      ? ' class="' . esc_attr($classes) . '"'       : '';
 
         return sprintf(
             '<div data-gateway-grid data-schema="%s" data-config=\'%s\'%s%s></div>',
@@ -86,10 +90,26 @@ class Shortcode
             'nonce' => wp_create_nonce('wp_rest'),
         ]);
 
+        // Design tokens — CSS custom properties used by all grid/component styles.
+        // Not part of the webpack build; served directly as plain CSS.
+        wp_enqueue_style(
+            'gateway-tokens',
+            GATEWAY_URL . 'react/packages/tokens.css',
+            [],
+            GATEWAY_VERSION
+        );
+
+        wp_enqueue_style(
+            'gateway-grid-layout',
+            $buildUrl . 'style-index.css',
+            ['gateway-tokens'],
+            $asset['version']
+        );
+
         wp_enqueue_style(
             'gateway-grid',
             $buildUrl . 'index.css',
-            [],
+            ['gateway-grid-layout'],
             $asset['version']
         );
 
