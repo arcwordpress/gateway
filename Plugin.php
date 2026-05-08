@@ -438,7 +438,7 @@ class Plugin
 if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
     require_once GATEWAY_PATH . 'licensing/src/Client.php';
 }
-$_gateway_client = new \SureCart\Licensing\Client( 'Gateway', 'YOUR_PUBLIC_TOKEN_HERE', GATEWAY_FILE );
+$_gateway_client = new \SureCart\Licensing\Client( 'Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE );
 $_gateway_client->set_textdomain( 'gateway' );
 
 $_gateway_opts = get_option( 'gateway_license_options', [] );
