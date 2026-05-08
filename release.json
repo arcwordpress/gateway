@@ -9,6 +9,6 @@
   "requires_php": "7.4",
   "sections": {
     "description": "Gateway is a WordPress plugin for collection registry and data management with React-based admin interfaces.",
-    "changelog": "<h4>1.3.0 – May 8, 2026</h4><ul><li>Added SureCart licensing integration.</li></ul><h4>1.2.3-rc2 – May 6, 2026</h4><ul><li>Fixed <code>setPackageCollections</code> to sync <code>package_key</code> on each collection.</li><li>Added <code>label_field</code> column on collection table.</li></ul><h4>1.2.2 – May 5, 2026</h4><ul><li>Stable release.</li></ul>"
+    "changelog": "<h4>1.3.0 May 8, 2026</h4><ul><li>Added SureCart licensing integration.</li></ul><h4>1.2.3-rc2 May 6, 2026</h4><ul><li>Fixed <code>setPackageCollections</code> to sync <code>package_key</code> on each collection.</li><li>Added <code>label_field</code> column on collection table.</li></ul><h4>1.2.2 – May 5, 2026</h4><ul><li>Stable release.</li></ul>"
   }
 }
