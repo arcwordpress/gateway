@@ -26,31 +26,6 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
 
-// --- LICENSING (remove this entire block for community edition) ---
-add_action('init', function () {
-    if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
-        require_once GATEWAY_PATH . 'licensing/src/Client.php';
-    }
-    $client = new \SureCart\Licensing\Client( 'Gateway', 'YOUR_PUBLIC_TOKEN_HERE', GATEWAY_FILE );
-    $client->set_textdomain( 'gateway' );
-    $client->settings()->add_page([
-        'type'        => 'submenu',
-        'parent_slug' => 'gateway',
-        'page_title'  => 'Manage License',
-        'menu_title'  => 'Manage License',
-        'capability'  => 'manage_options',
-        'menu_slug'   => $client->slug . '-manage-license',
-    ]);
-    add_action('admin_notices', function () use ( $client ) {
-        if ( ! current_user_can( 'manage_options' ) || ! empty( $client->settings()->activation_id ) ) {
-            return;
-        }
-        $url = admin_url( 'admin.php?page=' . $client->slug . '-manage-license' );
-        echo '<div class="notice notice-warning"><p><strong>Gateway:</strong> <a href="' . esc_url( $url ) . '">Activate your license</a> to receive updates and support.</p></div>';
-    });
-});
-// --- END LICENSING ---
-
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
     $base_dir = GATEWAY_PATH . 'lib/';
@@ -458,6 +433,44 @@ class Plugin
         flush_rewrite_rules();
     }
 }
+
+// --- LICENSING (remove this entire block for community edition) ---
+if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
+    require_once GATEWAY_PATH . 'licensing/src/Client.php';
+}
+$_gateway_client = new \SureCart\Licensing\Client( 'Gateway', 'YOUR_PUBLIC_TOKEN_HERE', GATEWAY_FILE );
+$_gateway_client->set_textdomain( 'gateway' );
+
+$_gateway_opts = get_option( 'gateway_license_options', [] );
+
+if ( empty( $_gateway_opts['sc_activation_id'] ) ) {
+    // No active license — register a standalone activation page and stop here.
+    // Raptor never loads; the only admin UI is the license form below.
+    $_gateway_client->settings()->add_page([
+        'type'               => 'menu',
+        'page_title'         => 'Gateway — Activate License',
+        'menu_title'         => 'Gateway',
+        'capability'         => 'manage_options',
+        'menu_slug'          => 'gateway',
+        'icon_url'           => 'dashicons-admin-plugins',
+        'position'           => 30,
+        'activated_redirect' => admin_url( 'admin.php?page=gateway' ),
+    ]);
+    return; // Plugin class never instantiates.
+}
+
+// Licensed — add Manage License submenu under the normal Gateway menu.
+add_action( 'init', function () use ( $_gateway_client ) {
+    $_gateway_client->settings()->add_page([
+        'type'        => 'submenu',
+        'parent_slug' => 'gateway',
+        'page_title'  => 'Manage License',
+        'menu_title'  => 'Manage License',
+        'capability'  => 'manage_options',
+        'menu_slug'   => $_gateway_client->slug . '-manage-license',
+    ]);
+} );
+// --- END LICENSING ---
 
 Plugin::getInstance();
 
