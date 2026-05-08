@@ -2,6 +2,12 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.3.0] - 2026-05-08
+
+### Added
+- SureCart licensing integration — adds a license management page under the Gateway menu powered by the SureCart Licensing SDK.
+- `release.json` for plugin update metadata used by the SureCart update system.
+
 ## [1.2.3-rc2] - 2026-05-06
 
 ### Fixed
