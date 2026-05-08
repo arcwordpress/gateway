@@ -87,14 +87,15 @@ class AdminDataRoute
             $recordCount += $count;
 
             $collectionsData[] = [
-                'key' => $key,
-                'title' => $title,
-                'titlePlural' => $titlePlural,
-                'className' => $className,
-                'fqcn' => $fqcn,
-                'table' => $fullTableName,
-                'routes' => $collectionRoutes,
-                'record_count' => $count,
+                'key'             => $key,
+                'title'           => $title,
+                'titlePlural'     => $titlePlural,
+                'className'       => $className,
+                'fqcn'            => $fqcn,
+                'table'           => $fullTableName,
+                'routes'          => $collectionRoutes,
+                'record_count'    => $count,
+                'is_code_defined' => !empty($collection->getFields()),
             ];
         }
 

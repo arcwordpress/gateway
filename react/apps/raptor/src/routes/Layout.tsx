@@ -96,8 +96,8 @@ export default function Layout() {
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as Array<{ key: string; titlePlural: string }>
-      return json.map((c) => ({ collection_key: c.key, title: c.titlePlural }))
+      const json = await res.json() as Array<{ key: string; titlePlural: string; is_code_defined: boolean }>
+      return json.map((c) => ({ collection_key: c.key, title: c.titlePlural, is_code_defined: c.is_code_defined ?? false }))
     },
   })
 

@@ -48,8 +48,12 @@ export function BuilderTopBar({ showPanel, onTogglePanel, viewMode, onViewModeCh
       >
         <option value="">All Collections</option>
         {collections.map((c) => (
-          <option key={c.collection_key} value={c.collection_key}>
-            {c.title}
+          <option
+            key={c.collection_key}
+            value={c.collection_key}
+            disabled={c.is_code_defined}
+          >
+            {c.title}{c.is_code_defined ? ' (code-defined)' : ''}
           </option>
         ))}
       </select>
