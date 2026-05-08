@@ -403,6 +403,15 @@ class ExtensionRoutes
         foreach ($extensions as $extension) {
             foreach ($extension->collections as $col) {
                 $shortcodes[] = [
+                    'type'            => 'grid',
+                    'title'           => $col->title ?: $col->collection_key,
+                    'key'             => $col->collection_key,
+                    'shortcode'       => '[gateway_grid schema="' . $col->collection_key . '"]',
+                    'extension_key'   => $extension->extension_key,
+                    'extension_title' => $extension->title,
+                ];
+
+                $shortcodes[] = [
                     'type'            => 'form',
                     'title'           => $col->title ?: $col->collection_key,
                     'key'             => $col->collection_key,

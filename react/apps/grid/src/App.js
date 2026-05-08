@@ -102,4 +102,30 @@ const App = ({ viewKey, showFilters = true }) => {
   );
 };
 
+// Direct collection grid — no view object required
+const AppGrid = ({ collectionKey, showFilters = true }) => {
+  const enabledViews = normalizeViews(['table', 'board']);
+
+  const routes = generateRoutes({
+    viewKey: collectionKey,
+    collectionKey,
+    viewColumns: null,
+    showFilters,
+    externalFilters: {},
+    enabledViews,
+    ViewGrid,
+  });
+
+  return (
+    <Router>
+      <Routes>
+        {routes.map((route, index) => (
+          <Route key={index} path={route.path} element={route.element} />
+        ))}
+      </Routes>
+    </Router>
+  );
+};
+
+export { AppGrid };
 export default App;

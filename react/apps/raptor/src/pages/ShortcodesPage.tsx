@@ -5,7 +5,7 @@ import { apiUrl, authHeaders } from '../lib/api'
 import { useSnackbar } from '../context/snackbar'
 
 type ShortcodeEntry = {
-  type: 'view' | 'form'
+  type: 'grid' | 'view' | 'form'
   title: string
   key: string
   shortcode: string
@@ -80,11 +80,13 @@ export default function ShortcodesPage() {
                         <tr key={row.shortcode} className="hover:bg-zinc-800/40 transition-colors group">
                           <td className="px-4 py-3">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-                              row.type === 'view'
+                              row.type === 'grid'
+                                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-900/50'
+                                : row.type === 'view'
                                 ? 'bg-blue-950/60 text-blue-300 border-blue-900/50'
                                 : 'bg-purple-950/60 text-purple-300 border-purple-900/50'
                             }`}>
-                              {row.type === 'view' ? 'View' : 'Form'}
+                              {row.type === 'grid' ? 'Grid' : row.type === 'view' ? 'View' : 'Form'}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-zinc-300 text-sm">{row.title}</td>
