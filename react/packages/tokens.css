@@ -1,4 +1,6 @@
-/* Gateway Design Tokens — Dark Mode */
+/* Gateway Design Tokens */
+
+/* ── Dark mode (default) ─────────────────────────────────────────────────── */
 :root {
   /* ── Backgrounds ─────────────────────────────────── */
   --gty-bg-base:    #18181b;   /* page / deepest background */
@@ -46,7 +48,7 @@
   --gty-error-border: #7f1d1d;
 
   /* ── Admin package compat vars ───────────────────── */
-  --gty-admin-primary-color:   #e4e4e7;   /* text on dark header */
+  --gty-admin-primary-color:   #e4e4e7;
   --gty-admin-accent-color:    #3b82f6;
   --gty-admin-app-bg-color:    #18181b;
   --gty-admin-header-bg-color: #1d2327;
@@ -68,4 +70,59 @@
   --gty-space-4:  1rem;
   --gty-space-8:  2rem;
   --gty-space-16: 4rem;
+}
+
+/* ── Light mode — add class="gtw-light" to the wrapping element ──────────── */
+.gtw-light {
+  /* ── Backgrounds ─────────────────────────────────── */
+  --gty-bg-base:    #ffffff;
+  --gty-bg-surface: #f4f4f5;
+  --gty-bg-hover:   #e4e4e7;
+  --gty-bg-overlay: #d4d4d8;
+
+  /* ── Borders ─────────────────────────────────────── */
+  --gty-border:        #e4e4e7;
+  --gty-border-strong: #a1a1aa;
+  --gty-border-focus:  #3b82f6;
+
+  /* ── Text ────────────────────────────────────────── */
+  --gty-text:         #09090b;
+  --gty-text-sub:     #3f3f46;
+  --gty-text-muted:   #71717a;
+  --gty-text-faint:   #a1a1aa;
+
+  /* ── Accent (blue) ───────────────────────────────── */
+  --gty-accent:       #2563eb;
+  --gty-accent-hover: #1d4ed8;
+  --gty-accent-dim:   #3b82f6;
+
+  /* ── Links ───────────────────────────────────────── */
+  --gty-link:         #2563eb;
+  --gty-link-hover:   #1d4ed8;
+  --gty-link-visited: #7c3aed;
+
+  /* ── Semantic: success ───────────────────────────── */
+  --gty-success:        #16a34a;
+  --gty-success-bg:     #f0fdf4;
+  --gty-success-border: #bbf7d0;
+
+  /* ── Semantic: warning ───────────────────────────── */
+  --gty-warning:        #d97706;
+  --gty-warning-bg:     #fffbeb;
+  --gty-warning-border: #fde68a;
+
+  /* ── Semantic: error ─────────────────────────────── */
+  --gty-error:        #dc2626;
+  --gty-error-bg:     #fef2f2;
+  --gty-error-border: #fecaca;
+
+  /* ── Admin package compat vars ───────────────────── */
+  --gty-admin-primary-color:   #09090b;
+  --gty-admin-app-bg-color:    #ffffff;
+  --gty-admin-header-bg-color: #f4f4f5;
+
+  /* ── Grids package compat vars ───────────────────── */
+  --gty-admin-dark:         #09090b;
+  --gty-admin-light:        #71717a;
+  --gty-admin-almost-white: #f4f4f5;
 }

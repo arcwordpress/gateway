@@ -30,6 +30,7 @@ class Shortcode
         $atts = shortcode_atts([
             'schema'      => '',
             'showfilters' => 'true',
+            'colors'      => 'light',   // 'light' or 'dark'
             'class'       => '',
             'id'          => '',
         ], $atts);
@@ -46,8 +47,11 @@ class Shortcode
         $showFilters = filter_var($atts['showfilters'], FILTER_VALIDATE_BOOLEAN);
         $config      = wp_json_encode(['showFilters' => $showFilters]);
 
-        $idAttr    = !empty($atts['id'])    ? ' id="' . esc_attr($atts['id']) . '"'       : '';
-        $classAttr = !empty($atts['class']) ? ' class="' . esc_attr($atts['class']) . '"' : '';
+        $themeClass = $atts['colors'] === 'dark' ? '' : 'gtw-light';
+        $classes    = trim($themeClass . ' ' . $atts['class']);
+
+        $idAttr    = !empty($atts['id'])  ? ' id="' . esc_attr($atts['id']) . '"'       : '';
+        $classAttr = $classes !== ''      ? ' class="' . esc_attr($classes) . '"'       : '';
 
         return sprintf(
             '<div data-gateway-grid data-schema="%s" data-config=\'%s\'%s%s></div>',
