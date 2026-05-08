@@ -1,26 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { apiUrl, authHeaders } from '../../lib/api'
-
-type RegisteredCollection = {
-  key: string
-  titlePlural: string
-  record_count?: number | null
-}
+import { REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections } from '../../lib/queries'
 
 export default function RecordsIndex() {
   const navigate = useNavigate()
 
-  const { data, isLoading } = useQuery<RegisteredCollection[]>({
-    queryKey: ['registered-collections', 'with-counts'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/collections?with_counts=1'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
+  const { data, isLoading } = useQuery({
+    queryKey: [...REGISTERED_COLLECTIONS_KEY, 'with-counts'],
+    queryFn: () => fetchRegisteredCollections(true),
   })
 
-  const collections = (data ?? [])
+  const collections = data ?? []
 
   return (
     <div className="h-full overflow-auto bg-[var(--app-bg)]">
