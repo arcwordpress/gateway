@@ -86,10 +86,26 @@ class Shortcode
             'nonce' => wp_create_nonce('wp_rest'),
         ]);
 
+        // Design tokens — CSS custom properties used by all grid/component styles.
+        // Not part of the webpack build; served directly as plain CSS.
+        wp_enqueue_style(
+            'gateway-tokens',
+            GATEWAY_URL . 'react/packages/tokens.css',
+            [],
+            GATEWAY_VERSION
+        );
+
+        wp_enqueue_style(
+            'gateway-grid-layout',
+            $buildUrl . 'style-index.css',
+            ['gateway-tokens'],
+            $asset['version']
+        );
+
         wp_enqueue_style(
             'gateway-grid',
             $buildUrl . 'index.css',
-            [],
+            ['gateway-grid-layout'],
             $asset['version']
         );
 
