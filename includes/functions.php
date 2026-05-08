@@ -7,6 +7,18 @@ function gateway_core_active() {
     return class_exists('\Gateway\Plugin');
 }
 
+function gateway_license() {
+    return isset( $GLOBALS['gateway_licensing_client'] ) ? $GLOBALS['gateway_licensing_client']->license() : null;
+}
+
+function gateway_is_licensed() {
+    $license = gateway_license();
+    if ( ! $license ) {
+        return false;
+    }
+    return ! empty( $GLOBALS['gateway_licensing_client']->settings()->activation_id );
+}
+
 function gateway_extension_registry() {
     return \Gateway\Extensions\ExtensionRegistry::instance();
 }

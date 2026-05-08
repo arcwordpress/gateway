@@ -42,6 +42,23 @@ add_action('init', function () {
         'capability'  => 'manage_options',
         'menu_slug'   => $client->slug . '-manage-license',
     ]);
+
+    // Store client globally so other code can call gateway_license()->is_active() etc.
+    $GLOBALS['gateway_licensing_client'] = $client;
+
+    add_action('admin_notices', function () use ( $client ) {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        if ( ! empty( $client->settings()->activation_id ) ) {
+            return;
+        }
+        $license_url = admin_url( 'admin.php?page=' . $client->slug . '-manage-license' );
+        echo '<div class="notice notice-warning"><p>'
+            . '<strong>Gateway:</strong> '
+            . '<a href="' . esc_url( $license_url ) . '">Activate your license</a> to receive plugin updates and support.'
+            . '</p></div>';
+    });
 });
 
 spl_autoload_register(function ($class) {
