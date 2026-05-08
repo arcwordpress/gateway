@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.2.3-rc3
+ * Version: 1.3.0
  * Requires at least: 6.9
  * Requires PHP: 7.4
  * Author: ARCWP
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GATEWAY_VERSION', '1.2.3-rc3');
+define('GATEWAY_VERSION', '1.3.0');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -25,6 +25,24 @@ define('GATEWAY_REQUEST_LOG_DIR', GATEWAY_DATA_DIR . '/requests/logs');
 
 require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
+
+add_action('init', function () {
+    if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
+        require_once GATEWAY_PATH . 'licensing/src/Client.php';
+    }
+
+    $client = new \SureCart\Licensing\Client( 'Gateway', 'YOUR_PUBLIC_TOKEN_HERE', GATEWAY_FILE );
+    $client->set_textdomain( 'gateway' );
+
+    $client->settings()->add_page([
+        'type'        => 'submenu',
+        'parent_slug' => 'gateway',
+        'page_title'  => 'Manage License',
+        'menu_title'  => 'Manage License',
+        'capability'  => 'manage_options',
+        'menu_slug'   => $client->slug . '-manage-license',
+    ]);
+});
 
 spl_autoload_register(function ($class) {
     $prefix = 'Gateway\\';
