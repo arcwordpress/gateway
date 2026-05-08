@@ -394,7 +394,7 @@ class ExtensionRoutes
     public function getShortcodes(\WP_REST_Request $request): \WP_REST_Response
     {
         $extensions = RaptorExtension::where('status', 'active')
-            ->with(['collections.viewList.views'])
+            ->with(['collections'])
             ->orderBy('title')
             ->get();
 
@@ -420,18 +420,6 @@ class ExtensionRoutes
                     'extension_title' => $extension->title,
                 ];
 
-                if ($col->viewList) {
-                    foreach ($col->viewList->views as $view) {
-                        $shortcodes[] = [
-                            'type'            => 'view',
-                            'title'           => $view->title ?: $view->view_key,
-                            'key'             => $view->view_key,
-                            'shortcode'       => '[gateway_view key="' . $view->view_key . '"]',
-                            'extension_key'   => $extension->extension_key,
-                            'extension_title' => $extension->title,
-                        ];
-                    }
-                }
             }
         }
 

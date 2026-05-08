@@ -2,6 +2,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { SingleView } from '@arcwp/gateway-grids'
+import { REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections } from '../../lib/queries'
 import '@arcwp/gateway-forms/style.css'
 
 type RaptorField = { name: string; label?: string; type?: string }
@@ -11,7 +12,6 @@ type RaptorCollectionDetail = {
   label_field: string | null
   field_list?: { fields: RaptorField[] }
 }
-type GatewayCollectionRoutes = { namespace: string; route: string }
 
 export default function RecordView() {
   const { collectionKey, id } = useParams({ strict: false }) as {
@@ -31,24 +31,18 @@ export default function RecordView() {
       const json = await res.json()
       return json.collection as RaptorCollectionDetail
     },
-    staleTime: 60_000,
   })
 
-  // Gateway collection info — provides the REST routes for record fetching
-  const { data: gwRoutes } = useQuery<GatewayCollectionRoutes>({
-    queryKey: ['gateway-collection-routes', collectionKey],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/collections/${collectionKey}`), {
-        headers: authHeaders(),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return json.routes as GatewayCollectionRoutes
-    },
-    staleTime: 60_000,
+  // Route info comes from the shared registered-collections cache (CollectionRegistry).
+  // RecordsIndex already populates this — no extra network call needed when navigating normally.
+  const { data: registeredCollections } = useQuery({
+    queryKey: REGISTERED_COLLECTIONS_KEY,
+    queryFn: () => fetchRegisteredCollections(false),
   })
 
-  // Specific record — only fetched once we have route info
+  const gwRoutes = registeredCollections?.find((c) => c.key === collectionKey)?.routes ?? null
+
+  // Specific record — fetched using the route registered by the collection class
   const { data: record, isLoading: recordLoading } = useQuery<Record<string, unknown>>({
     queryKey: ['record', collectionKey, id],
     queryFn: async () => {
@@ -58,11 +52,9 @@ export default function RecordView() {
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      // Gateway record endpoints wrap the record: { success: true, data: { ...record } }
       return (json?.data ?? json) as Record<string, unknown>
     },
     enabled: !!gwRoutes?.namespace && !!gwRoutes?.route,
-    staleTime: 30_000,
   })
 
   const fields = raptorColl?.field_list?.fields ?? []
