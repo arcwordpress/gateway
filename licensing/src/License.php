@@ -66,6 +66,8 @@ class License {
 				throw new \Exception( $activation->get_error_message() );
 			}
 			$this->client->settings()->activation_id = $activation->id;
+			// validate the release.
+			$this->validate_release();
 		} catch ( \Exception $e ) {
 			// undo activation.
 			$activation = $this->client->activation()->get();
@@ -180,8 +182,7 @@ class License {
 		if ( is_wp_error( $current_release ) ) {
 			throw new \Exception( $current_release->get_error_message() );
 		}
-			// if there is no slug or it does not match.
-		if ( empty( $current_release->release_json->slug ) || $this->client->slug !== $current_release->release_json->slug ) {
+		if ( empty( $current_release->id ) ) {
 			throw new \Exception( $this->client->__( 'This license is not valid for this product.' ) );
 		}
 		return $current_release;
