@@ -59,6 +59,7 @@ class Plugin
     private $patternRegistry;
     private $viewRegistry;
     private $facetRegistry;
+    private $dbConnection = false;
 
     public static function getInstance()
     {
@@ -68,12 +69,13 @@ class Plugin
         return self::$instance;
     }
 
-    private $dbConnection = false;
-
-    private function __construct()
+    private function __construct() 
     {
-        self::$instance = $this;
+        // Lean constructor to avoid WP 6.7+ translation errors
+    }
 
+    public function boot()
+    {
         $connection_ok = get_transient('gateway_connection_ok');
 
         if ($connection_ok === false || $connection_ok === '0') {
@@ -88,7 +90,7 @@ class Plugin
         }
 
         if (!$this->dbConnection) {
-            error_log('Gateway: Database connection failed in constructor. Plugin will load in degraded mode.');
+            error_log('Gateway: Database connection failed. Plugin loading in degraded mode.');
             add_action('admin_notices', [$this, 'showConnectionNotice']);
             new Endpoints\ConnectionRoute();
             Admin\Page::init();
@@ -96,7 +98,6 @@ class Plugin
             $this->bootEloquent();
             $this->init();
         }
-
     }
 
     private function init()
@@ -121,17 +122,12 @@ class Plugin
         new Endpoints\CoreCollectionUserRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         
-        
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
 
         Database\MigrationHooks::init();
-
         $this->maybeRunMigrations();
-
-        
-
         gateway_rest_dispatch_filter();
 
         Admin\Page::init();
@@ -158,11 +154,8 @@ class Plugin
         add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
         add_action('gateway_loaded', [$this, 'seedCollections'], 20);
 
-        add_action('init', function () {
-            do_action('gateway_register');
-            do_action('gateway_loaded');
-        }, 5);
-
+        do_action('gateway_register');
+        do_action('gateway_loaded');
     }
 
     public function raptorEndpoints() 
@@ -231,18 +224,18 @@ class Plugin
     public static function getCoreCollectionMap(): array
     {
         return [
-            'wp_post'              => Collections\WP\Post::class,
-            'wp_postmeta'          => Collections\WP\PostMeta::class,
-            'wp_user'              => Collections\WP\User::class,
-            'wp_usermeta'          => Collections\WP\UserMeta::class,
-            'wp_comment'           => Collections\WP\Comment::class,
-            'wp_commentmeta'       => Collections\WP\CommentMeta::class,
-            'wp_term'              => Collections\WP\Term::class,
-            'wp_termmeta'          => Collections\WP\TermMeta::class,
-            'wp_term_taxonomy'     => Collections\WP\TermTaxonomy::class,
-            'wp_term_relationship' => Collections\WP\TermRelationship::class,
-            'wp_option'            => Collections\WP\Option::class,
-            'wp_link'              => Collections\WP\Link::class,
+            'wp_post'               => Collections\WP\Post::class,
+            'wp_postmeta'           => Collections\WP\PostMeta::class,
+            'wp_user'               => Collections\WP\User::class,
+            'wp_usermeta'           => Collections\WP\UserMeta::class,
+            'wp_comment'            => Collections\WP\Comment::class,
+            'wp_commentmeta'        => Collections\WP\CommentMeta::class,
+            'wp_term'               => Collections\WP\Term::class,
+            'wp_termmeta'           => Collections\WP\TermMeta::class,
+            'wp_term_taxonomy'      => Collections\WP\TermTaxonomy::class,
+            'wp_term_relationship'  => Collections\WP\TermRelationship::class,
+            'wp_option'             => Collections\WP\Option::class,
+            'wp_link'               => Collections\WP\Link::class,
         ];
     }
 
@@ -253,60 +246,18 @@ class Plugin
         }
     }
 
-    public function getRegistry()
-    {
-        return $this->registry;
-    }
+    public function getRegistry() { return $this->registry; }
+    public function getViewRegistry() { return $this->viewRegistry; }
+    public function getFacetRegistry(): Views\Facets\FacetRegistry { return $this->facetRegistry; }
+    public function getPackageRegistry() { return $this->packageRegistry; }
+    public function getStandardRoutes() { return $this->standardRoutes; }
+    public function getCollectionRoutes() { return $this->collectionRoutes; }
+    public function getPatternRegistry() { return $this->patternRegistry; }
+    public function getFieldTypeRegistry() { return $this->fieldTypeRegistry; }
 
-    public function getViewRegistry()
-    {
-        return $this->viewRegistry;
-    }
-
-    public function getFacetRegistry(): Views\Facets\FacetRegistry
-    {
-        return $this->facetRegistry;
-    }
-
-    public function getPackageRegistry()
-    {
-        return $this->packageRegistry;
-    }
-
-    public function getStandardRoutes()
-    {
-        return $this->standardRoutes;
-    }
-
-    public function getCollectionRoutes()
-    {
-        return $this->collectionRoutes;
-    }
-
-    public function getPatternRegistry()
-    {
-        return $this->patternRegistry;
-    }
-
-    public function getFieldTypeRegistry()
-    {
-        return $this->fieldTypeRegistry;
-    }
-
-    public static function bootEloquent()
-    {
-        Database\DatabaseConnection::boot();
-    }
-
-    public static function isSQLiteEnvironment()
-    {
-        return Database\DatabaseConnection::isSQLiteEnvironment();
-    }
-
-    public static function findSQLiteDatabase()
-    {
-        return Database\DatabaseConnection::findSQLiteDatabase();
-    }
+    public static function bootEloquent() { Database\DatabaseConnection::boot(); }
+    public static function isSQLiteEnvironment() { return Database\DatabaseConnection::isSQLiteEnvironment(); }
+    public static function findSQLiteDatabase() { return Database\DatabaseConnection::findSQLiteDatabase(); }
 
     private function maybeRunMigrations(): void
     {
@@ -332,57 +283,28 @@ class Plugin
         try {
             $capsule = Database\DatabaseConnection::getCapsule();
             if ($capsule === null) {
-                error_log('NO CAPSULE AT 305');
                 return false;
             }
 
             $schema = $capsule->getConnection()->getSchemaBuilder();
             if (!$schema || !is_object($schema)) {
-                error_log('[Gateway] Schema builder is not valid.');
                 return false;
             }
 
-            $settings_table  = 'gateway_settings';
-            $extension_table = 'gateway_raptor_extension';
-            $package_table   = 'gateway_raptor_package';
-            $has_settings  = $schema->hasTable($settings_table);
-            $has_extension = $schema->hasTable($extension_table);
-            $has_package   = $schema->hasTable($package_table);
-            return $has_settings && $has_extension && $has_package;
+            return $schema->hasTable('gateway_settings') && 
+                   $schema->hasTable('gateway_raptor_extension') && 
+                   $schema->hasTable('gateway_raptor_package');
             
         } catch (\Exception $e) {
-            error_log('[Gateway] Exception in coreTablesExist: ' . $e->getMessage());
             return false;
         }
     }
 
     public function activate()
     {
-        if (!Database\DatabaseConnection::testConnection()) {
-
-            return;
-        }
-
-        $success = Database\MigrationHooks::runCoreMigrations();
-
-        if (!$success) {
-            set_transient('gateway_tables_missing', true, DAY_IN_SECONDS);
-            return;
-        }
-
-        try {
-            $this->createDatabaseSettingsIfMissing();
-        } catch (\Exception $e) {
-            error_log('Gateway: createDatabaseSettingsIfMissing failed during activation: ' . $e->getMessage());
-        }
-
-        if (!is_dir(GATEWAY_DATA_DIR)) {
-            mkdir(GATEWAY_DATA_DIR, 0755, true);
-        }
-        if (!is_dir(GATEWAY_REQUEST_LOG_DIR)) {
-            mkdir(GATEWAY_REQUEST_LOG_DIR, 0755, true);
-        }
-
+        if (!Database\DatabaseConnection::testConnection()) { return; }
+        Database\MigrationHooks::runCoreMigrations();
+        if (!is_dir(GATEWAY_DATA_DIR)) { mkdir(GATEWAY_DATA_DIR, 0755, true); }
         flush_rewrite_rules();
     }
 
@@ -392,90 +314,56 @@ class Plugin
         echo '<div class="notice notice-error"><p>'
             . '<strong>Gateway:</strong> Cannot connect to the database. '
             . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
-            . 'to enter the correct connection details. '
-            . 'Migrations will run automatically once the connection is restored.'
+            . 'to restore the connection.'
             . '</p></div>';
-        return;        
     }
 
-    public function showMigrationNotice(): void 
-    {
-        if (get_transient('gateway_tables_missing')) {
-            echo '<div class="notice notice-warning"><p>'
-                . '<strong>Gateway:</strong> Database tables are missing . '
-                . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
-                . 'to fix the connection. Tables will be created automatically once the correct database is connected.'
-                . '</p></div>';
-        }
-    }
-
-    private function createDatabaseSettingsIfMissing()
-    {
-        $is_sqlite   = self::isSQLiteEnvironment();
-        $driver      = $is_sqlite ? 'sqlite' : 'mysql';
-        $sqlite_path = $is_sqlite ? self::findSQLiteDatabase() : '';
-
-        $settings = Collections\GatewaySettingsCollection::find(1);
-
-        if (!$settings) {
-            Collections\GatewaySettingsCollection::create([
-                'id'                    => 1,
-                'sqlite_path'           => $sqlite_path,
-                'anthropic_api_key'     => '',
-                'has_anthropic_key'     => false,
-                'is_sqlite_environment' => $is_sqlite,
-            ]);
-        }
-    }
-
-    public function deactivate()
-    {
-        flush_rewrite_rules();
-    }
+    public function deactivate() { flush_rewrite_rules(); }
 }
 
-// --- LICENSING (remove this entire block for community edition) ---
-if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
-    require_once GATEWAY_PATH . 'licensing/src/Client.php';
-}
-$_gateway_client = new \SureCart\Licensing\Client( 'Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE );
-$_gateway_client->set_textdomain( 'gateway' );
+/**
+ * DELAYED BOOTSTRAP FOR LICENSING AND CORE
+ * This moves licensing client instantiation to 'init' to prevent 
+ * early get_plugin_data() translation calls.
+ */
+add_action('init', function() {
+    // 1. Core Licensing Check
+    if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
+        require_once GATEWAY_PATH . 'licensing/src/Client.php';
+    }
+    
+    $client = new \SureCart\Licensing\Client( 'Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE );
+    $opts = get_option( 'gateway_license_options', [] );
 
-$_gateway_opts = get_option( 'gateway_license_options', [] );
+    if ( empty( $opts['sc_activation_id'] ) ) {
+        // No active license — register activation page and stop
+        $client->settings()->add_page([
+            'type'               => 'menu',
+            'page_title'         => 'Gateway — Activate License',
+            'menu_title'         => 'Gateway',
+            'capability'         => 'manage_options',
+            'menu_slug'          => 'gateway',
+            'icon_url'           => 'dashicons-admin-plugins',
+            'position'           => 30,
+            'activated_redirect' => admin_url( 'admin.php?page=gateway' ),
+        ]);
+        return;
+    }
 
-if ( empty( $_gateway_opts['sc_activation_id'] ) ) {
-    // No active license — register a standalone activation page and stop here.
-    // Raptor never loads; the only admin UI is the license form below.
-    $_gateway_client->settings()->add_page([
-        'type'               => 'menu',
-        'page_title'         => 'Gateway — Activate License',
-        'menu_title'         => 'Gateway',
-        'capability'         => 'manage_options',
-        'menu_slug'          => 'gateway',
-        'icon_url'           => 'dashicons-admin-plugins',
-        'position'           => 30,
-        'activated_redirect' => admin_url( 'admin.php?page=gateway' ),
-    ]);
-    return; // Plugin class never instantiates.
-}
-
-// Licensed — add Manage License submenu under the normal Gateway menu.
-add_action( 'init', function () use ( $_gateway_client ) {
-    $_gateway_client->settings()->add_page([
+    // 2. Licensed — Add Submenu
+    $client->settings()->add_page([
         'type'        => 'submenu',
         'parent_slug' => 'gateway',
         'page_title'  => 'Manage License',
         'menu_title'  => 'Manage License',
         'capability'  => 'manage_options',
-        'menu_slug'   => $_gateway_client->slug . '-manage-license',
+        'menu_slug'   => $client->slug . '-manage-license',
     ]);
-} );
-// --- END LICENSING ---
 
-Plugin::getInstance();
-
-// Fire after all plugins have loaded so extensions sorted alphabetically
-// after "gateway" have already been included and can receive this action.
-add_action('plugins_loaded', function () {
+    // 3. Boot the Main Plugin Logic
+    Plugin::getInstance()->boot();
+    
+    // 4. Signal that Gateway is fully ready
     do_action('gateway_plugin_loaded');
-}, 1);
+    
+}, 5);
