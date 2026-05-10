@@ -246,7 +246,6 @@ class CollectionRoutes
         $reflection = new \ReflectionClass($collection);
         if ($reflection->hasProperty('casts')) {
             $castsProp = $reflection->getProperty('casts');
-            $castsProp->setAccessible(true);
             $casts = $castsProp->getValue($collection);
         }
 

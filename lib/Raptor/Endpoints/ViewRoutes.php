@@ -306,6 +306,9 @@ class ViewRoutes
                         
                         if ($getManyRoute) {
                             $apiUrl = rest_url($getManyRoute . '?per_page=5');
+
+                            error_log('before wp_remove_get');
+
                             $response = wp_remote_get($apiUrl, [
                                 'headers' => [
                                     'X-WP-Nonce' => wp_create_nonce('wp_rest'),
