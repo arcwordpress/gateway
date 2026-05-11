@@ -113,17 +113,15 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
 
 export default function Dashboard() {
 
-  const { data: adminStats, isLoading: isAdminStatsLoading } = useQuery<AdminStats>({
-    queryKey: ['raptor-admin-stats'],
-    queryFn: async () => {
-      // Use the official CollectionRegistry for an accurate count — admin-data
-      // returns a filtered subset that misses many registered collections.
-      const [regRes, dataRes] = await Promise.all([
-        fetch(apiUrl('gateway/v1/collections?include_private=true'), { headers: authHeaders() }),
-        fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() }),
-      ])
+  const { data: collections = [], isLoading, dataUpdatedAt } = useQuery<Collection[]>({
+    queryKey: COLLECTIONS_NESTED_KEY,
+    queryFn: fetchCollectionsWithNested,
+  })
 
-      const regCollections: unknown[] = regRes.ok ? (await regRes.json() ?? []) : []
+  const { data: adminStats, isLoading: isAdminStatsLoading } = useQuery<AdminStats>({
+    queryKey: ['raptor-admin-stats', collections.length],
+    queryFn: async () => {
+      const dataRes = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
       const data: AdminDataResponse = dataRes.ok ? await dataRes.json() : {}
 
       const totalRoutes = (data.collections ?? []).reduce((sum, collection) => {
@@ -131,17 +129,12 @@ export default function Dashboard() {
       }, 0)
 
       return {
-        totalCollections: regCollections.length,
+        totalCollections: collections.length,
         totalRoutes,
         recordCount: data.record_count ?? 0,
         weeklyRequestTotals: data.weekly_request_totals ?? [],
       }
     },
-  })
-
-  const { data: collections = [], isLoading, dataUpdatedAt } = useQuery<Collection[]>({
-    queryKey: COLLECTIONS_NESTED_KEY,
-    queryFn: fetchCollectionsWithNested,
   })
 
   const totalFields = collections.reduce((sum, collection) => sum + (collection.field_list?.fields.length ?? 0), 0)
