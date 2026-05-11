@@ -19,7 +19,7 @@ export default function CreateExtensionPanelContent({ onClose }: CreateExtension
   const { data: fieldsData, isLoading, isError } = useQuery<Record<string, ExtensionField>>({
     queryKey: ['extension-fields'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension/fields'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.fields as Record<string, ExtensionField>
@@ -48,7 +48,7 @@ export default function CreateExtensionPanelContent({ onClose }: CreateExtension
 
   const mutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
-      const res = await fetch(apiUrl('gateway/v1/extensions'), {
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(data),

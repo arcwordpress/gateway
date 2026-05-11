@@ -68,6 +68,14 @@ class ExtensionRoutes
             ],
         ]);
 
+        register_rest_route('gateway/v1', '/raptor/extension/fields', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getFields'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+
         register_rest_route('gateway/v1', '/raptor/extension/registered', [
             [
                 'methods'             => 'GET',
@@ -394,6 +402,14 @@ class ExtensionRoutes
 
         $status = $result['success'] ? 200 : 422;
         return new \WP_REST_Response($result, $status);
+    }
+
+    public function getFields(\WP_REST_Request $request): \WP_REST_Response
+    {
+        return new \WP_REST_Response([
+            'success' => true,
+            'fields'  => (new RaptorExtension())->getFields(),
+        ], 200);
     }
 
     public function getRegisteredExtensions(\WP_REST_Request $request): \WP_REST_Response

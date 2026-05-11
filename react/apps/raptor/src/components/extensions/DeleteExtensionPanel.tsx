@@ -12,7 +12,7 @@ export default function DeleteExtensionPanelContent({ extKey, onClose }: DeleteE
   const { data: existing } = useQuery<Record<string, string>>({
     queryKey: ['gateway-extensions', extKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${extKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -24,7 +24,7 @@ export default function DeleteExtensionPanelContent({ extKey, onClose }: DeleteE
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${extKey}`), {
         method: 'DELETE',
         headers: authHeaders(),
       })

@@ -17,7 +17,7 @@ export default function EditExtensionPanelContent({ extKey, onClose }: EditExten
   const { data: fieldsData, isLoading: fieldsLoading } = useQuery<Record<string, ExtensionField>>({
     queryKey: ['extension-fields'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/extensions/fields'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/raptor/extension/fields'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return json.fields as Record<string, ExtensionField>
@@ -28,7 +28,7 @@ export default function EditExtensionPanelContent({ extKey, onClose }: EditExten
   const { data: existing, isLoading: extLoading, isError } = useQuery<ExtensionRecord>({
     queryKey: ['gateway-extensions', extKey],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${extKey}`), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -58,7 +58,7 @@ export default function EditExtensionPanelContent({ extKey, onClose }: EditExten
 
   const updateMutation = useMutation({
     mutationFn: async (data: Record<string, string>) => {
-      const res = await fetch(apiUrl(`gateway/v1/extensions/${extKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${extKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify(data),
