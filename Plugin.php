@@ -139,7 +139,6 @@ class Plugin
         Render\Render::init();
         Views\Render\Shortcode\Shortcode::init();
         Grids\Shortcode::init();
-        Grids\Block::init();
         Raptor\ViewRenderer::init();
         Filters\Render::init();
         Gutenberg\BlockRegistry::init();
@@ -335,9 +334,11 @@ add_action('init', function() {
     
     $client = new \SureCart\Licensing\Client( 'Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE );
     $opts = get_option( 'gateway_license_options', [] );
+    $license_required = (bool) apply_filters( 'gateway_requires_license', true );
+    $has_activation = !empty( $opts['sc_activation_id'] );
 
-    if ( empty( $opts['sc_activation_id'] ) ) {
-        // No active license — register activation page and stop
+    if ( $license_required && !$has_activation ) {
+        // Fallback only when this copy requires licensing and it's not activated.
         $client->settings()->add_page([
             'type'               => 'menu',
             'page_title'         => 'Gateway — Activate License',
@@ -351,20 +352,10 @@ add_action('init', function() {
         return;
     }
 
-    // 2. Licensed — Add Submenu
-    $client->settings()->add_page([
-        'type'        => 'submenu',
-        'parent_slug' => 'gateway',
-        'page_title'  => 'Manage License',
-        'menu_title'  => 'Manage License',
-        'capability'  => 'manage_options',
-        'menu_slug'   => $client->slug . '-manage-license',
-    ]);
-
-    // 3. Boot the Main Plugin Logic
+    // 2. Boot the Main Plugin Logic
     Plugin::getInstance()->boot();
     
-    // 4. Signal that Gateway is fully ready
+    // 3. Signal that Gateway is fully ready
     do_action('gateway_plugin_loaded');
     
 }, 5);

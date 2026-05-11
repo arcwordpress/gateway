@@ -40,11 +40,7 @@ export default function Layout() {
     const updateShellGeometry = () => {
       const wpAdminBar = document.getElementById('wpadminbar')
       const topbarHeight = isWP ? (wpAdminBar ? wpAdminBar.offsetHeight : 32) : 0
-      // Subtract 1px for the border-top applied to the root in embed mode.
-      // Without this, minHeight overflows the box-sizing: border-box root by 1px,
-      // causing a scrollbar that hides the top border line.
-      const borderOffset = isExpanded ? 0 : 1
-      const available = Math.max(window.innerHeight - topbarHeight - borderOffset, 0)
+      const available = Math.max(window.innerHeight - topbarHeight, 0)
       setBaseTopOffset(topbarHeight)
       setBaseShellHeightPx(available)
     }
@@ -56,8 +52,8 @@ export default function Layout() {
     if (root) {
       root.style.marginLeft = '-20px'
       root.style.boxSizing = 'border-box'
-      root.style.borderLeft = isExpanded ? '' : '1px solid #3f3f46'
-      root.style.borderTop = isExpanded ? '' : '1px solid #3f3f46'
+      root.style.borderLeft = ''
+      root.style.borderTop = ''
     }
 
     // Hide WordPress footer completely
@@ -177,11 +173,18 @@ export default function Layout() {
         style={
           isExpanded
             ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
-            : { height: shellHeightCss, overflow: 'hidden', backgroundColor: 'var(--app-bg)' }
+            : {
+                height: shellHeightCss,
+                overflow: 'hidden',
+                backgroundColor: 'var(--app-bg)',
+                boxSizing: 'border-box',
+                borderLeft: '1px solid #3f3f46',
+                borderTop: '1px solid #3f3f46',
+              }
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
-        <aside className="w-48 shrink-0 border-r border-zinc-800 flex flex-col self-stretch relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+        <aside className="w-48 shrink-0 border-r border-zinc-800 flex flex-col self-stretch relative z-1" style={{ backgroundColor: 'var(--app-bg)' }}>
           <div className="px-4 py-4 border-b border-zinc-800">
             <Header.Logo />
           </div>
@@ -197,7 +200,7 @@ export default function Layout() {
           </div>
 
           {/* FOOTER */}
-          <Footer className="px-6 py-2.5 border-t border-zinc-800 justify-end shrink-0 relative z-[1]" style={{ backgroundColor: 'var(--app-bg)' }}>
+          <Footer className="px-6 py-2.5 border-t border-zinc-800 justify-end shrink-0 relative z-1" style={{ backgroundColor: 'var(--app-bg)' }}>
             <Footer.Credit>Raptor v0.1.0</Footer.Credit>
           </Footer>
         </div>

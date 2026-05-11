@@ -1,8 +1,10 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InnerBlocks, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody } from '@wordpress/components';
+import { PanelBody, SelectControl, ToggleControl, TextControl } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import { BlockForm } from '@arcwp/gateway-forms';
+import { useEffect, useMemo, useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import TemplateBlock from './TemplateBlock';
 
 /**
@@ -87,7 +89,96 @@ const registerBlocks = (blocks) => {
     });
 };
 
+const GridBlockEdit = ({ attributes, setAttributes }) => {
+    const [collections, setCollections] = useState([]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const loadCollections = async () => {
+            try {
+                const data = await apiFetch({ path: '/gateway/v1/collections' });
+                if (!mounted || !Array.isArray(data)) {
+                    return;
+                }
+                setCollections(data);
+            } catch (e) {
+                if (mounted) {
+                    setCollections([]);
+                }
+            }
+        };
+
+        loadCollections();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    const options = useMemo(() => {
+        const base = [{ label: 'Select a collection', value: '' }];
+        const mapped = collections.map((collection) => ({
+            label: collection.titlePlural || collection.title || collection.key,
+            value: collection.key,
+        }));
+        return base.concat(mapped);
+    }, [collections]);
+
+    return (
+        <>
+            <InspectorControls>
+                <PanelBody title="Grid Settings" initialOpen={true}>
+                    <SelectControl
+                        label="Collection"
+                        value={attributes.schema || ''}
+                        options={options}
+                        onChange={(value) => setAttributes({ schema: value })}
+                    />
+                    <ToggleControl
+                        label="Show filters"
+                        checked={attributes.showfilters !== false}
+                        onChange={(value) => setAttributes({ showfilters: !!value })}
+                    />
+                    <SelectControl
+                        label="Color theme"
+                        value={attributes.colors || ''}
+                        options={[
+                            { label: 'Dark (default)', value: '' },
+                            { label: 'Light', value: 'light' },
+                        ]}
+                        onChange={(value) => setAttributes({ colors: value })}
+                    />
+                    <TextControl
+                        label="Extra classes"
+                        value={attributes.className || ''}
+                        onChange={(value) => setAttributes({ className: value })}
+                    />
+                    <TextControl
+                        label="Anchor ID"
+                        value={attributes.anchor || ''}
+                        onChange={(value) => setAttributes({ anchor: value })}
+                    />
+                </PanelBody>
+            </InspectorControls>
+            <ServerSideRender
+                block="gateway/grid"
+                attributes={attributes}
+            />
+        </>
+    );
+};
+
+const registerGridBlock = () => {
+    registerBlockType('gateway/grid', {
+        edit: GridBlockEdit,
+        save: () => null,
+    });
+};
+
 // Check if blocks data was passed from PHP
 if (typeof gatewayBlocks !== 'undefined' && gatewayBlocks.length > 0) {
     registerBlocks(gatewayBlocks);
 }
+
+registerGridBlock();
