@@ -193,8 +193,6 @@ export default function Dashboard() {
     },
   ]
 
-  const recentCollections = [...collections].sort((a, b) => b.id - a.id).slice(0, 5)
-
   const syncedAt = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null
@@ -257,24 +255,6 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Recent Collections */}
-      <div className="border border-zinc-700 shadow-md rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-zinc-300 !mb-6">Recent Collections</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {recentCollections.length === 0 && (
-            <p className="text-sm text-zinc-500 col-span-2">No collections available yet.</p>
-          )}
-          {recentCollections.map((collection) => (
-            <div key={collection.collection_key} className="flex flex-col gap-1 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
-              <p className="text-sm text-zinc-300 leading-snug truncate">{collection.title || collection.collection_key}</p>
-              <p className="text-xs text-zinc-600">
-                {collection.field_list?.fields.length ?? 0} fields · {collection.view_list?.views.length ?? 0} views · {collection.form_list?.forms.length ?? 0} forms
-              </p>
-            </div>
-          ))}
         </div>
       </div>
 
