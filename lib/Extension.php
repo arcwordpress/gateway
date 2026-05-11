@@ -4,6 +4,7 @@ namespace Gateway;
 class Extension
 {
     protected $key;
+    protected $title;
     protected $pluginPath;
 
     public static function register()
@@ -14,12 +15,12 @@ class Extension
 
     public function getKey()
     {
-        if ($this->key) {
-            return $this->key;
-        }
-        $className = class_basename(static::class);
-        $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
-        return $key;
+        return $this->key;
+    }
+
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     /**

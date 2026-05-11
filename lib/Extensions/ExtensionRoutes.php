@@ -38,6 +38,7 @@ class ExtensionRoutes
 
             $extensions[] = [
                 'key'         => $extension->getKey(),
+                'title'       => $extension->getTitle(),
                 'class'       => get_class($extension),
                 'class_name'  => class_basename(get_class($extension)),
                 'plugin_slug' => method_exists($extension, 'getPluginSlug') ? $extension->getPluginSlug() : null,
