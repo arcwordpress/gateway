@@ -1,1 +1,0 @@
-{"version":3,"file":"blocks/router/style-index.css","mappings":";;;AAAA;;EAEE;;AAEF;CACC,kBAAkB;AACnB","sources":["webpack://gateway-block-types/./src/blocks/router/style.css"],"sourcesContent":["/**\r\n * Frontend styles for GTX Router block\r\n */\r\n\r\n.gateway-router {\r\n\tposition: relative;\r\n}\r\n"],"names":[],"ignoreList":[],"sourceRoot":""}

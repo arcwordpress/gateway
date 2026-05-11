@@ -1,1 +1,0 @@
-{"version":3,"file":"blocks/data-loop/style-index.css","mappings":";;;AAAA;;EAEE;;AAEF;CACC,cAAc;AACf","sources":["webpack://gateway-block-types/./src/blocks/data-loop/style.css"],"sourcesContent":["/**\r\n * Frontend styles for Gateway Loop block\r\n */\r\n\r\n.gateway-data-loop-item {\r\n\tmargin: 20px 0;\r\n}\r\n"],"names":[],"ignoreList":[],"sourceRoot":""}
