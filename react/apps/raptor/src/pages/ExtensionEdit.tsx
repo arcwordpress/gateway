@@ -134,6 +134,8 @@ export default function ExtensionEdit() {
       setBuildResult(result)
       // Refresh extension data so migration_version / migrations_ran_at update immediately
       queryClient.invalidateQueries({ queryKey: ['extensions', key] })
+      queryClient.invalidateQueries({ queryKey: ['registered-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
     },
   })
 
@@ -157,6 +159,7 @@ export default function ExtensionEdit() {
       queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
       queryClient.invalidateQueries({ queryKey: ['raptor-collections-nested'] })
       queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['registered-extensions'] })
       queryClient.invalidateQueries({ queryKey: ['extension-fields'] })
       queryClient.invalidateQueries({ queryKey: ['registered-collections'] })
       queryClient.invalidateQueries({ queryKey: ['workspace-collections'] })

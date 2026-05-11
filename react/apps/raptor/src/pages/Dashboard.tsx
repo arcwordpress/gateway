@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { LayoutGrid, ArrowLeftRight, Database } from 'lucide-react'
+import { LayoutGrid, ArrowLeftRight, Database, Package } from 'lucide-react'
 import * as RechartsLib from 'recharts'
 
 // Cast to any: monorepo has dual @types/react versions (workspace root vs raptor).
@@ -16,11 +16,13 @@ type WeeklyTotal = { week: string; total: number }
 type AdminDataResponse = {
   collections?: Array<{ key?: string; routes?: unknown[] }>
   record_count?: number
+  registered_extensions_count?: number
   weekly_request_totals?: WeeklyTotal[]
 }
 
 type AdminStats = {
   totalCollections: number
+  totalRegisteredExtensions: number
   totalRoutes: number
   totalRecords: number
   weeklyRequestTotals: WeeklyTotal[]
@@ -28,6 +30,7 @@ type AdminStats = {
 
 const iconMap: Record<string, React.ReactNode> = {
   collections: <LayoutGrid className="w-5 h-5" />,
+  extensions: <Package className="w-5 h-5" />,
   routes: <ArrowLeftRight className="w-5 h-5" />,
   records: <Database className="w-5 h-5" />,
 }
@@ -119,6 +122,7 @@ export default function Dashboard() {
 
       return {
         totalCollections: collections.length,
+        totalRegisteredExtensions: data.registered_extensions_count ?? 0,
         totalRoutes,
         totalRecords: data.record_count ?? 0,
         weeklyRequestTotals: data.weekly_request_totals ?? [],
@@ -132,6 +136,13 @@ export default function Dashboard() {
       value: String(adminStats?.totalCollections ?? 0),
       delta: 'All registered (code + UI)',
       iconKey: 'collections',
+      isLoading: isAdminStatsLoading,
+    },
+    {
+      label: 'Extensions',
+      value: String(adminStats?.totalRegisteredExtensions ?? 0),
+      delta: 'Built and active',
+      iconKey: 'extensions',
       isLoading: isAdminStatsLoading,
     },
     {
@@ -157,7 +168,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}

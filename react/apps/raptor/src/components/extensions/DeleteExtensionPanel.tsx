@@ -33,7 +33,10 @@ export default function DeleteExtensionPanelContent({ extKey, onClose }: DeleteE
       return json
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
       queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['registered-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
       onClose()
     },
   })

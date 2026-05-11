@@ -58,7 +58,10 @@ export default function CreateExtensionPanelContent({ onClose }: CreateExtension
       return json
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
       queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['registered-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
       onClose()
     },
   })

@@ -68,6 +68,14 @@ class ExtensionRoutes
             ],
         ]);
 
+        register_rest_route('gateway/v1', '/raptor/extension/registered', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'getRegisteredExtensions'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+        ]);
+
         register_rest_route('gateway/v1', '/raptor/extension/(?P<extension_key>[a-zA-Z0-9_\-]+)', [
             [
                 'methods'             => 'GET',
@@ -388,6 +396,32 @@ class ExtensionRoutes
         return new \WP_REST_Response($result, $status);
     }
 
+    public function getRegisteredExtensions(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $registry   = \Gateway\Extensions\ExtensionRegistry::instance();
+        $extensions = $this->normalizeRegisteredExtensions($registry->getAll());
+
+        usort($extensions, function ($left, $right) {
+            return strcmp($left->getKey(), $right->getKey());
+        });
+
+        $payload = array_map(function ($extension) {
+            return [
+                'key'         => $extension->getKey(),
+                'class'       => get_class($extension),
+                'class_name'  => class_basename(get_class($extension)),
+                'plugin_slug' => method_exists($extension, 'getPluginSlug') ? $extension->getPluginSlug() : null,
+                'plugin_path' => method_exists($extension, 'getPluginPath') ? $extension->getPluginPath() : null,
+            ];
+        }, $extensions);
+
+        return new \WP_REST_Response([
+            'success'    => true,
+            'total'      => count($payload),
+            'extensions' => $payload,
+        ], 200);
+    }
+
     /**
      * Return all shortcodes across every active extension — used when a specific
      * extension's plugin is not active and we fall back to the global list.
@@ -447,6 +481,33 @@ class ExtensionRoutes
         }
 
         return $collections;
+    }
+
+    /**
+     * @param array<int,mixed> $entries
+     * @return array<int,\Gateway\Extension>
+     */
+    private function normalizeRegisteredExtensions(array $entries): array
+    {
+        $extensions = [];
+
+        foreach ($entries as $entry) {
+            if (is_object($entry)) {
+                $extension = $entry;
+            } elseif (is_string($entry) && class_exists($entry)) {
+                $extension = new $entry();
+            } else {
+                continue;
+            }
+
+            if (!$extension instanceof \Gateway\Extension) {
+                continue;
+            }
+
+            $extensions[] = $extension;
+        }
+
+        return $extensions;
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

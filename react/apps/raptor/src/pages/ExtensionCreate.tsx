@@ -43,6 +43,8 @@ export default function ExtensionCreate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['registered-extensions'] })
+      queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
       void navigate({ to: '/extensions' })
     },
   })

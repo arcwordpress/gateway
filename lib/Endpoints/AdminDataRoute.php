@@ -2,6 +2,7 @@
 
 namespace Gateway\Endpoints;
 
+use Gateway\Extensions\ExtensionRegistry;
 use Gateway\Plugin;
 use Gateway\REST\RequestLog;
 
@@ -32,7 +33,15 @@ class AdminDataRoute
 
     public function getData($request)
     {
+        /*
+         * 
+         * We have several registries now, this was the first one and was likely named as simply "registry" referring to collections register.
+         * 
+         */
         $registry = Plugin::getInstance()->getRegistry();
+
+        error_log(print_r($registry,1));
+
         $standardRoutes = Plugin::getInstance()->getStandardRoutes();
 
         // Get all collections
@@ -102,6 +111,7 @@ class AdminDataRoute
         return [
             'collections' => $collectionsData,
             'record_count' => $recordCount,
+            'registered_extensions_count' => ExtensionRegistry::instance()->count(),
             'weekly_request_totals' => RequestLog::getWeeklyRequestTotals(),
         ];
     }

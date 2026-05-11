@@ -68,6 +68,7 @@ export default function EditExtensionPanelContent({ extKey, onClose }: EditExten
       return json
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
       queryClient.invalidateQueries({ queryKey: ['gateway-extensions'] })
       onClose()
     },

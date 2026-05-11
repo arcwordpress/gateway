@@ -9,7 +9,7 @@ import {
 import { appConfig } from './config'
 import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
-import GraphPage from './pages/Graph'
+import ExtensionsGraphPage from './pages/ExtensionsGraph'
 // import CollectionsPage from './pages/Collections'
 import CollectionsPageWithTabs from './pages/CollectionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
@@ -90,7 +90,7 @@ export const fieldsRoute = createRoute({
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions',
-  component: GraphPage,
+  component: ExtensionsGraphPage,
 })
 
 export const extensionShortcodesRoute = createRoute({
