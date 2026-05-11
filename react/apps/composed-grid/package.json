@@ -1,0 +1,20 @@
+{
+  "name": "composed-grid",
+  "version": "1.0.0",
+  "description": "Proof-of-concept app exercising the GridLayout compound exports",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "wp-scripts build src/index.js --output-path=build",
+    "start": "wp-scripts start src/index.js --output-path=build"
+  },
+  "dependencies": {
+    "@arcwp/gateway-data": "file:../../packages/data",
+    "@arcwp/gateway-grids": "file:../../packages/grids",
+    "@wordpress/element": "^5.20.0",
+    "axios": "^1.6.2",
+    "react-router-dom": "^6.20.0"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^26.16.0"
+  }
+}

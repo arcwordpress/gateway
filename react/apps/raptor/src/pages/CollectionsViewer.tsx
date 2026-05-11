@@ -661,8 +661,6 @@ export default function CollectionsViewer() {
             onEdit:   () => openEdit(col.collection_key),
             onDelete: () => openDelete(col.collection_key),
             onNavigateFields: () => navigate({ to: `/collections/${col.collection_key}/fields` }),
-            onNavigateViews:  () => navigate({ to: `/collections/${col.collection_key}/views` }),
-            onNavigateForms:  () => navigate({ to: `/collections/${col.collection_key}/forms` }),
           },
           position: { x: 0, y: 0 },
         })

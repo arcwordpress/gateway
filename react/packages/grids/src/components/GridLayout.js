@@ -1,0 +1,41 @@
+import Grid from './Grid';
+import GridFilters from './GridFilters';
+import GridPagination from './GridPagination';
+import TableView from './view-types/TableView';
+import ListView from './view-types/ListView';
+import CardsView from './view-types/CardsView';
+import SingleView from './SingleView';
+import Modal from './Dialog';
+import ViewSwitcher from './ViewSwitcher';
+import Filter from './Filter';
+import FilterGroup from './Filters';
+import SearchFilter from './filter-types/text/TextFilter';
+import SelectFilter from './filter-types/select/SelectFilter';
+import DateFilter from './filter-types/date_range/DateRangeFilter';
+import RangeFilter from './filter-types/range/RangeFilter';
+import CheckboxFacet from './filter-types/checkbox/CheckboxFacet';
+
+const GridLayout = (props) => <Grid {...props} />;
+
+GridLayout.displayName = 'GridLayout';
+GridLayout.Pagination = GridPagination;
+GridLayout.Facets = GridFilters;
+GridLayout.Filters = GridFilters;
+GridLayout.Table = TableView;
+GridLayout.TableView = TableView;
+GridLayout.List = ListView;
+GridLayout.ListView = ListView;
+GridLayout.Cards = CardsView;
+GridLayout.CardsView = CardsView;
+GridLayout.SingleView = SingleView;
+GridLayout.Modal = Modal;
+GridLayout.ViewSwitcher = ViewSwitcher;
+GridLayout.Filter = Filter;
+GridLayout.FilterGroup = FilterGroup;
+GridLayout.SearchFilter = SearchFilter;
+GridLayout.SelectFilter = SelectFilter;
+GridLayout.DateFilter = DateFilter;
+GridLayout.RangeFilter = RangeFilter;
+GridLayout.CheckboxFacet = CheckboxFacet;
+
+export default GridLayout;

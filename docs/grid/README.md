@@ -125,6 +125,7 @@ react/block-types/src/blocks/gateway-grid/
 
 ## Related
 
+- [Composable Grid Layout](./COMPOSABLE_LAYOUT.md) - new namespaced GridLayout API for modular composition
 - [Grid Column Configuration](../grid-configuration.md) — defining `$grid` columns on a PHP Collection class
 - [Collection REST routes](../COLLECTION-REFERENCE.md) — how collection endpoints are registered
 - `lib/Collections/CollectionRoutes.php` — PHP class that registers the REST routes the store fetches from

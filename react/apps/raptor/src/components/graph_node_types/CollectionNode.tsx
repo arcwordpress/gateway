@@ -12,8 +12,6 @@ export type CollNodeType = Node<
     onEdit?: () => void
     onDelete?: () => void
     onNavigateFields?: () => void
-    onNavigateViews?: () => void
-    onNavigateForms?: () => void
   },
   'collectionNode'
 >
@@ -122,7 +120,7 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
       )}
 
       {/* Navigation buttons */}
-      {(data.onNavigateFields || data.onNavigateViews || data.onNavigateForms) && (
+      {data.onNavigateFields && (
         <div
           style={{
             display: 'flex',
@@ -132,8 +130,6 @@ export function CollectionNode({ data }: NodeProps<CollNodeType>) {
         >
           {[
             { label: 'Fields', fn: data.onNavigateFields },
-            { label: 'Views',  fn: data.onNavigateViews },
-            { label: 'Forms',  fn: data.onNavigateForms },
           ].map(({ label, fn }, i, arr) =>
             fn ? (
               <button

@@ -82,6 +82,31 @@ function MyAdminPage() {
 }
 ```
 
+#### Compound Layout Exports
+
+If you want a namespaced, composable surface without changing existing `Grid` usage, use `GridLayout` and its child exports:
+
+```jsx
+import { GridLayout } from '@arcwp/gateway-grids';
+
+function CustomGridShell({ table, filters, values, setValues, data }) {
+  return (
+    <GridLayout collectionKey="tickets">
+      <GridLayout.Pagination table={table} />
+      <GridLayout.Facets
+        filters={filters}
+        values={values}
+        onChange={setValues}
+        data={data}
+        isOpen={true}
+      />
+    </GridLayout>
+  );
+}
+```
+
+`Grid`, `TableView`, `ListView`, `CardsView`, and the existing filter exports remain available exactly as before.
+
 #### Using DataTable Directly
 
 If you want more control and fetch your own data:
