@@ -23,7 +23,7 @@ export default function ExtensionShortcodes() {
   const [copiedText, setCopiedText] = useState<string | null>(null)
 
   const { data: collections = [], isLoading: allLoading } = useQuery({
-    queryKey: [...REGISTERED_COLLECTIONS_KEY, 'shortcodes', 'extension', key],
+    queryKey: REGISTERED_COLLECTIONS_KEY,
     queryFn: () => fetchRegisteredCollections(false),
     enabled: !!key,
     staleTime: 60_000,
@@ -60,10 +60,10 @@ export default function ExtensionShortcodes() {
         </Link>
         <div className="flex items-start justify-between mt-3">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-100">
+            <h1 className="text-2xl font-semibold text-zinc-100 mb-2!">
               {key}
             </h1>
-            <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
+            <p className="text-xs text-zinc-600 font-mono mt-0!">{key}</p>
           </div>
           <div className="flex items-center gap-1 mt-1">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -114,7 +114,7 @@ function ShortcodeTable({
   onCopy: (text: string) => void
 }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="border border-zinc-800 rounded-xl overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800">

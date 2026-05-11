@@ -17,7 +17,7 @@ export default function ShortcodesPage() {
   const [copiedText, setCopiedText] = useState<string | null>(null)
 
   const { data: collections = [], isLoading } = useQuery({
-    queryKey: [...REGISTERED_COLLECTIONS_KEY, 'shortcodes'],
+    queryKey: REGISTERED_COLLECTIONS_KEY,
     queryFn: () => fetchRegisteredCollections(false),
     staleTime: 60_000,
     gcTime: 5 * 60_000,
@@ -53,8 +53,8 @@ export default function ShortcodesPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-xl font-semibold text-zinc-100 mb-1">Shortcodes</h1>
-      <p className="text-sm text-zinc-500 mb-6">All shortcodes available from active extensions.</p>
+      <h1 className="text-3xl! font-semibold text-zinc-100 mb-4!">Shortcodes</h1>
+      <p className="text-sm text-zinc-500 mb-12">All shortcodes available from registered collections.</p>
 
       {isLoading ? (
         <div className="space-y-2">
@@ -68,10 +68,10 @@ export default function ShortcodesPage() {
         <div className="space-y-6">
           {Object.entries(grouped).map(([ek, group]) => (
             <div key={ek}>
-              <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2 px-1">
+              <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-8! px-1">
                 {group.title}
               </h2>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+              <div className="border border-zinc-800 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-zinc-800">

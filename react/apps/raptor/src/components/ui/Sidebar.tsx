@@ -87,6 +87,7 @@ export default function Sidebar({
         <SectionLabel label="Builders" />
         <NavLink to="/fields" label="Fields" />
         <NavLink to="/shortcodes" label="Shortcodes" />
+        <NavLink to="/blocks" label="Blocks" />
         {/* <NavLink to="/forms" label="Forms" /> */}
         {/* <NavLink to="/views" label="Views" /> */}
 

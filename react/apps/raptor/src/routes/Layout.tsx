@@ -8,7 +8,7 @@ import Sidebar from '../components/ui/Sidebar'
 import { AppContext } from '../context/app'
 import { WorkspaceContext, WorkspaceCollection, WorkspaceExtension } from '../context/workspace'
 import { apiUrl, authHeaders } from '../lib/api'
-import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
+import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested, REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections, type RegisteredCollection } from '../lib/queries'
 
 // ─── Root layout ───────────────────────────────────────────────────────────
 //
@@ -87,14 +87,29 @@ export default function Layout() {
     }
   }, [])
 
-  const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<WorkspaceCollection[]>({
-    queryKey: ['workspace-collections'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/collections'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as Array<{ key: string; titlePlural: string; is_code_defined: boolean }>
-      return json.map((c) => ({ collection_key: c.key, title: c.titlePlural, is_code_defined: c.is_code_defined ?? false }))
-    },
+  const shouldLoadExtensions =
+    pathname === '/' ||
+    pathname.startsWith('/extensions') ||
+    pathname.startsWith('/packages') ||
+    pathname.startsWith('/collections')
+
+  const shouldLoadCollections =
+    pathname === '/fields' ||
+    pathname === '/forms' ||
+    pathname === '/views' ||
+    /^\/collections\/[^/]+\/(fields|forms|views)/.test(pathname)
+
+  const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<RegisteredCollection[], Error, WorkspaceCollection[]>({
+    queryKey: REGISTERED_COLLECTIONS_KEY,
+    queryFn: () => fetchRegisteredCollections(false),
+    enabled: shouldLoadCollections,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    select: (json) => json.map((c) => ({
+      collection_key: c.key,
+      title: c.titlePlural || c.title || c.key,
+      is_code_defined: true,
+    })),
   })
 
   const { data: extensions = [], isLoading: isExtensionsLoading } = useQuery<WorkspaceExtension[]>({
@@ -105,18 +120,21 @@ export default function Layout() {
       const json = await res.json() as { extensions?: WorkspaceExtension[] }
       return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
+    enabled: shouldLoadExtensions,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   })
 
   // Once the stub list is loaded, warm the nested-collections cache in the background.
   // prefetchQuery is a no-op if the data is already fresh (staleTime: 30s).
   useEffect(() => {
-    if (collections.length > 0) {
+    if (shouldLoadCollections && collections.length > 0) {
       void queryClient.prefetchQuery({
         queryKey: COLLECTIONS_NESTED_KEY,
         queryFn: fetchCollectionsWithNested,
       })
     }
-  }, [collections.length, queryClient])
+  }, [shouldLoadCollections, collections.length, queryClient])
 
   useEffect(() => {
     const saved = window.localStorage.getItem('raptor.activeCollectionKey')

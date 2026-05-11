@@ -20,7 +20,7 @@ import {
 	Button,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import './editor.css';
 import './style.css';
@@ -43,14 +43,6 @@ registerBlockType( metadata.name, {
 		const [ error, setError ] = useState( null );
 
 		const blockProps = useBlockProps( { className: 'gateway-grid' } );
-
-		useEffect( () => {
-			setAttributes( {
-				previewTotalCount:    data.length,
-				previewFilteredCount: data.length,
-				previewIsConfigured:  !! collectionSlug && ! loading && ! error,
-			} );
-		}, [ data.length, collectionSlug, loading, error ] );
 
 		useEffect( () => {
 			const load = async () => {
@@ -114,6 +106,38 @@ registerBlockType( metadata.name, {
 			loadData( collectionSlug );
 		}, [ collectionSlug, loadData ] );
 
+		const previewColumns = useMemo( () => {
+			if ( ! Array.isArray( data ) || data.length === 0 || typeof data[ 0 ] !== 'object' || data[ 0 ] === null ) {
+				return [];
+			}
+
+			return Object.keys( data[ 0 ] ).slice( 0, 8 );
+		}, [ data ] );
+
+		const previewRows = useMemo( () => {
+			if ( ! Array.isArray( data ) ) {
+				return [];
+			}
+
+			return data.slice( 0, 10 );
+		}, [ data ] );
+
+		const formatValue = ( value ) => {
+			if ( value === null || value === undefined ) {
+				return '';
+			}
+
+			if ( typeof value === 'object' ) {
+				try {
+					return JSON.stringify( value );
+				} catch ( jsonError ) {
+					return String( value );
+				}
+			}
+
+			return String( value );
+		};
+
 		const collectionOptions = [
 			{ label: __( 'Select a collection…', 'gateway' ), value: '' },
 			...collections.map( ( col ) => ( {
@@ -165,14 +189,52 @@ registerBlockType( metadata.name, {
 				</InspectorControls>
 
 				<div { ...blockProps }>
-					<p><strong>{ __( 'Gateway Grid', 'gateway' ) }</strong></p>
-					<p>
-						{ collectionSlug
-							? __( 'Collection: ', 'gateway' ) + collectionSlug
-							: __( 'No collection selected.', 'gateway' ) }
-					</p>
-					<p>{ __( 'Records loaded in editor preview: ', 'gateway' ) + data.length }</p>
-					<p>{ __( 'Single block mount. Child blocks are disabled.', 'gateway' ) }</p>
+					{ ! collectionSlug && (
+						<p>{ __( 'Select a collection to preview records.', 'gateway' ) }</p>
+					) }
+
+					{ collectionSlug && loading && (
+						<p>
+							<Spinner />{ ' ' }
+							{ __( 'Loading preview records…', 'gateway' ) }
+						</p>
+					) }
+
+					{ collectionSlug && ! loading && error && (
+						<p style={ { color: '#cc1818' } }>{ error }</p>
+					) }
+
+					{ collectionSlug && ! loading && ! error && previewRows.length === 0 && (
+						<p>{ __( 'No records found for this collection.', 'gateway' ) }</p>
+					) }
+
+					{ collectionSlug && ! loading && ! error && previewRows.length > 0 && (
+						<div className="gateway-grid__preview">
+							<table className="gateway-grid__preview-table">
+								<thead>
+									<tr>
+										{ previewColumns.map( ( column ) => (
+											<th key={ column }>{ column }</th>
+										) ) }
+									</tr>
+								</thead>
+								<tbody>
+									{ previewRows.map( ( row, rowIndex ) => (
+										<tr key={ `row-${ rowIndex }` }>
+											{ previewColumns.map( ( column ) => (
+												<td key={ `${ rowIndex }-${ column }` }>
+													{ formatValue( row?.[ column ] ) }
+												</td>
+											) ) }
+										</tr>
+									) ) }
+								</tbody>
+							</table>
+							{ data.length > previewRows.length && (
+								<p>{ __( 'Showing first 10 records in editor preview.', 'gateway' ) }</p>
+							) }
+						</div>
+					) }
 				</div>
 			</>
 		);
