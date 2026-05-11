@@ -17,7 +17,7 @@ type ShortcodeEntry = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ExtensionShortcodes() {
+export default function ExtensionShortcodesPage() {
   const { key } = useParams({ strict: false }) as { key: string }
   const { addMessage } = useSnackbar()
   const [copiedText, setCopiedText] = useState<string | null>(null)
