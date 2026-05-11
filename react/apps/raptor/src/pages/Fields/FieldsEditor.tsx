@@ -10,8 +10,8 @@ import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { Trash2, Plus } from 'lucide-react'
-import { useApp } from '../../context/app'
 import { HandleIcon } from '../../components/HandleIcon'
+import SharedPanelShell from '../../components/ui/PanelShell'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -100,16 +100,6 @@ const baseInput =
   'placeholder-zinc-500 focus:outline-none focus:border-zinc-500 focus:ring-1 ' +
   'focus:ring-zinc-500 transition-colors disabled:opacity-50 text-sm'
 
-// ─── Panel geometry ───────────────────────────────────────────────────────────
-
-function usePanelGeometry() {
-  const { shellTopOffset, shellHeightCss } = useApp()
-  return {
-    top: shellTopOffset,
-    height: shellHeightCss,
-  }
-}
-
 // ─── Edit panel ───────────────────────────────────────────────────────────────
 
 function EditPanel({ title, sub, onClose, children }: {
@@ -118,30 +108,10 @@ function EditPanel({ title, sub, onClose, children }: {
   onClose: () => void
   children: React.ReactNode
 }) {
-  const { top, height } = usePanelGeometry()
   return (
-    <div style={{
-      position: 'fixed', right: 0, top, height, width: 320,
-      background: '#18181b', borderLeft: '1px solid #1e293b',
-      zIndex: 100000, display: 'flex', flexDirection: 'column', color: 'white',
-    }}>
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '16px 20px', borderBottom: '1px solid #1e293b', flexShrink: 0,
-      }}>
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f4f4f5' }}>{title}</div>
-          {sub && <div style={{ fontSize: 12, color: '#71717a', marginTop: 2 }}>{sub}</div>}
-        </div>
-        <button onClick={onClose} aria-label="Close panel" style={{
-          color: '#71717a', fontSize: 18, lineHeight: 1,
-          background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-        }}>✕</button>
-      </div>
-      <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
-        {children}
-      </div>
-    </div>
+    <SharedPanelShell title={title} sub={sub} onClose={onClose} width={320}>
+      {children}
+    </SharedPanelShell>
   )
 }
 
@@ -253,7 +223,7 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
   return (
     <section>
       <header className="flex justify-between items-center gap-4 mb-6">
-        <h2 className="!text-white text-base font-semibold">Field List</h2>
+        <h2 className="text-white! text-base font-semibold">Field List</h2>
         <button
           className="disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !fieldListId}

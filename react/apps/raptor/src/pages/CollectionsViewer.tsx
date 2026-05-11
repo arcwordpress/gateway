@@ -17,7 +17,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
-import { useApp } from '../context/app'
+import PanelShell from '../components/ui/PanelShell'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
 import { GraphSkeleton } from '../components/graph/GraphSkeleton'
 import {
@@ -74,88 +74,6 @@ function toKey(title: string): string {
     .replace(/\s+/g, '_')
     .replace(/[^a-z0-9_]/g, '')
     .replace(/^_+|_+$/g, '')
-}
-
-// ─── Panel geometry ──────────────────────────────────────────────────────────
-
-function usePanelGeometry() {
-  const { shellTopOffset, shellHeightCss } = useApp()
-  return {
-    top: shellTopOffset,
-    height: shellHeightCss,
-  }
-}
-
-// ─── Panel shell ─────────────────────────────────────────────────────────────
-
-function PanelShell({
-  title,
-  sub,
-  onClose,
-  children,
-}: {
-  title: string
-  sub?: string
-  onClose: () => void
-  children: React.ReactNode
-}) {
-  const { top, height } = usePanelGeometry()
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        right: 0,
-        top,
-        height,
-        width: 320,
-        background: '#000',
-        borderLeft: '1px solid #1e293b',
-        zIndex: 50,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          padding: '16px 20px 12px',
-          borderBottom: '1px solid #1e293b',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#f4f4f5' }}>{title}</div>
-          {sub && (
-            <div style={{ fontSize: 11, color: '#52525b', fontFamily: 'monospace', marginTop: 2 }}>
-              {sub}
-            </div>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close panel"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#71717a',
-            cursor: 'pointer',
-            fontSize: 16,
-            lineHeight: 1,
-            padding: '2px 4px',
-            marginTop: 2,
-          }}
-        >
-          ✕
-        </button>
-      </div>
-      <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
-        {children}
-      </div>
-    </div>
-  )
 }
 
 // ─── Shared input styles ─────────────────────────────────────────────────────
@@ -216,7 +134,7 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
   })
 
   return (
-    <PanelShell title="New Collection" onClose={onClose}>
+    <PanelShell title="New Collection" onClose={onClose} width={320}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -373,7 +291,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   })
 
   return (
-    <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose}>
+    <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose} width={320}>
       {isError && (
         <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           Could not load collection data.
@@ -519,7 +437,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
   })
 
   return (
-    <PanelShell title="Delete Collection" sub={collKey} onClose={onClose}>
+    <PanelShell title="Delete Collection" sub={collKey} onClose={onClose} width={320}>
       <p className="text-sm text-zinc-300 mb-1">
         You are about to delete{' '}
         <span className="font-semibold text-zinc-100">{collection?.title || collKey}</span>.

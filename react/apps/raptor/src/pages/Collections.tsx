@@ -21,8 +21,8 @@ import Dagre from '@dagrejs/dagre'
 import '@xyflow/react/dist/style.css'
 import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
-import { useApp } from '../context/app'
 import { SharedMiniMap } from '../components/graph/SharedMiniMap'
+import PanelShell from '../components/ui/PanelShell'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -279,87 +279,6 @@ function layoutWithDagre(nodes: Node[], edges: Edge[]): Node[] {
   })
 }
 
-// ─── Panel geometry ──────────────────────────────────────────────────────────
-
-function usePanelGeometry() {
-  const { shellTopOffset, shellHeightCss } = useApp()
-  return {
-    top: shellTopOffset,
-    height: shellHeightCss,
-  }
-}
-
-// ─── Panel shell ─────────────────────────────────────────────────────────────
-
-function PanelShell({
-  title,
-  sub,
-  onClose,
-  children,
-}: {
-  title: string
-  sub?: string
-  onClose: () => void
-  children: React.ReactNode
-}) {
-  const { top, height } = usePanelGeometry()
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        right: 0,
-        top,
-        height,
-        width: 320,
-        background: 'var(--app-bg)',
-        borderLeft: '1px solid #3f3f46',
-        zIndex: 50,
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <div
-        style={{
-          padding: '16px 20px 12px',
-          borderBottom: '1px solid #3f3f46',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 600, fontSize: 15, color: '#e4e4e7' }}>{title}</div>
-          {sub && (
-            <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', marginTop: 2 }}>
-              {sub}
-            </div>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close panel"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#71717a',
-            cursor: 'pointer',
-            fontSize: 16,
-            lineHeight: 1,
-            padding: '2px 4px',
-            marginTop: 2,
-          }}
-        >
-          ✕
-        </button>
-      </div>
-      <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto' }}>
-        {children}
-      </div>
-    </div>
-  )
-}
 
 // ─── Shared input styles ─────────────────────────────────────────────────────
 
@@ -406,7 +325,7 @@ function CreatePanel({ extensionKey, onClose }: { extensionKey: string; onClose:
   })
 
   return (
-    <PanelShell title="New Collection" onClose={onClose}>
+    <PanelShell title="New Collection" onClose={onClose} width={320}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -552,7 +471,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const isTitleEmpty = 'title' in (collection?.fields ?? {}) && !formData.title?.trim()
 
   return (
-    <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose}>
+    <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose} width={320}>
       {isError && (
         <div className="mb-4 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           Could not load collection data.
@@ -694,7 +613,7 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
   })
 
   return (
-    <PanelShell title="Delete Collection" sub={collKey} onClose={onClose}>
+    <PanelShell title="Delete Collection" sub={collKey} onClose={onClose} width={320}>
       <p className="text-sm text-zinc-300 mb-1">
         You are about to delete{' '}
         <span className="font-semibold text-zinc-100">{collection?.title || collKey}</span>.
@@ -787,6 +706,7 @@ function RelationshipPanel({
       title="New Relationship"
       sub={`${sourceKey} → ${targetKey}`}
       onClose={onClose}
+      width={320}
     >
       {/* Source → Target display */}
       <div
@@ -953,7 +873,7 @@ function DeleteRelationshipPanel({
   })
 
   return (
-    <PanelShell title="Delete Relationship" sub={label} onClose={onClose}>
+    <PanelShell title="Delete Relationship" sub={label} onClose={onClose} width={320}>
       <p className="text-sm text-zinc-300 mb-1">Remove this relationship?</p>
       <p className="text-xs text-zinc-500 mb-6">
         This deletes the relationship definition. The generated PHP will be rebuilt automatically.

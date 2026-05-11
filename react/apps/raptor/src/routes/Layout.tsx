@@ -93,11 +93,7 @@ export default function Layout() {
     pathname.startsWith('/packages') ||
     pathname.startsWith('/collections')
 
-  const shouldLoadCollections =
-    pathname === '/fields' ||
-    pathname === '/forms' ||
-    pathname === '/views' ||
-    /^\/collections\/[^/]+\/(fields|forms|views)/.test(pathname)
+  const shouldLoadCollections = pathname === '/fields'
 
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<RegisteredCollection[], Error, WorkspaceCollection[]>({
     queryKey: REGISTERED_COLLECTIONS_KEY,
@@ -173,12 +169,8 @@ export default function Layout() {
       setActiveCollectionKey(null)
 
       const inFields = /^\/collections\/[^/]+\/fields/.test(pathname)
-      const inViews = /^\/collections\/[^/]+\/views/.test(pathname)
-      const inForms = /^\/collections\/[^/]+\/forms/.test(pathname)
 
       if (inFields) void navigate({ to: '/fields' })
-      if (inViews) void navigate({ to: '/views' })
-      if (inForms) void navigate({ to: '/forms' })
     }
   }, [activeCollectionKey, collections, navigate, pathname])
 
