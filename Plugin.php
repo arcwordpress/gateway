@@ -102,6 +102,7 @@ class Plugin
 
     private function init()
     {
+        new Extensions\ExtensionRoutes();
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
         $this->viewRegistry = new Views\ViewRegistry();
@@ -122,7 +123,6 @@ class Plugin
         new Endpoints\CoreCollectionUserRoute();
         $this->mazeRoutes = new Maze\WorkflowRoutes();
         
-        new Extensions\ExtensionRoutes();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
