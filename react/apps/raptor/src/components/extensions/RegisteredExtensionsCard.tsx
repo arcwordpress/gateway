@@ -18,7 +18,7 @@ export default function RegisteredExtensionsCard() {
   const { data, isLoading, isError } = useQuery<RegisteredExtensionsResponse>({
     queryKey: ['registered-extensions'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/extension/registered'), {
+      const res = await fetch(apiUrl('gateway/v1/extensions/registered'), {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
