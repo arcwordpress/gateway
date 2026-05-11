@@ -159,10 +159,6 @@ class DatabaseConnection
         $driver      = get_option('gateway_connection_driver', $detected['driver'] ?? 'mysql');
         $custom_port = get_option('gateway_connection_port', '');
         $sqlite_path = get_option('gateway_sqlite_path', $detected['database'] ?? '');
-
-        error_log('driver is ' . $driver);
-        error_log('custom_port is ' . $custom_port);
-
         if ($driver === 'sqlite') {
             $database = !empty($sqlite_path) ? $sqlite_path : WP_CONTENT_DIR . '/database/.ht.sqlite';
             return file_exists($database) && is_readable($database);
