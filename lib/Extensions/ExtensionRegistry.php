@@ -33,6 +33,12 @@ class ExtensionRegistry
             );
         }
 
+        if (empty($extension->getTitle())) {
+            throw new \InvalidArgumentException(
+                sprintf("Extension '%s' must have a \$title property set", get_class($extension))
+            );
+        }
+
         $this->extensions[$key] = $extension;
         do_action('gateway_extension_registered', get_class($extension), $extension);
 

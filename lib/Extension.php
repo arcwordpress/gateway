@@ -4,6 +4,7 @@ namespace Gateway;
 class Extension
 {
     protected $key;
+    protected $title;
     protected $pluginPath;
 
     public static function register()
@@ -15,6 +16,11 @@ class Extension
     public function getKey()
     {
         return $this->key;
+    }
+
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     /**
