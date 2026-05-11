@@ -17,9 +17,17 @@ class Extension
         if ($this->key) {
             return $this->key;
         }
-        $className = class_basename(static::class);
-        $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
-        return $key;
+
+        $parts    = explode('\\', static::class);
+        $basename = array_pop($parts);
+
+        // When the class is the generic 'Extension', derive the key from the
+        // root namespace segment instead (e.g. Waypoint\Extension → 'waypoint',
+        // MyPlugin\Extension → 'my_plugin'). This prevents every plugin that
+        // uses the standard scaffold from colliding at the same key 'extension'.
+        $segment = ($basename === 'Extension' && !empty($parts)) ? $parts[0] : $basename;
+
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $segment));
     }
 
     /**
