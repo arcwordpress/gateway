@@ -28,3 +28,4 @@ export async function fetchRegisteredCollections(withCounts = false): Promise<Re
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
+

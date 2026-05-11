@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { LayoutGrid, ArrowLeftRight, Database, Layers, Eye, FileText } from 'lucide-react'
+import { LayoutGrid, ArrowLeftRight, Database } from 'lucide-react'
 import * as RechartsLib from 'recharts'
 
 // Cast to any: monorepo has dual @types/react versions (workspace root vs raptor).
@@ -10,8 +10,6 @@ import * as RechartsLib from 'recharts'
 const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } = RechartsLib as any
 import { appConfig } from '../config'
 import { apiUrl, authHeaders } from '../lib/api'
-import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested } from '../lib/queries'
-import type { Collection } from '../lib/object_types'
 
 type WeeklyTotal = { week: string; total: number }
 
@@ -24,7 +22,7 @@ type AdminDataResponse = {
 type AdminStats = {
   totalCollections: number
   totalRoutes: number
-  recordCount: number
+  totalRecords: number
   weeklyRequestTotals: WeeklyTotal[]
 }
 
@@ -32,16 +30,13 @@ const iconMap: Record<string, React.ReactNode> = {
   collections: <LayoutGrid className="w-5 h-5" />,
   routes: <ArrowLeftRight className="w-5 h-5" />,
   records: <Database className="w-5 h-5" />,
-  fields: <Layers className="w-5 h-5" />,
-  views: <Eye className="w-5 h-5" />,
-  forms: <FileText className="w-5 h-5" />,
 }
 
 const quickActions = [
   { label: 'Collections', description: 'Browse and manage collections', icon: '⬡', to: '/collections' },
   { label: 'Fields', description: 'Open field builder across collections', icon: '◧', to: '/fields' },
-  { label: 'Views', description: 'Open views builder across collections', icon: '◑', to: '/views' },
-  { label: 'Forms', description: 'Open forms builder across collections', icon: '⬆', to: '/forms' },
+  { label: 'Settings', description: 'Configure gateway settings and connection', icon: '⚙', to: '/settings' },
+  { label: 'Docs', description: 'View documentation and guides', icon: '📖', to: '/docs' },
 ]
 
 function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
@@ -113,33 +108,23 @@ function ApiRequestsChart({ data }: { data: WeeklyTotal[] }) {
 
 export default function Dashboard() {
 
-  const { data: collections = [], isLoading, dataUpdatedAt } = useQuery<Collection[]>({
-    queryKey: COLLECTIONS_NESTED_KEY,
-    queryFn: fetchCollectionsWithNested,
-  })
-
-  const { data: adminStats, isLoading: isAdminStatsLoading } = useQuery<AdminStats>({
-    queryKey: ['raptor-admin-stats', collections.length],
+  const { data: adminStats, isLoading: isAdminStatsLoading, dataUpdatedAt } = useQuery<AdminStats>({
+    queryKey: ['raptor-admin-stats'],
     queryFn: async () => {
-      const dataRes = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
-      const data: AdminDataResponse = dataRes.ok ? await dataRes.json() : {}
+      const res = await fetch(apiUrl('gateway/v1/admin-data'), { headers: authHeaders() })
+      const data: AdminDataResponse = res.ok ? await res.json() : {}
 
-      const totalRoutes = (data.collections ?? []).reduce((sum, collection) => {
-        return sum + (collection.routes ? collection.routes.length : 0)
-      }, 0)
+      const collections = data.collections ?? []
+      const totalRoutes = collections.reduce((sum, c) => sum + (c.routes ? c.routes.length : 0), 0)
 
       return {
         totalCollections: collections.length,
         totalRoutes,
-        recordCount: data.record_count ?? 0,
+        totalRecords: data.record_count ?? 0,
         weeklyRequestTotals: data.weekly_request_totals ?? [],
       }
     },
   })
-
-  const totalFields = collections.reduce((sum, collection) => sum + (collection.field_list?.fields.length ?? 0), 0)
-  const totalViews = collections.reduce((sum, collection) => sum + (collection.view_list?.views.length ?? 0), 0)
-  const totalForms = collections.reduce((sum, collection) => sum + (collection.form_list?.forms.length ?? 0), 0)
 
   const stats = [
     {
@@ -158,31 +143,10 @@ export default function Dashboard() {
     },
     {
       label: 'Records',
-      value: String(adminStats?.recordCount ?? 0),
+      value: String(adminStats?.totalRecords ?? 0),
       delta: 'Across all collections',
       iconKey: 'records',
       isLoading: isAdminStatsLoading,
-    },
-    {
-      label: 'Fields',
-      value: String(totalFields),
-      delta: 'Across all collections',
-      iconKey: 'fields',
-      isLoading,
-    },
-    {
-      label: 'Views',
-      value: String(totalViews),
-      delta: 'Across all collections',
-      iconKey: 'views',
-      isLoading,
-    },
-    {
-      label: 'Forms',
-      value: String(totalForms),
-      delta: 'Across all collections',
-      iconKey: 'forms',
-      isLoading,
     },
   ]
 
