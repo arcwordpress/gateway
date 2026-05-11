@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Copy, Check } from 'lucide-react'
-import { apiUrl, authHeaders } from '../lib/api'
+import { fetchRegisteredCollections, REGISTERED_COLLECTIONS_KEY } from '../lib/queries'
 import { useSnackbar } from '../context/snackbar'
 
 type ShortcodeEntry = {
-  type: 'grid' | 'form'
   title: string
   key: string
   shortcode: string
@@ -17,13 +16,11 @@ export default function ShortcodesPage() {
   const { addMessage } = useSnackbar()
   const [copiedText, setCopiedText] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery<{ success: boolean; shortcodes: ShortcodeEntry[] }>({
-    queryKey: ['raptor-shortcodes-all'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/shortcodes'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
+  const { data: collections = [], isLoading } = useQuery({
+    queryKey: [...REGISTERED_COLLECTIONS_KEY, 'shortcodes'],
+    queryFn: () => fetchRegisteredCollections(false),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   })
 
   const copy = (text: string) => {
@@ -34,14 +31,25 @@ export default function ShortcodesPage() {
     })
   }
 
-  const rows = data?.shortcodes ?? []
+  const rows = useMemo<ShortcodeEntry[]>(() => {
+    return collections.map((collection) => ({
+      title: collection.titlePlural || collection.title || collection.key,
+      key: collection.key,
+      shortcode: `[gateway_grid schema="${collection.key}"]`,
+      extension_key: collection.package || 'registered',
+      extension_title: collection.package || 'Registered Collections',
+    }))
+  }, [collections])
 
-  const grouped: Record<string, { title: string; rows: ShortcodeEntry[] }> = {}
-  for (const row of rows) {
-    const ek = row.extension_key ?? 'unknown'
-    if (!grouped[ek]) grouped[ek] = { title: row.extension_title ?? ek, rows: [] }
-    grouped[ek].rows.push(row)
-  }
+  const grouped = useMemo(() => {
+    const groups: Record<string, { title: string; rows: ShortcodeEntry[] }> = {}
+    for (const row of rows) {
+      const ek = row.extension_key ?? 'unassigned'
+      if (!groups[ek]) groups[ek] = { title: row.extension_title ?? 'Unassigned', rows: [] }
+      groups[ek].rows.push(row)
+    }
+    return groups
+  }, [rows])
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -55,7 +63,7 @@ export default function ShortcodesPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-zinc-500">No shortcodes found. Build and activate an extension first.</p>
+        <p className="text-sm text-zinc-500">No shortcodes found. Register at least one collection first or activate a core collection from settings.</p>
       ) : (
         <div className="space-y-6">
           {Object.entries(grouped).map(([ek, group]) => (
@@ -67,7 +75,6 @@ export default function ShortcodesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-zinc-800">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 w-16">Type</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 w-40">Name</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500">Shortcode</th>
                       <th className="px-3 py-3 w-10" />
@@ -78,15 +85,6 @@ export default function ShortcodesPage() {
                       const isCopied = copiedText === row.shortcode
                       return (
                         <tr key={row.shortcode} className="hover:bg-zinc-800/40 transition-colors group">
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-                              row.type === 'grid'
-                                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-900/50'
-                                : 'bg-purple-950/60 text-purple-300 border-purple-900/50'
-                            }`}>
-                              {row.type === 'grid' ? 'Grid' : 'Form'}
-                            </span>
-                          </td>
                           <td className="px-4 py-3 text-zinc-300 text-sm">{row.title}</td>
                           <td className="px-4 py-3">
                             <code className="text-xs font-mono text-zinc-300 bg-zinc-800 px-2.5 py-1.5 rounded select-all whitespace-nowrap">

@@ -139,6 +139,7 @@ class Plugin
         Render\Render::init();
         Views\Render\Shortcode\Shortcode::init();
         Grids\Shortcode::init();
+        Grids\Block::init();
         Raptor\ViewRenderer::init();
         Filters\Render::init();
         Gutenberg\BlockRegistry::init();

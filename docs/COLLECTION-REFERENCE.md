@@ -59,3 +59,7 @@ class TicketCollection extends \Gateway\Collection {
 TicketCollection::register();
 ```
 Registering publishes REST routes to `gateway/v1/tickets` with GET/POST/PUT/DELETE support as configured in `$routes`.
+
+## With Nested Loading
+
+When collections are loaded with nesting it effectively means loaded with related fields. This earlier also involved loading views and forms, but now it only means fields.

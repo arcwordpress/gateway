@@ -2,34 +2,12 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
 import { Copy, Check } from 'lucide-react'
-import { apiUrl, authHeaders } from '../lib/api'
+import { fetchRegisteredCollections, REGISTERED_COLLECTIONS_KEY } from '../lib/queries'
 import { useSnackbar } from '../context/snackbar'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ViewEntry = {
-  id: number
-  view_key: string
-  title: string
-  status: string
-}
-
-type CollectionEntry = {
-  id: number
-  collection_key: string
-  title: string
-  status: string
-  views: ViewEntry[]
-}
-
-type ExtensionResponse = {
-  extension: { extension_key: string; title: string; status: string }
-  collections: CollectionEntry[]
-  plugin_active: boolean
-}
-
 type ShortcodeEntry = {
-  type: 'view' | 'form'
   title: string
   key: string
   shortcode: string
@@ -44,26 +22,12 @@ export default function ExtensionShortcodes() {
   const { addMessage } = useSnackbar()
   const [copiedText, setCopiedText] = useState<string | null>(null)
 
-  const { data: extData, isLoading: extLoading } = useQuery<ExtensionResponse>({
-    queryKey: ['extensions', key],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/extension/${key}`), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
+  const { data: collections = [], isLoading: allLoading } = useQuery({
+    queryKey: [...REGISTERED_COLLECTIONS_KEY, 'shortcodes', 'extension', key],
+    queryFn: () => fetchRegisteredCollections(false),
     enabled: !!key,
-  })
-
-  const isActive = extData?.plugin_active ?? false
-
-  const { data: allData, isLoading: allLoading } = useQuery<{ success: boolean; shortcodes: ShortcodeEntry[] }>({
-    queryKey: ['raptor-shortcodes-all'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/shortcodes'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
-    },
-    enabled: extData !== undefined && !isActive,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   })
 
   const copy = (text: string) => {
@@ -74,28 +38,17 @@ export default function ExtensionShortcodes() {
     })
   }
 
-  // Build shortcode rows from this extension's collections + views
-  const extensionRows: ShortcodeEntry[] = []
-  if (extData) {
-    for (const col of extData.collections) {
-      extensionRows.push({
-        type: 'form',
-        title: col.title || col.collection_key,
-        key: col.collection_key,
-        shortcode: `[gateway_form schema="${col.collection_key}"]`,
-      })
-      for (const view of col.views) {
-        extensionRows.push({
-          type: 'view',
-          title: view.title || view.view_key,
-          key: view.view_key,
-          shortcode: `[gateway_view key="${view.view_key}"]`,
-        })
-      }
-    }
-  }
+  const allRows: ShortcodeEntry[] = collections.map((collection) => ({
+    title: collection.titlePlural || collection.title || collection.key,
+    key: collection.key,
+    shortcode: `[gateway_grid schema="${collection.key}"]`,
+    extension_key: collection.package || 'registered',
+    extension_title: collection.package || 'Registered Collections',
+  }))
+  const extensionRows = allRows.filter((row) => row.extension_key === key)
+  const hasPackageMatch = extensionRows.length > 0
 
-  const isLoading = extLoading || (!isActive && allLoading)
+  const isLoading = allLoading
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -108,7 +61,7 @@ export default function ExtensionShortcodes() {
         <div className="flex items-start justify-between mt-3">
           <div>
             <h1 className="text-2xl font-semibold text-zinc-100">
-              {extData?.extension?.title || key}
+              {key}
             </h1>
             <p className="text-xs text-zinc-600 font-mono mt-0.5">{key}</p>
           </div>
@@ -127,13 +80,6 @@ export default function ExtensionShortcodes() {
         </div>
       </div>
 
-      {/* ── Inactive banner ─────────────────────────────────────────────── */}
-      {!extLoading && !isActive && (
-        <div className="mb-5 px-4 py-3 rounded-lg bg-amber-950/40 border border-amber-800/50 text-amber-300 text-sm">
-          This extension's plugin isn't active — showing all shortcodes across active extensions.
-        </div>
-      )}
-
       {/* ── Content ─────────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="space-y-2">
@@ -141,16 +87,16 @@ export default function ExtensionShortcodes() {
             <div key={i} className="h-12 rounded-lg bg-zinc-800 animate-pulse" />
           ))}
         </div>
-      ) : isActive ? (
+      ) : hasPackageMatch ? (
         extensionRows.length === 0 ? (
           <p className="text-sm text-zinc-500 py-4">
-            No shortcodes yet. Add collections or views to this extension first.
+            No grid shortcodes yet. Register collections for this extension first.
           </p>
         ) : (
           <ShortcodeTable rows={extensionRows} copiedText={copiedText} onCopy={copy} />
         )
       ) : (
-        <AllShortcodes rows={allData?.shortcodes ?? []} copiedText={copiedText} onCopy={copy} />
+        <AllShortcodes rows={allRows} copiedText={copiedText} onCopy={copy} />
       )}
     </div>
   )
@@ -172,7 +118,6 @@ function ShortcodeTable({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800">
-            <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 w-16">Type</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 w-40">Name</th>
             <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500">Shortcode</th>
             <th className="px-3 py-3 w-10" />
@@ -243,15 +188,6 @@ function ShortcodeRow({
 
   return (
     <tr className="hover:bg-zinc-800/40 transition-colors group">
-      <td className="px-4 py-3">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-          row.type === 'view'
-            ? 'bg-blue-950/60 text-blue-300 border-blue-900/50'
-            : 'bg-purple-950/60 text-purpleple-300 border-purple-900/50 text-purple-300'
-        }`}>
-          {row.type === 'view' ? 'View' : 'Form'}
-        </span>
-      </td>
       <td className="px-4 py-3 text-zinc-300 text-sm">{row.title}</td>
       <td className="px-4 py-3">
         <code className="text-xs font-mono text-zinc-300 bg-zinc-800 px-2.5 py-1.5 rounded select-all whitespace-nowrap">

@@ -18,6 +18,7 @@ use Gateway\Raptor\Collections\RaptorUserLayout;
 use Gateway\Raptor\Collections\RaptorUserLayoutNode;
 use Gateway\Raptor\Collections\RaptorExtensionFile;
 use Gateway\Raptor\Build\RaptorBuilder;
+use Gateway\Plugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -393,40 +394,59 @@ class ExtensionRoutes
      */
     public function getShortcodes(\WP_REST_Request $request): \WP_REST_Response
     {
-        $extensions = RaptorExtension::where('status', 'active')
-            ->with(['collections'])
-            ->orderBy('title')
-            ->get();
+        $registry    = Plugin::getInstance()->getRegistry();
+        $registered  = $this->normalizeRegisteredCollections($registry->getAll());
 
         $shortcodes = [];
 
-        foreach ($extensions as $extension) {
-            foreach ($extension->collections as $col) {
-                $shortcodes[] = [
-                    'type'            => 'grid',
-                    'title'           => $col->title ?: $col->collection_key,
-                    'key'             => $col->collection_key,
-                    'shortcode'       => '[gateway_grid schema="' . $col->collection_key . '"]',
-                    'extension_key'   => $extension->extension_key,
-                    'extension_title' => $extension->title,
-                ];
+        foreach ($registered as $collection) {
+            $key       = $collection->getKey();
+            $title     = $collection->getTitlePlural() ?: ($collection->getTitle() ?: $key);
 
-                $shortcodes[] = [
-                    'type'            => 'form',
-                    'title'           => $col->title ?: $col->collection_key,
-                    'key'             => $col->collection_key,
-                    'shortcode'       => '[gateway_form schema="' . $col->collection_key . '"]',
-                    'extension_key'   => $extension->extension_key,
-                    'extension_title' => $extension->title,
-                ];
-
-            }
+            $shortcodes[] = [
+                'title'           => $title,
+                'key'             => $key,
+                'shortcode'       => '[gateway_grid schema="' . $key . '"]',
+                'extension_key'   => null,
+                'extension_title' => null,
+            ];
         }
 
         return new \WP_REST_Response([
             'success'    => true,
             'shortcodes' => $shortcodes,
         ], 200);
+    }
+
+    /**
+     * @param array<int,mixed> $entries
+     * @return array<int,\Gateway\Collection>
+     */
+    private function normalizeRegisteredCollections(array $entries): array
+    {
+        $collections = [];
+
+        foreach ($entries as $entry) {
+            if (is_object($entry)) {
+                $collection = $entry;
+            } elseif (is_string($entry) && class_exists($entry)) {
+                $collection = new $entry();
+            } else {
+                continue;
+            }
+
+            if (!method_exists($collection, 'isHidden') || $collection->isHidden()) {
+                continue;
+            }
+
+            if (!method_exists($collection, 'getKey')) {
+                continue;
+            }
+
+            $collections[] = $collection;
+        }
+
+        return $collections;
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

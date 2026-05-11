@@ -15,12 +15,19 @@ class Shortcode
     }
 
     /**
-     * Enqueue grid scripts when the current post/page contains the shortcode.
+     * Enqueue grid scripts when the current post/page contains the shortcode or block.
      */
     public static function maybeEnqueue(): void
     {
         global $post;
-        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'gateway_grid')) {
+        if (!is_a($post, 'WP_Post')) {
+            return;
+        }
+
+        if (
+            has_shortcode($post->post_content, 'gateway_grid') ||
+            (function_exists('has_block') && has_block('gateway/grid', $post))
+        ) {
             self::enqueueScripts();
         }
     }
