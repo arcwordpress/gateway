@@ -102,7 +102,7 @@ class CollectionRoutes
 
             if ($request->get_param('with_nested')) {
                 try {
-                    $collections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                    $collections->load('fieldList.fields');
                 } catch (\Throwable $e) {
                     // nested tables not yet migrated — return without nested data
                 }
@@ -150,7 +150,7 @@ class CollectionRoutes
             $keys = array_map(fn($col) => $col->getKey(), array_values($collections));
             try {
                 $raptorCollections = RaptorCollection::whereIn('collection_key', $keys)->get();
-                $raptorCollections->load('fieldList.fields', 'viewList.views', 'formList.forms');
+                $raptorCollections->load('fieldList.fields');
                 foreach ($raptorCollections as $rc) {
                     $raptorMap[$rc->collection_key] = $rc;
                 }
@@ -171,14 +171,10 @@ class CollectionRoutes
                 'status'         => $raptor?->status ?? 'active',
                 'fields'         => $col->getFields(),
                 'field_list'     => null,
-                'view_list'      => null,
-                'form_list'      => null,
             ];
 
             if ($withNested && $raptor) {
                 $arr['field_list'] = $raptor->fieldList?->toArray();
-                $arr['view_list']  = $raptor->viewList?->toArray();
-                $arr['form_list']  = $raptor->formList?->toArray();
             }
 
             return $arr;
