@@ -2,20 +2,16 @@
  * Gateway Grid - index.js (editor)
  *
  * Block name: gateway/grid
- * Title:      Grid
+ * Title:      Gateway Grid
  *
- * Block tree:
- *   gateway/grid               ← this block (loads data, owns the store)
- *     ├─ gateway/facet-group   ← filter UI
- *     ├─ gateway/heading-group ← column headers (optional)
- *     └─ gateway/row-group     ← records loop
+ * Single block only:
+ *   gateway/grid               ← mounts the frontend grid app
  */
 
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	InspectorControls,
 	useBlockProps,
-	InnerBlocks,
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
@@ -29,22 +25,6 @@ import apiFetch from '@wordpress/api-fetch';
 import './editor.css';
 import './style.css';
 import metadata from './block.json';
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const ALLOWED_BLOCKS = [
-	'gateway/facet-group',
-	'gateway/heading-group',
-	'gateway/row-group',
-];
-
-const INNER_BLOCKS_TEMPLATE = [
-	[ 'gateway/facet-group', {} ],
-	[ 'gateway/heading-group', {} ],
-	[ 'gateway/row-group', {} ],
-];
 
 // ---------------------------------------------------------------------------
 // Block registration
@@ -145,7 +125,7 @@ registerBlockType( metadata.name, {
 		return (
 			<>
 				<InspectorControls>
-					<PanelBody title={ __( 'Grid Settings', 'gateway' ) }>
+					<PanelBody title={ __( 'Gateway Grid Settings', 'gateway' ) }>
 						{ collectionsLoading ? (
 							<p>
 								<Spinner />{ ' ' }
@@ -185,10 +165,14 @@ registerBlockType( metadata.name, {
 				</InspectorControls>
 
 				<div { ...blockProps }>
-					<InnerBlocks
-						allowedBlocks={ ALLOWED_BLOCKS }
-						template={ INNER_BLOCKS_TEMPLATE }
-					/>
+					<p><strong>{ __( 'Gateway Grid', 'gateway' ) }</strong></p>
+					<p>
+						{ collectionSlug
+							? __( 'Collection: ', 'gateway' ) + collectionSlug
+							: __( 'No collection selected.', 'gateway' ) }
+					</p>
+					<p>{ __( 'Records loaded in editor preview: ', 'gateway' ) + data.length }</p>
+					<p>{ __( 'Single block mount. Child blocks are disabled.', 'gateway' ) }</p>
 				</div>
 			</>
 		);
@@ -201,42 +185,17 @@ registerBlockType( metadata.name, {
 			className: 'gateway-grid',
 		} );
 
-		const context = JSON.stringify( {
-			collectionSlug,
-			data: [],
-			records: [],
-			filters: {},
-			loading: true,
-			error: null,
+		const config = JSON.stringify( {
+			showFilters: true,
 		} );
 
 		return (
 			<div
 				{ ...blockProps }
-				data-wp-interactive="gateway/grid"
-				data-wp-context={ context }
-				data-wp-init="callbacks.init"
-			>
-				<p
-					className="gateway-grid__loading"
-					data-wp-bind--hidden="state.isNotLoading"
-				>
-					{ __( 'Loading records…', 'gateway' ) }
-				</p>
-
-				<p
-					className="gateway-grid__error"
-					data-wp-bind--hidden="state.hasNoError"
-					data-wp-text="state.error"
-				/>
-
-				<div
-					className="gateway-grid__body"
-					data-wp-bind--hidden="state.loading"
-				>
-					<InnerBlocks.Content />
-				</div>
-			</div>
+				data-gateway-grid
+				data-schema={ collectionSlug || '' }
+				data-config={ config }
+			/>
 		);
 	},
 } );
