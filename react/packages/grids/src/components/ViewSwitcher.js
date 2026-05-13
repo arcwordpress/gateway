@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from 'react';
-import { Rows2, Grid3X2, List } from 'lucide-react';
+import { Rows2, Grid3x2, List } from 'lucide-react';
 
 const ICON_SIZE = 24;
 
@@ -15,7 +15,7 @@ const VIEW_CONFIGS = {
   },
   cards: {
     label: __('Cards', 'gateway'),
-    Icon: Grid3X2,
+    Icon: Grid3x2,
   },
 };
 
