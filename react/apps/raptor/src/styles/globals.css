@@ -6,7 +6,7 @@
   display: grid;
   grid-template-columns: 200px 1fr;
   height: 100%;
-  background-color: var(--app-bg);
+  background-color: #1d2327;
   max-width: 1120px;
   margin: 0 auto;
 }
@@ -17,7 +17,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1.5rem 1rem;
-  background-color: var(--app-bg);
+  background-color: #1d2327;
   border-right: 1px solid var(--gty-offset-2);
 }
 
@@ -74,13 +74,8 @@
 .studio-main { overflow: hidden; }
 
 :root {
-  --app-bg: #1d2327;
   --node-bg: #27272a;
   --node-border-color: #33393C;
-}
-
-.bg-dark {
-  background-color: var(--app-bg);
 }
 
 /* ── Heading reset ────────────────────────────────────────────────────────── */
@@ -307,14 +302,12 @@
   cursor: pointer;
 }
 
-/* Table header darker than rows in Raptor dark theme.
-   --gty-bg-base (#33393C) equals --gty-offset-1, so the header is
-   indistinguishable from row-1. Use --gty-bg-surface (#27272a) instead. */
+/* Table header darker than rows — rows use --gty-offset-1 (#33393C) */
 #gateway-raptor-root .table-view__thead,
 #gateway-raptor-root .table-view__th,
 #gateway-raptor-canvas-host .table-view__thead,
 #gateway-raptor-canvas-host .table-view__th {
-  background-color: var(--gty-bg-surface) !important;
+  background-color: #27272a !important;
 }
 
 /* Grid inputs: flat corners, natural height — override the scoped border-radius/height rules above */
