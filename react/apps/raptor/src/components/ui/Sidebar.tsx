@@ -92,7 +92,7 @@ export default function Sidebar({
         {/* <NavLink to="/views" label="Views" /> */}
 
         <SectionLabel label="Records" />
-        <NavLink to="/records" label="All Records" />
+        <NavLink to="/records" label="Records" />
       </div>
 
       {/* Bottom items - always visible at bottom */}
