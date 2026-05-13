@@ -52,6 +52,12 @@ class SyncRoute
             'callback'            => [$this, 'runCoreMigrations'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
+
+        register_rest_route('gateway/v1', '/sync/extension/(?P<key>[a-zA-Z0-9_\-]+)/migrations', [
+            'methods'             => 'GET, POST',
+            'callback'            => [$this, 'extensionMigrations'],
+            'permission_callback' => [$this, 'checkPermissions'],
+        ]);
     }
 
     /**
@@ -178,6 +184,56 @@ class SyncRoute
                 return new \WP_REST_Response(['success' => true, 'message' => 'Core migrations ran successfully.'], 200);
             }
             return new \WP_REST_Response(['success' => false, 'message' => 'Migrations ran but reported failure.'], 500);
+        } catch (\Throwable $e) {
+            return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * GET  /sync/extension/{key}/migrations — check if migrations are due
+     * POST /sync/extension/{key}/migrations — run them if due (version changed)
+     *
+     * "Due" means extension.version !== extension.migration_version, matching
+     * the same tracking the builder sets after a successful build.
+     */
+    public function extensionMigrations(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $key       = $request->get_param('key');
+        $extension = \Gateway\Raptor\Collections\RaptorExtension::where('extension_key', $key)->first();
+
+        if (!$extension) {
+            return new \WP_REST_Response(['success' => false, 'message' => 'Extension not found.'], 404);
+        }
+
+        $due = $extension->version !== $extension->migration_version;
+
+        if ($request->get_method() === 'GET') {
+            return new \WP_REST_Response([
+                'success'           => true,
+                'extension_key'     => $key,
+                'current_version'   => $extension->version,
+                'migration_version' => $extension->migration_version,
+                'migrations_ran_at' => $extension->migrations_ran_at,
+                'due'               => $due,
+            ], 200);
+        }
+
+        // POST — run migrations via a full build (regenerates files + runs migrations)
+        if (!$due) {
+            return new \WP_REST_Response([
+                'success' => true,
+                'message' => 'Migrations already up to date.',
+                'due'     => false,
+            ], 200);
+        }
+
+        try {
+            $result = (new \Gateway\Raptor\Build\RaptorBuilder())->build($key);
+            return new \WP_REST_Response([
+                'success' => $result['success'] ?? false,
+                'message' => $result['success'] ? 'Migrations ran successfully.' : 'Build failed.',
+                'build'   => $result,
+            ], $result['success'] ? 200 : 500);
         } catch (\Throwable $e) {
             return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
         }
