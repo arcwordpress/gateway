@@ -1,8 +1,6 @@
 <?php
 
-namespace Gateway\Packages;
-
-use Gateway\Package\Package;
+namespace Gateway\Package;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -19,12 +17,12 @@ class DatabasePackage extends Package
 {
     public function __construct(array $record)
     {
-        $this->key        = $record['package_key'];
-        $this->label      = $record['label']       ?? '';
-        $this->description= $record['description'] ?? '';
-        $this->icon       = $record['icon']        ?? 'dashicons-admin-generic';
-        $this->position   = (int) ($record['position']   ?? 20);
-        $this->capability = $record['capability']  ?? 'manage_options';
+        $this->key         = $record['package_key'];
+        $this->label       = $record['label']       ?? '';
+        $this->description = $record['description'] ?? '';
+        $this->icon        = $record['icon']        ?? 'dashicons-admin-generic';
+        $this->position    = (int) ($record['position']   ?? 20);
+        $this->capability  = $record['capability']  ?? 'manage_options';
         $this->parent      = $record['parent']       ?: null;
         $this->collections = $record['collections'] ?? [];
 
