@@ -1,74 +1,78 @@
-import { useMemo } from 'react';
-import { useGatewayForm } from '../utils/gatewayFormContext';
-import { getFieldTypeDefinition } from '../fieldTypeRegistry';
+import { useRef, useMemo } from 'react';
+import { getFieldTypeDefinition } from '../../fieldTypeRegistry';
 
 /**
- * Generic hook for composing individual fields inside a ComposedForm / AppForm.
+ * useField — returns a bound React component for a single named field.
  *
- * Reads the field's type and config from the collection in context, merges any
- * local overrides, looks up the registered Input/Display components, and returns
- * them pre-bound to the resolved config. Autosave is handled automatically by the
- * parent AppForm/ComposedForm — nothing extra is needed here.
+ * The returned component renders the correct Input control for the given
+ * field type and config. When placed inside <ComposedForm> (or <AppForm>),
+ * it automatically participates in autosave via the GatewayFormContext —
+ * no extra wiring needed.
  *
- * Must be called inside a component rendered within <ComposedForm> or <AppForm>.
+ * The component identity is stable as long as `type` and `name` don't change,
+ * so it is safe to use as a JSX element without causing remounts on re-renders.
+ * Config changes (label, placeholder, etc.) are always picked up via a ref.
  *
- * @param {string} name - The field name as it appears in the collection schema.
- * @param {object} [configOverride={}] - Optional overrides merged on top of the
- *   collection config (e.g. { label: 'Custom Label' }). Should be a stable
- *   reference (defined outside render or memoized) to avoid unnecessary re-renders.
+ * @param {object} config
+ * @param {string} config.name   — field name (maps to the record key)
+ * @param {string} config.type   — registered field type ('text', 'date-picker', etc.)
+ * @param {string} [config.label]
+ * @param {string} [config.placeholder]
+ * @param {boolean} [config.required]
+ * @param {*}      [config.*]    — any other field-type-specific options
  *
- * @returns {{ Input: React.ComponentType, Display: React.ComponentType }}
- *   Input  — full field with label/help/control chrome, ready to drop anywhere.
- *   Display — read-only display version of the value.
- *
- * @example
- * // Basic — config comes entirely from the collection
- * const { Input: TitleField } = useField('title');
- * <TitleField />
+ * @returns {React.ComponentType} Ready-to-render field component
  *
  * @example
- * // With a label override
- * const dueDateConfig = { label: 'Due Date' };
- * const { Input: DueDateField } = useField('due_date', dueDateConfig);
- * <DueDateField />
+ * function TicketForm({ id }) {
+ *   const TitleField    = useField({ name: 'title',    type: 'text',        label: 'Title' })
+ *   const DueDateField  = useField({ name: 'due_date', type: 'date-picker', label: 'Due Date' })
+ *   const AssigneeField = useField({ name: 'assignee', type: 'relation',    label: 'Assignee',
+ *                                    relation: { endpoint: '/users', labelField: 'name' } })
  *
- * @example
- * // Passing extra props at render time (merged on top of hook config)
- * const { Input: PriorityField } = useField('priority');
- * <PriorityField config={{ placeholder: 'Pick a priority...' }} />
+ *   return (
+ *     <ComposedForm collection="tasks" recordId={id}>
+ *       <div className="ticket-header">
+ *         <TitleField />
+ *       </div>
+ *       <div className="ticket-sidebar">
+ *         <DueDateField />
+ *         <AssigneeField />
+ *       </div>
+ *     </ComposedForm>
+ *   )
+ * }
  */
-export const useField = (name, configOverride = {}) => {
-  const { getFieldConfig } = useGatewayForm();
+export function useField(config) {
+  // Keep latest config in a ref so the memoised component always uses
+  // current values even when type/name are stable.
+  const configRef = useRef(config);
+  configRef.current = config;
 
-  // Collection config may be null while the collection is still loading — that's fine.
-  const collectionConfig = getFieldConfig(name);
-
-  const config = useMemo(() => ({
-    name,
-    ...(collectionConfig || {}),
-    ...configOverride,
-  }), [name, collectionConfig, configOverride]);
-
-  const definition = config.type ? getFieldTypeDefinition(config.type) : null;
+  const type = config?.type;
+  const name = config?.name;
 
   return useMemo(() => {
-    if (!definition) {
-      // Collection not loaded yet, or field type unknown — render nothing silently.
-      const Noop = () => null;
-      return { Input: Noop, Display: Noop };
+    const fieldType = getFieldTypeDefinition(type);
+
+    if (!fieldType?.Input) {
+      const Unregistered = () => null;
+      Unregistered.displayName = `UnregisteredField(${type ?? 'unknown'})`;
+      return Unregistered;
     }
 
-    const { Input: RegistryInput, Display: RegistryDisplay } = definition;
+    const { Input } = fieldType;
 
-    return {
-      Input: ({ config: propConfig, ...props } = {}) => {
-        const mergedConfig = propConfig ? { ...config, ...propConfig } : config;
-        return <RegistryInput config={mergedConfig} {...props} />;
-      },
-      Display: ({ config: propConfig, ...props } = {}) => {
-        const mergedConfig = propConfig ? { ...config, ...propConfig } : config;
-        return <RegistryDisplay config={mergedConfig} {...props} />;
-      },
-    };
-  }, [definition, config]);
-};
+    // Capture configRef (not config) so the closure always reads the
+    // latest config without needing to be recreated on every render.
+    const BoundField = (props) => (
+      <Input config={configRef.current} {...props} />
+    );
+    BoundField.displayName = `Field(${name || type})`;
+    return BoundField;
+
+  // Only recreate the component when type or name changes — anything else
+  // (label, placeholder, etc.) flows through the ref.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, name]);
+}

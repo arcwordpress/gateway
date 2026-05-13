@@ -89,11 +89,34 @@ class RaptorBuilder
             ? ['activated' => false, 'already_active' => true]
             : $this->activatePlugin($pluginSlug);
 
-        // Record that migrations have been run for the current version.
-        $extension->update([
-            'migration_version' => $extension->version,
-            'migrations_ran_at' => current_time('mysql', true), // UTC
-        ]);
+        // Determine if all collection migrations succeeded.
+        $allMigrationsOk = true;
+        $migrationMessages = [];
+        foreach ($collectionResults as $cr) {
+            $migrationResult = $cr['migration'] ?? [];
+            if (!empty($migrationResult['migration_generated']) && empty($migrationResult['migration_ran'])) {
+                $allMigrationsOk = false;
+                $migrationMessages[] = $cr['collection_key'] . ': ' . ($migrationResult['error'] ?? 'migration did not run');
+            }
+        }
+
+        // Only mark migrations as done when every collection table was provisioned.
+        if ($allMigrationsOk) {
+            $extension->update([
+                'migration_version' => $extension->version,
+                'migrations_ran_at' => current_time('mysql', true),
+            ]);
+        }
+
+        // Log the run regardless of outcome.
+        $logMessage = $allMigrationsOk ? '' : implode('; ', $migrationMessages);
+        \Gateway\Collections\Gateway\MigrationRun::log(
+            'extension',
+            $extensionKey,
+            $extension->version,
+            $allMigrationsOk,
+            $logMessage
+        );
 
         return [
             'success'             => true,
