@@ -179,6 +179,12 @@
   line-height: normal !important;
 }
 
+/* Restore right-padding so the custom SVG arrow isn't obscured by text */
+#gateway-raptor-canvas-host .table-view__select,
+#gateway-raptor-root .table-view__select {
+  padding-right: 1.5rem !important;
+}
+
 #gateway-raptor-canvas-host select:focus,
 #gateway-raptor-root select:focus,
 #gateway-raptor-canvas-host input:focus,
