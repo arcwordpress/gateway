@@ -71,7 +71,6 @@ class Plugin
 
     private function __construct() 
     {
-        // Lean constructor to avoid WP 6.7+ translation errors
     }
 
     public function boot()
@@ -98,6 +97,8 @@ class Plugin
             $this->bootEloquent();
             $this->init();
         }
+
+        do_action('gateway_loaded');
     }
 
     private function init()
@@ -145,14 +146,7 @@ class Plugin
         add_action('gateway_loaded', [$this, 'registerCollections']);
         add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
         add_action('gateway_loaded', [$this, 'seedCollections'], 20);
-
-        /*
-         *
-         * Refactor, there is no point to gateway_register if it runs at same momemnt as gateway_loaded this was supposed to run earlier, or gateway_loaded runs later.
-         * 
-         */
-        do_action('gateway_register');
-        do_action('gateway_loaded');
+        
     }
 
     public function raptorEndpoints() 
@@ -355,3 +349,6 @@ add_action('init', function() {
     do_action('gateway_plugin_loaded');
     
 }, 5);
+
+// A. Signal that Gateway is activated.
+do_action('gateway_activated');
