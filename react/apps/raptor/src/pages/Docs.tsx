@@ -355,7 +355,7 @@ function DocModal({ doc, onClose }: { doc: DocEntry; onClose: () => void }) {
     >
       <div
         className="relative w-full max-w-2xl max-h-[75vh] flex flex-col rounded-lg border border-zinc-700 overflow-hidden"
-        style={{ backgroundColor: 'var(--app-bg)' }}
+        style={{ backgroundColor: 'var(--gty-admin-dark)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header */}

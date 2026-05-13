@@ -182,11 +182,11 @@ export default function Layout() {
         className="flex items-stretch text-zinc-100 relative"
         style={
           isExpanded
-            ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--app-bg)' }
+            ? { position: 'fixed', inset: 0, zIndex: 99999, backgroundColor: 'var(--gty-admin-dark)' }
             : {
                 height: shellHeightCss,
                 overflow: 'hidden',
-                backgroundColor: 'var(--app-bg)',
+                backgroundColor: 'var(--gty-admin-dark)',
                 boxSizing: 'border-box',
                 borderLeft: '1px solid #3f3f46',
                 borderTop: '1px solid #3f3f46',
@@ -194,7 +194,7 @@ export default function Layout() {
         }
       >
         {/* ── LEFT panel — full height ──────────────────────────────── */}
-        <aside className="w-48 shrink-0 border-r border-zinc-800 flex flex-col self-stretch relative z-1" style={{ backgroundColor: 'var(--app-bg)' }}>
+        <aside className="w-48 shrink-0 border-r border-zinc-800 flex flex-col self-stretch relative z-1" style={{ backgroundColor: 'var(--gty-admin-dark)' }}>
           <div className="px-4 py-4 border-b border-zinc-800">
             <Header.Logo />
           </div>
@@ -210,7 +210,7 @@ export default function Layout() {
           </div>
 
           {/* FOOTER */}
-          <Footer className="px-6 py-2.5 border-t border-zinc-800 justify-end shrink-0 relative z-1" style={{ backgroundColor: 'var(--app-bg)' }}>
+          <Footer className="px-6 py-2.5 border-t border-zinc-800 justify-end shrink-0 relative z-1" style={{ backgroundColor: 'var(--gty-admin-dark)' }}>
             <Footer.Credit>Raptor v0.1.0</Footer.Credit>
           </Footer>
         </div>
