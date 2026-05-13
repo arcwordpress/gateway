@@ -443,8 +443,9 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   useEffect(() => {
     if (!collection) return
     const initial: Record<string, string> = {}
+    const collRecord = collection as Record<string, unknown>
     for (const field of Object.values(collection.fields ?? {})) {
-      initial[field.name] = String((collection as Record<string, unknown>)[field.name] ?? field.default ?? '')
+      initial[field.name] = String(collRecord[field.name] ?? field.default ?? '')
     }
     setFormData(initial)
     setSelectedPackageKey(collection.package_key ?? '')
@@ -475,8 +476,10 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     },
   })
 
-  const fieldDefs = Object.values(collection?.fields ?? {})
-  const isTitleEmpty = 'title' in (collection?.fields ?? {}) && !formData.title?.trim()
+  const fields        = collection?.fields ?? {}
+  const fieldDefs     = Object.values(fields)
+  const displayFields = collection?.field_list?.fields ?? []
+  const isTitleEmpty  = 'title' in fields && !formData.title?.trim()
 
   return (
     <PanelShell title={collection?.title || collKey} sub={collKey} onClose={onClose} width={320}>
@@ -557,8 +560,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
           </select>
         </div>
 
-        {/* Display field — only shown when field_list has fields */}
-        {(collection?.field_list?.fields?.length ?? 0) > 0 && (
+        {displayFields.length > 0 && (
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1">
               Display Field
@@ -571,7 +573,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
               className={baseInput}
             >
               <option value="">— Auto-detect —</option>
-              {(collection.field_list?.fields ?? []).map((f) => (
+              {displayFields.map((f) => (
                 <option key={f.id} value={f.name}>
                   {f.label || f.name}
                 </option>
