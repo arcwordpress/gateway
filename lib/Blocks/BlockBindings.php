@@ -111,6 +111,11 @@ class BlockBindings
         // Sanitize key: underscores not allowed in binding source names
         $sanitized_key = self::sanitizeSourceKey($key);
         $source_name = "gateway/{$sanitized_key}";
+
+        if (\WP_Block_Bindings_Registry::get_instance()->is_registered($source_name)) {
+            return;
+        }
+
         $title = $collection->getTitle();
 
         register_block_bindings_source($source_name, [

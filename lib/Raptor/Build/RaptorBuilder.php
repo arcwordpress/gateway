@@ -45,6 +45,12 @@ class RaptorBuilder
         $constantPrefix = strtoupper($extensionKey);
         $projectName    = $extension->title ?: ucwords(str_replace('_', ' ', $extensionKey));
         $pluginDir      = WP_PLUGIN_DIR . '/' . $pluginSlug;
+        $pluginFile     = $pluginSlug . '/' . $pluginSlug . '.php';
+
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $wasActive = is_plugin_active($pluginFile);
 
         $scaffoldResult = $this->scaffoldPlugin(
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
@@ -77,7 +83,11 @@ class RaptorBuilder
             $collectionResults[] = $this->buildCollection($collection, $pluginSlug, $namespace);
         }
 
-        $activationResult = $this->activatePlugin($pluginSlug);
+        // Only activate when the plugin wasn't already active (first build or was deactivated).
+        // For active plugins, files were just overwritten in place — no re-activation needed.
+        $activationResult = $wasActive
+            ? ['activated' => false, 'already_active' => true]
+            : $this->activatePlugin($pluginSlug);
 
         // Record that migrations have been run for the current version.
         $extension->update([
