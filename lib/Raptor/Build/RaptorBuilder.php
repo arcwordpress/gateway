@@ -216,7 +216,12 @@ class RaptorBuilder
             return ['success' => false, 'error' => 'Extension class template not found.'];
         }
 
-        $code = str_replace('{{NAMESPACE}}', $namespace, file_get_contents($templatePath));
+        $replacements = [
+            '{{NAMESPACE}}' => $namespace,
+            '{{KEY}}'       => addslashes($extension->extension_key),
+            '{{TITLE}}'     => addslashes($extension->title),
+        ];
+        $code = str_replace(array_keys($replacements), array_values($replacements), file_get_contents($templatePath));
         $file = $libDir . '/Extension.php';
 
         if (file_put_contents($file, $code) === false) {
