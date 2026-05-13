@@ -13,7 +13,7 @@ export default function RecordsIndex() {
   const collections = data ?? []
 
   return (
-    <div className="h-full overflow-auto bg-[var(--app-bg)]">
+    <div className="h-full overflow-auto bg-[var(--gty-admin-dark)]">
       <div className="border-b border-zinc-800 px-6 py-4">
         <h1 className="text-lg font-semibold text-zinc-200">Records</h1>
         <p className="text-sm text-zinc-500 mt-0.5">Browse records across all registered collections</p>

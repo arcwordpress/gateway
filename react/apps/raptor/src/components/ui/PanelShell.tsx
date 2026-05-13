@@ -29,7 +29,7 @@ export default function PanelShell({
         top,
         height,
         width,
-        background: 'var(--app-bg)',
+        background: 'var(--gty-admin-dark)',
         borderLeft: '1px solid #3f3f46',
         zIndex: 50,
         display: 'flex',

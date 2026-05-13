@@ -62,7 +62,7 @@ export default function RecordView() {
   const collectionTitle = raptorColl?.title ?? collectionKey
 
   return (
-    <div className="h-full overflow-auto bg-[var(--app-bg)]">
+    <div className="h-full overflow-auto bg-[var(--gty-admin-dark)]">
       <div className="border-b border-zinc-800 px-6 py-3 flex items-center gap-3">
         <button
           onClick={() =>
