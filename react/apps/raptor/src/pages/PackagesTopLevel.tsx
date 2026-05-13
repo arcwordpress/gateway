@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 import { BuilderLayout } from './Builders/BuilderLayout'
@@ -178,7 +178,7 @@ export default function PackagesTopLevel() {
     persistExt(ext)
   }
 
-  const { data: allPackages = [] } = useQuery<PackageRecord[]>({
+  const { data: allPackages = [], isLoading: packagesLoading } = useQuery<PackageRecord[]>({
     queryKey: ['packages'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
@@ -189,7 +189,9 @@ export default function PackagesTopLevel() {
     staleTime: 30_000,
   })
 
-  const { data: extensions = [] } = useExtensions()
+  const { data: extensions = [], isLoading: extensionsLoading } = useExtensions()
+
+  const isLoading = packagesLoading || extensionsLoading
 
   // Sync selectedExt state when API data arrives — fixes stale id/title from localStorage.
   // Also clears the selection if the persisted extension no longer exists.
@@ -242,13 +244,30 @@ export default function PackagesTopLevel() {
             viewMode === 'graph' ? 'opacity-100 pointer-events-auto' : 'opacity-25 blur-[2px] pointer-events-none'
           }`}
         >
-          <GlobalPackagesGraph
-            packages={visiblePackages}
-            extensions={visibleExtensions.length > 0 ? visibleExtensions : extensions}
-            selectedExtKey={selectedExt?.key ?? null}
-            onPackageSelect={openEdit}
-            onExtensionSelect={handleExtensionSelect}
-          />
+          {isLoading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-6 h-6 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
+                <span className="text-xs text-zinc-500">Loading…</span>
+              </div>
+            </div>
+          ) : extensions.length === 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="text-3xl opacity-20">⬡</div>
+                <p className="text-sm font-medium text-zinc-400">No extensions yet</p>
+                <p className="text-xs text-zinc-600">Create an extension first, then add packages to it.</p>
+              </div>
+            </div>
+          ) : (
+            <GlobalPackagesGraph
+              packages={visiblePackages}
+              extensions={visibleExtensions.length > 0 ? visibleExtensions : extensions}
+              selectedExtKey={selectedExt?.key ?? null}
+              onPackageSelect={openEdit}
+              onExtensionSelect={handleExtensionSelect}
+            />
+          )}
         </div>
 
         {/* ── List ───────────────────────────────────────────────────────── */}
