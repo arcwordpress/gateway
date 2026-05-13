@@ -262,15 +262,6 @@ const Grid = ({
           )}
 
           <div className="grid__toolbar-end">
-            {showSearch && (
-              <input
-                type="search"
-                className="grid__search-input"
-                placeholder="Search…"
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-              />
-            )}
             {showFilters && filters.length > 0 && (
               <FilterIcon
                 onClick={() => setFiltersOpen(v => !v)}
@@ -282,6 +273,15 @@ const Grid = ({
               onViewChange={setCurrentView}
               enabledViews={['table', 'list', 'cards']}
             />
+            {showSearch && (
+              <input
+                type="search"
+                className="grid__search-input"
+                placeholder="Search…"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+              />
+            )}
           </div>
 
         </div>
