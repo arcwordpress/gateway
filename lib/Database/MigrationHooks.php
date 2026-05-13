@@ -90,6 +90,7 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorCollectionDisplayFieldMigration::create();
             \Gateway\Raptor\Migrations\RaptorExtensionFileMigration::create();
             \Gateway\Raptor\Migrations\RaptorExtensionMigrationTrackingMigration::create();
+            \Gateway\Migrations\GatewayMigrationRunMigration::create();
             return true;
         } catch (\Exception $e) {
             error_log('Gateway: runCoreMigrations failed: ' . $e->getMessage());

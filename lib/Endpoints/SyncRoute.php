@@ -218,20 +218,13 @@ class SyncRoute
             ], 200);
         }
 
-        // POST — run migrations via a full build (regenerates files + runs migrations)
-        if (!$due) {
-            return new \WP_REST_Response([
-                'success' => true,
-                'message' => 'Migrations already up to date.',
-                'due'     => false,
-            ], 200);
-        }
-
+        // POST — always run regardless of due status (supports force re-run from UI).
         try {
             $result = (new \Gateway\Raptor\Build\RaptorBuilder())->build($key);
             return new \WP_REST_Response([
                 'success' => $result['success'] ?? false,
                 'message' => $result['success'] ? 'Migrations ran successfully.' : 'Build failed.',
+                'due'     => $due,
                 'build'   => $result,
             ], $result['success'] ? 200 : 500);
         } catch (\Throwable $e) {

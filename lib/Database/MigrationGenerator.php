@@ -386,8 +386,8 @@ class MigrationGenerator
         $notes = [];
         $columns = [];
 
-        // Always start with id
-        $columns[] = "id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY";
+        // Always start with id (no inline PRIMARY KEY — dbDelta requires it on its own line)
+        $columns[] = "id bigint(20) unsigned NOT NULL AUTO_INCREMENT";
 
         // Process fields
         foreach ($fields as $field) {
@@ -402,8 +402,10 @@ class MigrationGenerator
         }
 
         // Add timestamp columns (always include for consistency)
-        $columns[] = "created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
-        $columns[] = "updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        $columns[] = "created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP";
+        $columns[] = "updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        // dbDelta requires PRIMARY KEY on its own line with two spaces
+        $columns[] = "PRIMARY KEY  (id)";
 
         // Generate the PHP class code
         $code = self::generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace);
