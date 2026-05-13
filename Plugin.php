@@ -163,10 +163,6 @@ class Plugin
         new Raptor\Endpoints\FieldRoutes();
         new Raptor\Endpoints\FormListRoutes();
         new Raptor\Endpoints\FormRoutes();
-        new Raptor\Endpoints\ViewListRoutes();
-        new Raptor\Endpoints\ViewRoutes();
-        new Raptor\Endpoints\ViewRenderRoutes();
-        new Raptor\Endpoints\FacetRoutes();
         new Raptor\Endpoints\UserLayoutRoutes();
         new Raptor\Endpoints\PackageRoutes();
         new Raptor\Endpoints\RelationshipRoutes();

@@ -51,9 +51,9 @@ class Plugin {
             return;
         }
 
-        add_action('gateway_register', [$this, 'register_extension'], 5);
-        add_action('gateway_register', [$this, 'register_packages']);
-        add_action('gateway_register', [$this, 'register_collections']);
+        add_action('gateway_plugin_loaded', [$this, 'register_extension'], 5);
+        add_action('gateway_plugin_loaded', [$this, 'register_packages'], 10);
+        add_action('gateway_plugin_loaded', [$this, 'register_collections'], 10);
     }
 
     public function register_extension() {
