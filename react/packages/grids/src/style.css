@@ -94,9 +94,8 @@
 }
 
 /* Table Row */
-.table-view__row {
-  border-top: 1px solid var(--gty-border) !important;
-  background-color: transparent !important;
+.grid .table-view__row {
+  background-color: transparent;
 }
 
 .table-view__row--body:hover {

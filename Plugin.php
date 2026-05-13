@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.3.0
+ * Version: 1.3.1
  * Requires at least: 6.9
  * Requires PHP: 7.4
  * Author: ARCWP
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GATEWAY_VERSION', '1.3.0');
+define('GATEWAY_VERSION', '1.3.1');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -105,15 +105,12 @@ class Plugin
         new Extensions\ExtensionRoutes();
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
-        $this->viewRegistry = new Views\ViewRegistry();
-        $this->facetRegistry = new Views\Facets\FacetRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
         Packages\PackageLoader::load();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         new Forms\Fields\FieldTypeRoutes();
         $this->standardRoutes = new Endpoints\StandardRoutes();
         new Collections\CollectionRoutes();
-        new Views\ViewRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
         new Endpoints\ConnectionRoute();
@@ -121,16 +118,12 @@ class Plugin
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         new Endpoints\CoreCollectionUserRoute();
-        $this->mazeRoutes = new Maze\WorkflowRoutes();
-        
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
-
         Database\MigrationHooks::init();
         $this->maybeRunMigrations();
         gateway_rest_dispatch_filter();
-
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init();
@@ -138,7 +131,6 @@ class Plugin
         Forms\Render::init();
         Forms\Shortcode::init();
         Render\Render::init();
-        Views\Render\Shortcode\Shortcode::init();
         Grids\Shortcode::init();
         Raptor\ViewRenderer::init();
         Filters\Render::init();
@@ -147,7 +139,6 @@ class Plugin
         Blocks\JsonBlock\JsonBlockRegistrar::init();
         Blocks\BlockBindings::init();
         Integrations\Breakdance\Breakdance::init();
-
         $this->patternRegistry->init();
         AppTemplate::init();
 
@@ -155,6 +146,11 @@ class Plugin
         add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
         add_action('gateway_loaded', [$this, 'seedCollections'], 20);
 
+        /*
+         *
+         * Refactor, there is no point to gateway_register if it runs at same momemnt as gateway_loaded this was supposed to run earlier, or gateway_loaded runs later.
+         * 
+         */
         do_action('gateway_register');
         do_action('gateway_loaded');
     }
@@ -249,7 +245,6 @@ class Plugin
 
     public function getRegistry() { return $this->registry; }
     public function getViewRegistry() { return $this->viewRegistry; }
-    public function getFacetRegistry(): Views\Facets\FacetRegistry { return $this->facetRegistry; }
     public function getPackageRegistry() { return $this->packageRegistry; }
     public function getStandardRoutes() { return $this->standardRoutes; }
     public function getCollectionRoutes() { return $this->collectionRoutes; }

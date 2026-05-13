@@ -5,7 +5,6 @@ import { viewApi } from '@arcwp/gateway-data';
 import stateManager from './StateManager';
 import { generateRoutes, normalizeViews, navigationHelpers } from './router';
 import '@arcwp/gateway-grids/style.css';
-import '@arcwp/gateway-grids/board-styles.css';
 
 const ViewGrid = ({ collectionKey, viewColumns, showFilters, enabledViews }) => {
   const { viewType = 'table', recordId } = useParams();
@@ -79,7 +78,7 @@ const App = ({ viewKey, showFilters = true }) => {
 
   const collectionKey = view.collection;
   const viewColumns = view.columns && view.columns.length > 0 ? view.columns : null;
-  const enabledViews = normalizeViews(['table', 'board']);
+  const enabledViews = normalizeViews(['table']);
 
   const routes = generateRoutes({
     viewKey,
@@ -104,7 +103,7 @@ const App = ({ viewKey, showFilters = true }) => {
 
 // Direct collection grid — no view object required
 const AppGrid = ({ collectionKey, showFilters = true }) => {
-  const enabledViews = normalizeViews(['table', 'board']);
+  const enabledViews = normalizeViews(['table']);
 
   const routes = generateRoutes({
     viewKey: collectionKey,

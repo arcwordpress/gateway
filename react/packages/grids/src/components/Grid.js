@@ -254,7 +254,6 @@ const Grid = ({
         <div className="grid__toolbar-row">
 
           <div className="grid__toolbar-left">
-            {title && <h2 className="grid__title">{title}</h2>}
             {toolbarActions}
           </div>
 

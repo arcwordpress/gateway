@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SearchIcon } from 'lucide-react';
 
 /**
  * TextFilter Component
@@ -51,6 +52,7 @@ const TextFilter = ({
         placeholder={placeholder}
         className="px-3 py-2 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent text-sm min-w-[200px]"
       />
+      <SearchIcon />
     </div>
   );
 };
