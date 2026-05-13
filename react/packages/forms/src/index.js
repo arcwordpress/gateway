@@ -3,6 +3,8 @@
 // Form type component exports.
 export { Form } from './components/form-types/Form';
 export { AppForm } from './components/form-types/AppForm';
+// ComposedForm is AppForm re-exported under a semantic name for custom-layout use cases.
+export { AppForm as ComposedForm } from './components/form-types/AppForm';
 export { ControlledForm } from './components/form-types/ControlledForm';
 export { BlockForm } from './components/form-types/BlockForm';
 
@@ -44,6 +46,9 @@ export {
   useGutenbergField,
   useGutenbergFieldWithContext
 } from './adapters/gutenbergFieldAdapter';
+
+// Composed form hook — use inside ComposedForm/AppForm to get auto-saving field components by name.
+export { useField } from './hooks/useField';
 
 // Field type exports.
 export { useRelationField } from './components/field-types/relation';
