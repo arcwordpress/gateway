@@ -571,7 +571,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
               className={baseInput}
             >
               <option value="">— Auto-detect —</option>
-              {(collection.field_list?.fields ?? []).map((f) => (
+              {(collection?.field_list?.fields ?? []).map((f) => (
                 <option key={f.id} value={f.name}>
                   {f.label || f.name}
                 </option>
