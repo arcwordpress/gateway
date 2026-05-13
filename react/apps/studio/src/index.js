@@ -5,7 +5,6 @@ import './index.css';
 // Import package styles
 import '@arcwp/gateway-forms/style.css';
 import '@arcwp/gateway-grids/style.css';
-import '@arcwp/gateway-admin/style.css';
 
 const rootElement = document.querySelector('[gateway-studio-app]');
 
@@ -33,11 +32,12 @@ if (rootElement) {
   const wpFooter = document.getElementById('wpfooter');
   if (wpFooter) wpFooter.style.display = 'none';
 
-  // Get package from data attribute, default to 'default' if not specified
+  // Get package from data attributes
   const packageKey = rootElement.getAttribute('data-package') || 'default';
+  const packageLabel = rootElement.getAttribute('data-package-label') || '';
 
   const root = createRoot(rootElement);
-  root.render(<App packageKey={packageKey} />);
+  root.render(<App packageKey={packageKey} packageLabel={packageLabel} />);
 } else {
   console.error('Root element with gateway-studio-app attribute not found');
 }

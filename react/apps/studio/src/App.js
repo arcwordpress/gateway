@@ -1,12 +1,11 @@
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
 import CollectionRecordView from './pages/CollectionRecordView';
-import AppHeader from './components/AppHeader';
 
 function AppContent() {
-  const { collections, loading } = useCollections();
+  const { loading } = useCollections();
 
   if (loading) {
     return <div className="gty-app__loading">Loading...</div>;
@@ -14,24 +13,21 @@ function AppContent() {
 
   return (
     <div className="gty-app">
-      <AppHeader collections={collections} />
-      <main className="gty-studio-main">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/collection/:collectionKey" element={<Dashboard />} />
-          <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
-          <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
-          <Route path="/collection/:collectionKey/view/:id" element={<CollectionRecordView />} />
-        </Routes>
-      </main>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/collection/:collectionKey" element={<Dashboard />} />
+        <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
+        <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
+        <Route path="/collection/:collectionKey/view/:id" element={<CollectionRecordView />} />
+      </Routes>
     </div>
   );
 }
 
-function App({ packageKey }) {
+function App({ packageKey, packageLabel }) {
   return (
     <Router>
-      <CollectionsProvider packageKey={packageKey}>
+      <CollectionsProvider packageKey={packageKey} packageLabel={packageLabel}>
         <AppContent />
       </CollectionsProvider>
     </Router>

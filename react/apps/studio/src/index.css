@@ -9,6 +9,8 @@
   grid-template-columns: 200px 1fr;
   min-height: calc(100vh - 46px); /* subtract WP admin header height */
   background-color: var(--gty-admin-dark);
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
 .studio-sidebar {
@@ -19,6 +21,16 @@
   padding: 1.5rem 1rem;
   background-color: var(--gty-admin-dark);
   border-right: 1px solid var(--gty-offset-1);
+}
+
+.studio-sidebar__title {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gty-contrast-1);
+  padding: 0.25rem 0 0.75rem;
+  width: 100%;
 }
 
 .studio-sidebar__create {
