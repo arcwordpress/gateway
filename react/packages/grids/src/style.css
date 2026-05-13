@@ -203,8 +203,9 @@
 .table-view__select {
   padding: 0.25rem 1.5rem 0.25rem 0.5rem !important;
   border: 1px solid var(--gty-border) !important;
-  border-radius: 0.25rem !important;
+  border-radius: 0 !important;
   font-size: 0.875rem !important;
+  font-family: var(--font-lexend) !important;
   background-color: var(--gty-offset-2) !important;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgdmlld0JveD0iMCAwIDEyIDEyIj48cGF0aCBkPSJNMiA0bDQgNCA0LTQiIHN0cm9rZT0iI0QyRDNENCIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==") !important;
   background-repeat: no-repeat !important;
@@ -220,7 +221,7 @@
 .table-view__select:focus {
   outline: none !important;
   box-shadow: none !important;
-  border-color: var(--gty-border-strong) !important;
+  border-color: var(--gty-border) !important;
 }
 
 /* Grid Component Styles */
