@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 /**
  * Generates and manages PHP class files for Raptor-managed packages.
  *
- * Each generated class extends \Gateway\Package\Package so the extension's
+ * Each generated class extends \Gateway\Package so the extension's
  * register_packages() can instantiate and register it with WordPress.
  */
 class PackageBuilder
@@ -50,7 +50,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class {$className} extends \\Gateway\\Package\\Package
+class {$className} extends \\Gateway\\Package
 {
     protected \$key         = '{$key}';
     protected \$label       = '{$label}';

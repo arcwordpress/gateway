@@ -104,10 +104,10 @@ class Plugin
     private function init()
     {
         new Extensions\ExtensionRoutes();
-        new Package\PackageRoutes();
+        new Packages\PackageRoutes();
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
-        $this->packageRegistry = new Package\PackageRegistry();
+        $this->packageRegistry = new Packages\PackageRegistry();
         Raptor\Packages\PackageLoader::load();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         new Forms\Fields\FieldTypeRoutes();
@@ -129,7 +129,7 @@ class Plugin
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init();
-        Package\PackageMenus::init();
+        Packages\PackageMenus::init();
         Forms\Render::init();
         Forms\Shortcode::init();
         Render\Render::init();
