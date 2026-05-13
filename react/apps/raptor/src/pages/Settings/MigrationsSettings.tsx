@@ -13,13 +13,6 @@ type Extension = {
   migrations_ran_at: string | null
 }
 
-type MigrationStatus = {
-  current_version: string
-  migration_version: string | null
-  migrations_ran_at: string | null
-  due: boolean
-}
-
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const btn = (variant: 'primary' | 'ghost' | 'danger' = 'primary') =>
