@@ -190,9 +190,6 @@ export default function Layout() {
                 boxSizing: 'border-box',
                 borderLeft: '1px solid #3f3f46',
                 borderTop: '1px solid #3f3f46',
-                maxWidth: '1120px',
-                width: '100%',
-                margin: '0 auto',
               }
         }
       >
