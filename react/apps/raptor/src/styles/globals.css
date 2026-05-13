@@ -302,14 +302,6 @@
   cursor: pointer;
 }
 
-/* Table header darker than rows — rows use --gty-offset-1 (#33393C) */
-#gateway-raptor-root .table-view__thead,
-#gateway-raptor-root .table-view__th,
-#gateway-raptor-canvas-host .table-view__thead,
-#gateway-raptor-canvas-host .table-view__th {
-  background-color: #27272a !important;
-}
-
 /* Grid inputs: flat corners, natural height — override the scoped border-radius/height rules above */
 #gateway-raptor-root .grid__search-input,
 #gateway-raptor-canvas-host .grid__search-input {
