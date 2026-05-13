@@ -349,16 +349,24 @@ class PackageRoutes
 
     /**
      * Resolve a RaptorExtension from request data.
-     * Accepts extension_id (int) or extension_key (string).
+     *
+     * Tries extension_id first, then falls back to extension_key so that a
+     * stale or mismatched id does not silently block creation.
      */
     private function resolveExtension(array $data): ?RaptorExtension
     {
-        if (!empty($data['extension_id'])) {
-            return RaptorExtension::find((int) $data['extension_id']);
+        $id  = isset($data['extension_id']) ? (int) $data['extension_id'] : 0;
+        $key = isset($data['extension_key']) ? sanitize_text_field($data['extension_key']) : '';
+
+        if ($id > 0) {
+            $ext = RaptorExtension::find($id);
+            if ($ext) return $ext;
         }
-        if (!empty($data['extension_key'])) {
-            return RaptorExtension::where('extension_key', sanitize_text_field($data['extension_key']))->first();
+
+        if ($key !== '') {
+            return RaptorExtension::where('extension_key', $key)->first();
         }
+
         return null;
     }
 

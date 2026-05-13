@@ -329,6 +329,7 @@ export default function PackagesTopLevel() {
           <PackagePanel
             mode="create"
             extensionId={selectedExt.id}
+            extensionKey={selectedExt.key}
             extensionTitle={selectedExt.title || selectedExt.key}
             onClose={closePanel}
             onCreated={(key) => { closePanel(); openEdit(key) }}

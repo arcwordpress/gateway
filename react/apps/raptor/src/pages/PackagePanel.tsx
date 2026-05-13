@@ -17,7 +17,7 @@ type FormValues = {
 }
 
 export type PackagePanelProps =
-  | { mode: 'create'; extensionId: number; extensionTitle: string; onClose: () => void; onCreated: (key: string) => void }
+  | { mode: 'create'; extensionId: number; extensionKey: string; extensionTitle: string; onClose: () => void; onCreated: (key: string) => void }
   | { mode: 'edit'; packageKey: string; onClose: () => void; onDeleted: () => void; onKeyChange?: (newKey: string) => void }
 
 // ─── Styles ────────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ function PackageFields({ register, disabled }: { register: ReturnType<typeof use
 
 // ─── Create panel ──────────────────────────────────────────────────────────
 
-function CreatePanel({ extensionId, extensionTitle, onClose, onCreated }: Extract<PackagePanelProps, { mode: 'create' }>) {
+function CreatePanel({ extensionId, extensionKey, extensionTitle, onClose, onCreated }: Extract<PackagePanelProps, { mode: 'create' }>) {
   const queryClient = useQueryClient()
   const { register, watch, setValue } = useForm<FormValues>({
     defaultValues: { label: '', package_key: '', description: '', icon: 'dashicons-admin-generic', position: 20, capability: 'manage_options', parent: '' },
@@ -108,6 +108,7 @@ function CreatePanel({ extensionId, extensionTitle, onClose, onCreated }: Extrac
         headers: authHeaders(),
         body: JSON.stringify({
           extension_id:  extensionId,
+          extension_key: extensionKey,
           package_key:   v.package_key.trim(),
           label:         v.label.trim(),
           description:   v.description.trim(),
