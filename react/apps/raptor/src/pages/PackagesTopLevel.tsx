@@ -6,19 +6,19 @@ import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from '.
 import { PackagePanel } from './PackagePanel'
 
 // ─── Page context ─────────────────────────────────────────────────────────
-// Provides the selected extension to all children so no child depends on
-// async load timing to decide whether to enable/disable the New Package button.
 
 type SelectedExt = { key: string; id: number; title: string } | null
 
 type PackagePageCtx = {
   selectedExt: SelectedExt
   setSelectedExt: (ext: SelectedExt) => void
+  extensionsReady: boolean
 }
 
 const PackagePageContext = createContext<PackagePageCtx>({
   selectedExt: null,
   setSelectedExt: () => {},
+  extensionsReady: false,
 })
 
 const usePackagePage = () => useContext(PackagePageContext)
@@ -73,16 +73,20 @@ const NEW_PKG_BTN =
   'flex items-center gap-1.5 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-medium transition-colors'
 
 // ─── New Package button ───────────────────────────────────────────────────
-// Reads selectedExt directly from context — enabled as soon as context has
-// a value, which is immediate from localStorage, no API wait required.
 
 function NewPackageButton({ onNew }: { onNew: () => void }) {
-  const { selectedExt } = usePackagePage()
+  const { selectedExt, extensionsReady } = usePackagePage()
+  const disabled = !extensionsReady || !selectedExt
+  const title = !extensionsReady
+    ? 'Loading extensions…'
+    : !selectedExt
+      ? 'Select an extension first'
+      : 'New Package'
   return (
     <button
       onClick={onNew}
-      disabled={!selectedExt}
-      title={!selectedExt ? 'Select an extension first' : 'New Package'}
+      disabled={disabled}
+      title={title}
       className={NEW_PKG_BTN}
     >
       <span className="text-sm leading-none">+</span>
@@ -192,6 +196,7 @@ export default function PackagesTopLevel() {
   const { data: extensions = [], isLoading: extensionsLoading } = useExtensions()
 
   const isLoading = packagesLoading || extensionsLoading
+  const extensionsReady = !extensionsLoading
 
   // Sync selectedExt state when API data arrives — fixes stale id/title from localStorage.
   // Also clears the selection if the persisted extension no longer exists.
@@ -221,7 +226,7 @@ export default function PackagesTopLevel() {
     : extensions
 
   const openNew = () => {
-    if (!selectedExt) return
+    if (!extensionsReady || !selectedExt) return
     setPanel({ mode: 'create' })
   }
 
@@ -236,7 +241,7 @@ export default function PackagesTopLevel() {
   }
 
   return (
-    <PackagePageContext.Provider value={{ selectedExt, setSelectedExt }}>
+    <PackagePageContext.Provider value={{ selectedExt, setSelectedExt, extensionsReady }}>
       <BuilderLayout>
         {/* ── Graph ──────────────────────────────────────────────────────── */}
         <div
