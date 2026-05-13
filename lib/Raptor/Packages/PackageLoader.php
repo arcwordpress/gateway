@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Package;
+namespace Gateway\Raptor\Packages;
 
 use Gateway\Plugin;
 use Gateway\Raptor\Collections\RaptorPackage;
@@ -48,10 +48,6 @@ class PackageLoader
         }
     }
 
-    /**
-     * Returns true when the WordPress plugin generated for the given extension
-     * key is currently active. Packages with no extension key are never shown.
-     */
     private static function extensionIsActive(?string $extensionKey): bool
     {
         if (!$extensionKey) {
