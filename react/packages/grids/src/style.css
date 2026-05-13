@@ -148,7 +148,7 @@
   border: 1px solid var(--gty-border) !important;
   border-radius: 0.25rem !important;
   background-color: var(--gty-bg-surface) !important;
-  color: var(--gty-text-sub) !important;
+  color: var(--gty-contrast-2) !important;
   font-size: 0.875rem !important;
   cursor: pointer !important;
   transition: background-color 0.15s ease-in-out;
@@ -159,7 +159,7 @@
 
 .table-view__btn:hover:not(:disabled) {
   background-color: var(--gty-bg-hover) !important;
-  color: var(--gty-text-sub) !important;
+  color: var(--gty-contrast-1) !important;
   border-color: var(--gty-border-strong) !important;
 }
 
@@ -183,7 +183,7 @@
 /* Row Count */
 .table-view__row-count {
   font-size: 0.875rem;
-  color: var(--gty-text-muted);
+  color: var(--gty-contrast-2);
 }
 
 /* Page Size Container */
@@ -196,7 +196,7 @@
 /* Page Info */
 .table-view__page-info {
   font-size: 0.875rem;
-  color: var(--gty-text-sub);
+  color: var(--gty-contrast-2);
 }
 
 /* Select Dropdown */
@@ -205,13 +205,13 @@
   border: 1px solid var(--gty-border) !important;
   border-radius: 0.25rem !important;
   font-size: 0.875rem !important;
-  background-color: var(--gty-bg-surface) !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23a1a1aa' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-color: var(--gty-offset-2) !important;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiIgdmlld0JveD0iMCAwIDEyIDEyIj48cGF0aCBkPSJNMiA0bDQgNCA0LTQiIHN0cm9rZT0iI0QyRDNENCIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==") !important;
   background-repeat: no-repeat !important;
   background-position: right 0.4rem center !important;
   -webkit-appearance: none !important;
   appearance: none !important;
-  color: var(--gty-text-sub) !important;
+  color: var(--gty-contrast-2) !important;
   outline: none !important;
   cursor: pointer !important;
   box-shadow: none !important;

@@ -1,12 +1,12 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { CollectionsProvider, useCollections } from './context/CollectionsContext';
+import StudioHeader from './components/StudioHeader';
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
 import CollectionRecordView from './pages/CollectionRecordView';
-import AppHeader from './components/AppHeader';
 
 function AppContent() {
-  const { collections, packageLabel, loading } = useCollections();
+  const { collections, loading } = useCollections();
 
   if (loading) {
     return <div className="gty-app__loading">Loading...</div>;
@@ -14,7 +14,7 @@ function AppContent() {
 
   return (
     <div className="gty-app">
-      <AppHeader collections={collections} packageLabel={packageLabel} />
+      <StudioHeader collections={collections} />
       <main className="gty-studio-main">
         <Routes>
           <Route path="/" element={<Dashboard />} />

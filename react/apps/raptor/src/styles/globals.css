@@ -180,7 +180,6 @@
 
 #gateway-raptor-canvas-host select,
 #gateway-raptor-root select {
-  /* background-image: none !important; */
   padding: 0.375rem 0.5rem !important;
   min-height: auto !important;
   line-height: normal !important;
