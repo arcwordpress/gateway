@@ -14,6 +14,7 @@ use Gateway\Raptor\Collections\RaptorFacet;
 use Gateway\Raptor\Collections\RaptorFormList;
 use Gateway\Raptor\Collections\RaptorForm;
 use Gateway\Raptor\Collections\RaptorFormField;
+use Gateway\Raptor\Collections\RaptorPackage;
 use Gateway\Raptor\Collections\RaptorUserLayout;
 use Gateway\Raptor\Collections\RaptorUserLayoutNode;
 use Gateway\Raptor\Collections\RaptorExtensionFile;
@@ -338,6 +339,14 @@ class ExtensionRoutes
      */
     private function cascadeDeleteExtension(int $extensionId): void
     {
+        // ── Packages (pivot rows first, then packages) ────────────────────────
+        $packageIds = RaptorPackage::where('extension_id', $extensionId)->pluck('id')->toArray();
+        if ($packageIds) {
+            $db = \Gateway\Database\DatabaseConnection::getCapsule()->getConnection();
+            $db->table('gateway_raptor_package_collection')->whereIn('package_id', $packageIds)->delete();
+            RaptorPackage::whereIn('id', $packageIds)->delete();
+        }
+
         $collections = RaptorCollection::where('extension_id', $extensionId)->get();
 
         if ($collections->isEmpty()) {
