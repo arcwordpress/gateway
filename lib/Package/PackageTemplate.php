@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Packages;
+namespace Gateway\Package;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -24,13 +24,13 @@ class PackageTemplate
     {
         $key        = $record['package_key']  ?? '';
         $label      = addslashes($record['label']       ?? '');
-        $description= addslashes($record['description'] ?? '');
+        $description = addslashes($record['description'] ?? '');
         $icon       = addslashes($record['icon']        ?? 'dashicons-admin-generic');
         $position   = (int) ($record['position']   ?? 20);
         $capability = addslashes($record['capability']  ?? 'manage_options');
         $parent     = $record['parent'] ? "'" . addslashes($record['parent']) . "'" : 'null';
 
-        $className  = self::keyToClassName($key);
+        $className = self::keyToClassName($key);
 
         return <<<PHP
 <?php
@@ -43,13 +43,13 @@ class PackageTemplate
  */
 class {$className} extends \\Gateway\\Package\\Package
 {
-    protected \$key        = '{$key}';
-    protected \$label      = '{$label}';
-    protected \$description= '{$description}';
-    protected \$icon       = '{$icon}';
-    protected \$position   = {$position};
-    protected \$capability = '{$capability}';
-    protected \$parent     = {$parent};
+    protected \$key         = '{$key}';
+    protected \$label       = '{$label}';
+    protected \$description = '{$description}';
+    protected \$icon        = '{$icon}';
+    protected \$position    = {$position};
+    protected \$capability  = '{$capability}';
+    protected \$parent      = {$parent};
 }
 PHP;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Packages;
+namespace Gateway\Package;
 
 use Gateway\Plugin;
 use Gateway\Raptor\Collections\RaptorPackage;
@@ -30,7 +30,6 @@ class PackageLoader
             $registry = Plugin::getInstance()->getPackageRegistry();
 
             foreach ($records as $record) {
-                // Only register the package when the owning extension plugin is active.
                 $extKey = $record->extension ? $record->extension->extension_key : null;
                 if (!self::extensionIsActive($extKey)) {
                     continue;
@@ -42,8 +41,7 @@ class PackageLoader
 
                 $data                = $record->toArray();
                 $data['collections'] = $record->collections->pluck('collection_key')->toArray();
-                $package = new DatabasePackage($data);
-                $registry->register($package);
+                $registry->register(new DatabasePackage($data));
             }
         } catch (\Exception $e) {
             error_log('[Gateway] PackageLoader::load failed: ' . $e->getMessage());
@@ -60,9 +58,7 @@ class PackageLoader
             return false;
         }
 
-        $slug       = str_replace('_', '-', $extensionKey);
-        $pluginFile = $slug . '/' . $slug . '.php';
-
-        return is_plugin_active($pluginFile);
+        $slug = str_replace('_', '-', $extensionKey);
+        return is_plugin_active($slug . '/' . $slug . '.php');
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Gateway\Package;
 
-use Gateway\Packages\DatabasePackage;
 
 if (!defined('ABSPATH')) {
     exit;
