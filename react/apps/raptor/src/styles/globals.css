@@ -60,7 +60,7 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gty-contrast-1);
+  color: var(--gty-contrast-2);
   background: none;
   border: none;
   cursor: pointer;
@@ -325,6 +325,14 @@
   border-radius: 0 !important;
   min-height: auto !important;
   height: auto !important;
+}
+
+/* Match date-range inputs to toolbar search height */
+#gateway-raptor-root .date-range-filter__input,
+#gateway-raptor-canvas-host .date-range-filter__input {
+  padding-top: 0.4375rem !important;
+  padding-bottom: 0.4375rem !important;
+  line-height: 1.4 !important;
 }
 
 /* Placeholder contrast — --gty-text-faint doesn't resolve in Raptor context */
