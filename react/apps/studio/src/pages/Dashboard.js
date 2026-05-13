@@ -4,7 +4,7 @@ import { Grid } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
 
 function Dashboard() {
-  const { collections } = useCollections();
+  const { collections, packageLabel } = useCollections();
   const navigate = useNavigate();
   const { collectionKey } = useParams();
   const [viewType, setViewType] = useState('table');
@@ -40,6 +40,9 @@ function Dashboard() {
   return (
     <div className="studio-layout">
       <aside className="studio-sidebar">
+        {packageLabel && (
+          <span className="studio-sidebar__title">{packageLabel}</span>
+        )}
         <button onClick={handleCreate} className="studio-sidebar__create">
           Create
         </button>

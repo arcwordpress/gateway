@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const CollectionsContext = createContext();
 
-export function CollectionsProvider({ children, packageKey }) {
+export function CollectionsProvider({ children, packageKey, packageLabel = '' }) {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,7 +39,7 @@ export function CollectionsProvider({ children, packageKey }) {
   }, [packageKey]);
 
   return (
-    <CollectionsContext.Provider value={{ collections, loading, error }}>
+    <CollectionsContext.Provider value={{ collections, loading, error, packageLabel }}>
       {children}
     </CollectionsContext.Provider>
   );

@@ -164,7 +164,7 @@ class PackageMenus
 
         // Render Studio app with package identifier
         ?>
-        <div gateway-studio-app data-package="<?php echo esc_attr($package->getKey()); ?>"></div>
+        <div gateway-studio-app data-package="<?php echo esc_attr($package->getKey()); ?>" data-package-label="<?php echo esc_attr($package->getLabel()); ?>"></div>
         <?php
     }
 }
