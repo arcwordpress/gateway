@@ -255,20 +255,19 @@ const Grid = ({
 
         <div className="grid__toolbar-row">
 
-          <div className="grid__toolbar-left">
-            {toolbarActions}
-          </div>
+          {toolbarActions && (
+            <div className="grid__toolbar-left">
+              {toolbarActions}
+            </div>
+          )}
 
-          <div className="grid__toolbar-center">
+          <div className="grid__toolbar-end">
             {showFilters && filters.length > 0 && (
-              <FilterIcon 
-                onClick={() => setFiltersOpen(v => !v)} 
+              <FilterIcon
+                onClick={() => setFiltersOpen(v => !v)}
                 isOpen={filtersOpen}
               />
             )}
-          </div>
-          
-          <div className="grid__toolbar-right">
             <ViewSwitcher
               currentView={currentView}
               onViewChange={setCurrentView}
@@ -284,7 +283,7 @@ const Grid = ({
               />
             )}
           </div>
-          
+
         </div>
 
         {showFilters && filters.length > 0 && (
