@@ -5,6 +5,7 @@ namespace Gateway\Endpoints;
 use Gateway\Extensions\ExtensionRegistry;
 use Gateway\Plugin;
 use Gateway\REST\RequestLog;
+use Gateway\Raptor\Collections\RaptorCollection;
 
 if (!defined('ABSPATH')) exit;
 
@@ -45,6 +46,16 @@ class AdminDataRoute
         $collections = $registry->getAll();
         $collectionsData = [];
         $recordCount = 0; // Total records across all collections
+
+        // Collections that exist in gateway_raptor_collection are DB-managed.
+        // They must never be treated as code-defined even if the extension
+        // builder later generated a PHP class for them.
+        $dbManagedKeys = [];
+        try {
+            $dbManagedKeys = RaptorCollection::pluck('collection_key')->flip()->toArray();
+        } catch (\Exception $e) {
+            // Table may not exist yet — leave empty, fall back to field check.
+        }
 
         // Get actual registered routes
         $actualRoutes = $standardRoutes->getActualRegisteredRoutes();
@@ -101,7 +112,7 @@ class AdminDataRoute
                 'table'           => $fullTableName,
                 'routes'          => $collectionRoutes,
                 'record_count'    => $count,
-                'is_code_defined' => !empty($collection->getFields()),
+                'is_code_defined' => !isset($dbManagedKeys[$key]) && !empty($collection->getFields()),
             ];
         }
 
