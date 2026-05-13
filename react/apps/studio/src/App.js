@@ -3,9 +3,10 @@ import { CollectionsProvider, useCollections } from './context/CollectionsContex
 import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
 import CollectionRecordView from './pages/CollectionRecordView';
+import AppHeader from './components/AppHeader';
 
 function AppContent() {
-  const { loading } = useCollections();
+  const { collections, packageLabel, loading } = useCollections();
 
   if (loading) {
     return <div className="gty-app__loading">Loading...</div>;
@@ -13,13 +14,16 @@ function AppContent() {
 
   return (
     <div className="gty-app">
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/collection/:collectionKey" element={<Dashboard />} />
-        <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
-        <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
-        <Route path="/collection/:collectionKey/view/:id" element={<CollectionRecordView />} />
-      </Routes>
+      <AppHeader collections={collections} packageLabel={packageLabel} />
+      <main className="gty-studio-main">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/collection/:collectionKey" element={<Dashboard />} />
+          <Route path="/collection/:collectionKey/create" element={<CollectionForm />} />
+          <Route path="/collection/:collectionKey/edit/:id" element={<CollectionForm />} />
+          <Route path="/collection/:collectionKey/view/:id" element={<CollectionRecordView />} />
+        </Routes>
+      </main>
     </div>
   );
 }
