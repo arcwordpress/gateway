@@ -1,6 +1,8 @@
 <?php
 
-namespace Gateway\Package;
+namespace Gateway\Raptor\Packages;
+
+use Gateway\Package\Package;
 
 if (!defined('ABSPATH')) {
     exit;

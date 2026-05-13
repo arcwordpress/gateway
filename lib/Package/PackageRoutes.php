@@ -2,6 +2,7 @@
 
 namespace Gateway\Package;
 
+use Gateway\Raptor\Packages\DatabasePackage;
 
 if (!defined('ABSPATH')) {
     exit;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Package;
+namespace Gateway\Raptor\Packages;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -15,20 +15,18 @@ if (!defined('ABSPATH')) {
 class PackageTemplate
 {
     /**
-     * Render the PHP class stub for the given package record.
-     *
      * @param array $record  Associative array matching gateway_raptor_package columns.
      * @return string        Ready-to-save PHP source.
      */
     public static function render(array $record): string
     {
-        $key        = $record['package_key']  ?? '';
-        $label      = addslashes($record['label']       ?? '');
+        $key         = $record['package_key']  ?? '';
+        $label       = addslashes($record['label']       ?? '');
         $description = addslashes($record['description'] ?? '');
-        $icon       = addslashes($record['icon']        ?? 'dashicons-admin-generic');
-        $position   = (int) ($record['position']   ?? 20);
-        $capability = addslashes($record['capability']  ?? 'manage_options');
-        $parent     = $record['parent'] ? "'" . addslashes($record['parent']) . "'" : 'null';
+        $icon        = addslashes($record['icon']        ?? 'dashicons-admin-generic');
+        $position    = (int) ($record['position']   ?? 20);
+        $capability  = addslashes($record['capability']  ?? 'manage_options');
+        $parent      = $record['parent'] ? "'" . addslashes($record['parent']) . "'" : 'null';
 
         $className = self::keyToClassName($key);
 
