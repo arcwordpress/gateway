@@ -81,6 +81,7 @@ class Collection extends EloquentModel
     protected $fields = [];
     protected $filters = [];
     protected $grid = [];
+    protected $displayField = null;
     protected $searchable = [];
     protected $routes = [
         'enabled' => true,
@@ -309,6 +310,42 @@ class Collection extends EloquentModel
             $grid['labelField'] = $this->labelField;
         }
         return $grid;
+    }
+
+    /**
+     * Get the primary display field for this collection.
+     *
+     * Resolution order:
+     *   1. $displayField if explicitly set
+     *   2. $labelField  (backward-compat alias)
+     *   3. First matching candidate: 'title', 'name', 'label'
+     *   4. 'id' as the guaranteed fallback
+     *
+     * Always returns a non-empty string — callers can rely on the result
+     * without any additional null/empty checks.
+     *
+     * @return string
+     */
+    public function getDisplayField(): string
+    {
+        if (!empty($this->displayField)) {
+            return $this->displayField;
+        }
+
+        if (!empty($this->labelField)) {
+            return $this->labelField;
+        }
+
+        $fields     = $this->getFields();
+        $candidates = ['title', 'name', 'label'];
+
+        foreach ($candidates as $candidate) {
+            if (isset($fields[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return 'id';
     }
 
     /**

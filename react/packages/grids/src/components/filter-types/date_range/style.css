@@ -18,10 +18,22 @@
 
 .date-range-filter__input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #3f3f46;
+  background-color: var(--gty-offset-1);
+  color: var(--gty-contrast-1);
+  border: 1px solid var(--gty-offset-2);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  color-scheme: dark;
+}
+
+.date-range-filter__input::-webkit-calendar-picker-indicator {
+  background-color: var(--gty-offset-1);
+  filter: invert(85%);
+  border-radius: 3px;
+  padding: 2px;
+  cursor: pointer;
+  opacity: 1;
 }
 
 .date-range-filter__input:focus {

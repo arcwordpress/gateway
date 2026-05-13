@@ -93,6 +93,7 @@ class RaptorCollection extends \Gateway\Collection
             'extension_id',
             'package_key',
             'label_field',
+            'display_field',
             'title',
             'description',
             'status',

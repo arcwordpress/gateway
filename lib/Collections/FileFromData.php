@@ -82,14 +82,20 @@ class FileFromData
             ? "    protected \$labelField = '" . addslashes($labelField) . "';\n"
             : '';
 
+        $displayField     = $collectionData['display_field'] ?? null;
+        $displayFieldProperty = $displayField
+            ? "    protected \$displayField = '" . addslashes($displayField) . "';\n"
+            : '';
+
         // Replace placeholders
         $replacements = [
             '{{NAMESPACE}}'              => $pluginNamespace,
             '{{CLASS_NAME}}'             => $className,
             '{{COLLECTION_KEY}}'         => $collectionData['key'],
             '{{COLLECTION_TITLE}}'       => $title,
-            '{{PACKAGE_PROPERTY}}'       => $packageProperty,
+            '{{PACKAGE_PROPERTY}}'         => $packageProperty,
             '{{LABEL_FIELD_PROPERTY}}'   => $labelFieldProperty,
+            '{{DISPLAY_FIELD_PROPERTY}}' => $displayFieldProperty,
             '{{FIELDS_JSON}}'            => $fieldsPhp,
             '{{RELATIONSHIP_METHODS}}'   => $relationshipMethods,
             '{{REGISTERED}}'             => $registered ? 'true' : 'false',
