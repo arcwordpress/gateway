@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SearchIcon } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 /**
  * TextFilter Component
@@ -44,15 +44,17 @@ const TextFilter = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`.trim()}>
-      <input
-        type="text"
-        value={localValue}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className="px-3 py-2 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent text-sm min-w-[200px]"
-      />
-      <SearchIcon />
+    <div className={`text-filter ${className}`.trim()}>
+      <div className="text-filter__input-wrapper">
+        <Search className="text-filter__icon" aria-hidden="true" />
+        <input
+          type="text"
+          value={localValue}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className="text-filter__input"
+        />
+      </div>
     </div>
   );
 };

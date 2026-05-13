@@ -33,6 +33,7 @@ import ViewSwitcher from './ViewSwitcher';
  *@param {React.ComponentType} [props.singleViewComponent] - Custom component for single record view
  * @param {string} [props.title] - Title to display in the grid toolbar
  * @param {React.ReactNode} [props.toolbarActions] - Custom toolbar actions (e.g., create button)
+ * @param {boolean} [props.showSearch] - Whether to show the search input (default true)
  * @param {React.ReactNode} [props.children]
  */
 const Grid = ({
@@ -45,6 +46,7 @@ const Grid = ({
   onCloseView,
   showActions = true,
   showFilters = true,
+  showSearch = true,
   viewType = 'table',
   singleViewComponent = SingleView,
   title = '',
@@ -272,13 +274,15 @@ const Grid = ({
               onViewChange={setCurrentView}
               enabledViews={['table', 'list', 'cards']}
             />
-            <input
-              type="search"
-              className="grid__search-input"
-              placeholder="Search…"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-            />
+            {showSearch && (
+              <input
+                type="search"
+                className="grid__search-input"
+                placeholder="Search…"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+              />
+            )}
           </div>
           
         </div>
