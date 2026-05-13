@@ -103,7 +103,7 @@ const GridPagination = ({
       </div>
 
       <div className="table-view__row-count">
-        {currentRowCount} row(s)
+        {currentRowCount} {currentRowCount === 1 ? 'row' : 'rows'}
       </div>
 
       <div className="table-view__page-size">

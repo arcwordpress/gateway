@@ -145,7 +145,7 @@ const TableView = ({
         </div>
 
         <div className="table-view__row-count">
-          {data.length} row(s)
+          {data.length} {data.length === 1 ? 'row' : 'rows'}
         </div>
 
         <div className="table-view__page-size">
