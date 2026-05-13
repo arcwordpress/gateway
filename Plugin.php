@@ -103,6 +103,7 @@ class Plugin
     private function init()
     {
         new Extensions\ExtensionRoutes();
+        new Package\PackageRoutes();
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
