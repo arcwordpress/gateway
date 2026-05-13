@@ -320,3 +320,12 @@
   min-height: auto !important;
   height: auto !important;
 }
+
+/* Placeholder contrast — --gty-text-faint doesn't resolve in Raptor context */
+#gateway-raptor-root input::placeholder,
+#gateway-raptor-canvas-host input::placeholder,
+#gateway-raptor-root textarea::placeholder,
+#gateway-raptor-canvas-host textarea::placeholder {
+  color: var(--gty-contrast-2) !important;
+  opacity: 1 !important;
+}
