@@ -48,7 +48,7 @@ export {
 } from './adapters/gutenbergFieldAdapter';
 
 // Composed form hook — use inside ComposedForm/AppForm to get auto-saving field components by name.
-export { useField } from './hooks/useField';
+export { useField } from './useField';
 
 // Field type exports.
 export { useRelationField } from './components/field-types/relation';
