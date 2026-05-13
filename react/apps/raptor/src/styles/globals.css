@@ -14,11 +14,11 @@
 .studio-sidebar {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
   padding: 1.5rem 1rem;
   background-color: var(--app-bg);
-  border-right: 1px solid var(--gty-offset-1);
+  border-right: 1px solid var(--gty-offset-2);
 }
 
 .studio-sidebar__title {
@@ -307,4 +307,23 @@
 #gateway-raptor-root input[type="search"]::-webkit-search-cancel-button {
   filter: invert(85%);
   cursor: pointer;
+}
+
+/* Grid inputs: flat corners, natural height — override the scoped border-radius/height rules above */
+#gateway-raptor-root .grid__search-input,
+#gateway-raptor-canvas-host .grid__search-input {
+  border-radius: 0 !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+#gateway-raptor-root .grid .gty-grid__filters input,
+#gateway-raptor-root .grid .gty-grid__filters select,
+#gateway-raptor-canvas-host .grid .gty-grid__filters input,
+#gateway-raptor-canvas-host .grid .gty-grid__filters select,
+#gateway-raptor-root .grid .text-filter__input,
+#gateway-raptor-canvas-host .grid .text-filter__input {
+  border-radius: 0 !important;
+  min-height: auto !important;
+  height: auto !important;
 }
