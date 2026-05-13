@@ -59,6 +59,12 @@
   --gty-admin-almost-white: #27272a;
   --gty-admin-accent:       #3b82f6;
 
+  /* ── Offset scale (WP Admin dark → +10% white steps) */
+  --gty-offset-1:   #33393C;
+  --gty-offset-2:   #4A4F52;
+  --gty-contrast-2: #D2D3D4;
+  --gty-contrast-1: #E8E9E9;
+
   /* ── Typography ──────────────────────────────────── */
   --font-lexend: 'Lexend Exa', sans-serif;
   --font-geist:  'Geist', sans-serif;

@@ -38,23 +38,25 @@ function Dashboard() {
   };
 
   return (
-    <div className="gty-dashboard">
-      <Grid 
-        collectionKey={activeKey}
-        title={activeCollection?.title || activeKey}
-        viewType={viewType}
-        onEdit={handleEdit}
-        onView={handleView}
-        onDelete={handleDelete}
-        toolbarActions={
-          <button
-            onClick={handleCreate}
-            className="gty-dashboard__create-button"
-          >
-            Create
-          </button>
-        }
-      />
+    <div className="studio-layout">
+      <aside className="studio-sidebar">
+        <button onClick={handleCreate} className="studio-sidebar__create">
+          Create
+        </button>
+        <button onClick={() => navigate(-1)} className="studio-sidebar__return">
+          <span className="studio-sidebar__return-icon" aria-hidden="true">↵</span>
+          Return
+        </button>
+      </aside>
+      <main className="studio-main">
+        <Grid
+          collectionKey={activeKey}
+          viewType={viewType}
+          onEdit={handleEdit}
+          onView={handleView}
+          onDelete={handleDelete}
+        />
+      </main>
     </div>
   );
 }
