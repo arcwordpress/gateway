@@ -2,8 +2,7 @@
   "name": "@arcwp/gateway-apps",
   "private": true,
   "scripts": {
-    "build": "npm run build:admin && npm run build:form && npm run build:grid && npm run build:composed-grid && npm run build:studio && npm run build:raptor",
-    "build:admin": "npm --prefix admin run build",
+    "build": "npm run build:form && npm run build:grid && npm run build:composed-grid && npm run build:studio && npm run build:raptor",
     "build:form": "npm --prefix form run build",
     "build:grid": "npm --prefix grid run build",
     "build:composed-grid": "npm --prefix composed-grid run build",

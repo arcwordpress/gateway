@@ -11,12 +11,11 @@
   },
   "scripts": {
     "build": "npm run build:packages && npm run build:apps && npm run build:block-types",
-    "build:packages": "npm run build -w packages/data && npm run build -w packages/admin && npm run build -w packages/forms && npm run build -w packages/grids",
+    "build:packages": "npm run build -w packages/data && npm run build -w packages/forms && npm run build -w packages/grids",
     "build:apps": "npm --prefix apps run build",
     "build:composed-grid": "npm --prefix apps/composed-grid run build",
     "build:block-types": "npm --prefix block-types run build",
     "build:data": "npm run build -w packages/data",
-    "build:admin": "npm run build -w packages/admin",
     "build:forms": "npm run build -w packages/forms",
     "build:grids": "npm run build -w packages/grids",
     "start:block-types": "npm --prefix block-types run start",
