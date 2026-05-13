@@ -71,7 +71,6 @@ class Plugin
 
     private function __construct() 
     {
-        // Lean constructor to avoid WP 6.7+ translation errors
     }
 
     public function boot()
@@ -98,6 +97,8 @@ class Plugin
             $this->bootEloquent();
             $this->init();
         }
+
+        do_action('gateway_loaded');
     }
 
     private function init()
@@ -353,3 +354,6 @@ add_action('init', function() {
     do_action('gateway_plugin_loaded');
     
 }, 5);
+
+// A. Signal that Gateway is activated.
+do_action('gateway_activated');
