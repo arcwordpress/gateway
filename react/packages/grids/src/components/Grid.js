@@ -238,9 +238,38 @@ const Grid = ({
   }
 
   if (loading && !collection) {
+    const skeletonWidths = [55, 30, 20, 15];
     return (
-      <div className="grid__loading">
-        <div className="grid__loading-message">Loading collection...</div>
+      <div className="grid">
+        <div className="grid__toolbar-row">
+          <div className="grid__toolbar-end">
+            <div className="grid__skeleton-bar" style={{ width: 26, height: 26, borderRadius: '0.25rem' }} />
+            <div className="grid__skeleton-bar" style={{ width: 26, height: 26, borderRadius: '0.25rem' }} />
+            <div className="grid__skeleton-bar" style={{ width: 160, height: 26, borderRadius: 0 }} />
+          </div>
+        </div>
+        <table className="grid__skeleton-table">
+          <thead>
+            <tr className="grid__skeleton-row">
+              {skeletonWidths.map((w, i) => (
+                <th key={i} className="grid__skeleton-th">
+                  <div className="grid__skeleton-bar" style={{ width: `${w}%` }} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <tr key={i} className="grid__skeleton-row">
+                {skeletonWidths.map((w, j) => (
+                  <td key={j} className="grid__skeleton-cell">
+                    <div className="grid__skeleton-bar" style={{ width: `${w}%` }} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }

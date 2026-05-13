@@ -61,6 +61,7 @@
 
   /* ── Offset scale (WP Admin dark → +10% white steps) */
   --gty-offset-1:   #33393C;
+  --gty-offset-1a:  #383E40;
   --gty-offset-2:   #4A4F52;
   --gty-contrast-2: #D2D3D4;
   --gty-contrast-1: #E8E9E9;
