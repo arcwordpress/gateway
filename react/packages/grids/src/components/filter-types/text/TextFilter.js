@@ -44,15 +44,15 @@ const TextFilter = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`.trim()}>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500 pointer-events-none" />
+    <div className={`text-filter ${className}`.trim()}>
+      <div className="text-filter__input-wrapper">
+        <Search className="text-filter__icon" aria-hidden="true" />
         <input
           type="text"
           value={localValue}
           onChange={handleChange}
           placeholder={placeholder}
-          className="pl-8 pr-3 py-2 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:border-transparent text-sm min-w-[200px]"
+          className="text-filter__input"
         />
       </div>
     </div>
