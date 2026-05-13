@@ -772,7 +772,14 @@
   background-color: var(--gty-offset-2);
   padding: 0.25rem 0.75rem;
   color: var(--gty-text-muted);
-  border-bottom: 1px solid var(--gty-border);
+}
+
+.grid__toolbar-end .grid__toolbar-search {
+  width: 160px;
+}
+
+.grid__toolbar-end .grid__toolbar-search .text-filter__input {
+  width: 100%;
 }
 
 .grid__toolbar-end {

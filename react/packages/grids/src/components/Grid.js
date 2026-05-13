@@ -12,6 +12,7 @@ import { applyFilters } from '../utils/filterUtils';
 import SingleView from './SingleView';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ViewSwitcher from './ViewSwitcher';
+import TextFilter from './filter-types/text/TextFilter';
 
 /**
  * Main Grid Component
@@ -109,6 +110,9 @@ const Grid = ({
   const filters = useMemo(() => {
     return collection?.filters || [];
   }, [collection]);
+
+  // collection.grid.show_search === false overrides the showSearch prop
+  const effectiveShowSearch = showSearch && (collection?.grid?.show_search !== false);
 
   // Unified filtering logic
   const filteredData = useMemo(() => {
@@ -302,13 +306,12 @@ const Grid = ({
               onViewChange={setCurrentView}
               enabledViews={['table', 'list', 'cards']}
             />
-            {showSearch && (
-              <input
-                type="search"
-                className="grid__search-input"
-                placeholder="Search…"
+            {effectiveShowSearch && (
+              <TextFilter
                 value={searchText}
-                onChange={e => setSearchText(e.target.value)}
+                onChange={setSearchText}
+                placeholder="Search…"
+                className="grid__toolbar-search"
               />
             )}
           </div>
