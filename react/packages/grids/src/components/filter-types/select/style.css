@@ -14,9 +14,9 @@
   min-width: 150px;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #e4e4e7;
-  background-color: #27272a;
-  border: 1px solid #3f3f46;
+  color: var(--gty-contrast-1);
+  background-color: var(--gty-offset-1);
+  border: 1px solid var(--gty-offset-2);
   border-radius: 0.5rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   appearance: none;

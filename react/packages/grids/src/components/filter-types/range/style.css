@@ -19,10 +19,18 @@
 .range-filter__input {
   width: 6rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #3f3f46;
+  background-color: var(--gty-offset-1);
+  color: var(--gty-contrast-1);
+  border: 1px solid var(--gty-offset-2);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.range-filter__input::-webkit-inner-spin-button,
+.range-filter__input::-webkit-outer-spin-button {
+  filter: invert(85%);
+  opacity: 1;
 }
 
 .range-filter__input:focus {
