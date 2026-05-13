@@ -429,8 +429,9 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     },
   })
 
-  const extensionPackages = collection?.extension_id
-    ? allPackages.filter((p) => p.extension_id === collection.extension_id)
+  const extensionId = collection?.extension_id
+  const extensionPackages = extensionId
+    ? allPackages.filter((p) => p.extension_id === extensionId)
     : allPackages
 
   useEffect(() => {
