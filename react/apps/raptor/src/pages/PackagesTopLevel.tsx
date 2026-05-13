@@ -55,6 +55,8 @@ function useExtensions() {
       const json = await res.json() as { extensions?: ExtensionRecord[] }
       return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
     },
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   })
 }
 
@@ -184,20 +186,29 @@ export default function PackagesTopLevel() {
       const json = await res.json()
       return (json.packages ?? []).map((p: PackageRecord) => ({ ...p, extension_id: p.extension_id !== null ? Number(p.extension_id) : null }))
     },
+    staleTime: 30_000,
   })
 
   const { data: extensions = [] } = useExtensions()
 
-  // When extensions load, refresh the persisted ext with latest data (title etc.)
-  // This is the only place we touch selectedExt based on API data — purely additive.
-  const selectedExtFromApi = selectedExt
-    ? (extensions.find((e) => e.extension_key === selectedExt.key) ?? null)
-    : null
-
-  if (selectedExtFromApi && (selectedExtFromApi.id !== selectedExt?.id || selectedExtFromApi.title !== selectedExt?.title)) {
-    // Silently refresh persisted data without resetting selection
-    persistExt({ key: selectedExtFromApi.extension_key, id: selectedExtFromApi.id, title: selectedExtFromApi.title })
-  }
+  // Sync selectedExt state when API data arrives — fixes stale id/title from localStorage.
+  // Also clears the selection if the persisted extension no longer exists.
+  useEffect(() => {
+    if (extensions.length === 0) return
+    if (!selectedExt) return
+    const fresh = extensions.find((e) => e.extension_key === selectedExt.key)
+    if (!fresh) {
+      setSelectedExtRaw(null)
+      persistExt(null)
+      return
+    }
+    if (fresh.id !== selectedExt.id || fresh.title !== selectedExt.title) {
+      const updated = { key: fresh.extension_key, id: fresh.id, title: fresh.title }
+      setSelectedExtRaw(updated)
+      persistExt(updated)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extensions])
 
   const visiblePackages = selectedExt
     ? allPackages.filter((p) => p.extension_id === selectedExt.id)
@@ -318,6 +329,7 @@ export default function PackagesTopLevel() {
           <PackagePanel
             mode="create"
             extensionId={selectedExt.id}
+            extensionKey={selectedExt.key}
             extensionTitle={selectedExt.title || selectedExt.key}
             onClose={closePanel}
             onCreated={(key) => { closePanel(); openEdit(key) }}

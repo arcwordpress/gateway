@@ -167,9 +167,9 @@
 .table-view__btn[disabled],
 .table-view__btn.table-view__btn--pagination:disabled,
 .table-view__btn.table-view__btn--pagination[disabled] {
-  background-color: var(--gty-bg-surface) !important;
+  background-color: var(--gty-offset-1) !important;
   color: var(--gty-text-faint) !important;
-  border-color: var(--gty-border) !important;
+  border-color: var(--gty-offset-2) !important;
   opacity: 1 !important;
   cursor: not-allowed !important;
   box-shadow: none !important;

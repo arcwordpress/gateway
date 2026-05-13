@@ -8,4 +8,6 @@ if (!defined('ABSPATH')) {
 
 class Extension extends \Gateway\Extension
 {
+    protected $key   = '{{KEY}}';
+    protected $title = '{{TITLE}}';
 }
