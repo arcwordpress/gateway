@@ -45,6 +45,7 @@ const TextFilter = ({
 
   return (
     <div className={`text-filter ${className}`.trim()}>
+      {label && <label className="text-filter__label">{label}</label>}
       <div className="text-filter__input-wrapper">
         <Search className="text-filter__icon" aria-hidden="true" />
         <input

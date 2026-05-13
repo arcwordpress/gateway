@@ -375,6 +375,12 @@
   gap: 0.25rem;
 }
 
+.text-filter__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-muted);
+}
+
 .text-filter__input-wrapper {
   position: relative;
   display: flex;
@@ -396,7 +402,6 @@
 .text-filter__input {
   padding: 0.5rem 0.75rem 0.5rem 2rem !important;
   font-size: 0.875rem !important;
-  min-width: 200px;
   background-color: var(--gty-offset-1) !important;
   color: var(--gty-text-sub) !important;
   border: 1px solid var(--gty-border) !important;
@@ -783,12 +788,23 @@
   border-color: var(--gty-border);
 }
 
-.grid__toolbar-row {
+.grid .grid__toolbar-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  margin: 0.5rem 0;
+  margin: 0;
+  background-color: var(--gty-offset-2);
+  padding: 0.5em 1em;
+  color: var(--gty-text-muted);
+}
+
+/* View switcher icon paths: override hardcoded dark fill so they show on offset-2 bg */
+.grid .grid__toolbar-row .view-switcher__icon svg path {
+  fill: var(--gty-text-muted);
+}
+.grid .grid__toolbar-row .view-switcher__dropdown .view-switcher__icon svg path {
+  fill: var(--gty-text-sub);
 }
 
 .grid__search-input {
@@ -798,7 +814,7 @@
   padding: 0.5rem 1rem !important;
   font-size: 1rem !important;
   font-weight: 500 !important;
-  background-color: var(--gty-bg-surface) !important;
+  background-color: var(--gty-offset-1) !important;
   color: var(--gty-text-sub) !important;
   font-family: var(--font-lexend) !important;
   border: solid 1px var(--gty-border) !important;

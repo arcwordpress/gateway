@@ -18,7 +18,7 @@ export function GlobalFieldsGraph({ collections }: { collections: Collection[] }
   let yOffset = 0
 
   collections.forEach((collection) => {
-    const fields = collection.field_list?.fields ?? []
+    const fields = collection?.field_list?.fields ?? []
     if (fields.length === 0) return
 
     const collectionNodeId = `collection-${collection.id}`

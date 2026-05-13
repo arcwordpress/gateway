@@ -35,7 +35,7 @@ export default function FieldsTopLevelPage() {
   const groups = collections
     .map((collection) => ({
       collection,
-      fields: collection.field_list?.fields ?? [],
+      fields: collection?.field_list?.fields ?? [],
     }))
     .filter((g) => g.fields.length > 0)
 

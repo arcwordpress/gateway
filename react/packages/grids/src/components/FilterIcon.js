@@ -15,7 +15,7 @@ const FilterIcon = ({ onClick, isOpen }) => (
     }}
   >
     <svg width="27" height="24" viewBox="0 0 36 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M34.3333 1H1L14.3333 16.7667V27.6667L21 31V16.7667L34.3333 1Z" stroke="#1D2327" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M34.3333 1H1L14.3333 16.7667V27.6667L21 31V16.7667L34.3333 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   </button>
 );
