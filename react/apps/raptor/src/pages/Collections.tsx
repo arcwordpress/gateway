@@ -54,6 +54,11 @@ type Collection = {
   status: string
   extension_id: number | null
   package_key: string | null
+  label_field: string | null
+  display_field: string | null
+  field_list?: {
+    fields: Array<{ id: number; name: string; label?: string; type?: string }>
+  } | null
   relationships: Relationship[] | null
   fields?: Record<string, FieldDef>
 }
@@ -405,6 +410,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const queryClient = useQueryClient()
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [selectedPackageKey, setSelectedPackageKey] = useState<string>('')
+  const [selectedDisplayField, setSelectedDisplayField] = useState<string>('')
 
   const { data: collection, isLoading, isError } = useQuery<Collection>({
     queryKey: ['raptor-collections', collKey],
@@ -441,6 +447,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
     }
     setFormData(initial)
     setSelectedPackageKey(collection.package_key ?? '')
+    setSelectedDisplayField(collection.display_field ?? '')
   }, [collection])
 
   const mutation = useMutation({
@@ -452,7 +459,7 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
       const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ ...trimmed, package_key: selectedPackageKey || null }),
+        body: JSON.stringify({ ...trimmed, package_key: selectedPackageKey || null, display_field: selectedDisplayField || null }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.message ?? 'Failed to update')
@@ -548,6 +555,32 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
             ))}
           </select>
         </div>
+
+        {/* Display field — only shown when field_list has fields */}
+        {(collection?.field_list?.fields?.length ?? 0) > 0 && (
+          <div>
+            <label className="block text-xs font-medium text-zinc-400 mb-1">
+              Display Field
+              <span className="ml-1 text-zinc-600 font-normal">(used as the record label)</span>
+            </label>
+            <select
+              value={selectedDisplayField}
+              disabled={mutation.isPending}
+              onChange={(e) => setSelectedDisplayField(e.target.value)}
+              className={baseInput}
+            >
+              <option value="">— Auto-detect —</option>
+              {(collection.field_list?.fields ?? []).map((f) => (
+                <option key={f.id} value={f.name}>
+                  {f.label || f.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[10px] text-zinc-600">
+              Auto-detect checks for title → name → label, then falls back to id.
+            </p>
+          </div>
+        )}
 
         {mutation.isError && (
           <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">

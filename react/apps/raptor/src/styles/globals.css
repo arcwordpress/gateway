@@ -206,3 +206,32 @@
 .panel-slide-in {
   animation: panel-slide-in 0.18s ease-out both;
 }
+
+/* ── Native input icon decorators ─────────────────────────────────────────── */
+/*                                                                               */
+/* Calendar / clock picker indicators and search decorations use                 */
+/* --gty-offset-1 (#33393C) as their bg and are tinted to --gty-contrast-2      */
+/* (~#D2D3D4) via filter. Scoped to the raptor root to avoid bleed.             */
+
+#gateway-raptor-root input[type="date"]::-webkit-calendar-picker-indicator,
+#gateway-raptor-root input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+#gateway-raptor-root input[type="time"]::-webkit-calendar-picker-indicator {
+  background-color: #33393C; /* --gty-offset-1 */
+  filter: invert(85%);
+  border-radius: 3px;
+  padding: 3px;
+  cursor: pointer;
+  opacity: 1;
+}
+
+#gateway-raptor-root input[type="number"]::-webkit-inner-spin-button,
+#gateway-raptor-root input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(85%);
+  opacity: 1;
+}
+
+#gateway-raptor-root input[type="search"]::-webkit-search-decoration,
+#gateway-raptor-root input[type="search"]::-webkit-search-cancel-button {
+  filter: invert(85%);
+  cursor: pointer;
+}

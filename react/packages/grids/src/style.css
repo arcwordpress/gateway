@@ -388,7 +388,7 @@
   transform: translateY(-50%);
   width: 0.875rem;
   height: 0.875rem;
-  color: var(--gty-text-faint);
+  color: var(--gty-contrast-2);
   pointer-events: none;
   flex-shrink: 0;
 }

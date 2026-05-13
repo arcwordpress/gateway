@@ -281,9 +281,10 @@ class CollectionRoutes
                 'endpoint' => $apiEndpoint,
                 'methods' => $routes['methods'] ?? [],
             ],
-            'fields' => $fields,
-            'filters' => $filters,
-            'grid' => $grid,
+            'fields'       => $fields,
+            'filters'      => $filters,
+            'grid'         => $grid,
+            'displayField' => method_exists($collection, 'getDisplayField') ? $collection->getDisplayField() : null,
         ];
     }
 
