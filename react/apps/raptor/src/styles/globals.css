@@ -335,4 +335,5 @@
   border-radius: 0 !important;
   min-height: auto !important;
   height: auto !important;
+  background-color: var(--gty-offset-1) !important;
 }
