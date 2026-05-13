@@ -15,6 +15,10 @@ import { getFieldTypeDisplay } from '@arcwp/gateway-forms';
 export const getLabelField = (collection) => {
   if (!collection) return { fieldKey: null, status: 'none' };
 
+  if (collection?.displayField && collection.displayField !== 'id') {
+    return { fieldKey: collection.displayField, status: 'configured' };
+  }
+
   if (collection?.grid?.labelField) {
     return { fieldKey: collection.grid.labelField, status: 'configured' };
   }

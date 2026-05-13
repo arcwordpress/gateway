@@ -244,6 +244,10 @@ class CollectionRoutes
             if ($labelField !== null) {
                 $createData['label_field'] = $labelField;
             }
+            $displayField = !empty($data['display_field']) ? sanitize_text_field($data['display_field']) : null;
+            if ($displayField !== null) {
+                $createData['display_field'] = $displayField;
+            }
 
             $collection = CollectionController::create($createData);
 
@@ -291,6 +295,7 @@ class CollectionRoutes
                     ['output_files'   => $outputFiles],
                     ['package_key'    => $collection->package_key],
                     ['label_field'    => $collection->label_field],
+                    ['display_field'  => $collection->display_field],
                     ['relationships'  => RelationshipController::toApiArray($collection)],
                 ),
             ], 200);
@@ -334,6 +339,11 @@ class CollectionRoutes
             if (array_key_exists('label_field', $data)) {
                 $update['label_field'] = !empty($data['label_field'])
                     ? sanitize_text_field($data['label_field'])
+                    : null;
+            }
+            if (array_key_exists('display_field', $data)) {
+                $update['display_field'] = !empty($data['display_field'])
+                    ? sanitize_text_field($data['display_field'])
                     : null;
             }
 
