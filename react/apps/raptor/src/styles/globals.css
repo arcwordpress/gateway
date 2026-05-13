@@ -327,6 +327,14 @@
   height: auto !important;
 }
 
+/* Match date-range inputs to toolbar search height */
+#gateway-raptor-root .date-range-filter__input,
+#gateway-raptor-canvas-host .date-range-filter__input {
+  padding-top: 0.4375rem !important;
+  padding-bottom: 0.4375rem !important;
+  line-height: 1.4 !important;
+}
+
 /* Placeholder contrast — --gty-text-faint doesn't resolve in Raptor context */
 #gateway-raptor-root input::placeholder,
 #gateway-raptor-canvas-host input::placeholder,
