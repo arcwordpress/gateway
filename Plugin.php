@@ -104,6 +104,7 @@ class Plugin
     private function init()
     {
         new Extensions\ExtensionRoutes();
+        new Package\PackageRoutes();
         $this->raptorEndpoints();
         $this->registry = new CollectionRegistry();
         $this->packageRegistry = new Package\PackageRegistry();
@@ -118,6 +119,7 @@ class Plugin
         new Endpoints\TestConnectionRoute();
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
+        new Endpoints\SyncRoute();
         new Endpoints\CoreCollectionUserRoute();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
@@ -143,9 +145,14 @@ class Plugin
         AppTemplate::init();
 
         add_action('gateway_loaded', [$this, 'registerCollections']);
-        add_action('gateway_loaded', [$this, 'seedBlockTypes'], 20);
-        add_action('gateway_loaded', [$this, 'seedCollections'], 20);
-        
+
+        /*
+         *
+         * Refactor, there is no point to gateway_register if it runs at same momemnt as gateway_loaded this was supposed to run earlier, or gateway_loaded runs later.
+         * 
+         */
+        do_action('gateway_register');
+        do_action('gateway_loaded');
     }
 
     public function raptorEndpoints() 
@@ -157,10 +164,6 @@ class Plugin
         new Raptor\Endpoints\FieldRoutes();
         new Raptor\Endpoints\FormListRoutes();
         new Raptor\Endpoints\FormRoutes();
-        new Raptor\Endpoints\ViewListRoutes();
-        new Raptor\Endpoints\ViewRoutes();
-        new Raptor\Endpoints\ViewRenderRoutes();
-        new Raptor\Endpoints\FacetRoutes();
         new Raptor\Endpoints\UserLayoutRoutes();
         new Raptor\Endpoints\PackageRoutes();
         new Raptor\Endpoints\RelationshipRoutes();
@@ -199,6 +202,7 @@ class Plugin
                 );
             }
         }
+
     }
 
     public function registerCollections(): void
@@ -294,6 +298,8 @@ class Plugin
         if (!Database\DatabaseConnection::testConnection()) { return; }
         Database\MigrationHooks::runCoreMigrations();
         if (!is_dir(GATEWAY_DATA_DIR)) { mkdir(GATEWAY_DATA_DIR, 0755, true); }
+        $this->seedCollections();
+        $this->seedBlockTypes();
         flush_rewrite_rules();
     }
 

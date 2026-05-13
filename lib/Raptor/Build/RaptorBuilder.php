@@ -6,7 +6,6 @@ use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Collections\RaptorExtensionFile;
 use Gateway\Raptor\Collections\RaptorPackage;
-use Gateway\Raptor\Collections\RaptorView;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -69,23 +68,13 @@ class RaptorBuilder
         }
 
         $collections = RaptorCollection::where('extension_id', $extension->id)
-            ->with(['fieldList.fields', 'viewList.views.viewRenders', 'viewList.views.facetList.facets'])
+            ->with(['fieldList.fields'])
             ->orderBy('id')
             ->get();
 
         $collectionResults = [];
         foreach ($collections as $collection) {
             $collectionResults[] = $this->buildCollection($collection, $pluginSlug, $namespace);
-        }
-
-        $viewResults = [];
-        foreach ($collections as $collection) {
-            if (!$collection->viewList) {
-                continue;
-            }
-            foreach ($collection->viewList->views as $view) {
-                $viewResults[] = $this->buildView($view, $collection, $pluginSlug, $namespace);
-            }
         }
 
         $activationResult = $this->activatePlugin($pluginSlug);
@@ -106,8 +95,6 @@ class RaptorBuilder
             'package_count'       => count($packageResults),
             'collections'         => $collectionResults,
             'collection_count'    => count($collectionResults),
-            'views'               => $viewResults,
-            'view_count'          => count($viewResults),
             'activation'          => $activationResult,
             'migration_version'   => $extension->version,
             'migrations_ran_at'   => $extension->migrations_ran_at,
@@ -368,66 +355,6 @@ PHP;
             'schema'          => $schemaResult,
             'warnings'        => $warnings,
         ];
-    }
-
-    /**
-     * Build a single view: generate the PHP class file in lib/Views/.
-     */
-    private function buildView(RaptorView $view, RaptorCollection $collection, string $pluginSlug, string $namespace): array
-    {
-
-        $viewData = [
-            'view_key'       => $view->view_key,
-            'title'          => $view->title,
-            'collection_key' => $collection->collection_key,
-            'columns'        => $view->columns ?? [],
-            'facets'         => $this->buildFacetsArray($view),
-            'default_sort'   => $view->default_sort ?? [],
-            'per_page'       => $view->per_page ?? 20,
-        ];
-
-        $classResult = \Gateway\Views\FileFromData::generateViewClass($viewData, $pluginSlug, $namespace);
-
-        $pageResult = null;
-        if ($view->viewRenders->contains('engine', 'page')) {
-            $pageResult = \Gateway\Views\FileFromData::generatePageClass($viewData, $pluginSlug, $namespace);
-        }
-
-        return [
-            'view_key'        => $view->view_key,
-            'class_generated' => $classResult,
-            'page_generated'  => $pageResult,
-        ];
-    }
-
-    /**
-     * Build a flat array of facet definitions from a view's RaptorFacet rows.
-     * Each entry maps to the shape expected by \Gateway\View::$facets.
-     */
-    private function buildFacetsArray(RaptorView $view): array
-    {
-        $facetList = $view->facetList;
-
-        if (!$facetList) {
-            return [];
-        }
-
-        return $facetList->facets->map(function ($facet) {
-            $entry = [
-                'field' => $facet->field_name,
-                'type'  => $facet->facet_type,
-            ];
-
-            if (!empty($facet->label)) {
-                $entry['label'] = $facet->label;
-            }
-
-            if (!empty($facet->config)) {
-                $entry['config'] = $facet->config;
-            }
-
-            return $entry;
-        })->values()->toArray();
     }
 
     /**
