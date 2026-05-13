@@ -264,7 +264,7 @@ const BoardView = ({
   if (!data || data.length === 0) {
     return (
       <div className="board-view__state board-view__state--empty">
-        <div className="board-view__message">No data available</div>
+        <div className="board-view__message">No records available.</div>
       </div>
     );
   }

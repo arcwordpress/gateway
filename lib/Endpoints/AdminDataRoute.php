@@ -39,9 +39,6 @@ class AdminDataRoute
          * 
          */
         $registry = Plugin::getInstance()->getRegistry();
-
-        error_log(print_r($registry,1));
-
         $standardRoutes = Plugin::getInstance()->getStandardRoutes();
 
         // Get all collections

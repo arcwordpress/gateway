@@ -47,7 +47,7 @@ const TableView = ({
   if (!data || data.length === 0) {
     return (
       <div className="table-view__state table-view__state--empty">
-        <div className="table-view__message">No data available</div>
+        <div className="table-view__message">No records available.</div>
       </div>
     );
   }

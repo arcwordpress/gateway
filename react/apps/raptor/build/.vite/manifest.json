@@ -47,7 +47,7 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-FR30yZ6o.js",
+    "file": "assets/main-DPb9coTT.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
@@ -60,7 +60,7 @@
       "_vendor-dnd-DAB07NLf.js"
     ],
     "css": [
-      "assets/main-Cc8U7019.css"
+      "assets/main-CIDLC69T.css"
     ]
   }
 }

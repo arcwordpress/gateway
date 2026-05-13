@@ -56,7 +56,7 @@ const CardsView = ({
   if (!data || data.length === 0) {
     return (
       <div className="cards-view__state cards-view__state--empty">
-        <div className="cards-view__message">No data available</div>
+        <div className="cards-view__message">No records available.</div>
       </div>
     );
   }

@@ -56,7 +56,7 @@ const ListView = ({
   if (!data || data.length === 0) {
     return (
       <div className="list-view__state list-view__state--empty">
-        <div className="list-view__message">No data available</div>
+        <div className="list-view__message">No records available.</div>
       </div>
     );
   }
