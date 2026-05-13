@@ -175,6 +175,13 @@ class Plugin
 
     public function seedBlockTypes()
     {
+        // Only reseed when something may have changed — checked once per hour.
+        // Seeding on every request causes filesystem globs + DB writes that
+        // create lock contention under concurrent load.
+        if (get_transient('gateway_block_types_seeded')) {
+            return;
+        }
+
         $gutenbergDir = GATEWAY_PATH . 'react/block-types/build/blocks';
         if (is_dir($gutenbergDir)) {
             foreach (glob($gutenbergDir . '/*/block.json') ?: [] as $jsonPath) {
@@ -206,6 +213,8 @@ class Plugin
                 );
             }
         }
+
+        set_transient('gateway_block_types_seeded', true, HOUR_IN_SECONDS);
     }
 
     public function registerCollections(): void
@@ -238,9 +247,15 @@ class Plugin
 
     public function seedCollections()
     {
+        if (get_transient('gateway_collections_seeded')) {
+            return;
+        }
+
         foreach (array_keys(self::getCoreCollectionMap()) as $key) {
             Collections\Gateway\CollectionUser::seedOne($key);
         }
+
+        set_transient('gateway_collections_seeded', true, HOUR_IN_SECONDS);
     }
 
     public function getRegistry() { return $this->registry; }
@@ -301,6 +316,9 @@ class Plugin
         if (!Database\DatabaseConnection::testConnection()) { return; }
         Database\MigrationHooks::runCoreMigrations();
         if (!is_dir(GATEWAY_DATA_DIR)) { mkdir(GATEWAY_DATA_DIR, 0755, true); }
+        // Force re-seed on next load after activation.
+        delete_transient('gateway_block_types_seeded');
+        delete_transient('gateway_collections_seeded');
         flush_rewrite_rules();
     }
 
