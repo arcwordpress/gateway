@@ -70,10 +70,12 @@
   --gty-space-4:  1rem;
   --gty-space-8:  2rem;
   --gty-space-16: 4rem;
+
+  --gty-contrast-1: #E8E9E9;
 }
 
 /* ── Light mode — add class="gtw-light" to the wrapping element ──────────── */
-.gtw-light {
+.gty-light {
   /* ── Backgrounds ─────────────────────────────────── */
   --gty-bg-base:    #ffffff;
   --gty-bg-surface: #f4f4f5;
@@ -126,5 +128,4 @@
   --gty-admin-light:        #71717a;
   --gty-admin-almost-white: #f4f4f5;
 
-  --gty-contrast-1:         #E8E9E9;
 }

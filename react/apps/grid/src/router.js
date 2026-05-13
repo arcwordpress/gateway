@@ -52,7 +52,7 @@ export const generateRoutes = ({
  */
 export const normalizeViews = (enabledViews) => {
   if (enabledViews === true) {
-    return ['table', 'board', 'calendar', 'gallery'];
+    return ['table', 'calendar', 'gallery'];
   }
   if (enabledViews === false) {
     return ['table'];
@@ -60,7 +60,7 @@ export const normalizeViews = (enabledViews) => {
   if (Array.isArray(enabledViews)) {
     return enabledViews;
   }
-  return ['table', 'board'];
+  return ['table'];
 };
 
 /**

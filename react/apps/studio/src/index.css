@@ -1,3 +1,7 @@
+:root {
+  --gty-admin-dark: #1D2327;
+}
+
 /* Dashboard Component Styles */
 .gty-dashboard {
   padding: 8px;
@@ -127,7 +131,7 @@
 .gty-app {
   margin-left: -22px;
   min-height: 100vh;
-  background-color: #09090b;
+  background-color: var(--gty-admin-dark);
 }
 
 .gty-app__loading {

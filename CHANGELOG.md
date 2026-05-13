@@ -2,6 +2,14 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.3.1] - 2026-05-12
+
+### Added 
+- More sensible styling for studio and forms.
+
+### Removed
+- Continued to remove view and form support. 
+
 ## [1.3.0] - 2026-05-08
 
 ### Added

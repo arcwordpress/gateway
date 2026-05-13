@@ -37,13 +37,14 @@
     "@babel/cli": "^7.24.0",
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@babel/preset-react": "^7.24.0"
+    "@babel/preset-react": "^7.24.0"    
   },
   "dependencies": {
     "@arcwp/gateway-data": "file:../data",
     "@arcwp/gateway-forms": "file:../forms",
     "@tanstack/react-table": "^8.21.3",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "lucide-react": "^0.577.0"
   },
   "peerDependencies": {
     "react": "^18.0.0",
