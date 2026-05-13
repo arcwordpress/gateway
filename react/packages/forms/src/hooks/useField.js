@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { getFieldTypeDefinition } from '../../fieldTypeRegistry';
+import { getFieldTypeDefinition } from '../fieldTypeRegistry';
 
 /**
  * useField — returns a bound React component for a single named field.
