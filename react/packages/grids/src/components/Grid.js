@@ -255,25 +255,13 @@ const Grid = ({
 
         <div className="grid__toolbar-row">
 
-          <div className="grid__toolbar-left">
-            {toolbarActions}
-          </div>
+          {toolbarActions && (
+            <div className="grid__toolbar-left">
+              {toolbarActions}
+            </div>
+          )}
 
-          <div className="grid__toolbar-center">
-            {showFilters && filters.length > 0 && (
-              <FilterIcon 
-                onClick={() => setFiltersOpen(v => !v)} 
-                isOpen={filtersOpen}
-              />
-            )}
-          </div>
-          
-          <div className="grid__toolbar-right">
-            <ViewSwitcher
-              currentView={currentView}
-              onViewChange={setCurrentView}
-              enabledViews={['table', 'list', 'cards']}
-            />
+          <div className="grid__toolbar-end">
             {showSearch && (
               <input
                 type="search"
@@ -283,8 +271,19 @@ const Grid = ({
                 onChange={e => setSearchText(e.target.value)}
               />
             )}
+            {showFilters && filters.length > 0 && (
+              <FilterIcon
+                onClick={() => setFiltersOpen(v => !v)}
+                isOpen={filtersOpen}
+              />
+            )}
+            <ViewSwitcher
+              currentView={currentView}
+              onViewChange={setCurrentView}
+              enabledViews={['table', 'list', 'cards']}
+            />
           </div>
-          
+
         </div>
 
         {showFilters && filters.length > 0 && (
