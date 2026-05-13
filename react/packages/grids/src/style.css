@@ -25,12 +25,13 @@
 }
 
 .table-view__state--empty {
+  min-height: 50vh;
   background-color: var(--gty-bg-surface);
-  border-radius: 0.5rem;
   border: 1px solid var(--gty-border);
 }
 
 .table-view__message {
+  font-size: 1.125rem;
   color: var(--gty-text-muted);
 }
 
@@ -38,7 +39,8 @@
 .table-view__wrapper {
   overflow-x: auto;
   border: 1px solid var(--gty-border);
-  border-radius: 0.5rem;
+  border-radius: 0;
+  margin-top: 1px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -90,7 +92,7 @@
 
 /* Table Body */
 .table-view__tbody {
-  background-color: var(--gty-bg-surface) !important;
+  background-color: transparent !important;
 }
 
 /* Table Row */
@@ -98,9 +100,14 @@
   background-color: transparent;
 }
 
-.table-view__row--body:hover {
-  background-color: var(--gty-bg-hover) !important;
+.table-view__tbody .table-view__row--body:nth-child(odd) {
+  background-color: var(--gty-offset-1) !important;
 }
+
+.table-view__tbody .table-view__row--body:nth-child(even) {
+  background-color: var(--gty-offset-1a) !important;
+}
+
 
 /* Table Data Cell */
 .table-view__td {
@@ -457,12 +464,13 @@
 }
 
 .list-view__state--empty {
+  min-height: 50vh;
   background-color: var(--gty-bg-surface);
-  border-radius: 0.5rem;
   border: 1px solid var(--gty-border);
 }
 
 .list-view__message {
+  font-size: 1.125rem;
   color: var(--gty-text-muted);
 }
 
@@ -555,12 +563,13 @@
 }
 
 .cards-view__state--empty {
+  min-height: 50vh;
   background-color: var(--gty-bg-surface);
-  border-radius: 0.5rem;
   border: 1px solid var(--gty-border);
 }
 
 .cards-view__message {
+  font-size: 1.125rem;
   color: var(--gty-text-muted);
 }
 
@@ -728,7 +737,7 @@
  * Filters
  */
 .grid .gty-grid__filters {
-  margin: 0 0 1px;
+  margin: 0;
   background-color: var(--gty-offset-2);
   border: none;
   border-radius: 0;
@@ -744,6 +753,14 @@
   border-radius: 0;
   color: var(--gty-text-sub);
   border-color: var(--gty-border);
+}
+
+/* Remove border-radius from every input/select inside the filters bar */
+.grid .gty-grid__filters input,
+.grid .gty-grid__filters select,
+.grid .gty-grid__filters textarea,
+.grid .text-filter__input {
+  border-radius: 0 !important;
 }
 
 .grid .grid__toolbar-row {
@@ -792,6 +809,8 @@
   border: solid 1px var(--gty-border) !important;
   border-radius: 0 !important;
   line-height: 1.4 !important;
+  min-height: auto !important;
+  height: auto !important;
   box-shadow: none !important;
   outline: none !important;
   -webkit-appearance: none !important;
@@ -974,4 +993,49 @@
 
 .single-view__skeleton {
   animation: single-view-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Skeleton loader ────────────────────────────────────────────────────── */
+
+@keyframes gty-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.grid__skeleton-bar {
+  border-radius: 0.25rem;
+  height: 0.75rem;
+  background: linear-gradient(
+    90deg,
+    var(--gty-offset-2) 0%,
+    var(--gty-border-strong) 50%,
+    var(--gty-offset-2) 100%
+  );
+  background-size: 600px 100%;
+  animation: gty-shimmer 1.4s ease-in-out infinite;
+}
+
+.grid__skeleton-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--gty-border);
+}
+
+.grid__skeleton-row:nth-child(odd) {
+  background-color: var(--gty-offset-1);
+}
+
+.grid__skeleton-row:nth-child(even) {
+  background-color: var(--gty-offset-1a);
+}
+
+.grid__skeleton-cell {
+  padding: 1rem 1.5rem;
+  border: none;
+}
+
+.grid__skeleton-th {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--gty-bg-base);
+  border: none;
 }
