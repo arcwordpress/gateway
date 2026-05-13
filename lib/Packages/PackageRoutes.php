@@ -1,7 +1,8 @@
 <?php
 
-namespace Gateway\Package;
+namespace Gateway\Packages;
 
+use Gateway\Package;
 use Gateway\Raptor\Packages\DatabasePackage;
 
 if (!defined('ABSPATH')) {
@@ -11,16 +12,11 @@ if (!defined('ABSPATH')) {
 /**
  * REST routes for runtime-registered packages.
  *
- * These are PHP-coded packages (and Raptor DB packages whose extension plugin
- * is active) that have been registered with PackageRegistry via register().
+ * Lists packages registered via PackageRegistry (code-defined and Raptor DB-backed).
+ * For Raptor CRUD (create/update/delete) use Raptor\Endpoints\PackageRoutes instead.
  *
- * For Raptor editor CRUD (create / update / delete DB packages) use the
- * Raptor\Endpoints\PackageRoutes routes instead — those two concerns are
- * intentionally kept separate.
- *
- * Endpoints:
- *   GET  /gateway/v1/packages/registered   — list all registered packages
- *   GET  /gateway/v1/packages/registered/{key} — get one registered package
+ * GET /gateway/v1/packages/registered
+ * GET /gateway/v1/packages/registered/{key}
  */
 class PackageRoutes
 {
@@ -85,8 +81,6 @@ class PackageRoutes
     {
         $collections = $pkg->getCollections();
 
-        // Normalize collections to a flat array of keys regardless of how
-        // the package author stored them (keys, objects, or mixed).
         $collectionKeys = array_values(array_filter(array_map(function ($c) {
             if (is_string($c)) return $c;
             if (is_object($c) && method_exists($c, 'getKey')) return $c->getKey();

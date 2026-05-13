@@ -2,7 +2,7 @@
 
 namespace Gateway\Raptor\Packages;
 
-use Gateway\Package\Package;
+use Gateway\Package;
 
 if (!defined('ABSPATH')) {
     exit;
