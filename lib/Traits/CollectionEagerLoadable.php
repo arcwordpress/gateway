@@ -3,40 +3,84 @@
 namespace Gateway\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
+use ReflectionNamedType;
 use WP_REST_Request;
 
 /**
  * Trait CollectionEagerLoadable
  *
- * Enables the Get Many route to eager-load related records from an ?include= query
- * parameter, preventing N+1 fetches when the consumer needs fields from related
- * collections alongside the primary records.
+ * Two modes:
  *
- * Convention: relation names are the exact camelCase method name on the collection
- * model. EventCategory → eventCategory(), Event → event(). If no matching public
- * method is found via reflection the name is silently dropped — unknown relations
- * are never forwarded to Eloquent.
+ *   ?relations=true   — auto-discover every Eloquent relation method on the
+ *                       collection via reflection and eager-load all of them.
  *
- * Usage in GetManyRoute (or any route that has access to a query builder and the
- * collection instance):
+ *   ?include=a,b      — explicit comma-separated list; each name is validated
+ *                       against real public instance methods before forwarding
+ *                       to Eloquent (unknown names are silently dropped).
  *
- *   $relations = self::resolveEagerLoads($request, $this->collection);
- *   self::applyEagerLoads($query, $relations);
+ * When both are present, ?relations=true wins.
  */
 trait CollectionEagerLoadable
 {
     /**
-     * Parse ?include= and return only the names that correspond to real public
-     * instance methods on the collection, verified via reflection.
+     * Discover all Eloquent relation methods on a collection by inspecting
+     * return type hints. Only public, non-static, zero-required-parameter
+     * methods whose return type is a subclass of Eloquent's Relation are
+     * included.
      *
-     * @param WP_REST_Request $request
-     * @param \Gateway\Collection  $collection
+     * @param  object  $collection
+     * @return string[]
+     */
+    public static function discoverRelations($collection): array
+    {
+        try {
+            $ref = new ReflectionClass($collection);
+        } catch (ReflectionException $e) {
+            return [];
+        }
+
+        $relations = [];
+
+        foreach ($ref->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
+                continue;
+            }
+
+            $returnType = $method->getReturnType();
+
+            if (!($returnType instanceof ReflectionNamedType) || $returnType->isBuiltin()) {
+                continue;
+            }
+
+            if (is_a($returnType->getName(), Relation::class, true)) {
+                $relations[] = $method->getName();
+            }
+        }
+
+        return $relations;
+    }
+
+    /**
+     * Resolve which relations to eager-load from the request.
+     *
+     * ?relations=true  → discover all via reflection
+     * ?include=a,b     → validate the named list via reflection
+     * neither          → empty (no eager loading)
+     *
+     * @param  WP_REST_Request $request
+     * @param  object          $collection
      * @return string[]
      */
     public static function resolveEagerLoads(WP_REST_Request $request, $collection): array
     {
+        if (filter_var($request->get_param('relations'), FILTER_VALIDATE_BOOLEAN)) {
+            return self::discoverRelations($collection);
+        }
+
         $raw = trim((string) $request->get_param('include'));
 
         if ($raw === '') {
@@ -67,7 +111,6 @@ trait CollectionEagerLoadable
 
             $method = $ref->getMethod($name);
 
-            // Must be a public, non-static instance method declared on this model
             if (!$method->isPublic() || $method->isStatic()) {
                 continue;
             }
@@ -79,11 +122,10 @@ trait CollectionEagerLoadable
     }
 
     /**
-     * Apply eager loads to a query builder.
-     * Call after resolveEagerLoads() and before ->get().
+     * Apply eager loads to a query builder before ->get().
      *
      * @param Builder  $query
-     * @param string[] $relations  Validated relation names
+     * @param string[] $relations
      */
     public static function applyEagerLoads(Builder $query, array $relations): void
     {

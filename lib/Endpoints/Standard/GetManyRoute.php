@@ -215,8 +215,13 @@ class GetManyRoute extends BaseEndpoint
             ],
             'include' => [
                 'type' => 'string',
-                'description' => 'Comma-separated list of relation method names to eager-load (e.g. eventCategory,author). Only methods that exist as public instance methods on the collection are loaded.',
+                'description' => 'Comma-separated relation method names to eager-load (e.g. eventCategory,author).',
                 'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'relations' => [
+                'type' => 'boolean',
+                'default' => false,
+                'description' => 'When true, all Eloquent relation methods on the collection are auto-discovered and eager-loaded.',
             ],
         ];
 
