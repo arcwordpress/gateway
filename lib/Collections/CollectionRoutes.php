@@ -112,6 +112,31 @@ class CollectionRoutes
     }
 
     /**
+     * Fetch actual registered routes for every collection from StandardRoutes.
+     * Keyed by collection route key (e.g. 'events').
+     */
+    private function getActualRegisteredRoutes(): array
+    {
+        try {
+            $standardRoutes = Plugin::getInstance()->getStandardRoutes();
+            return $standardRoutes->getActualRegisteredRoutes();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Convert a raw route pattern to a human-readable display format.
+     * e.g. (?P<id>\d+) → [id]
+     */
+    private function getFriendlyRoute(string $route): string
+    {
+        $route = preg_replace('/\(\?P<([^>]+)>[^)]+\)/', '[$1]', $route);
+        $route = preg_replace('/\(\?:([^)]+)\)/', '[$1]', $route);
+        return $route;
+    }
+
+    /**
      * Keys that exist in gateway_raptor_collection — these are DB-managed regardless
      * of whether a PHP class also exists for them.
      */
@@ -135,6 +160,7 @@ class CollectionRoutes
             $withCounts     = (bool) $request->get_param('with_counts');
             $collections    = $this->getRegistry()->getAll();
             $dbManagedKeys  = $this->getDbManagedKeys();
+            $actualRoutes   = $this->getActualRegisteredRoutes();
             $result         = [];
 
             foreach ($collections as $entry) {
@@ -167,7 +193,7 @@ class CollectionRoutes
                     }
                 }
 
-                $entry = $this->collectionToArray($collectionClass, $collection, $dbManagedKeys);
+                $entry = $this->collectionToArray($collectionClass, $collection, $dbManagedKeys, $actualRoutes);
 
                 if ($withCounts) {
                     $entry['record_count'] = $this->countRecords($collectionClass);
@@ -213,7 +239,12 @@ class CollectionRoutes
 
                 if ($collectionKey === $key) {
                     return new \WP_REST_Response(
-                        $this->collectionToArray($collectionClass, $collection, $this->getDbManagedKeys()),
+                        $this->collectionToArray(
+                            $collectionClass,
+                            $collection,
+                            $this->getDbManagedKeys(),
+                            $this->getActualRegisteredRoutes()
+                        ),
                         200
                     );
                 }
@@ -236,16 +267,10 @@ class CollectionRoutes
      * @param object $collection
      * @param array  $dbManagedKeys   Keys from gateway_raptor_collection, keyed by collection_key
      */
-    private function collectionToArray($collectionClass, $collection, array $dbManagedKeys = [])
+    private function collectionToArray($collectionClass, $collection, array $dbManagedKeys = [], array $actualRoutes = [])
     {
-        // Get route configuration from collection
-        $routes = method_exists($collection, 'getRoutes') ? $collection->getRoutes() : [];
-        $restNamespace = method_exists($collection, 'getRestNamespace') ? $collection->getRestNamespace() : '';
-        $route = method_exists($collection, 'getRoute') ? $collection->getRoute() : '';
-
-        // Build the full API endpoint URL
-        $baseUrl = rest_url();
-        $apiEndpoint = rtrim($baseUrl, '/') . '/' . trim($restNamespace, '/') . '/' . trim($route, '/');
+        // Route key used to look up actual registered routes (may differ from collection key)
+        $routeKey = method_exists($collection, 'getRoute') ? $collection->getRoute() : '';
 
         // Fields are part of the collection
         $fields = method_exists($collection, 'getFields') ? $collection->getFields() : [];
@@ -286,25 +311,33 @@ class CollectionRoutes
         // Once built into the DB it is DB-managed even if a PHP class also exists.
         $isCodeDefined = !isset($dbManagedKeys[$key]) && !empty($fields);
 
+        // Build registered-route list from StandardRoutes (post-customisation)
+        $registeredRoutes = [];
+        foreach ($actualRoutes[$routeKey] ?? [] as $r) {
+            $registeredRoutes[] = [
+                'type'         => $r['type'],
+                'method'       => $r['method'],
+                'route'        => $r['full_route'],
+                'displayRoute' => $this->getFriendlyRoute($r['full_route']),
+                'namespace'    => $r['namespace'],
+                'path'         => $r['route'],
+            ];
+        }
+
         return [
-            'key'            => $key,
-            'title'          => $title,
-            'titlePlural'    => $titlePlural,
+            'key'             => $key,
+            'title'           => $title,
+            'titlePlural'     => $titlePlural,
             'is_code_defined' => $isCodeDefined,
-            'package'    => $package,
-            'core'       => $core,
-            'private'    => $private,
-            'class' => $collectionClass,
-            'name' => basename(str_replace('\\', '/', $collectionClass)),
-            'table' => $table,
-            'fillable' => $fillable,
-            'casts' => $casts,
-            'routes' => [
-                'namespace' => $restNamespace,
-                'route' => $route,
-                'endpoint' => $apiEndpoint,
-                'methods' => $routes['methods'] ?? [],
-            ],
+            'package'         => $package,
+            'core'            => $core,
+            'private'         => $private,
+            'class'           => $collectionClass,
+            'name'            => basename(str_replace('\\', '/', $collectionClass)),
+            'table'           => $table,
+            'fillable'        => $fillable,
+            'casts'           => $casts,
+            'routes'          => $registeredRoutes,
             'fields'       => $fields,
             'filters'      => $filters,
             'grid'         => $grid,
