@@ -3,6 +3,7 @@
 namespace Gateway\Endpoints\Standard;
 
 use Gateway\Endpoints\BaseEndpoint;
+use Gateway\Traits\CollectionEagerLoadable;
 use Gateway\Traits\CollectionFilterable;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -10,6 +11,7 @@ use WP_REST_Response;
 class GetManyRoute extends BaseEndpoint
 {
     use CollectionFilterable;
+    use CollectionEagerLoadable;
 
     public function getType()
     {
@@ -106,6 +108,10 @@ class GetManyRoute extends BaseEndpoint
 
             // Start with base query builder - Collection IS the model now
             $query = $this->collection->query();
+
+            // Eager-load requested relations to avoid N+1 fetches
+            $relations = self::resolveEagerLoads($request, $this->collection);
+            self::applyEagerLoads($query, $relations);
 
             // Apply filters from request params using the trait
             $filterResult = self::applyFieldFilters(
@@ -206,6 +212,11 @@ class GetManyRoute extends BaseEndpoint
                 'enum' => ['asc', 'desc'],
                 'description' => 'Sort order (asc or desc)',
                 'sanitize_callback' => 'sanitize_key',
+            ],
+            'include' => [
+                'type' => 'string',
+                'description' => 'Comma-separated list of relation method names to eager-load (e.g. eventCategory,author). Only methods that exist as public instance methods on the collection are loaded.',
+                'sanitize_callback' => 'sanitize_text_field',
             ],
         ];
 
