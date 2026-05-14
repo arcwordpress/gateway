@@ -16,6 +16,7 @@ export type RegisteredCollection = {
   key: string
   title: string
   titlePlural: string
+  is_code_defined: boolean
   package?: string
   routes: { namespace: string; route: string; endpoint: string }
   record_count?: number | null

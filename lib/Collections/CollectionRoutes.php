@@ -4,6 +4,7 @@ namespace Gateway\Collections;
 
 use Gateway\REST\RouteAuthenticationTrait;
 use Gateway\Plugin;
+use Gateway\Raptor\Collections\RaptorCollection;
 
 class CollectionRoutes
 {
@@ -111,6 +112,19 @@ class CollectionRoutes
     }
 
     /**
+     * Keys that exist in gateway_raptor_collection — these are DB-managed regardless
+     * of whether a PHP class also exists for them.
+     */
+    private function getDbManagedKeys(): array
+    {
+        try {
+            return RaptorCollection::pluck('collection_key')->flip()->toArray();
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
      * Get many collections
      */
     public function getMany(\WP_REST_Request $request)
@@ -120,6 +134,7 @@ class CollectionRoutes
             $includePrivate = (bool) $request->get_param('include_private');
             $withCounts     = (bool) $request->get_param('with_counts');
             $collections    = $this->getRegistry()->getAll();
+            $dbManagedKeys  = $this->getDbManagedKeys();
             $result         = [];
 
             foreach ($collections as $entry) {
@@ -152,7 +167,7 @@ class CollectionRoutes
                     }
                 }
 
-                $entry = $this->collectionToArray($collectionClass, $collection);
+                $entry = $this->collectionToArray($collectionClass, $collection, $dbManagedKeys);
 
                 if ($withCounts) {
                     $entry['record_count'] = $this->countRecords($collectionClass);
@@ -198,7 +213,7 @@ class CollectionRoutes
 
                 if ($collectionKey === $key) {
                     return new \WP_REST_Response(
-                        $this->collectionToArray($collectionClass, $collection), 
+                        $this->collectionToArray($collectionClass, $collection, $this->getDbManagedKeys()),
                         200
                     );
                 }
@@ -216,8 +231,12 @@ class CollectionRoutes
 
     /**
      * Convert collection to array
+     *
+     * @param string $collectionClass
+     * @param object $collection
+     * @param array  $dbManagedKeys   Keys from gateway_raptor_collection, keyed by collection_key
      */
-    private function collectionToArray($collectionClass, $collection)
+    private function collectionToArray($collectionClass, $collection, array $dbManagedKeys = [])
     {
         // Get route configuration from collection
         $routes = method_exists($collection, 'getRoutes') ? $collection->getRoutes() : [];
@@ -263,10 +282,15 @@ class CollectionRoutes
         $core    = method_exists($collection, 'isCore')    ? $collection->isCore()    : false;
         $private = method_exists($collection, 'isPrivate') ? $collection->isPrivate() : false;
 
+        // A collection is code-defined only if it has NO record in gateway_raptor_collection.
+        // Once built into the DB it is DB-managed even if a PHP class also exists.
+        $isCodeDefined = !isset($dbManagedKeys[$key]) && !empty($fields);
+
         return [
-            'key'        => $key,
-            'title'      => $title,
-            'titlePlural' => $titlePlural,
+            'key'            => $key,
+            'title'          => $title,
+            'titlePlural'    => $titlePlural,
+            'is_code_defined' => $isCodeDefined,
             'package'    => $package,
             'core'       => $core,
             'private'    => $private,

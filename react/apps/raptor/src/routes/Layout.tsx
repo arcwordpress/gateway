@@ -104,7 +104,7 @@ export default function Layout() {
     select: (json) => json.map((c) => ({
       collection_key: c.key,
       title: c.titlePlural || c.title || c.key,
-      is_code_defined: true,
+      is_code_defined: c.is_code_defined,
     })),
   })
 
