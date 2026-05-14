@@ -240,6 +240,11 @@ class Plugin
         }
     }
 
+    public function isDbReady(): bool
+    {
+        return $this->dbConnection && (bool) get_transient('gateway_tables_installed');
+    }
+
     public function getRegistry() { return $this->registry; }
     public function getViewRegistry() { return $this->viewRegistry; }
     public function getPackageRegistry() { return $this->packageRegistry; }
