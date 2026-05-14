@@ -461,7 +461,7 @@ export default function GatewayCollections() {
   const { data: registeredCollections = [], isLoading, isError, refetch } = useQuery<GatewayCollection[]>({
     queryKey: ['registered-collections'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/collections?include_private=true'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/collections?include_private=true&with_counts=1'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json() ?? []
     },
