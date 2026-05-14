@@ -402,7 +402,7 @@
 
 .text-filter__icon {
   position: absolute;
-  left: 0.625rem;
+  right: 0.625rem;
   top: 50%;
   transform: translateY(-50%);
   width: 0.875rem;
@@ -413,7 +413,7 @@
 }
 
 .text-filter__input {
-  padding: 0.25rem 0.5rem 0.25rem 1.625rem !important;
+  padding: 0.25rem 1.625rem 0.25rem 0.5rem !important;
   font-size: 0.875rem !important;
   line-height: 1.4 !important;
   min-height: auto !important;

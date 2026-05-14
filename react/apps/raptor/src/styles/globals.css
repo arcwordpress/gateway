@@ -158,7 +158,9 @@
   fill: currentColor;
 }
 
-/* Override WordPress core / @gateway/forms light-theme styles for form controls */
+/* Override WordPress core light-theme styles for form controls.
+   Only the values WP admin actually clobbers are listed here — border-radius
+   and font-size are left to each component so package rules are not fought. */
 #gateway-raptor-canvas-host select,
 #gateway-raptor-root select,
 #gateway-raptor-canvas-host input,
@@ -166,9 +168,8 @@
 #gateway-raptor-canvas-host textarea,
 #gateway-raptor-root textarea {
   color: #f4f4f5 !important;
+  background-color: var(--gty-offset-1) !important;
   border-color: #3f3f46 !important;
-  border-radius: 0.375rem !important;
-  font-size: 0.75rem !important;
   box-shadow: none !important;
 }
 
