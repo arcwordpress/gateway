@@ -3,7 +3,6 @@
 namespace Gateway\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -56,7 +55,7 @@ trait CollectionEagerLoadable
                 continue;
             }
 
-            if (is_a($returnType->getName(), Relation::class, true)) {
+            if (str_starts_with($returnType->getName(), 'Illuminate\\Database\\Eloquent\\Relations\\')) {
                 $relations[] = $method->getName();
             }
         }
