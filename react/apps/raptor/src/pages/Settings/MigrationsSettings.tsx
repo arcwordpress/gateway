@@ -192,7 +192,9 @@ export default function MigrationsSettings() {
   })
 
   const extensions = extData?.extensions ?? []
-  const groups = regData?.groups ?? []
+  const extensionKeys = new Set(extensions.map(e => e.extension_key))
+  // Only show registry groups that have no corresponding extension row (avoids double-listing)
+  const groups = (regData?.groups ?? []).filter(g => !extensionKeys.has(g.key))
   const dueCount = extensions.filter(e => e.version !== e.migration_version).length
 
   return (

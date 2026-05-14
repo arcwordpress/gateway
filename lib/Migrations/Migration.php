@@ -5,45 +5,65 @@ namespace Gateway\Migrations;
 if (!defined('ABSPATH')) exit;
 
 /**
- * MigrationRegistry
+ * Base class for a registered migration group.
  *
- * A lightweight static registry for migration groups. Any plugin or extension
- * can register its migration classes here; the settings UI and run-all flow
- * consult this registry instead of scanning files or relying solely on the
- * gateway_raptor_extension DB table.
+ * Extend this class to group related migration classes under a named key.
+ * The settings UI discovers all registered groups from here.
  *
- * Usage (call after the `gateway_loaded` action):
+ * Usage (call after the `gateway_loaded` action, or at plugin boot):
  *
- *   MigrationRegistry::register('my-extension', 'My Extension', [
- *       \MyPlugin\Migrations\PostsMigration::class,
- *       \MyPlugin\Migrations\MetaMigration::class,
- *   ]);
+ *   class ListingMigration extends \Gateway\Migrations\Migration {
+ *       protected static string $key        = 'listing';
+ *       protected static string $label      = 'Listing';
+ *       protected static array  $migrations = [
+ *           \Keystone\Migrations\ListingTableMigration::class,
+ *           \Keystone\Migrations\ListingMetaMigration::class,
+ *       ];
+ *   }
  *
- * Groups are keyed by an arbitrary slug. Registering the same key twice
- * replaces the previous entry so plugins can update their list on rebuild.
+ *   ListingMigration::register();
+ *
+ * Registering the same key twice replaces the previous entry.
  */
-class MigrationRegistry
+abstract class Migration
 {
+    /** Unique slug shown in the UI and used by the run endpoint */
+    protected static string $key = '';
+
+    /** Human-readable name shown in the settings UI */
+    protected static string $label = '';
+
+    /** Optional version string — set to your plugin's version constant */
+    protected static ?string $version = null;
+
+    /**
+     * Fully-qualified class names of individual migrations to run, in order.
+     * Each class must have a static create() method.
+     *
+     * @var string[]
+     */
+    protected static array $migrations = [];
+
     /** @var array<string, array{key:string, label:string, migrations:string[], version:string|null}> */
     private static array $groups = [];
 
     /**
-     * Register a named group of migration classes.
-     *
-     * @param string      $key        Unique slug (e.g. 'gateway-core', 'my-extension')
-     * @param string      $label      Human-readable name shown in the settings UI
-     * @param string[]    $migrations Fully-qualified class names, each with a static create() method
-     * @param string|null $version    Optional version string for display purposes
+     * Register this migration group into the shared registry.
+     * Replaces any previously registered group with the same key.
      */
-    public static function register(string $key, string $label, array $migrations, ?string $version = null): void
+    public static function register(): void
     {
+        $key = static::$key;
+
         self::$groups[$key] = [
             'key'        => $key,
-            'label'      => $label,
-            'migrations' => $migrations,
-            'version'    => $version,
+            'label'      => static::$label,
+            'migrations' => static::$migrations,
+            'version'    => static::$version,
         ];
     }
+
+    // ─── Registry accessors ────────────────────────────────────────────────────
 
     /** @return array<string, array> All registered groups, keyed by slug */
     public static function getAll(): array
@@ -61,8 +81,10 @@ class MigrationRegistry
         return isset(self::$groups[$key]);
     }
 
+    // ─── Runners ───────────────────────────────────────────────────────────────
+
     /**
-     * Run all migration classes in a single group.
+     * Run all migration classes in a single registered group.
      *
      * @return array{success: bool, ran: int, errors: string[]}
      */
