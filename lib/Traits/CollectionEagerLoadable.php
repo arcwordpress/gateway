@@ -52,12 +52,23 @@ trait CollectionEagerLoadable
 
             $returnType = $method->getReturnType();
 
-            if (!($returnType instanceof ReflectionNamedType) || $returnType->isBuiltin()) {
+            if ($returnType instanceof ReflectionNamedType && !$returnType->isBuiltin()) {
+                // Fast path: return type hint present — check namespace prefix without autoloading
+                if (str_starts_with($returnType->getName(), 'Illuminate\\Database\\Eloquent\\Relations\\')) {
+                    $relations[] = $method->getName();
+                }
                 continue;
             }
 
-            if (is_a($returnType->getName(), Relation::class, true)) {
-                $relations[] = $method->getName();
+            // No return type hint (hand-written methods) — call it and inspect the result.
+            // Relation constructors do not execute queries so this is safe.
+            try {
+                $result = $method->invoke($collection);
+                if ($result instanceof Relation) {
+                    $relations[] = $method->getName();
+                }
+            } catch (\Throwable $e) {
+                // Not a relation method or failed to invoke — skip.
             }
         }
 

@@ -76,7 +76,7 @@ class Page
                 'version'         => GATEWAY_VERSION,
                 'isWordPress'     => true,
                 'schemaUrl'       => GATEWAY_URL . 'schemas/raptor/extension.json',
-                'dbReady'         => get_transient('gateway_tables_installed') && get_transient('gateway_connection_ok') === '1',
+                'dbReady'         => \Gateway\Plugin::getInstance()->isDbReady(),
                 'dbDriver'        => $db_driver,
                 'connectionPort'  => $connection_port,
             ]
