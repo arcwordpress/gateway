@@ -4,7 +4,7 @@ namespace Gateway\Endpoints;
 
 use Gateway\Plugin;
 use Gateway\Database\MigrationHooks;
-use Gateway\Migrations\Migration;
+use Gateway\Migrations\MigrationRegistry;
 
 if (!defined('ABSPATH')) exit;
 
@@ -256,7 +256,7 @@ class SyncRoute
      */
     public function listMigrationRegistry(\WP_REST_Request $request): \WP_REST_Response
     {
-        $groups = Migration::getAll();
+        $groups = MigrationRegistry::getAll();
         $result = [];
 
         foreach ($groups as $group) {
@@ -280,11 +280,11 @@ class SyncRoute
     {
         $key = $request->get_param('key');
 
-        if (!Migration::has($key)) {
+        if (!MigrationRegistry::has($key)) {
             return new \WP_REST_Response(['success' => false, 'message' => "Group '{$key}' not found in registry."], 404);
         }
 
-        $result = Migration::runGroup($key);
+        $result = MigrationRegistry::runGroup($key);
 
         return new \WP_REST_Response([
             'success' => $result['success'],

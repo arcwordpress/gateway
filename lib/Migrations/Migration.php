@@ -8,7 +8,8 @@ if (!defined('ABSPATH')) exit;
  * Base class for a registered migration group.
  *
  * Extend this class to group related migration classes under a named key.
- * The settings UI discovers all registered groups from here.
+ * Calling ::register() adds the group to MigrationRegistry so it appears
+ * in the Gateway migrations UI.
  *
  * Usage (call after the `gateway_loaded` action, or at plugin boot):
  *
@@ -22,12 +23,10 @@ if (!defined('ABSPATH')) exit;
  *   }
  *
  *   ListingMigration::register();
- *
- * Registering the same key twice replaces the previous entry.
  */
 abstract class Migration
 {
-    /** Unique slug shown in the UI and used by the run endpoint */
+    /** Unique slug used as the registry key and run-endpoint identifier */
     protected static string $key = '';
 
     /** Human-readable name shown in the settings UI */
@@ -44,101 +43,12 @@ abstract class Migration
      */
     protected static array $migrations = [];
 
-    /** @var array<string, array{key:string, label:string, migrations:string[], version:string|null}> */
-    private static array $groups = [];
-
     /**
-     * Register this migration group into the shared registry.
+     * Register this migration group into MigrationRegistry.
      * Replaces any previously registered group with the same key.
      */
     public static function register(): void
     {
-        $key = static::$key;
-
-        self::$groups[$key] = [
-            'key'        => $key,
-            'label'      => static::$label,
-            'migrations' => static::$migrations,
-            'version'    => static::$version,
-        ];
-    }
-
-    // ─── Registry accessors ────────────────────────────────────────────────────
-
-    /** @return array<string, array> All registered groups, keyed by slug */
-    public static function getAll(): array
-    {
-        return self::$groups;
-    }
-
-    public static function get(string $key): ?array
-    {
-        return self::$groups[$key] ?? null;
-    }
-
-    public static function has(string $key): bool
-    {
-        return isset(self::$groups[$key]);
-    }
-
-    // ─── Runners ───────────────────────────────────────────────────────────────
-
-    /**
-     * Run all migration classes in a single registered group.
-     *
-     * @return array{success: bool, ran: int, errors: string[]}
-     */
-    public static function runGroup(string $key): array
-    {
-        $group = self::$groups[$key] ?? null;
-
-        if ($group === null) {
-            return ['success' => false, 'ran' => 0, 'errors' => ["Group '{$key}' not found."]];
-        }
-
-        $ran    = 0;
-        $errors = [];
-
-        foreach ($group['migrations'] as $class) {
-            try {
-                if (!class_exists($class)) {
-                    $errors[] = "Class not found: {$class}";
-                    continue;
-                }
-                $class::create();
-                $ran++;
-            } catch (\Throwable $e) {
-                $errors[] = "{$class}: " . $e->getMessage();
-            }
-        }
-
-        return [
-            'success' => empty($errors),
-            'ran'     => $ran,
-            'errors'  => $errors,
-        ];
-    }
-
-    /**
-     * Run every registered group in registration order.
-     *
-     * @return array{success: bool, ran: int, errors: string[]}
-     */
-    public static function runAll(): array
-    {
-        $ran    = 0;
-        $errors = [];
-
-        foreach (array_keys(self::$groups) as $key) {
-            $result  = self::runGroup($key);
-            $ran    += $result['ran'];
-            $errors  = array_merge($errors, $result['errors']);
-        }
-
-        return [
-            'success' => empty($errors),
-            'ran'     => $ran,
-            'errors'  => $errors,
-        ];
+        MigrationRegistry::add(static::$key, static::$label, static::$migrations, static::$version);
     }
 }
