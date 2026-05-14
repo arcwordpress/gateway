@@ -56,13 +56,14 @@ class Package
         $this->menuSlug = 'gateway-package-' . $this->key;
     }
 
-    public function register()
+    public static function register()
     {
+        $instance = new static();
         $registry = \Gateway\Plugin::getInstance()->getPackageRegistry();
         if ($registry === null) {
-            return $this;
+            return $instance;
         }
-        return $registry->register($this);
+        return $registry->register($instance);
     }
 
     public function getKey()        { return $this->key; }
