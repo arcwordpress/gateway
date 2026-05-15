@@ -70,15 +70,9 @@ class RaptorBuilder
         }
         $wasActive = is_plugin_active($pluginFile);
 
-        // Wipe all generated subdirectories before rebuilding so deleted
-        // collections/packages/migrations/schemas are never left behind.
-        foreach (['lib/Collections', 'lib/Migrations', 'lib/Packages', 'schemas'] as $dir) {
-            $fullDir = $pluginDir . '/' . $dir;
-            if (is_dir($fullDir)) {
-                foreach (glob($fullDir . '/*') ?: [] as $file) {
-                    if (is_file($file)) @unlink($file);
-                }
-            }
+        // Delete the entire plugin directory before rebuilding — clean slate every time.
+        if (is_dir($pluginDir)) {
+            $this->deleteDirectory($pluginDir);
         }
 
         $scaffoldResult = $this->scaffolder->scaffold(
@@ -260,5 +254,14 @@ class RaptorBuilder
     public function toNamespace(string $extensionKey): string
     {
         return str_replace('_', '', ucwords($extensionKey, '_'));
+    }
+
+    private function deleteDirectory(string $dir): void
+    {
+        foreach (glob($dir . '/{,.}*', GLOB_BRACE) ?: [] as $item) {
+            if (in_array(basename($item), ['.', '..'], true)) continue;
+            is_dir($item) ? $this->deleteDirectory($item) : @unlink($item);
+        }
+        @rmdir($dir);
     }
 }
