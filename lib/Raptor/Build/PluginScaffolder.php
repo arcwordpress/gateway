@@ -44,8 +44,8 @@ class PluginScaffolder
         }
 
         $code = str_replace(
-            ['{{PROJECT_NAME}}', '{{PROJECT_SLUG}}', '{{NAMESPACE}}', '{{CONSTANT_PREFIX}}'],
-            [$projectName, $pluginSlug, $namespace, $constantPrefix],
+            ['{{PROJECT_NAME}}', '{{PROJECT_SLUG}}', '{{NAMESPACE}}', '{{CONSTANT_PREFIX}}', '{{VERSION}}'],
+            [$projectName, $pluginSlug, $namespace, $constantPrefix, $extension->version ?: '1.0.0'],
             file_get_contents($templatePath)
         );
 

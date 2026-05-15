@@ -330,8 +330,23 @@ class CollectionRoutes
             if (array_key_exists('registered', $data)) {
                 $update['registered'] = (bool) $data['registered'];
             }
-            if (isset($data['relationships'])) {
-                $update['relationships'] = is_array($data['relationships']) ? $data['relationships'] : null;
+            // Sync relationships to the relationship table (full replacement).
+            if (isset($data['relationships']) && is_array($data['relationships'])) {
+                $collection->collectionRelationships()->delete();
+                foreach ($data['relationships'] as $rel) {
+                    $targetKey  = $rel['target'] ?? $rel['target_key'] ?? null;
+                    $type       = $rel['type'] ?? null;
+                    $methodName = $rel['method_name'] ?? '';
+                    $foreignKey = $rel['foreign_key'] ?? '';
+                    $ownerKey   = $rel['owner_key'] ?? 'id';
+                    if ($targetKey && $type) {
+                        try {
+                            RelationshipController::create($collection, $targetKey, $type, $methodName, $foreignKey, $ownerKey);
+                        } catch (\Throwable $e) {
+                            // skip invalid entries silently
+                        }
+                    }
+                }
             }
             if (!empty($data['package_key'])) {
                 $update['package_key'] = sanitize_text_field($data['package_key']);

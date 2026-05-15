@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JS-only package; declarations in src/types.d.ts
@@ -174,7 +174,7 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
 // ─── FieldsList ───────────────────────────────────────────────────────────────
 
 export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
-  const { fields, addField, moveField } = useFields()
+  const { fields, addField, moveField, reorderFields } = useFields()
   const { collection } = useCollection()
   const queryClient = useQueryClient()
   const collectionKey = collection?.collection_key
@@ -201,23 +201,23 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const activeField = fields.find(f => f.name === active.id)
-    const overField = fields.find(f => f.name === over.id)
+    const activeIndex = fields.findIndex(f => f.name === active.id)
+    const overIndex   = fields.findIndex(f => f.name === over.id)
+    if (activeIndex === -1 || overIndex === -1) return
 
-    if (!activeField || !overField) return
+    const reordered = arrayMove(fields, activeIndex, overIndex)
+    reorderFields(reordered)
 
-    const activeIndex = fields.indexOf(activeField)
-    const overIndex = fields.indexOf(overField)
-
-    if (activeIndex < overIndex) {
-      for (let i = activeIndex; i < overIndex; i++) {
-        moveField(fields[i].name, 'down')
+    // Persist new sort_order for each field that moved
+    reordered.forEach((field, index) => {
+      if (field.sort_order !== index) {
+        void fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ sort_order: index }),
+        })
       }
-    } else {
-      for (let i = activeIndex; i > overIndex; i--) {
-        moveField(fields[i].name, 'up')
-      }
-    }
+    })
   }
 
   return (
