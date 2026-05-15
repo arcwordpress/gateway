@@ -197,10 +197,9 @@
   margin: 0 0 1.5rem;
 }
 
-/* Remove forms-package max-width/padding inside studio — boxing comes from .studio-main */
+/* Remove forms-package max-width inside studio — boxing comes from .studio-main */
 .studio-main .gty-form__container {
   max-width: none;
-  padding: 0;
 }
 
 /* ── Skeleton loader ─────────────────────────────────────────────────────── */
