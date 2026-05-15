@@ -48,8 +48,24 @@ class PackageRoutes
             return new \WP_REST_Response(['success' => true, 'total' => 0, 'packages' => []], 200);
         }
 
+        // Build a package_key => [collection_keys] map in one pass to avoid N+1.
+        // Collections declare their package via getPackage(); the Package object
+        // never holds a back-reference, so we resolve this from the collection side.
+        $collectionsByPackage = [];
+        $collectionRegistry = \Gateway\Plugin::getInstance()->getRegistry();
+        if ($collectionRegistry !== null) {
+            foreach ($collectionRegistry->getAll() as $collection) {
+                $pkgKey = method_exists($collection, 'getPackage') ? $collection->getPackage() : null;
+                if ($pkgKey) {
+                    $collectionsByPackage[$pkgKey][] = method_exists($collection, 'getKey')
+                        ? $collection->getKey()
+                        : (is_string($collection) ? $collection : null);
+                }
+            }
+        }
+
         $packages = array_map(
-            fn(Package $pkg) => $this->serialize($pkg),
+            fn(Package $pkg) => $this->serialize($pkg, $collectionsByPackage[$pkg->getKey()] ?? []),
             array_values($registry->getAll())
         );
 
@@ -71,23 +87,25 @@ class PackageRoutes
             return new \WP_REST_Response(['success' => false, 'message' => 'Package not found.'], 404);
         }
 
+        $collectionKeys = [];
+        $collectionRegistry = \Gateway\Plugin::getInstance()->getRegistry();
+        if ($collectionRegistry !== null) {
+            foreach ($collectionRegistry->getAll() as $collection) {
+                if (method_exists($collection, 'getPackage') && $collection->getPackage() === $key) {
+                    $collectionKeys[] = method_exists($collection, 'getKey') ? $collection->getKey() : null;
+                }
+            }
+        }
+
         return new \WP_REST_Response([
             'success' => true,
-            'package' => $this->serialize($registry->get($key)),
+            'package' => $this->serialize($registry->get($key), array_filter($collectionKeys)),
         ], 200);
     }
 
-    private function serialize(Package $pkg): array
+    private function serialize(Package $pkg, array $collectionKeys = []): array
     {
-        $collections = $pkg->getCollections();
-
-        $collectionKeys = array_values(array_filter(array_map(function ($c) {
-            if (is_string($c)) return $c;
-            if (is_object($c) && method_exists($c, 'getKey')) return $c->getKey();
-            if (is_array($c) && isset($c['collection_key'])) return $c['collection_key'];
-            if (is_array($c) && isset($c['key'])) return $c['key'];
-            return null;
-        }, $collections)));
+        $collectionKeys = array_values(array_filter($collectionKeys));
 
         return [
             'key'                 => $pkg->getKey(),
