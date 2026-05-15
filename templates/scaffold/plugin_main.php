@@ -51,13 +51,28 @@ class Plugin {
             return;
         }
 
-        add_action('gateway_plugin_loaded', [$this, 'register_extension'], 5);
-        add_action('gateway_plugin_loaded', [$this, 'register_packages'], 10);
+        add_action('gateway_plugin_loaded', [$this, 'register_extension'],   5);
+        add_action('gateway_plugin_loaded', [$this, 'register_migrations'],   8);
+        add_action('gateway_plugin_loaded', [$this, 'register_packages'],    10);
         add_action('gateway_plugin_loaded', [$this, 'register_collections'], 10);
     }
 
     public function register_extension() {
         Extension::register();
+    }
+
+    public function register_migrations() {
+        $migrations_dir = plugin_dir_path(__FILE__) . 'lib/Migrations';
+        if (!is_dir($migrations_dir)) {
+            return;
+        }
+        foreach (glob($migrations_dir . '/*.php') as $file) {
+            require_once $file;
+            $class_name = '{{NAMESPACE}}\\Migrations\\' . basename($file, '.php');
+            if (class_exists($class_name) && method_exists($class_name, 'register')) {
+                $class_name::register();
+            }
+        }
     }
 
     public function register_packages() {
@@ -66,9 +81,10 @@ class Plugin {
             return;
         }
         foreach (glob($packages_dir . '/*.php') as $file) {
+            require_once $file;
             $class_name = '{{NAMESPACE}}\\Packages\\' . basename($file, '.php');
             if (class_exists($class_name) && method_exists($class_name, 'register')) {
-                (new $class_name())->register();
+                $class_name::register();
             }
         }
     }
@@ -79,6 +95,7 @@ class Plugin {
             return;
         }
         foreach (glob($collections_dir . '/*.php') as $file) {
+            require_once $file;
             $class_name = '{{NAMESPACE}}\\Collections\\' . basename($file, '.php');
             if (class_exists($class_name) && method_exists($class_name, 'register')) {
                 if (!isset($class_name::$registered) || $class_name::$registered) {
