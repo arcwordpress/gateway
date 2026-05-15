@@ -10,7 +10,7 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
-  background-color: var(--gty-bg-base);
+  background-color: var(--gty-offset-1);
   color: var(--gty-text-muted);
   cursor: not-allowed;
 }

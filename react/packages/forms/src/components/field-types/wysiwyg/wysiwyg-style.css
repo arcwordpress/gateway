@@ -36,7 +36,7 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.5rem;
-  background-color: var(--gty-bg-base);
+  background-color: var(--gty-offset-1);
   border-bottom: 1px solid var(--gty-border);
   flex-wrap: wrap;
 }

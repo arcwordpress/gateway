@@ -175,7 +175,7 @@
 }
 
 .oembed-field__input:disabled {
-  background-color: var(--gty-bg-base);
+  background-color: var(--gty-offset-1);
   color: var(--gty-text-muted);
   cursor: not-allowed;
 }
