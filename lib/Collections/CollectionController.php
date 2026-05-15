@@ -6,6 +6,7 @@ use Gateway\Controller;
 use Gateway\Plugin;
 use Gateway\Raptor\Collections\RaptorCollection;
 use Gateway\Traits\CollectionEagerLoadable;
+use Gateway\Collections\RelationDiscovery;
 
 class CollectionController extends Controller
 {
@@ -257,7 +258,7 @@ class CollectionController extends Controller
      */
     public function discoverCollectionRelationships(object $collection): array
     {
-        $names = CollectionEagerLoadable::discoverRelations($collection);
+        $names = RelationDiscovery::discover($collection);
 
         $relationships = [];
 
