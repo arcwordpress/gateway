@@ -55,7 +55,6 @@ class Plugin
     private $settingsRoute;
     private $migrationGeneratorRoute;
     private $migrationRunnerRoute;
-    private $mazeRoutes;
     private $patternRegistry;
     private $viewRegistry;
     private $facetRegistry;
