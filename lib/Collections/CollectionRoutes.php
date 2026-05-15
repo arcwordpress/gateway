@@ -338,11 +338,66 @@ class CollectionRoutes
             'fillable'        => $fillable,
             'casts'           => $casts,
             'routes'          => $registeredRoutes,
-            'fields'       => $fields,
-            'filters'      => $filters,
-            'grid'         => $grid,
-            'displayField' => method_exists($collection, 'getDisplayField') ? $collection->getDisplayField() : null,
+            'fields'          => $fields,
+            'filters'         => $filters,
+            'grid'            => $grid,
+            'displayField'    => method_exists($collection, 'getDisplayField') ? $collection->getDisplayField() : null,
+            'relationships'   => $this->discoverCollectionRelationships($collection),
         ];
+    }
+
+    /**
+     * Discover Eloquent relationship methods on a collection and return their metadata.
+     *
+     * @param  object $collection
+     * @return array  Each entry: { name, type, target_key }
+     */
+    private function discoverCollectionRelationships($collection): array
+    {
+        $relationships = [];
+
+        try {
+            $ref = new \ReflectionClass($collection);
+        } catch (\ReflectionException $e) {
+            return [];
+        }
+
+        foreach ($ref->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
+                continue;
+            }
+
+            $returnType = $method->getReturnType();
+
+            if (!($returnType instanceof \ReflectionNamedType) || $returnType->isBuiltin()) {
+                continue;
+            }
+
+            if (!str_starts_with($returnType->getName(), 'Illuminate\\Database\\Eloquent\\Relations\\')) {
+                continue;
+            }
+
+            try {
+                $rel       = $method->invoke($collection);
+                $relType   = class_basename(get_class($rel));
+                $related   = $rel->getRelated();
+                $targetKey = method_exists($related, 'getKey') ? $related->getKey() : null;
+
+                $relationships[] = [
+                    'name'       => $method->getName(),
+                    'type'       => $relType,
+                    'target_key' => $targetKey,
+                ];
+            } catch (\Throwable $e) {
+                $relationships[] = [
+                    'name'       => $method->getName(),
+                    'type'       => null,
+                    'target_key' => null,
+                ];
+            }
+        }
+
+        return $relationships;
     }
 
     /**

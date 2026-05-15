@@ -1,0 +1,34 @@
+.relationship-field {
+  width: 100%;
+}
+
+.relationship-field__loading {
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.relationship-field__error-fetch {
+  color: #c0392b;
+  font-size: 0.875rem;
+}
+
+.relationship-field__select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 0.9375rem;
+}
+
+.relationship-field__select--error {
+  border-color: #c0392b;
+}
+
+.relationship-field__display {
+  display: inline-block;
+}
+
+.relationship-field__display--empty {
+  color: #aaa;
+}

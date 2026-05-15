@@ -75,17 +75,17 @@ export const generateColumns = (collection) => {
         if (!fieldConfig && typeof value === 'object' && value !== null) {
           const relationFieldKey = `${colDef.field}_id`;
           const relationFieldConfig = collection?.fields?.[relationFieldKey];
-          if (relationFieldConfig && relationFieldConfig.type === 'relation') {
+          if (relationFieldConfig && (relationFieldConfig.type === 'relation' || relationFieldConfig.type === 'relationship')) {
             fieldConfig = relationFieldConfig;
           }
         }
 
-        // Check if this is a relation field type
-        if (fieldConfig && fieldConfig.type === 'relation') {
-          // Use the Display component from field registry to render relation fields
-          const RelationDisplay = getFieldTypeDisplay('relation');
-          const relationConfig = fieldConfig.relation || {};
-          return RelationDisplay ? <RelationDisplay value={value} config={relationConfig} /> : String(value);
+        // Check if this is a relation or relationship field type
+        if (fieldConfig && (fieldConfig.type === 'relation' || fieldConfig.type === 'relationship')) {
+          const displayType = fieldConfig.type;
+          const DisplayComponent = getFieldTypeDisplay(displayType);
+          const fieldRelConfig = fieldConfig[displayType] || {};
+          return DisplayComponent ? <DisplayComponent value={value} config={fieldRelConfig} /> : String(value);
         }
 
         // Handle objects and arrays
@@ -125,16 +125,16 @@ export const generateColumns = (collection) => {
         const value = getValue();
         if (value === null || value === undefined) return '-';
 
-        // Check if this is a relation field type
-        if (field.type === 'relation') {
-          // Use the Display component from field registry to render relation fields
-          const RelationDisplay = getFieldTypeDisplay('relation');
-          const relationConfig = field.relation || {};
-          return RelationDisplay ? <RelationDisplay value={value} config={relationConfig} /> : String(value);
+        // Check if this is a relation or relationship field type
+        if (field.type === 'relation' || field.type === 'relationship') {
+          const displayType = field.type;
+          const DisplayComponent = getFieldTypeDisplay(displayType);
+          const fieldRelConfig = field[displayType] || {};
+          return DisplayComponent ? <DisplayComponent value={value} config={fieldRelConfig} /> : String(value);
         }
 
         // Smart detection: if value is an object with 'id' and common label fields,
-        // treat it as a relation object and extract the label
+        // treat it as an eagerly-loaded relation and extract the label
         if (typeof value === 'object' && value !== null && 'id' in value) {
           const label = value.name || value.title || value.label || value.text;
           if (label !== undefined) {
