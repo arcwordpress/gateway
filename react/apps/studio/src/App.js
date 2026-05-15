@@ -4,11 +4,31 @@ import Dashboard from './pages/Dashboard';
 import CollectionForm from './pages/CollectionForm';
 import CollectionRecordView from './pages/CollectionRecordView';
 
+function StudioSkeleton() {
+  return (
+    <div className="gty-app">
+      <div className="studio-layout studio-skeleton">
+        <aside className="studio-sidebar">
+          <div className="skeleton-block" style={{ width: '70%', height: '1.25rem', marginBottom: '1rem' }} />
+          <div className="skeleton-block" style={{ width: '100%', height: '2.25rem' }} />
+        </aside>
+        <main className="studio-main">
+          <div className="skeleton-block" style={{ width: '40%', height: '1rem', marginBottom: '1rem' }} />
+          <div className="skeleton-block" style={{ width: '100%', height: '2.5rem', marginBottom: '0.5rem' }} />
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="skeleton-block" style={{ width: '100%', height: '2.5rem', marginBottom: '0.375rem' }} />
+          ))}
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function AppContent() {
   const { collections, loading } = useCollections();
 
   if (loading) {
-    return <div className="gty-app__loading">Loading...</div>;
+    return <StudioSkeleton />;
   }
 
   return (
