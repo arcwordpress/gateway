@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GATEWAY_VERSION', '1.3.1');
+define('GATEWAY_VERSION', '1.3.2');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);
@@ -291,9 +291,10 @@ class Plugin
                 return false;
             }
 
-            return $schema->hasTable('gateway_settings') && 
-                   $schema->hasTable('gateway_raptor_extension') && 
-                   $schema->hasTable('gateway_raptor_package');
+            return $schema->hasTable('gateway_settings') &&
+                   $schema->hasTable('gateway_raptor_extension') &&
+                   $schema->hasTable('gateway_raptor_package') &&
+                   $schema->hasTable('gateway_migration_run');
             
         } catch (\Exception $e) {
             return false;
