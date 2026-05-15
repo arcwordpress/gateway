@@ -129,6 +129,7 @@ function CreatePanel({ onClose, extensionId }: { onClose: () => void; extensionI
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
       void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
       void queryClient.invalidateQueries({ queryKey: ['packages'] })
+      void queryClient.invalidateQueries({ queryKey: ['extensions'] })
       onClose()
     },
   })
