@@ -341,11 +341,6 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Name</label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)}
-               className={baseInput} required />
-      </div>
-      <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Type</label>
         <select
           value={type}
@@ -362,6 +357,11 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Label</label>
         <input type="text" value={label} onChange={e => setLabel(e.target.value)}
+               className={baseInput} required />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Name</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)}
                className={baseInput} required />
       </div>
 
