@@ -1,6 +1,7 @@
-import { useNavigate, useParams, NavLink } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Grid } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
+import CollectionsNav from '../components/CollectionsNav';
 
 function Dashboard() {
   const { collections, packageLabel } = useCollections();
@@ -14,6 +15,7 @@ function Dashboard() {
       <div className="studio-layout">
         <aside className="studio-sidebar" />
         <main className="studio-main">
+          <CollectionsNav />
           <p className="studio-empty">No collections available</p>
         </main>
       </div>
@@ -39,22 +41,7 @@ function Dashboard() {
         </button>
       </aside>
       <main className="studio-main">
-        {collections.length > 1 && (
-          <nav className="studio-collections-nav">
-            {collections.map((col) => (
-              <NavLink
-                key={col.key}
-                to={`/collection/${col.key}`}
-                className={({ isActive }) =>
-                  'studio-collections-nav__link' +
-                  (isActive || col.key === activeKey ? ' studio-collections-nav__link--active' : '')
-                }
-              >
-                {col.titlePlural || col.title || col.key}
-              </NavLink>
-            ))}
-          </nav>
-        )}
+        <CollectionsNav />
         <Grid
           collectionKey={activeKey}
           onEdit={handleEdit}

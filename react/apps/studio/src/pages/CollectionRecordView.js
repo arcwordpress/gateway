@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CollectionProvider, useCollectionRecords } from '@arcwp/gateway-data';
 import { SingleView } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
+import CollectionsNav from '../components/CollectionsNav';
 
 function RecordViewContent({ id }) {
   const { records, loading, getRecordById } = useCollectionRecords();
@@ -34,6 +35,7 @@ function CollectionRecordView() {
         </button>
       </aside>
       <main className="studio-main">
+        <CollectionsNav />
         <CollectionProvider collectionKey={collectionKey}>
           <RecordViewContent id={id} />
         </CollectionProvider>
