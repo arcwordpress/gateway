@@ -1,5 +1,6 @@
 import { registerFieldType } from './fieldTypeRegistry';
 import { relationFieldType } from './components/field-types/relation';
+import { relationshipFieldType } from './components/field-types/relationship';
 import { textFieldType } from './components/field-types/text';
 import { slugFieldType } from './components/field-types/slug';
 import { buttonGroupFieldType } from './components/field-types/button-group';
@@ -45,6 +46,7 @@ export const initializeFieldTypes = () => {
   isInitialized = true;
 
   registerFieldType(relationFieldType);
+  registerFieldType(relationshipFieldType);
   registerFieldType(textFieldType);
 
   // Register Slug field type

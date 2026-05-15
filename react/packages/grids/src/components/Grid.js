@@ -83,7 +83,7 @@ const Grid = ({
       const getManyRoute = routesArr.find(r => r.type === 'get_many') ?? routesArr[0] ?? null;
       const namespace = getManyRoute?.namespace;
       const route = getManyRoute?.path;
-      const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
+      const records = await collectionApi.fetchRecords(namespace, route, { relations: true }, { auth });
       
       setData(records.data.items);
       setError(null);
