@@ -102,6 +102,7 @@
 }
 
 .gty-form__submit {
+  margin-top: 16px;
   background: var(--gty-offset-1);
   color: var(--gty-text);
   border: 1px solid var(--gty-border-strong);
