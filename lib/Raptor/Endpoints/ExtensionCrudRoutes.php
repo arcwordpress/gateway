@@ -369,7 +369,7 @@ class ExtensionCrudRoutes
 
             $plugin_slug = str_replace('_', '-', $extension_key);
             $namespace   = str_replace('_', '', ucwords($extension_key, '_'));
-            $migration   = \Gateway\Database\MigrationGenerator::generateFromData($collectionData, $namespace);
+            $migration   = \Gateway\Migrations\MigrationGenerator::generateFromData($collectionData, $namespace);
             $plugin_dir  = WP_PLUGIN_DIR . '/' . $plugin_slug;
             $database_dir = $plugin_dir . '/lib/Database';
 

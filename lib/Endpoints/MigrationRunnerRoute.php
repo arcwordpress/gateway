@@ -3,7 +3,7 @@
 namespace Gateway\Endpoints;
 
 use Gateway\Plugin;
-use Gateway\Database\MigrationRunner;
+use Gateway\Migrations\MigrationRunner;
 
 if (!defined('ABSPATH')) exit;
 

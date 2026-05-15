@@ -106,7 +106,7 @@ class Plugin
         new Extensions\ExtensionRoutes();
         new Packages\PackageRoutes();
         $this->raptorEndpoints();
-        $this->registry = new CollectionRegistry();
+        $this->registry = new Collections\CollectionRegistry();
         $this->packageRegistry = new Packages\PackageRegistry();
         Raptor\Packages\PackageLoader::load();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
@@ -120,11 +120,12 @@ class Plugin
         $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
         $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
         new Endpoints\SyncRoute();
+        new Endpoints\MigrationRoutes();
         new Endpoints\CoreCollectionUserRoute();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
-        Database\MigrationHooks::init();
+        Migrations\MigrationHooks::init();
         gateway_rest_dispatch_filter();
         Admin\Page::init();
         Admin\Records::init();
@@ -266,7 +267,7 @@ class Plugin
             return;
         }
 
-        $success = Database\MigrationHooks::runCoreMigrations();
+        $success = Migrations\MigrationHooks::runCoreMigrations();
 
         if ($success && $this->coreTablesExist()) {
             update_option('gateway_tables_schema', $current_version, false);
@@ -301,7 +302,7 @@ class Plugin
     public function activate()
     {
         if (!Database\DatabaseConnection::testConnection()) { return; }
-        Database\MigrationHooks::runCoreMigrations();
+        Migrations\MigrationHooks::runCoreMigrations();
         if (!is_dir(GATEWAY_DATA_DIR)) { mkdir(GATEWAY_DATA_DIR, 0755, true); }
         $this->seedCollections();
         $this->seedBlockTypes();

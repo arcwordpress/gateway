@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Database;
+namespace Gateway\Migrations;
 
 use Gateway\Plugin;
 use Gateway\Migrations\MigrationRegistry;
