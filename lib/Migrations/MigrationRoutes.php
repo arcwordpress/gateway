@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Endpoints;
+namespace Gateway\Migrations;
 
 use Gateway\Migrations\MigrationRegistry;
 
