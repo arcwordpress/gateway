@@ -59,7 +59,18 @@ function MigrationCell({ extensionKey }: { extensionKey: string }) {
       if (!json.success) throw new Error(json.message ?? 'Failed')
       return json
     },
-    onSuccess: () => {
+    onSuccess: (json) => {
+      if (json.last_run) {
+        queryClient.setQueryData(['migrations', extensionKey], (old: { success: boolean; groups: MigrationGroup[] } | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            groups: old.groups?.map((g) =>
+              g.key === extensionKey ? { ...g, last_run: json.last_run } : g
+            ),
+          }
+        })
+      }
       queryClient.invalidateQueries({ queryKey: ['migrations', extensionKey] })
     },
     onError: (e: Error) => setResult(e.message),

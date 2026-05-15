@@ -37,6 +37,11 @@ class MigrationRun extends \Gateway\Collection
     const UPDATED_AT = null;
     const CREATED_AT = 'ran_at';
 
+    public function getFillable(): array
+    {
+        return $this->fillable;
+    }
+
     /**
      * Log a migration run.
      */

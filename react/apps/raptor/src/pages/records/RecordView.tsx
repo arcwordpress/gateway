@@ -40,21 +40,22 @@ export default function RecordView() {
     queryFn: () => fetchRegisteredCollections(false),
   })
 
-  const gwRoutes = registeredCollections?.find((c) => c.key === collectionKey)?.routes ?? null
+  const routesArr = (registeredCollections?.find((c) => c.key === collectionKey)?.routes ?? []) as Array<{ type: string; namespace: string; path: string }>
+  const getManyRoute = routesArr.find((r) => r.type === 'get_many') ?? routesArr[0] ?? null
 
   // Specific record — fetched using the route registered by the collection class
   const { data: record, isLoading: recordLoading } = useQuery<Record<string, unknown>>({
     queryKey: ['record', collectionKey, id],
     queryFn: async () => {
       const res = await fetch(
-        apiUrl(`${gwRoutes!.namespace}/${gwRoutes!.route}/${id}`),
+        apiUrl(`${getManyRoute!.namespace}/${getManyRoute!.path}/${id}`),
         { headers: authHeaders() }
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
       return (json?.data ?? json) as Record<string, unknown>
     },
-    enabled: !!gwRoutes?.namespace && !!gwRoutes?.route,
+    enabled: !!getManyRoute?.namespace && !!getManyRoute?.path,
   })
 
   const fields = raptorColl?.field_list?.fields ?? []

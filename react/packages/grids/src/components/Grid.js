@@ -78,9 +78,11 @@ const Grid = ({
       const collectionData = await collectionApi.fetchCollection(collectionKey, { auth });
       setCollection(collectionData);
 
-      // Fetch collection records
-      const namespace = collectionData.routes.namespace;
-      const route = collectionData.routes.route;
+      // Fetch collection records — routes is an array; find the get_many entry
+      const routesArr = Array.isArray(collectionData.routes) ? collectionData.routes : [];
+      const getManyRoute = routesArr.find(r => r.type === 'get_many') ?? routesArr[0] ?? null;
+      const namespace = getManyRoute?.namespace;
+      const route = getManyRoute?.path;
       const records = await collectionApi.fetchRecords(namespace, route, {}, { auth });
       
       setData(records.data.items);
@@ -141,8 +143,10 @@ const Grid = ({
     setDeleteConfirm({ ...deleteConfirm, loading: true });
 
     try {
-      const namespace = collection.routes.namespace;
-      const route = collection.routes.route;
+      const routesArr = Array.isArray(collection.routes) ? collection.routes : [];
+      const getManyRoute = routesArr.find(r => r.type === 'get_many') ?? routesArr[0] ?? null;
+      const namespace = getManyRoute?.namespace;
+      const route = getManyRoute?.path;
 
       await collectionApi.deleteRecord(namespace, route, deleteConfirm.id, { auth });
 
@@ -218,9 +222,12 @@ const Grid = ({
   }, [data, collection, viewColumns, showActions, onEdit, onDelete, onView]);
 
   // Context value for child components
-  const gridContextValue = useMemo(() => ({
-    namespace: collection?.routes?.namespace || null,
-    route: collection?.routes?.route || null,
+  const gridContextValue = useMemo(() => {
+    const ctxRoutesArr = Array.isArray(collection?.routes) ? collection.routes : [];
+    const ctxGetMany = ctxRoutesArr.find(r => r.type === 'get_many') ?? ctxRoutesArr[0] ?? null;
+    return {
+    namespace: ctxGetMany?.namespace || null,
+    route: ctxGetMany?.path || null,
     collection,
     records: data,
     getRecordById: (id) => {
@@ -230,7 +237,8 @@ const Grid = ({
     },
     onRefresh: loadAll,
     auth,
-  }), [collection, data, auth, collectionKey]);
+  };
+  }, [collection, data, auth, collectionKey]);
 
   if (error) {
     return (
