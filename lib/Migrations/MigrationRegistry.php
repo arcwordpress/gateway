@@ -4,20 +4,35 @@ namespace Gateway\Migrations;
 
 if (!defined('ABSPATH')) exit;
 
-/**
- * Static registry for migration groups.
- *
- * Migration subclasses register themselves here via ::register().
- * SyncRoute and the settings UI read from here.
- */
 class MigrationRegistry
 {
     /** @var array<string, array{key:string, label:string, migrations:string[], version:string|null}> */
     private static array $groups = [];
 
-    public static function add(string $key, string $label, array $migrations, ?string $version): void
+    /**
+     * Bulk-register a group (used internally for gateway-core, raptor-core).
+     */
+    public static function register(string $key, string $label, array $migrations, ?string $version): void
     {
         self::$groups[$key] = compact('key', 'label', 'migrations', 'version');
+    }
+
+    /**
+     * Append a single migration class to an extension group.
+     * Called by Migration::register() — safe to call multiple times for the same extension.
+     */
+    public static function push(string $extension, string $label, string $class, ?string $version): void
+    {
+        if (!isset(self::$groups[$extension])) {
+            self::$groups[$extension] = [
+                'key'        => $extension,
+                'label'      => $label,
+                'migrations' => [],
+                'version'    => $version,
+            ];
+        }
+
+        self::$groups[$extension]['migrations'][] = $class;
     }
 
     /** @return array<string, array> */
