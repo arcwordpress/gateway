@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { Pencil, RotateCcw } from 'lucide-react';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
 import './slug-style.css';
@@ -121,9 +122,7 @@ const SlugControl = ({ config = {} }) => {
             title="Edit slug manually"
             aria-label="Edit slug manually"
           >
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9016 20.6488L11.0346 20.9645L11.3711 15.7748L27.1468 0L32 4.8529L16.2242 20.6278L15.9016 20.6488ZM0 3.60995V32H28.3917L28.3903 17.6334H25.2097V28.8184H3.18053V6.78945H14.3661V3.60899L0 3.60995Z" fill="black"/>
-            </svg>
+            <Pencil size={16} />
           </button>
         ) : (
           <button
@@ -133,9 +132,7 @@ const SlugControl = ({ config = {} }) => {
             title="Re-enable auto-generation"
             aria-label="Re-enable auto-generation from watched field"
           >
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M15.9016 20.6488L11.0346 20.9645L11.3711 15.7748L27.1468 0L32 4.8529L16.2242 20.6278L15.9016 20.6488ZM0 3.60995V32H28.3917L28.3903 17.6334H25.2097V28.8184H3.18053V6.78945H14.3661V3.60899L0 3.60995Z" fill="black"/>
-            </svg>
+            <RotateCcw size={16} />
           </button>
         )}
       </div>

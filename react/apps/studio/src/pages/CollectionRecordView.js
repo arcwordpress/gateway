@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { CollectionProvider, useCollectionRecords } from '@arcwp/gateway-data';
 import { SingleView } from '@arcwp/gateway-grids';
+import { useCollections } from '../context/CollectionsContext';
 
 function RecordViewContent({ id }) {
   const { records, loading, getRecordById } = useCollectionRecords();
@@ -16,6 +17,10 @@ function RecordViewContent({ id }) {
 function CollectionRecordView() {
   const { collectionKey, id } = useParams();
   const navigate = useNavigate();
+  const { collections } = useCollections();
+
+  const collection = collections.find((c) => c.key === collectionKey);
+  const collectionLabel = collection?.titlePlural || collection?.title || collectionKey;
 
   const handleBack = () => navigate(`/collection/${collectionKey}`);
 
@@ -23,7 +28,7 @@ function CollectionRecordView() {
     <div className="gty-record-view">
       <div className="gty-record-view__back-container">
         <button onClick={handleBack} className="gty-record-view__back-button">
-          <span className="gty-record-view__back-arrow">&larr;</span> Back to {collectionKey}
+          <span className="gty-record-view__back-arrow">&larr;</span> Return to {collectionLabel}
         </button>
       </div>
       <CollectionProvider collectionKey={collectionKey}>

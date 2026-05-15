@@ -1,3 +1,34 @@
+/* ── Full-width inputs ────────────────────────────────────────────────────── */
+/* Applied globally so every text-like field stretches to its container.      */
+/* Excludes controls that must be intrinsic (checkbox, radio, color swatch).  */
+.text-field__input,
+.number-field__input,
+.email-field__input,
+.password-field__input,
+.url-field__input,
+.slug-field__input,
+.select-field__select,
+.relation-field__select,
+.relationship-field__select,
+.textarea-field__textarea,
+.date-picker__input,
+.datetime-picker__input,
+.time-picker__input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Number spinner sits inside the border, not outside it */
+.number-field__input {
+  -moz-appearance: textfield;        /* Firefox: hide default spinner */
+}
+.number-field__input::-webkit-inner-spin-button,
+.number-field__input::-webkit-outer-spin-button {
+  opacity: 1;
+  height: 100%;                      /* stretch spinner to full input height */
+  cursor: pointer;
+}
+
 .gty-form__container {
   max-width: 600px;
   margin: 0 auto;
@@ -71,7 +102,7 @@
 }
 
 .gty-form__submit {
-  background: var(--gty-bg-hover);
+  background: var(--gty-offset-1);
   color: var(--gty-text);
   border: 1px solid var(--gty-border-strong);
   padding: 12px 0;
