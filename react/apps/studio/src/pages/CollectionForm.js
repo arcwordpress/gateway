@@ -15,23 +15,20 @@ function CollectionForm() {
   };
 
   return (
-    <div className="gty-collection-form">
-      <div className="gty-collection-form__back-container">
-        <button
-          onClick={handleBack}
-          className="gty-collection-form__back-button"
-        >
-          <span className="gty-collection-form__back-arrow">&larr;</span> Return to {collectionLabel}
+    <div className="studio-layout">
+      <aside className="studio-sidebar">
+        <span className="studio-sidebar__title">{collectionLabel}</span>
+        <button onClick={handleBack} className="studio-sidebar__return">
+          <span className="studio-sidebar__return-icon" aria-hidden="true">↵</span>
+          Return
         </button>
-      </div>
-
-      <div className="gty-collection-form__header">
+      </aside>
+      <main className="studio-main">
         <h2 className="gty-collection-form__title">
           {id ? 'Edit Record' : 'Create Record'}
         </h2>
-      </div>
-
-      <Form collectionKey={collectionKey} recordId={id} />
+        <Form collectionKey={collectionKey} recordId={id} />
+      </main>
     </div>
   );
 }
