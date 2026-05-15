@@ -29,6 +29,39 @@
   cursor: pointer;
 }
 
+/* Beat WP admin's input[type=...] specificity (0,1,1) — (0,2,0) wins */
+.gty-form .text-field__input,
+.gty-form .email-field__input,
+.gty-form .number-field__input,
+.gty-form .password-field__input,
+.gty-form .url-field__input,
+.gty-form .slug-field__input,
+.gty-form .select-field__select,
+.gty-form .relation-field__select,
+.gty-form .relationship-field__select,
+.gty-form .textarea-field__textarea,
+.gty-form .date-picker__input,
+.gty-form .datetime-picker__input,
+.gty-form .time-picker__input,
+.gty-appform .text-field__input,
+.gty-appform .email-field__input,
+.gty-appform .number-field__input,
+.gty-appform .password-field__input,
+.gty-appform .url-field__input,
+.gty-appform .slug-field__input,
+.gty-appform .select-field__select,
+.gty-appform .relation-field__select,
+.gty-appform .relationship-field__select,
+.gty-appform .textarea-field__textarea,
+.gty-appform .date-picker__input,
+.gty-appform .datetime-picker__input,
+.gty-appform .time-picker__input {
+  background-color: var(--gty-bg-surface);
+  color: var(--gty-text);
+  border-color: var(--gty-border);
+  box-shadow: none;
+}
+
 .gty-form__container {
   max-width: 600px;
   margin: 0 auto;
