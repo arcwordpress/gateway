@@ -78,10 +78,12 @@ const SLOT_PCT = ['15%', '30%', '50%', '70%', '85%']
 function makeHandles() {
   const h: CollNodeType['data']['handles'] = []
   for (let s = 0; s < SLOTS; s++) {
-    h.push({ id: `h-top-${s}`,    type: 'target', position: Position.Top,    style: { left:   SLOT_PCT[s] } })
-    h.push({ id: `h-right-${s}`,  type: 'source', position: Position.Right,  style: { top:    SLOT_PCT[s] } })
-    h.push({ id: `h-bottom-${s}`, type: 'source', position: Position.Bottom, style: { left:   SLOT_PCT[s] } })
-    h.push({ id: `h-left-${s}`,   type: 'target', position: Position.Left,   style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-top-${s}`,      type: 'target', position: Position.Top,    style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-right-${s}`,    type: 'source', position: Position.Right,  style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-right-t-${s}`,  type: 'target', position: Position.Right,  style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-bottom-${s}`,   type: 'source', position: Position.Bottom, style: { left:   SLOT_PCT[s] } })
+    h.push({ id: `h-left-${s}`,     type: 'target', position: Position.Left,   style: { top:    SLOT_PCT[s] } })
+    h.push({ id: `h-left-s-${s}`,   type: 'source', position: Position.Left,   style: { top:    SLOT_PCT[s] } })
   }
   return h
 }
@@ -200,8 +202,11 @@ function RelationshipsFlow({
         const tgtPos = posMap[tgtId] ?? { x: 0, y: 0 }
 
         const goRight   = srcPos.x <= tgtPos.x
-        const srcSide   = goRight ? 'right' : 'left'
-        const tgtSide   = goRight ? 'left'  : 'right'
+        // Source must use a 'source'-type handle; target must use a 'target'-type handle.
+        // Right handles are source-type; left handles are target-type.
+        // For reverse-direction (source to the right), use the mirrored variants.
+        const srcSide   = goRight ? 'right'   : 'left-s'
+        const tgtSide   = goRight ? 'left'    : 'right-t'
         const srcHandle = `h-${srcSide}-${nextSlot(srcId, srcSide)}`
         const tgtHandle = `h-${tgtSide}-${nextSlot(tgtId, tgtSide)}`
         const curvature = 0.25 + idx * 0.15
