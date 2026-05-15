@@ -102,7 +102,7 @@
 }
 
 .gty-form__submit {
-  background: var(--gty-bg-hover);
+  background: var(--gty-offset-1);
   color: var(--gty-text);
   border: 1px solid var(--gty-border-strong);
   padding: 12px 0;
