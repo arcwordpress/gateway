@@ -105,96 +105,25 @@ class Plugin
         // Register deactivation hook
         register_deactivation_hook(__FILE__, [$this, 'deactivate']);
 
-        // Register collections when Gateway is loaded
-        // This hook is fired by the Gateway plugin after it initializes
-        add_action('gateway_loaded', [$this, 'register_collections']);
+        // Register collections and migrations when Gateway is loaded
+        add_action('gateway_loaded', [$this, 'register']);
     }
 
-    /**
-     * Register all collections from lib/Collections directory
-     *
-     * This method is called via the `gateway_loaded` action hook.
-     * It scans the Collections directory and registers each collection
-     * with the Gateway CollectionRegistry.
-     */
-    public function register_collections()
+    public function register()
     {
-        $collections_dir = plugin_dir_path(__FILE__) . 'lib/Collections';
+        \GatewayExtensionScaffold\Collections\RecordCollection::register();
 
-        // Check if Collections directory exists
-        if (!is_dir($collections_dir)) {
-            return;
-        }
-
-        // Get all PHP files in Collections directory
-        $collection_files = glob($collections_dir . '/*.php');
-
-        foreach ($collection_files as $file) {
-            // Get filename without extension
-            $filename = basename($file, '.php');
-
-            // Build fully qualified class name
-            $class_name = 'GatewayExtensionScaffold\\Collections\\' . $filename;
-
-            // Check if class exists and has register method
-            if (class_exists($class_name) && method_exists($class_name, 'register')) {
-                $class_name::register();
-            }
-        }
+        \GatewayExtensionScaffold\Migrations\RecordMigration::register();
     }
 
-    /**
-     * Activation hook callback
-     *
-     * Runs database migrations to create required tables.
-     */
     public function activate()
     {
-        // Run migrations
-        $this->run_migrations();
-
-        // Flush rewrite rules for any custom endpoints
         flush_rewrite_rules();
     }
 
-    /**
-     * Deactivation hook callback
-     */
     public function deactivate()
     {
-        // Flush rewrite rules
         flush_rewrite_rules();
-    }
-
-    /**
-     * Run all database migrations
-     *
-     * Scans the Database directory and executes each migration class.
-     */
-    private function run_migrations()
-    {
-        $database_dir = plugin_dir_path(__FILE__) . 'lib/Database';
-
-        // Check if Database directory exists
-        if (!is_dir($database_dir)) {
-            return;
-        }
-
-        // Get all PHP files in Database directory
-        $migration_files = glob($database_dir . '/*.php');
-
-        foreach ($migration_files as $file) {
-            // Get filename without extension
-            $filename = basename($file, '.php');
-
-            // Build fully qualified class name
-            $class_name = 'GatewayExtensionScaffold\\Database\\' . $filename;
-
-            // Check if class exists and has create method
-            if (class_exists($class_name) && method_exists($class_name, 'create')) {
-                $class_name::create();
-            }
-        }
     }
 }
 
