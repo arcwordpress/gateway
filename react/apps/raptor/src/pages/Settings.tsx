@@ -4,7 +4,6 @@ import { apiUrl, authHeaders } from '../lib/api'
 import DatabaseSettings from './Settings/DatabaseSettings'
 import AISettings from './Settings/AISettings'
 import CollectionSettings from './Settings/CollectionSettings'
-import MigrationsSettings from './Settings/MigrationsSettings'
 
 interface SettingsData {
   id: number
@@ -16,13 +15,12 @@ interface SettingsData {
   has_anthropic_key: boolean
 }
 
-type TabKey = 'database' | 'ai' | 'collections' | 'migrations'
+type TabKey = 'database' | 'ai' | 'collections'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'database', label: 'Database' },
   { key: 'ai', label: 'AI' },
   { key: 'collections', label: 'Collections' },
-  { key: 'migrations', label: 'Migrations' },
 ]
 
 export default function Settings() {
@@ -162,7 +160,6 @@ export default function Settings() {
           />
         )}
         {activeTab === 'collections' && <CollectionSettings />}
-        {activeTab === 'migrations' && <MigrationsSettings />}
       </div>
     </div>
   )
