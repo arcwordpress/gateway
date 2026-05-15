@@ -322,38 +322,6 @@
   cursor: pointer;
 }
 
-/* ── Override WP admin global input reset ─────────────────────────────────── */
-/* WP admin applies background:#fff; color:#2c3338 to all inputs globally.    */
-/* Re-assert our tokens so the Studio form looks correct.                     */
-.gty-app input[type=text],
-.gty-app input[type=email],
-.gty-app input[type=password],
-.gty-app input[type=number],
-.gty-app input[type=search],
-.gty-app input[type=url],
-.gty-app input[type=tel],
-.gty-app input[type=date],
-.gty-app input[type=datetime-local],
-.gty-app input[type=month],
-.gty-app input[type=week],
-.gty-app input[type=time],
-.gty-app input[type=color],
-.gty-app select,
-.gty-app textarea {
-  background-color: var(--gty-bg-surface);
-  color: var(--gty-text);
-  border-color: var(--gty-border);
-  box-shadow: none;
-}
-
-.gty-app input:focus,
-.gty-app select:focus,
-.gty-app textarea:focus {
-  border-color: var(--gty-border-focus);
-  box-shadow: var(--gty-focus-ring);
-  outline: none;
-}
-
 /* Main Content Styles */
 .gty-studio-main {
   /* full-bleed — layout is handled by studio-layout grid */

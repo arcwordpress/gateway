@@ -21,7 +21,7 @@
   padding: 0.75rem;
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
 }
 
 .user-field__user-info {
@@ -106,7 +106,7 @@
   font-family: inherit;
   font-size: 0.875rem;
   color: var(--gty-text);
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -127,7 +127,7 @@
   right: 0;
   margin-top: 0.25rem;
   padding: 0.75rem;
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
@@ -145,7 +145,7 @@
   margin-top: 0.25rem;
   max-height: 300px;
   overflow-y: auto;
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
@@ -182,7 +182,7 @@
   right: 0;
   margin-top: 0.25rem;
   padding: 0.75rem;
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);

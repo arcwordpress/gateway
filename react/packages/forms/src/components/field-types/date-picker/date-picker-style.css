@@ -21,7 +21,7 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--gty-border);
   border-radius: 0.375rem;
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   color: var(--gty-text);
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;

@@ -19,7 +19,7 @@
   font-family: inherit;
   font-size: 0.875rem;
   color: var(--gty-text);
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
