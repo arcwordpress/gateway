@@ -22,7 +22,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid var(--gty-border);
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   color: var(--gty-text-sub);
   transition: all 0.15s ease-in-out;
   cursor: pointer;

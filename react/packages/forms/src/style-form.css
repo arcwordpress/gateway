@@ -56,7 +56,7 @@
 .gty-appform .date-picker__input,
 .gty-appform .datetime-picker__input,
 .gty-appform .time-picker__input {
-  background-color: var(--gty-bg-surface);
+  background-color: var(--gty-offset-2);
   color: var(--gty-text);
   border-color: var(--gty-border);
   box-shadow: none;
