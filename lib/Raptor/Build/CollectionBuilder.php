@@ -103,7 +103,7 @@ class CollectionBuilder
             ];
         }
 
-        $migration     = \Gateway\Database\MigrationGenerator::generateFromData($collectionData, $namespace);
+        $migration     = \Gateway\Migrations\MigrationGenerator::generateFromData($collectionData, $namespace);
         $migrationFile = $databaseDir . '/' . $migration['className'] . '.php';
 
         if (file_put_contents($migrationFile, $migration['code']) === false) {
