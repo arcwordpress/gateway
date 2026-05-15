@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from '@arcwp/gateway-forms';
 import { useCollections } from '../context/CollectionsContext';
+import CollectionsNav from '../components/CollectionsNav';
 
 function CollectionForm() {
   const { collectionKey, id } = useParams();
@@ -10,9 +11,7 @@ function CollectionForm() {
   const collection = collections.find((c) => c.key === collectionKey);
   const collectionLabel = collection?.titlePlural || collection?.title || collectionKey;
 
-  const handleBack = () => {
-    navigate(`/collection/${collectionKey}`);
-  };
+  const handleBack = () => navigate(`/collection/${collectionKey}`);
 
   return (
     <div className="studio-layout">
@@ -24,6 +23,7 @@ function CollectionForm() {
         </button>
       </aside>
       <main className="studio-main">
+        <CollectionsNav />
         <h2 className="gty-collection-form__title">
           {id ? 'Edit Record' : 'Create Record'}
         </h2>
