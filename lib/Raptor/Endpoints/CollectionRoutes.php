@@ -4,6 +4,7 @@ namespace Gateway\Raptor\Endpoints;
 
 use Gateway\Raptor\Build\RaptorBuilder;
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Raptor\Collections\RaptorCollectionRelationship;
 use Gateway\Raptor\Collections\RaptorExtension;
 use Gateway\Raptor\Controllers\CollectionController;
 use Gateway\Raptor\Controllers\RelationshipController;
@@ -396,6 +397,19 @@ class CollectionRoutes
             }
 
             $extension = $collection->extension_id ? $collection->extension : null;
+
+            // Cascade: detach from packages pivot, remove owned relationships,
+            // remove target-side relationships, and drop field/view/form lists.
+            $collection->packages()->detach();
+            $collection->collectionRelationships()->delete();
+            \Gateway\Raptor\Collections\RaptorCollectionRelationship::where('target_collection_id', $collection->id)->delete();
+            if ($fieldList = $collection->fieldList) {
+                $fieldList->fields()->delete();
+                $fieldList->delete();
+            }
+            if ($viewList = $collection->viewList) { $viewList->delete(); }
+            if ($formList = $collection->formList) { $formList->delete(); }
+
             $collection->delete();
 
             if ($extension) {

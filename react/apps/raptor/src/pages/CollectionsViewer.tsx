@@ -432,6 +432,12 @@ function DeletePanel({ collKey, onClose }: { collKey: string; onClose: () => voi
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
       void queryClient.invalidateQueries({ queryKey: COLLECTIONS_NESTED_KEY })
+      void queryClient.invalidateQueries({ queryKey: ['packages'] })
+      void queryClient.invalidateQueries({ queryKey: ['packages-registered'] })
+      void queryClient.invalidateQueries({ queryKey: ['registered-collections'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-admin-stats'] })
+      void queryClient.invalidateQueries({ queryKey: ['raptor-collections-nested'] })
+      void queryClient.invalidateQueries({ queryKey: ['extension-fields'] })
       onClose()
     },
   })
