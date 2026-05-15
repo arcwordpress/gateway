@@ -237,19 +237,11 @@ function EditPanel({ collKey, onClose }: { collKey: string; onClose: () => void 
   const [packageKey, setPackageKey] = useState<string>('')
   const [labelField, setLabelField] = useState<string>('')
 
-  const { data: collection, isLoading, isError } = useQuery<Collection>({
-    queryKey: ['raptor-collections', collKey],
-    queryFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${collKey}`), {
-        headers: authHeaders(),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return json.collection as Collection
-    },
-    enabled: !!collKey,
-    staleTime: 15_000,
-  })
+  // Read from the existing collections list cache — no extra network request.
+  const cached = queryClient.getQueryData<Collection[]>(['raptor-collections'])
+  const collection = cached?.find((c) => c.collection_key === collKey)
+  const isLoading = !cached
+  const isError = cached !== undefined && !collection
 
   const { data: packages = [] } = useQuery<{ package_key: string; label: string; extension_id: number | null }[]>({
     queryKey: ['packages', 'for-extension', collection?.extension_id],
