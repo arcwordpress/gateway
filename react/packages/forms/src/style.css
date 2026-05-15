@@ -22,6 +22,7 @@
 @import './components/field-types/range/range-style.css';
 @import './components/field-types/readonly/readonly-style.css';
 @import './components/field-types/relation/relation-style.css';
+@import './components/field-types/relationship/relationship-style.css';
 @import './components/field-types/select/style.css';
 @import './components/field-types/slug/slug-style.css';
 @import './components/field-types/text/style.css';

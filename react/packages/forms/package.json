@@ -4,13 +4,13 @@
   "description": "Gateway Forms React component library with form field types and validation",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "style": "dist/style.css",
+  "style": "src/style.css",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./src/style.css"
   },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",

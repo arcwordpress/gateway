@@ -3,26 +3,33 @@
 }
 
 .relationship-field__loading {
-  color: #888;
+  color: var(--gty-text-muted);
   font-size: 0.875rem;
 }
 
 .relationship-field__error-fetch {
-  color: #c0392b;
+  color: var(--gty-error);
   font-size: 0.875rem;
 }
 
 .relationship-field__select {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  background-color: var(--gty-bg-surface);
+  color: var(--gty-text);
   font-size: 0.9375rem;
 }
 
+.relationship-field__select:focus {
+  border-color: var(--gty-border-focus);
+  box-shadow: var(--gty-focus-ring);
+  outline: none;
+}
+
 .relationship-field__select--error {
-  border-color: #c0392b;
+  border-color: var(--gty-error);
 }
 
 .relationship-field__display {
@@ -30,5 +37,5 @@
 }
 
 .relationship-field__display--empty {
-  color: #aaa;
+  color: var(--gty-text-faint);
 }
