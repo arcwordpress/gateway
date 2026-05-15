@@ -5,21 +5,15 @@ import { getApiClient } from '@arcwp/gateway-data';
 import './relationship-style.css';
 
 /**
- * Resolve the target collection's records endpoint from the current collection's
- * relationships array and the named relationship.
+ * Resolve the target collection key for a given relationship name by scanning
+ * the current collection's relationships array (provided via collection info).
  *
- * Returns null when the relationship or its route cannot be resolved.
+ * Returns null when the relationship or its target cannot be resolved.
  */
-function resolveTargetEndpoint(collection, relationshipName) {
+function resolveTargetKey(collection, relationshipName) {
   if (!collection || !relationshipName) return null;
-
-  // Find matching relationship in the collection's relationships array
   const rel = (collection.relationships || []).find((r) => r.name === relationshipName);
-  if (!rel?.target_key) return null;
-
-  // Find the target collection route from the registered routes on the target
-  // The target_key gives us the collection key; we look it up via the collections API.
-  return { targetKey: rel.target_key };
+  return rel?.target_key ?? null;
 }
 
 const RelationshipControl = ({ config = {} }) => {
@@ -33,21 +27,15 @@ const RelationshipControl = ({ config = {} }) => {
 
   const fieldError = formState.errors[name];
 
-  const {
-    label,
-    required = false,
-    relationship: relConfig = {},
-  } = config;
+  // Config keys are flat (no dot-notation) — set when saved via the Raptor
+  // field editor or when defined directly in a PHP collection class.
+  const relationshipName = config.relationship ?? '';
+  const displayField     = config.displayField ?? 'title';
+  const valueField       = config.valueField   ?? 'id';
+  const placeholder      = config.placeholder  ?? 'Select an option...';
 
-  const {
-    name: relationshipName,
-    displayField = 'title',
-    valueField = 'id',
-    placeholder = 'Select an option...',
-  } = relConfig;
-
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [options,    setOptions]    = useState([]);
+  const [loading,    setLoading]    = useState(true);
   const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
@@ -57,9 +45,9 @@ const RelationshipControl = ({ config = {} }) => {
       return;
     }
 
-    const resolution = resolveTargetEndpoint(collection, relationshipName);
+    const targetKey = resolveTargetKey(collection, relationshipName);
 
-    if (!resolution) {
+    if (!targetKey) {
       setFetchError(`Relationship "${relationshipName}" not found in collection info`);
       setLoading(false);
       return;
@@ -71,19 +59,19 @@ const RelationshipControl = ({ config = {} }) => {
         setFetchError(null);
         const client = getApiClient();
 
-        // Fetch the target collection info to get its route
-        const infoRes = await client.get(`gateway/v1/collections/${resolution.targetKey}`);
-        const targetCollection = infoRes.data;
-        const routesArr = Array.isArray(targetCollection?.routes) ? targetCollection.routes : [];
-        const getManyRoute = routesArr.find((r) => r.type === 'get_many') ?? routesArr[0] ?? null;
+        // Fetch the target collection info to discover its route
+        const infoRes       = await client.get(`gateway/v1/collections/${targetKey}`);
+        const targetColl    = infoRes.data;
+        const routesArr     = Array.isArray(targetColl?.routes) ? targetColl.routes : [];
+        const getManyRoute  = routesArr.find((r) => r.type === 'get_many') ?? routesArr[0] ?? null;
 
         if (!getManyRoute) {
-          throw new Error(`No route found for target collection "${resolution.targetKey}"`);
+          throw new Error(`No route found for target collection "${targetKey}"`);
         }
 
-        const endpoint = `${getManyRoute.namespace}/${getManyRoute.path}`;
+        const endpoint  = `${getManyRoute.namespace}/${getManyRoute.path}`;
         const recordsRes = await client.get(endpoint);
-        const items = recordsRes.data?.data?.items ?? recordsRes.data;
+        const items      = recordsRes.data?.data?.items ?? recordsRes.data;
 
         if (!Array.isArray(items)) {
           throw new Error('Unexpected response shape from target collection');
@@ -132,17 +120,17 @@ const RelationshipFieldTypeInput = ({ config = {} }) => (
 /**
  * Display a relationship value.
  *
- * When records are fetched with relations=true the related object is embedded
+ * When records are fetched with relations=true, the related object is embedded
  * in the record (e.g. record.docSet = { id: 2, title: "My Doc Set" }).
- * In that case `value` will be that object and we can show the display field.
- * When relations are not loaded `value` is just the raw FK and we show it as-is.
+ * In that case `value` will be that object and we render the display field.
+ * When relations are not loaded `value` is the raw FK — shown as-is.
  */
 const RelationshipFieldTypeDisplay = ({ value, config }) => {
   if (value === null || value === undefined || value === '') {
     return <span className="relationship-field__display relationship-field__display--empty">-</span>;
   }
 
-  const displayField = config?.relationship?.displayField || config?.displayField || 'title';
+  const displayField = config?.displayField ?? 'title';
 
   if (typeof value === 'object' && value !== null) {
     const label = value[displayField] ?? value.title ?? value.name ?? value.label;
@@ -157,11 +145,9 @@ export const relationshipFieldType = {
   Input: RelationshipFieldTypeInput,
   Display: RelationshipFieldTypeDisplay,
   defaultConfig: {
-    relationship: {
-      displayField: 'title',
-      valueField: 'id',
-      placeholder: 'Select an option...',
-    },
+    displayField: 'title',
+    valueField: 'id',
+    placeholder: 'Select an option...',
   },
 };
 

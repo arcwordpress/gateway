@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
@@ -257,17 +257,25 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
 
 // ─── FieldEditForm ────────────────────────────────────────────────────────────
 
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
 export function FieldEditForm({ field, onClose }: { field: Field; onClose: () => void }) {
   const { updateField } = useFields()
   const { collection }  = useCollection()
   const queryClient     = useQueryClient()
-  const [name, setName]   = useState(field.name)
-  const [type, setType]   = useState(field.type)
-  const [label, setLabel] = useState(field.label)
+  const [name, setName]     = useState(field.name)
+  const [type, setType]     = useState(field.type)
+  const [label, setLabel]   = useState(field.label)
   const [extras, setExtras] = useState<Record<string, unknown>>(field.config ?? {})
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveError, setSaveError]   = useState<string | null>(null)
+
+  // Track whether this is the initial render to skip auto-save on mount
+  const isFirstRender = useRef(true)
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleExtrasChange = useCallback(
-    (name: string, value: unknown) => setExtras(prev => ({ ...prev, [name]: value })),
+    (key: string, value: unknown) => setExtras(prev => ({ ...prev, [key]: value })),
     []
   )
 
@@ -285,11 +293,11 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
   const selectedTypeDef = fieldTypeDefs?.find(ft => ft.type === type)
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (payload: { name: string; type: string; label: string; config: Record<string, unknown> }) => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({ name, type, label, config: extras }),
+        body: JSON.stringify(payload),
       })
       const json = await parseJsonResponse(res)
       if (!json.success) throw new Error(json.message as string ?? 'Failed to update field')
@@ -298,21 +306,44 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
     onSuccess: (updated) => {
       updateField(field.name, updated)
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections', collection?.collection_key] })
-      onClose()
+      setSaveStatus('saved')
+      setSaveError(null)
+      // Reset 'saved' indicator after 2 s
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    },
+    onError: (err: Error) => {
+      setSaveStatus('error')
+      setSaveError(err.message)
     },
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    mutation.mutate()
-  }
+  // Auto-save whenever name / type / label / extras change (debounced 600 ms)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current)
+
+    debounceTimer.current = setTimeout(() => {
+      setSaveStatus('saving')
+      setSaveError(null)
+      mutation.mutate({ name, type, label, config: extras })
+    }, 600)
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, type, label, extras])
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Name</label>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
-               className={baseInput} required disabled={mutation.isPending} />
+               className={baseInput} required />
       </div>
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Type</label>
@@ -320,7 +351,7 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
           value={type}
           onChange={e => setType(e.target.value)}
           className={baseInput}
-          disabled={mutation.isPending || typesLoading}
+          disabled={typesLoading}
         >
           {typesLoading && <option value={type}>{formatFieldTypeLabel(type)}</option>}
           {fieldTypeDefs?.map(ft => (
@@ -331,7 +362,7 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Label</label>
         <input type="text" value={label} onChange={e => setLabel(e.target.value)}
-               className={baseInput} required disabled={mutation.isPending} />
+               className={baseInput} required />
       </div>
 
       {selectedTypeDef && selectedTypeDef.fields.length > 0 && (
@@ -347,24 +378,18 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
         </div>
       )}
 
-      {mutation.isError && (
-        <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
-          {(mutation.error as Error).message}
-        </div>
-      )}
-      <div className="flex gap-2 mt-2">
-        <button type="submit"
-                disabled={mutation.isPending}
-                className="px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-zinc-100 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          {mutation.isPending ? 'Saving…' : 'Save'}
-        </button>
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-xs text-zinc-500">
+          {saveStatus === 'saving' && 'Saving…'}
+          {saveStatus === 'saved'  && <span className="text-green-400">Saved</span>}
+          {saveStatus === 'error'  && <span className="text-red-400">{saveError ?? 'Save failed'}</span>}
+        </span>
         <button type="button" onClick={onClose}
-                disabled={mutation.isPending}
-                className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors disabled:opacity-50">
-          Cancel
+                className="px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-sm transition-colors">
+          Close
         </button>
       </div>
-    </form>
+    </div>
   )
 }
 
