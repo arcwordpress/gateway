@@ -70,28 +70,24 @@ class RaptorBuilder
         }
         $wasActive = is_plugin_active($pluginFile);
 
+        // Delete the entire plugin directory before rebuilding — clean slate every time.
+        if (is_dir($pluginDir)) {
+            $this->deleteDirectory($pluginDir);
+        }
+
         $scaffoldResult = $this->scaffolder->scaffold(
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
         );
 
-        // Rebuild packages — remove stale files for any packages no longer active.
-        $packages    = $extension->packages()->where('status', 'active')->get();
-        $packagesDir = $pluginDir . '/lib/Packages';
-        if (is_dir($packagesDir)) {
-            $activeFiles = $packages->map(fn($p) => $this->packageBuilder->keyToClassName($p->package_key) . '.php')->toArray();
-            foreach (glob($packagesDir . '/*.php') ?: [] as $file) {
-                if (!in_array(basename($file), $activeFiles, true)) {
-                    @unlink($file);
-                }
-            }
-        }
+        // Rebuild packages.
+        $packages = $extension->packages()->where('status', 'active')->get();
 
         $packageResults = [];
         foreach ($packages as $package) {
             $packageResults[] = $this->packageBuilder->build($package, $pluginDir, $namespace);
         }
 
-        // Rebuild every collection — migrations always run, no skipping.
+        // Rebuild every collection — dirs were already wiped above so no stale files remain.
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with(['fieldList.fields'])
             ->orderBy('id')
@@ -258,5 +254,21 @@ class RaptorBuilder
     public function toNamespace(string $extensionKey): string
     {
         return str_replace('_', '', ucwords($extensionKey, '_'));
+    }
+
+    private function deleteDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) return;
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            $item->isDir() ? rmdir($item->getRealPath()) : unlink($item->getRealPath());
+        }
+
+        rmdir($dir);
     }
 }
