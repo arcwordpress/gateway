@@ -60,7 +60,7 @@ function FieldsContent({ editSurface, setEditSurface }: {
             <DeleteConfirmation field={editSurface.field} onClose={() => setEditSurface(null)} />
           )}
           {editSurface.mode === 'editField' && (
-            <FieldEditForm field={editSurface.field} onClose={() => setEditSurface(null)} />
+            <FieldEditForm key={editSurface.field.id} field={editSurface.field} onClose={() => setEditSurface(null)} />
           )}
         </EditPanel>
       )}
