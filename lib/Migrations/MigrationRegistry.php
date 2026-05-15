@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) exit;
 
 class MigrationRegistry
 {
-    /** @var array<string, array{key:string, label:string, migrations:string[], version:string|null}> */
+    /** @var array<string, array{key:string, label:string, migrations:list<array{class:string, label:string}>, version:string|null}> */
     private static array $groups = [];
 
     /**
@@ -14,25 +14,29 @@ class MigrationRegistry
      */
     public static function register(string $key, string $label, array $migrations, ?string $version): void
     {
-        self::$groups[$key] = compact('key', 'label', 'migrations', 'version');
+        $mapped = [];
+        foreach ($migrations as $class) {
+            $mapped[] = ['class' => $class, 'label' => $class];
+        }
+        self::$groups[$key] = ['key' => $key, 'label' => $label, 'migrations' => $mapped, 'version' => $version];
     }
 
     /**
      * Append a single migration class to an extension group.
-     * Called by Migration::register() — safe to call multiple times for the same extension.
+     * Called by Migration::register().
      */
-    public static function push(string $extension, string $label, string $class, ?string $version): void
+    public static function push(string $extension, string $migrationLabel, string $class, ?string $version): void
     {
         if (!isset(self::$groups[$extension])) {
             self::$groups[$extension] = [
                 'key'        => $extension,
-                'label'      => $label,
+                'label'      => ucwords(str_replace(['-', '_'], ' ', $extension)),
                 'migrations' => [],
                 'version'    => $version,
             ];
         }
 
-        self::$groups[$extension]['migrations'][] = $class;
+        self::$groups[$extension]['migrations'][] = ['class' => $class, 'label' => $migrationLabel];
     }
 
     /** @return array<string, array> */
@@ -63,7 +67,8 @@ class MigrationRegistry
         $ran    = 0;
         $errors = [];
 
-        foreach ($group['migrations'] as $class) {
+        foreach ($group['migrations'] as $entry) {
+            $class = $entry['class'];
             try {
                 if (!class_exists($class)) {
                     $errors[] = "Class not found: {$class}";
