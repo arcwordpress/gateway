@@ -1,6 +1,4 @@
-:root {
-  --gty-admin-dark: #1D2327;
-}
+@import '../../../packages/tokens.css';
 
 /* ── Studio top nav (collection tabs + settings gear) ───────────────────── */
 
@@ -143,7 +141,7 @@
 }
 
 .gty-dashboard__no-collections {
-  color: #111827;
+  color: var(--gty-text-muted);
 }
 
 .gty-dashboard__header {
@@ -157,24 +155,24 @@
 .gty-dashboard__title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--gty-text);
   text-transform: uppercase;
   margin: 0;
 }
 
 .gty-dashboard__create-button {
-  background-color: #111827;
-  color: white;
+  background-color: var(--gty-offset-1);
+  color: var(--gty-contrast-1);
   font-weight: 500;
   padding: 0.375rem 1rem;
   border-radius: 0.375rem;
-  border: none;
+  border: 1px solid var(--gty-border);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .gty-dashboard__create-button:hover {
-  background-color: #1d4ed8;
+  background-color: var(--gty-bg-hover);
 }
 
 .gty-dashboard__controls {
@@ -186,9 +184,10 @@
 .gty-dashboard__view-switcher {
   display: flex;
   gap: 0.5rem;
-  background-color: #f3f4f6;
+  background-color: var(--gty-bg-surface);
   padding: 0.25rem;
   border-radius: 0.375rem;
+  border: 1px solid var(--gty-border);
 }
 
 .gty-dashboard__view-button {
@@ -199,19 +198,18 @@
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gty-text-muted);
   transition: all 0.2s;
 }
 
 .gty-dashboard__view-button:hover {
-  color: white !important;
-  background-color: black !important;
+  color: var(--gty-contrast-1);
+  background-color: var(--gty-bg-hover);
 }
 
 .gty-dashboard__view-button--active {
-  background-color: white;
-  color: #2563eb;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background-color: var(--gty-bg-hover);
+  color: var(--gty-contrast-1);
 }
 
 /* CollectionForm Component Styles */
@@ -231,7 +229,7 @@
 }
 
 .gty-collection-form__back-button {
-  color: #2563eb;
+  color: var(--gty-link);
   font-weight: 500;
   font-size: 0.875rem;
   display: flex;
@@ -245,7 +243,7 @@
 }
 
 .gty-collection-form__back-button:hover {
-  color: #1e40af;
+  color: var(--gty-link-hover);
 }
 
 .gty-collection-form__back-arrow {
@@ -259,7 +257,13 @@
 .gty-collection-form__title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--gty-text);
+}
+
+/* Remove forms-package max-width constraint inside studio */
+.gty-collection-form .gty-form__container {
+  max-width: none;
+  padding: 0;
 }
 
 /* App Component Styles */
@@ -275,9 +279,8 @@
 
 /* Navigation Styles */
 .gty-nav {
-  background-color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--gty-bg-surface);
+  border-bottom: 1px solid var(--gty-border);
 }
 
 .gty-nav__container {
@@ -321,7 +324,7 @@
 .gty-nav__brand-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--gty-text);
 }
 
 .gty-nav__links {
@@ -346,7 +349,7 @@
   border-bottom: 2px solid transparent;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gty-text-muted);
   text-decoration: none;
   transition: color 0.2s, border-color 0.2s;
 }
