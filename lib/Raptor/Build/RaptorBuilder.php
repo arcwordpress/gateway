@@ -91,11 +91,27 @@ class RaptorBuilder
             $packageResults[] = $this->packageBuilder->build($package, $pluginDir, $namespace);
         }
 
-        // Rebuild every collection — migrations always run, no skipping.
+        // Rebuild every collection — remove stale files first, then regenerate.
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with(['fieldList.fields'])
             ->orderBy('id')
             ->get();
+
+        $activeCollectionFiles = $collections->map(
+            fn($c) => str_replace('_', '', ucwords($c->collection_key, '_')) . '.php'
+        )->toArray();
+
+        foreach (['lib/Collections', 'lib/Migrations', 'schemas'] as $dir) {
+            $ext = $dir === 'schemas' ? '.json' : '.php';
+            $fullDir = $pluginDir . '/' . $dir;
+            if (!is_dir($fullDir)) continue;
+            foreach (glob($fullDir . '/*' . $ext) ?: [] as $file) {
+                $base = basename($file, $ext) . '.php'; // normalise to .php for comparison
+                if (!in_array($base, $activeCollectionFiles, true)) {
+                    @unlink($file);
+                }
+            }
+        }
 
         $collectionResults = [];
         foreach ($collections as $collection) {
