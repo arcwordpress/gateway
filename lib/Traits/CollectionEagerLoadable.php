@@ -50,6 +50,12 @@ trait CollectionEagerLoadable
                 continue;
             }
 
+            // Skip methods inherited from Eloquent or any Illuminate package — those are
+            // framework internals (e.g. morphTo()), not user-defined relationship methods.
+            if (str_starts_with($method->getDeclaringClass()->getName(), 'Illuminate\\')) {
+                continue;
+            }
+
             $returnType = $method->getReturnType();
 
             if ($returnType instanceof ReflectionNamedType && !$returnType->isBuiltin()) {
