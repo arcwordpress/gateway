@@ -2,7 +2,7 @@
 /**
  * Plugin Name: {{PROJECT_NAME}}
  * Description: A Gateway extension project.
- * Version: 1.0.0
+ * Version: {{VERSION}}
  * Author: Gateway
  * Text Domain: {{PROJECT_SLUG}}
  */
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-defined('{{CONSTANT_PREFIX}}_VERSION') || define('{{CONSTANT_PREFIX}}_VERSION', '1.0.0');
+defined('{{CONSTANT_PREFIX}}_VERSION') || define('{{CONSTANT_PREFIX}}_VERSION', '{{VERSION}}');
 defined('{{CONSTANT_PREFIX}}_DIR')     || define('{{CONSTANT_PREFIX}}_DIR',     plugin_dir_path(__FILE__));
 defined('{{CONSTANT_PREFIX}}_URL')     || define('{{CONSTANT_PREFIX}}_URL',     plugin_dir_url(__FILE__));
 

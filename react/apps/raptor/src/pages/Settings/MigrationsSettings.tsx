@@ -73,10 +73,10 @@ function ExtensionMigrationRow({ ext }: { ext: Extension }) {
         </p>
       </div>
 
-      <div className="shrink-0 w-24 text-right">
+      <div className="shrink-0 text-right">
         {due ? (
           <span className="text-[10px] font-medium text-amber-400 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
-            due
+            {ext.version} pending
           </span>
         ) : (
           <span className="text-[10px] text-zinc-600">up to date</span>
