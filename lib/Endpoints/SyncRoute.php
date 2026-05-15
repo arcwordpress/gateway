@@ -4,6 +4,7 @@ namespace Gateway\Endpoints;
 
 use Gateway\Plugin;
 use Gateway\Database\MigrationHooks;
+use Gateway\Migrations\MigrationRegistry;
 
 if (!defined('ABSPATH')) exit;
 
@@ -57,6 +58,28 @@ class SyncRoute
             'methods'             => 'GET, POST',
             'callback'            => [$this, 'extensionMigrations'],
             'permission_callback' => [$this, 'checkPermissions'],
+        ]);
+
+        register_rest_route('gateway/v1', '/migrations', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'listMigrationRegistry'],
+            'permission_callback' => [$this, 'checkPermissions'],
+            'args'                => [
+                'extension' => [
+                    'required' => false,
+                    'type'     => 'string',
+                    'description' => 'Filter by extension key',
+                ],
+            ],
+        ]);
+
+        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_\-]+)', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'runRegistryGroup'],
+            'permission_callback' => [$this, 'checkPermissions'],
+            'args'                => [
+                'key' => ['required' => true, 'type' => 'string'],
+            ],
         ]);
     }
 
@@ -230,6 +253,58 @@ class SyncRoute
         } catch (\Throwable $e) {
             return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * GET /migrations
+     * GET /migrations?extension=waypoint
+     *
+     * Returns all groups in MigrationRegistry, optionally filtered by extension key.
+     */
+    public function listMigrationRegistry(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $extension = $request->get_param('extension');
+        $groups    = MigrationRegistry::getAll();
+        $result    = [];
+
+        foreach ($groups as $group) {
+            if ($extension !== null && $group['key'] !== $extension) {
+                continue;
+            }
+            $result[] = [
+                'key'             => $group['key'],
+                'label'           => $group['label'],
+                'version'         => $group['version'],
+                'migration_count' => count($group['migrations']),
+            ];
+        }
+
+        return new \WP_REST_Response(['success' => true, 'groups' => $result], 200);
+    }
+
+    /**
+     * POST /sync/migration-registry/{key}
+     *
+     * Runs all migration classes in the specified registry group.
+     */
+    public function runRegistryGroup(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $key = $request->get_param('key');
+
+        if (!MigrationRegistry::has($key)) {
+            return new \WP_REST_Response(['success' => false, 'message' => "Group '{$key}' not found in registry."], 404);
+        }
+
+        $result = MigrationRegistry::runGroup($key);
+
+        return new \WP_REST_Response([
+            'success' => $result['success'],
+            'ran'     => $result['ran'],
+            'errors'  => $result['errors'],
+            'message' => $result['success']
+                ? "Ran {$result['ran']} migration(s) successfully."
+                : implode('; ', $result['errors']),
+        ], $result['success'] ? 200 : 500);
     }
 
     public function checkPermissions(): bool
