@@ -60,13 +60,20 @@ class SyncRoute
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
-        register_rest_route('gateway/v1', '/sync/migration-registry', [
+        register_rest_route('gateway/v1', '/migrations', [
             'methods'             => 'GET',
             'callback'            => [$this, 'listMigrationRegistry'],
             'permission_callback' => [$this, 'checkPermissions'],
+            'args'                => [
+                'extension' => [
+                    'required' => false,
+                    'type'     => 'string',
+                    'description' => 'Filter by extension key',
+                ],
+            ],
         ]);
 
-        register_rest_route('gateway/v1', '/sync/migration-registry/(?P<key>[a-zA-Z0-9_\-]+)', [
+        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_\-]+)', [
             'methods'             => 'POST',
             'callback'            => [$this, 'runRegistryGroup'],
             'permission_callback' => [$this, 'checkPermissions'],
@@ -249,17 +256,21 @@ class SyncRoute
     }
 
     /**
-     * GET /sync/migration-registry
+     * GET /migrations
+     * GET /migrations?extension=waypoint
      *
-     * Returns all groups currently registered in MigrationRegistry,
-     * including those from external plugins (e.g. Keystone\Migrations).
+     * Returns all groups in MigrationRegistry, optionally filtered by extension key.
      */
     public function listMigrationRegistry(\WP_REST_Request $request): \WP_REST_Response
     {
-        $groups = MigrationRegistry::getAll();
-        $result = [];
+        $extension = $request->get_param('extension');
+        $groups    = MigrationRegistry::getAll();
+        $result    = [];
 
         foreach ($groups as $group) {
+            if ($extension !== null && $group['key'] !== $extension) {
+                continue;
+            }
             $result[] = [
                 'key'             => $group['key'],
                 'label'           => $group['label'],

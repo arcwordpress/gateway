@@ -121,7 +121,7 @@ function RegistryGroupRow({ group }: { group: RegistryGroup }) {
   const runMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(
-        apiUrl(`gateway/v1/sync/migration-registry/${group.key}`),
+        apiUrl(`gateway/v1/migrations/${group.key}`),
         { method: 'POST', headers: authHeaders() }
       )
       const json = await res.json()
@@ -184,7 +184,7 @@ export default function MigrationsSettings() {
   const { data: regData, isLoading: regLoading, isError: regError } = useQuery<{ groups: RegistryGroup[] }>({
     queryKey: ['migration-registry'],
     queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/sync/migration-registry'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/migrations'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     },
