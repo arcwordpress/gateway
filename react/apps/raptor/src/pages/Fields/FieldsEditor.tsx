@@ -174,7 +174,7 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
 // ─── FieldsList ───────────────────────────────────────────────────────────────
 
 export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceState) => void }) {
-  const { fields, addField, moveField, reorderFields } = useFields()
+  const { fields, addField, reorderFields } = useFields()
   const { collection } = useCollection()
   const queryClient = useQueryClient()
   const collectionKey = collection?.collection_key
