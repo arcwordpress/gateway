@@ -70,48 +70,34 @@ class RaptorBuilder
         }
         $wasActive = is_plugin_active($pluginFile);
 
+        // Wipe all generated subdirectories before rebuilding so deleted
+        // collections/packages/migrations/schemas are never left behind.
+        foreach (['lib/Collections', 'lib/Migrations', 'lib/Packages', 'schemas'] as $dir) {
+            $fullDir = $pluginDir . '/' . $dir;
+            if (is_dir($fullDir)) {
+                foreach (glob($fullDir . '/*') ?: [] as $file) {
+                    if (is_file($file)) @unlink($file);
+                }
+            }
+        }
+
         $scaffoldResult = $this->scaffolder->scaffold(
             $pluginDir, $pluginSlug, $namespace, $constantPrefix, $projectName, $extension
         );
 
-        // Rebuild packages — remove stale files for any packages no longer active.
-        $packages    = $extension->packages()->where('status', 'active')->get();
-        $packagesDir = $pluginDir . '/lib/Packages';
-        if (is_dir($packagesDir)) {
-            $activeFiles = $packages->map(fn($p) => $this->packageBuilder->keyToClassName($p->package_key) . '.php')->toArray();
-            foreach (glob($packagesDir . '/*.php') ?: [] as $file) {
-                if (!in_array(basename($file), $activeFiles, true)) {
-                    @unlink($file);
-                }
-            }
-        }
+        // Rebuild packages.
+        $packages = $extension->packages()->where('status', 'active')->get();
 
         $packageResults = [];
         foreach ($packages as $package) {
             $packageResults[] = $this->packageBuilder->build($package, $pluginDir, $namespace);
         }
 
-        // Rebuild every collection — remove stale files first, then regenerate.
+        // Rebuild every collection — dirs were already wiped above so no stale files remain.
         $collections = RaptorCollection::where('extension_id', $extension->id)
             ->with(['fieldList.fields'])
             ->orderBy('id')
             ->get();
-
-        $activeCollectionFiles = $collections->map(
-            fn($c) => str_replace('_', '', ucwords($c->collection_key, '_')) . '.php'
-        )->toArray();
-
-        foreach (['lib/Collections', 'lib/Migrations', 'schemas'] as $dir) {
-            $ext = $dir === 'schemas' ? '.json' : '.php';
-            $fullDir = $pluginDir . '/' . $dir;
-            if (!is_dir($fullDir)) continue;
-            foreach (glob($fullDir . '/*' . $ext) ?: [] as $file) {
-                $base = basename($file, $ext) . '.php'; // normalise to .php for comparison
-                if (!in_array($base, $activeCollectionFiles, true)) {
-                    @unlink($file);
-                }
-            }
-        }
 
         $collectionResults = [];
         foreach ($collections as $collection) {
