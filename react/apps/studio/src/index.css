@@ -50,7 +50,6 @@
   gap: 0.75rem;
   padding: 1.5rem 1rem;
   background-color: var(--gty-admin-dark);
-  border-right: 1px solid var(--gty-offset-2);
 }
 
 .studio-sidebar__title {
@@ -94,7 +93,7 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gty-offset-2);
+  color: var(--gty-contrast-2);
   background: none;
   border: none;
   cursor: pointer;
@@ -102,7 +101,7 @@
 }
 
 .studio-sidebar__return:hover {
-  color: var(--gty-contrast-2);
+  color: var(--gty-contrast-1);
 }
 
 .studio-sidebar__return-icon {
@@ -198,10 +197,9 @@
   margin: 0 0 1.5rem;
 }
 
-/* Remove forms-package max-width/padding inside studio — boxing comes from .studio-main */
+/* Remove forms-package max-width inside studio — boxing comes from .studio-main */
 .studio-main .gty-form__container {
   max-width: none;
-  padding: 0;
 }
 
 /* ── Skeleton loader ─────────────────────────────────────────────────────── */
