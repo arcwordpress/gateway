@@ -53,6 +53,7 @@ const FieldsContext = createContext<{
   fields: Field[]
   addField: (field: Field) => void
   moveField: (name: string, dir: 'up' | 'down') => void
+  reorderFields: (newFields: Field[]) => void
   deleteField: (name: string) => void
   updateField: (oldName: string, updates: Partial<Field>) => void
 } | null>(null)
@@ -86,6 +87,9 @@ export function FieldsProvider({ children }: { children: React.ReactNode }) {
       return next
     })
 
+  const reorderFields = (newFields: Field[]) =>
+    setFields(newFields.map((f, i) => ({ ...f, sort_order: i })))
+
   const deleteField = (name: string) =>
     setFields((prev) => prev.filter((f) => f.name !== name))
 
@@ -93,7 +97,7 @@ export function FieldsProvider({ children }: { children: React.ReactNode }) {
     setFields((prev) => prev.map((f) => f.name === oldName ? { ...f, ...updates } : f))
 
   return (
-    <FieldsContext.Provider value={{ fields, addField, moveField, deleteField, updateField }}>
+    <FieldsContext.Provider value={{ fields, addField, moveField, reorderFields, deleteField, updateField }}>
       {children}
     </FieldsContext.Provider>
   )
