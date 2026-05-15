@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import { Pencil, RotateCcw } from 'lucide-react';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
 import './slug-style.css';
@@ -121,10 +122,7 @@ const SlugControl = ({ config = {} }) => {
             title="Edit slug manually"
             aria-label="Edit slug manually"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-              <path d="m15 5 4 4"/>
-            </svg>
+            <Pencil size={16} />
           </button>
         ) : (
           <button
@@ -134,10 +132,7 @@ const SlugControl = ({ config = {} }) => {
             title="Re-enable auto-generation"
             aria-label="Re-enable auto-generation from watched field"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/>
-            </svg>
+            <RotateCcw size={16} />
           </button>
         )}
       </div>
