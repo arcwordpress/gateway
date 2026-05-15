@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, NavLink } from 'react-router-dom';
 import { Grid } from '@arcwp/gateway-grids';
 import { useCollections } from '../context/CollectionsContext';
 
@@ -7,35 +6,23 @@ function Dashboard() {
   const { collections, packageLabel } = useCollections();
   const navigate = useNavigate();
   const { collectionKey } = useParams();
-  const [viewType, setViewType] = useState('table');
 
-  // If no collectionKey is provided, use the first collection
   const activeKey = collectionKey || collections[0]?.key;
-  const activeCollection = collections.find(c => c.key === activeKey);
 
   if (!activeKey) {
     return (
-      <div className="dashboard">
-        <p className="dashboard__no-collections">No collections available</p>
+      <div className="studio-layout">
+        <aside className="studio-sidebar" />
+        <main className="studio-main">
+          <p className="studio-empty">No collections available</p>
+        </main>
       </div>
     );
   }
 
-  const handleEdit = (recordId) => {
-    navigate(`/collection/${activeKey}/edit/${recordId}`);
-  };
-
-  const handleView = (record) => {
-    navigate(`/collection/${activeKey}/view/${record.id}`);
-  };
-
-  const handleDelete = (recordId) => {
-    console.log('Record deleted:', recordId);
-  };
-
-  const handleCreate = () => {
-    navigate(`/collection/${activeKey}/create`);
-  };
+  const handleEdit = (recordId) => navigate(`/collection/${activeKey}/edit/${recordId}`);
+  const handleView = (record) => navigate(`/collection/${activeKey}/view/${record.id}`);
+  const handleCreate = () => navigate(`/collection/${activeKey}/create`);
 
   return (
     <div className="studio-layout">
@@ -52,12 +39,27 @@ function Dashboard() {
         </button>
       </aside>
       <main className="studio-main">
+        {collections.length > 1 && (
+          <nav className="studio-collections-nav">
+            {collections.map((col) => (
+              <NavLink
+                key={col.key}
+                to={`/collection/${col.key}`}
+                className={({ isActive }) =>
+                  'studio-collections-nav__link' +
+                  (isActive || col.key === activeKey ? ' studio-collections-nav__link--active' : '')
+                }
+              >
+                {col.titlePlural || col.title || col.key}
+              </NavLink>
+            ))}
+          </nav>
+        )}
         <Grid
           collectionKey={activeKey}
-          viewType={viewType}
           onEdit={handleEdit}
           onView={handleView}
-          onDelete={handleDelete}
+          onDelete={(id) => {}}
         />
       </main>
     </div>
