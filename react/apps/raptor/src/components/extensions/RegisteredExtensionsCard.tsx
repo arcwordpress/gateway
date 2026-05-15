@@ -15,11 +15,18 @@ type RegisteredExtensionsResponse = {
   extensions: RegisteredExtension[]
 }
 
+type LastRun = {
+  version: string
+  success: boolean
+  message: string
+  ran_at: string
+}
+
 type MigrationGroup = {
   key: string
   version: string | null
   migration_count: number
-  migrations: string[]
+  last_run: LastRun | null
 }
 
 function MigrationCell({ extensionKey }: { extensionKey: string }) {
@@ -52,25 +59,33 @@ function MigrationCell({ extensionKey }: { extensionKey: string }) {
       if (!json.success) throw new Error(json.message ?? 'Failed')
       return json
     },
-    onSuccess: (json) => {
-      setResult(`Done — ${json.ran} ran`)
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['migrations', extensionKey] })
     },
     onError: (e: Error) => setResult(e.message),
   })
 
   if (isLoading) return <span className="text-[10px] text-zinc-600">…</span>
-
   if (!group) return <span className="text-[10px] text-zinc-600">—</span>
 
+  const lastRun = group.last_run
+  const ranAt = lastRun ? new Date(lastRun.ran_at).toLocaleString() : null
+
   return (
-    <div className="flex items-center gap-2">
-      {result && (
-        <span className={`text-[10px] ${result.startsWith('Done') ? 'text-green-400' : 'text-red-400'}`}>
-          {result}
-        </span>
+    <div className="flex items-center gap-3">
+      {lastRun ? (
+        <div className="text-right">
+          <div className={`text-[10px] font-mono ${lastRun.success ? 'text-green-400' : 'text-red-400'}`}>
+            v{lastRun.version}
+          </div>
+          <div className="text-[10px] text-zinc-600">{ranAt}</div>
+        </div>
+      ) : (
+        <span className="text-[10px] text-zinc-600">never run</span>
       )}
-      <span className="text-[10px] text-zinc-500">{group.migration_count} migration{group.migration_count !== 1 ? 's' : ''}</span>
+      {result && (
+        <span className="text-[10px] text-red-400">{result}</span>
+      )}
       <button
         onClick={() => runMutation.mutate()}
         disabled={runMutation.isPending}
