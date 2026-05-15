@@ -2,6 +2,8 @@
 
 namespace Gateway\Collections;
 
+use Gateway\Collection;
+
 class CollectionRegistry
 {
     protected $collections = [];
