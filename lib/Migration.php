@@ -11,11 +11,11 @@ abstract class Migration
     protected static string $key   = '';
     protected static string $label = '';
     protected static ?string $version = null;
-    /** @var string[] */
-    protected static array $migrations = [];
+
+    abstract public static function create(): void;
 
     public static function register(): void
     {
-        MigrationRegistry::register(static::$key, static::$label, static::$migrations, static::$version);
+        MigrationRegistry::register(static::$key, static::$label, [static::class], static::$version);
     }
 }
