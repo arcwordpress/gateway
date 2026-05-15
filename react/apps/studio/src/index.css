@@ -202,6 +202,11 @@
   max-width: none;
 }
 
+/* Strip the wp-admin grid padding override — .studio-main already provides spacing */
+.studio-main .grid {
+  padding: 0 !important;
+}
+
 /* ── Skeleton loader ─────────────────────────────────────────────────────── */
 
 .skeleton-block {
