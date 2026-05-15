@@ -2,6 +2,7 @@
 @import '../../tokens.css';
 
 /* Import all field type styles */
+@import './components/field/style.css';
 @import './components/field-types/button-group/style.css';
 @import './components/field-types/checkbox/checkbox-style.css';
 @import './components/field-types/color-picker/color-picker-style.css';
