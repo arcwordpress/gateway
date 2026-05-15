@@ -106,7 +106,7 @@ class Plugin
         new Extensions\ExtensionRoutes();
         new Packages\PackageRoutes();
         $this->raptorEndpoints();
-        $this->registry = new CollectionRegistry();
+        $this->registry = new Collections\CollectionRegistry();
         $this->packageRegistry = new Packages\PackageRegistry();
         Raptor\Packages\PackageLoader::load();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();

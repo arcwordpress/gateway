@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway;
+namespace Gateway\Collections;
 
 class CollectionRegistry
 {
