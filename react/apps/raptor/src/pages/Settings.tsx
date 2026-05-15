@@ -15,13 +15,58 @@ interface SettingsData {
   has_anthropic_key: boolean
 }
 
-type TabKey = 'database' | 'ai' | 'collections'
+type TabKey = 'database' | 'ai' | 'collections' | 'migrations'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'database', label: 'Database' },
   { key: 'ai', label: 'AI' },
   { key: 'collections', label: 'Collections' },
+  { key: 'migrations', label: 'Migrations' },
 ]
+
+function CoreMigrationsPanel() {
+  const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null)
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const groups = ['gateway-core', 'raptor-core']
+      const results = await Promise.all(
+        groups.map((key) =>
+          fetch(apiUrl(`gateway/v1/migrations/${key}`), {
+            method: 'POST',
+            headers: authHeaders(),
+          }).then((r) => r.json())
+        )
+      )
+      const failed = results.filter((r) => !r.success)
+      if (failed.length) throw new Error(failed.map((r) => r.message).join('; '))
+      const ran = results.reduce((sum, r) => sum + (r.ran ?? 0), 0)
+      return ran
+    },
+    onSuccess: (ran) => setStatus({ ok: true, msg: `Done — ${ran} migration(s) ran.` }),
+    onError: (e: Error) => setStatus({ ok: false, msg: e.message }),
+  })
+
+  return (
+    <div className="max-w-md space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-zinc-300">Core Migrations</h2>
+        <p className="text-xs text-zinc-500 mt-1">
+          Re-runs all gateway-core and raptor-core migrations regardless of version. Safe to run multiple times — uses dbDelta.
+        </p>
+      </div>
+      <button
+        onClick={() => { setStatus(null); mutation.mutate() }}
+        disabled={mutation.isPending}
+        className="inline-flex items-center gap-1.5 h-8 px-3 rounded text-xs font-medium transition-colors bg-zinc-700 hover:bg-zinc-600 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {mutation.isPending ? 'Running…' : 'Run Core Migrations'}
+      </button>
+      {status && (
+        <p className={`text-xs ${status.ok ? 'text-green-400' : 'text-red-400'}`}>{status.msg}</p>
+      )}
+    </div>
+  )
+}
 
 export default function Settings() {
   const queryClient = useQueryClient()
@@ -160,6 +205,7 @@ export default function Settings() {
           />
         )}
         {activeTab === 'collections' && <CollectionSettings />}
+        {activeTab === 'migrations' && <CoreMigrationsPanel />}
       </div>
     </div>
   )

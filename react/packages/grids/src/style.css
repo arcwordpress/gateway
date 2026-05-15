@@ -101,11 +101,11 @@
 }
 
 .table-view__tbody .table-view__row--body:nth-child(odd) {
-  background-color: var(--gty-offset-1) !important;
+  background-color: var(--gty-offset-1a) !important;
 }
 
 .table-view__tbody .table-view__row--body:nth-child(even) {
-  background-color: var(--gty-offset-1a) !important;
+  background-color: var(--gty-offset-1) !important;
 }
 
 

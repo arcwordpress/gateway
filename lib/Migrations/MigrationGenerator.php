@@ -500,7 +500,9 @@ class MigrationGenerator
             $notesSection .= "     */\n";
         }
 
-        $ext = $extensionKey ? addslashes($extensionKey) : '';
+        $ext            = $extensionKey ? addslashes($extensionKey) : '';
+        $constantPrefix = $extensionKey ? strtoupper($extensionKey) : '';
+        $versionConst   = $constantPrefix ? "{$constantPrefix}_VERSION" : null;
 
         $code = "<?php\n\n";
 
@@ -515,8 +517,14 @@ class MigrationGenerator
         $code .= "class {$className} extends \\Gateway\\Migration\n";
         $code .= "{\n";
         $code .= $notesSection;
-        $code .= "    protected static string \$extension = '{$ext}';\n";
-        $code .= "    protected static ?string \$version  = null;\n\n";
+        $code .= "    protected static string \$extension = '{$ext}';\n\n";
+
+        if ($versionConst) {
+            $code .= "    public static function getVersion(): ?string\n";
+            $code .= "    {\n";
+            $code .= "        return defined('{$versionConst}') ? {$versionConst} : null;\n";
+            $code .= "    }\n\n";
+        }
         $code .= "    public static function create(): void\n";
         $code .= "    {\n";
         $code .= "        global \$wpdb;\n\n";

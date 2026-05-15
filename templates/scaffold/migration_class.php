@@ -9,7 +9,11 @@ if (!defined('ABSPATH')) {
 class {{CLASS_NAME}} extends \Gateway\Migration
 {
     protected static string $extension = '{{EXTENSION_KEY}}';
-    protected static ?string $version  = null;
+
+    public static function getVersion(): ?string
+    {
+        return defined('{{CONSTANT_PREFIX}}_VERSION') ? {{CONSTANT_PREFIX}}_VERSION : null;
+    }
 
     public static function create(): void
     {

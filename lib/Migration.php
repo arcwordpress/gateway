@@ -16,7 +16,7 @@ abstract class Migration
 
     public static function register(): void
     {
-        MigrationRegistry::push(static::$extension, static::class, static::$version);
+        MigrationRegistry::push(static::$extension, static::class, static::getVersion());
     }
 
     public static function getExtension(): string { return static::$extension; }
