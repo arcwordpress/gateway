@@ -25,9 +25,13 @@ class MigrationRegistry
     {
         // Fall back to the convention constant (e.g. WAYPOINT_VERSION) when version is not provided.
         if ($version === null) {
-            $constant = strtoupper(str_replace('-', '_', $extension)) . '_VERSION';
+            $constant = strtoupper(str_replace(['-', ' '], '_', $extension)) . '_VERSION';
             if (defined($constant)) {
-                $version = constant($constant);
+                $resolved = constant($constant);
+                // Accept only scalar strings that look like a version (e.g. "1.2.3", "2.0.0-beta")
+                if (is_string($resolved) && preg_match('/^\d+\.\d+/', $resolved)) {
+                    $version = $resolved;
+                }
             }
         }
 
