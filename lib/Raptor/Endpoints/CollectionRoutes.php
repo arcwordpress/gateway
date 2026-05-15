@@ -335,11 +335,11 @@ class CollectionRoutes
             if (isset($data['relationships']) && is_array($data['relationships'])) {
                 $collection->collectionRelationships()->delete();
                 foreach ($data['relationships'] as $rel) {
-                    $targetKey  = $rel['target'] ?? $rel['target_key'] ?? null;
+                    $targetKey  = $rel['target_key'] ?? $rel['target'] ?? null;
                     $type       = $rel['type'] ?? null;
-                    $methodName = $rel['method_name'] ?? '';
-                    $foreignKey = $rel['foreign_key'] ?? '';
-                    $ownerKey   = $rel['owner_key'] ?? 'id';
+                    $methodName = $rel['method_name'] ?? $rel['methodName'] ?? '';
+                    $foreignKey = $rel['foreign_key'] ?? $rel['foreignKey'] ?? '';
+                    $ownerKey   = $rel['owner_key']   ?? $rel['ownerKey']   ?? 'id';
                     if ($targetKey && $type) {
                         try {
                             RelationshipController::create($collection, $targetKey, $type, $methodName, $foreignKey, $ownerKey);

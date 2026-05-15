@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiUrl, authHeaders, generateId } from '../lib/api'
+import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY } from '../lib/queries'
 import { useApp } from '../context/app'
 
@@ -178,9 +178,10 @@ export function RelationshipForm({
   const inferredRef = useRef(false)
   const defaults = inferDefaults(type, sourceKey, targetKey)
 
-  const [methodName, setMethodName] = useState(initial?.methodName ?? defaults.methodName)
-  const [foreignKey, setForeignKey] = useState(initial?.foreignKey ?? defaults.foreignKey)
-  const [ownerKey,   setOwnerKey]   = useState(initial?.ownerKey   ?? defaults.ownerKey)
+  // API returns snake_case (method_name, foreign_key, owner_key); form state normalises to camelCase.
+  const [methodName, setMethodName] = useState(initial?.methodName ?? initial?.method_name ?? defaults.methodName)
+  const [foreignKey, setForeignKey] = useState(initial?.foreignKey ?? initial?.foreign_key ?? defaults.foreignKey)
+  const [ownerKey,   setOwnerKey]   = useState(initial?.ownerKey   ?? initial?.owner_key   ?? defaults.ownerKey)
   const [pivotTable, setPivotTable] = useState(initial?.pivotTable ?? defaults.pivotTable)
 
   useEffect(() => {
@@ -371,23 +372,20 @@ export function CreateRelationshipPanel({
 
   const mutation = useMutation({
     mutationFn: async (fields: Omit<Relationship, 'id' | 'source' | 'target'>) => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}/relationships`), {
+        method:  'POST',
         headers: authHeaders(),
+        body:    JSON.stringify({
+          target_key:  targetKey,
+          type:        fields.type,
+          method_name: fields.methodName,
+          foreign_key: fields.foreignKey,
+          owner_key:   fields.ownerKey,
+        }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as { collection?: { relationships?: Relationship[] } }
-      const existing: Relationship[] = json.collection?.relationships ?? []
-
-      const newRel: Relationship = { id: generateId(), source: sourceKey, target: targetKey, ...fields }
-
-      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collection/${sourceKey}`), {
-        method:  'PATCH',
-        headers: authHeaders(),
-        body:    JSON.stringify({ relationships: [...existing, newRel] }),
-      })
-      const patchJson = await patchRes.json() as { success: boolean; message?: string }
-      if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to save relationship')
-      return patchJson
+      const json = await res.json() as { success: boolean; message?: string }
+      if (!json.success) throw new Error(json.message ?? 'Failed to save relationship')
+      return json
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
@@ -426,22 +424,20 @@ export function EditRelationshipPanel({
 
   const saveMutation = useMutation({
     mutationFn: async (fields: Omit<Relationship, 'id' | 'source' | 'target'>) => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${rel.source}`), {
-        headers: authHeaders(),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as { collection?: { relationships?: Relationship[] } }
-      const existing: Relationship[] = json.collection?.relationships ?? []
-      const updated = existing.map((r) => r.id === rel.id ? { ...r, ...fields } : r)
-
-      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collection/${rel.source}`), {
+      const srcKey = rel.source_key ?? rel.source
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${srcKey}/relationships/${rel.id}`), {
         method:  'PATCH',
         headers: authHeaders(),
-        body:    JSON.stringify({ relationships: updated }),
+        body:    JSON.stringify({
+          type:        fields.type,
+          method_name: fields.methodName,
+          foreign_key: fields.foreignKey,
+          owner_key:   fields.ownerKey,
+        }),
       })
-      const patchJson = await patchRes.json() as { success: boolean; message?: string }
-      if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to update relationship')
-      return patchJson
+      const json = await res.json() as { success: boolean; message?: string }
+      if (!json.success) throw new Error(json.message ?? 'Failed to update relationship')
+      return json
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
@@ -452,21 +448,14 @@ export function EditRelationshipPanel({
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${rel.source}`), {
+      const srcKey = rel.source_key ?? rel.source
+      const res = await fetch(apiUrl(`gateway/v1/raptor/collection/${srcKey}/relationships/${rel.id}`), {
+        method:  'DELETE',
         headers: authHeaders(),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as { collection?: { relationships?: Relationship[] } }
-      const existing: Relationship[] = json.collection?.relationships ?? []
-
-      const patchRes = await fetch(apiUrl(`gateway/v1/raptor/collection/${rel.source}`), {
-        method:  'PATCH',
-        headers: authHeaders(),
-        body:    JSON.stringify({ relationships: existing.filter((r) => r.id !== rel.id) }),
-      })
-      const patchJson = await patchRes.json() as { success: boolean; message?: string }
-      if (!patchJson.success) throw new Error(patchJson.message ?? 'Failed to delete relationship')
-      return patchJson
+      const json = await res.json() as { success: boolean; message?: string }
+      if (!json.success) throw new Error(json.message ?? 'Failed to delete relationship')
+      return json
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['raptor-collections'] })
@@ -478,10 +467,10 @@ export function EditRelationshipPanel({
   const isPending = saveMutation.isPending || deleteMutation.isPending
 
   return (
-    <RelPanelShell title="Edit Relationship" sub={`${rel.source} → ${rel.target}`} onClose={onClose}>
+    <RelPanelShell title="Edit Relationship" sub={`${rel.source_key ?? rel.source} → ${rel.target_key ?? rel.target}`} onClose={onClose}>
       <RelationshipForm
-        sourceKey={rel.source}
-        targetKey={rel.target}
+        sourceKey={rel.source_key ?? rel.source}
+        targetKey={rel.target_key ?? rel.target}
         collections={collections}
         initial={rel}
         onSave={(fields) => saveMutation.mutate(fields)}

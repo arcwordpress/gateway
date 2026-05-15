@@ -48,6 +48,11 @@ class RelationshipRoutes
 
         register_rest_route('gateway/v1', $base . '/(?P<id>\d+)', [
             [
+                'methods'             => 'PATCH',
+                'callback'            => [$this, 'updateRelationship'],
+                'permission_callback' => [$this, 'checkPermissions'],
+            ],
+            [
                 'methods'             => 'DELETE',
                 'callback'            => [$this, 'deleteRelationship'],
                 'permission_callback' => [$this, 'checkPermissions'],
@@ -102,6 +107,43 @@ class RelationshipRoutes
             ], 201);
         } catch (\InvalidArgumentException $e) {
             return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 400);
+        } catch (\Throwable $e) {
+            return $this->serverError($e);
+        }
+    }
+
+    public function updateRelationship(\WP_REST_Request $request): \WP_REST_Response
+    {
+        try {
+            $collection = $this->findOrFail($request->get_param('collection_key'));
+            if ($collection instanceof \WP_REST_Response) return $collection;
+
+            $id   = (int) $request->get_param('id');
+            $data = $request->get_json_params() ?? [];
+
+            $rel = \Gateway\Raptor\Collections\RaptorCollectionRelationship::where('id', $id)
+                ->where('source_collection_id', $collection->id)
+                ->first();
+
+            if (!$rel) {
+                return new \WP_REST_Response(['success' => false, 'message' => "Relationship #{$id} not found."], 404);
+            }
+
+            $update = [];
+            if (!empty($data['type']))        $update['type']        = sanitize_text_field($data['type']);
+            if (!empty($data['method_name'])) $update['method_name'] = sanitize_text_field($data['method_name']);
+            if (isset($data['foreign_key']))  $update['foreign_key'] = sanitize_text_field($data['foreign_key']);
+            if (!empty($data['owner_key']))   $update['owner_key']   = sanitize_text_field($data['owner_key']);
+
+            $rel->update($update);
+            $rel->load(['sourceCollection', 'targetCollection']);
+
+            RaptorBuilder::rebuildForCollection($collection);
+
+            return new \WP_REST_Response([
+                'success'      => true,
+                'relationship' => $rel->toApiArray(),
+            ], 200);
         } catch (\Throwable $e) {
             return $this->serverError($e);
         }
