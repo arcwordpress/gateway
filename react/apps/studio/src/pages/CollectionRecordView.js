@@ -25,15 +25,19 @@ function CollectionRecordView() {
   const handleBack = () => navigate(`/collection/${collectionKey}`);
 
   return (
-    <div className="gty-record-view">
-      <div className="gty-record-view__back-container">
-        <button onClick={handleBack} className="gty-record-view__back-button">
-          <span className="gty-record-view__back-arrow">&larr;</span> Return to {collectionLabel}
+    <div className="studio-layout">
+      <aside className="studio-sidebar">
+        <span className="studio-sidebar__title">{collectionLabel}</span>
+        <button onClick={handleBack} className="studio-sidebar__return">
+          <span className="studio-sidebar__return-icon" aria-hidden="true">↵</span>
+          Return
         </button>
-      </div>
-      <CollectionProvider collectionKey={collectionKey}>
-        <RecordViewContent id={id} />
-      </CollectionProvider>
+      </aside>
+      <main className="studio-main">
+        <CollectionProvider collectionKey={collectionKey}>
+          <RecordViewContent id={id} />
+        </CollectionProvider>
+      </main>
     </div>
   );
 }

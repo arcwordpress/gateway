@@ -2,12 +2,10 @@
 
 namespace Gateway\Traits;
 
+use Gateway\Collections\RelationDiscovery;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use ReflectionNamedType;
 use WP_REST_Request;
 
 /**
@@ -27,58 +25,12 @@ use WP_REST_Request;
 trait CollectionEagerLoadable
 {
     /**
-     * Discover all Eloquent relation methods on a collection by inspecting
-     * return type hints. Only public, non-static, zero-required-parameter
-     * methods whose return type is a subclass of Eloquent's Relation are
-     * included.
-     *
      * @param  object  $collection
      * @return string[]
      */
     public static function discoverRelations($collection): array
     {
-        try {
-            $ref = new ReflectionClass($collection);
-        } catch (ReflectionException $e) {
-            return [];
-        }
-
-        $relations = [];
-
-        foreach ($ref->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
-                continue;
-            }
-
-            // Skip methods inherited from Eloquent or any Illuminate package — those are
-            // framework internals (e.g. morphTo()), not user-defined relationship methods.
-            if (str_starts_with($method->getDeclaringClass()->getName(), 'Illuminate\\')) {
-                continue;
-            }
-
-            $returnType = $method->getReturnType();
-
-            if ($returnType instanceof ReflectionNamedType && !$returnType->isBuiltin()) {
-                // Fast path: return type hint present — check namespace prefix without autoloading
-                if (str_starts_with($returnType->getName(), 'Illuminate\\Database\\Eloquent\\Relations\\')) {
-                    $relations[] = $method->getName();
-                }
-                continue;
-            }
-
-            // No return type hint (hand-written methods) — call it and inspect the result.
-            // Relation constructors do not execute queries so this is safe.
-            try {
-                $result = $method->invoke($collection);
-                if ($result instanceof Relation) {
-                    $relations[] = $method->getName();
-                }
-            } catch (\Throwable $e) {
-                // Not a relation method or failed to invoke — skip.
-            }
-        }
-
-        return $relations;
+        return RelationDiscovery::discover($collection);
     }
 
     /**

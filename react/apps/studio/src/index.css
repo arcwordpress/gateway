@@ -212,49 +212,15 @@
   color: var(--gty-contrast-1);
 }
 
-/* CollectionForm Component Styles */
-.gty-collection-form {
-  /* Padding handled by .studio-main — no extra padding here */
-}
-
-.gty-collection-form__back-container {
-  margin-bottom: 1.5rem;
-}
-
-.gty-collection-form__back-button {
-  color: var(--gty-contrast-2);
-  font-weight: 500;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.gty-collection-form__back-button:hover {
-  color: var(--gty-contrast-1);
-}
-
-.gty-collection-form__back-arrow {
-  display: inline-block;
-}
-
-.gty-collection-form__back-header {
-  margin-bottom: 1.5rem;
-}
-
 .gty-collection-form__title {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--gty-text);
+  margin: 0 0 1.5rem;
 }
 
-/* Remove forms-package max-width constraint inside studio */
-.gty-collection-form .gty-form__container {
+/* Remove forms-package max-width/padding inside studio — boxing comes from .studio-main */
+.studio-main .gty-form__container {
   max-width: none;
   padding: 0;
 }
