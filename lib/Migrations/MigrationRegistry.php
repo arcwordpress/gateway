@@ -14,18 +14,14 @@ class MigrationRegistry
      */
     public static function register(string $key, string $label, array $migrations, ?string $version): void
     {
-        $mapped = [];
-        foreach ($migrations as $class) {
-            $mapped[] = ['class' => $class, 'label' => $class];
-        }
-        self::$groups[$key] = ['key' => $key, 'label' => $label, 'migrations' => $mapped, 'version' => $version];
+        self::$groups[$key] = compact('key', 'label', 'migrations', 'version');
     }
 
     /**
      * Append a single migration class to an extension group.
      * Called by Migration::register().
      */
-    public static function push(string $extension, string $migrationLabel, string $class, ?string $version): void
+    public static function push(string $extension, string $class, ?string $version): void
     {
         if (!isset(self::$groups[$extension])) {
             self::$groups[$extension] = [
@@ -34,9 +30,12 @@ class MigrationRegistry
                 'migrations' => [],
                 'version'    => $version,
             ];
+        } else {
+            // Always reflect the plugin version — bumping it invalidates the whole group
+            self::$groups[$extension]['version'] = $version;
         }
 
-        self::$groups[$extension]['migrations'][] = ['class' => $class, 'label' => $migrationLabel];
+        self::$groups[$extension]['migrations'][] = $class;
     }
 
     /** @return array<string, array> */
@@ -67,8 +66,7 @@ class MigrationRegistry
         $ran    = 0;
         $errors = [];
 
-        foreach ($group['migrations'] as $entry) {
-            $class = $entry['class'];
+        foreach ($group['migrations'] as $class) {
             try {
                 if (!class_exists($class)) {
                     $errors[] = "Class not found: {$class}";
