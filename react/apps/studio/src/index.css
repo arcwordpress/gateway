@@ -58,10 +58,10 @@
 
 .studio-layout {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 180px 1fr;
   min-height: calc(100vh - 46px); /* subtract WP admin header height */
   background-color: var(--gty-admin-dark);
-  max-width: 1120px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
@@ -133,6 +133,8 @@
 
 .studio-main {
   overflow: hidden;
+  padding: 1.5rem 2rem;
+  max-width: 680px;
 }
 
 /* Dashboard Component Styles */
@@ -229,7 +231,7 @@
 }
 
 .gty-collection-form__back-button {
-  color: var(--gty-link);
+  color: var(--gty-contrast-2);
   font-weight: 500;
   font-size: 0.875rem;
   display: flex;
@@ -243,7 +245,7 @@
 }
 
 .gty-collection-form__back-button:hover {
-  color: var(--gty-link-hover);
+  color: var(--gty-contrast-1);
 }
 
 .gty-collection-form__back-arrow {
@@ -382,6 +384,38 @@
 .gty-app input[type="search"]::-webkit-search-cancel-button {
   filter: invert(85%);
   cursor: pointer;
+}
+
+/* ── Override WP admin global input reset ─────────────────────────────────── */
+/* WP admin applies background:#fff; color:#2c3338 to all inputs globally.    */
+/* Re-assert our tokens so the Studio form looks correct.                     */
+.gty-app input[type=text],
+.gty-app input[type=email],
+.gty-app input[type=password],
+.gty-app input[type=number],
+.gty-app input[type=search],
+.gty-app input[type=url],
+.gty-app input[type=tel],
+.gty-app input[type=date],
+.gty-app input[type=datetime-local],
+.gty-app input[type=month],
+.gty-app input[type=week],
+.gty-app input[type=time],
+.gty-app input[type=color],
+.gty-app select,
+.gty-app textarea {
+  background-color: var(--gty-bg-surface);
+  color: var(--gty-text);
+  border-color: var(--gty-border);
+  box-shadow: none;
+}
+
+.gty-app input:focus,
+.gty-app select:focus,
+.gty-app textarea:focus {
+  border-color: var(--gty-border-focus);
+  box-shadow: var(--gty-focus-ring);
+  outline: none;
 }
 
 /* Main Content Styles */
