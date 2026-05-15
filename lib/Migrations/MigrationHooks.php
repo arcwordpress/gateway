@@ -97,12 +97,18 @@ class MigrationHooks
 
     public static function runCoreMigrations(): bool
     {
-        $result = MigrationRegistry::runAll();
-        if (!$result['success']) {
-            foreach ($result['errors'] as $err) {
-                error_log('Gateway: runCoreMigrations: ' . $err);
+        $success = true;
+
+        foreach (['gateway-core', 'raptor-core'] as $group) {
+            $result = MigrationRegistry::runGroup($group);
+            if (!$result['success']) {
+                foreach ($result['errors'] as $err) {
+                    error_log('Gateway: runCoreMigrations: ' . $err);
+                }
+                $success = false;
             }
         }
-        return $result['success'];
+
+        return $success;
     }
 }

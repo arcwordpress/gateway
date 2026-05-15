@@ -125,6 +125,7 @@ class Plugin
         new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
         Migrations\MigrationHooks::init();
+        $this->maybeRunMigrations();
         gateway_rest_dispatch_filter();
         Admin\Page::init();
         Admin\Records::init();
