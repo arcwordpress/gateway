@@ -49,6 +49,8 @@ export const getLabelField = (collection) => {
 export const generateColumns = (collection) => {
   if (!collection) return [];
 
+  const MAX_DATA_COLS = 3; // ID + LABEL + 3 = 5 total visible columns
+
   let baseColumns = [];
 
   // Priority 1: Use grid.columns if defined
@@ -57,6 +59,7 @@ export const generateColumns = (collection) => {
     const skipFields = new Set(['id', configuredLabelKey].filter(Boolean));
     baseColumns = collection.grid.columns
       .filter((colDef) => !skipFields.has(colDef.field))
+      .slice(0, MAX_DATA_COLS)
       .map((colDef) => ({
       accessorKey: colDef.field,
       header: colDef.label || colDef.field,
@@ -115,7 +118,7 @@ export const generateColumns = (collection) => {
     const skipKeys = new Set(['id', autoLabelKey].filter(Boolean));
     const fieldEntries = Object.entries(collection.fields)
       .filter(([key]) => !skipKeys.has(key))
-      .slice(0, 5);
+      .slice(0, MAX_DATA_COLS);
     baseColumns = fieldEntries.map(([key, field]) => ({
       accessorKey: key,
       header: field.label || key,
