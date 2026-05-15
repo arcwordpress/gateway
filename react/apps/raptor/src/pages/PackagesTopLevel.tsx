@@ -5,6 +5,21 @@ import { BuilderLayout } from './Builders/BuilderLayout'
 import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
 
+// ─── Registered package shape (gateway/v1/packages/registered) ────────────
+
+type RegisteredPackage = {
+  key: string
+  label: string
+  description: string
+  icon: string | null
+  position: number
+  capability: string
+  parent: string | null
+  is_database_package: boolean
+  collection_keys: string[]
+  collections_count: number
+}
+
 // ─── Page context ─────────────────────────────────────────────────────────
 
 type SelectedExt = { key: string; id: number; title: string } | null
@@ -57,6 +72,22 @@ function useExtensions() {
     },
     staleTime: 60_000,
     gcTime: 5 * 60_000,
+  })
+}
+
+// ─── Registered packages query (list view) ───────────────────────────────
+
+function useRegisteredPackages(enabled: boolean) {
+  return useQuery<RegisteredPackage[]>({
+    queryKey: ['packages-registered'],
+    queryFn: async () => {
+      const res = await fetch(apiUrl('gateway/v1/packages/registered'), { headers: authHeaders() })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json() as { packages?: RegisteredPackage[] }
+      return json.packages ?? []
+    },
+    enabled,
+    staleTime: 30_000,
   })
 }
 
@@ -194,6 +225,7 @@ export default function PackagesTopLevel() {
   })
 
   const { data: extensions = [], isLoading: extensionsLoading } = useExtensions()
+  const { data: registeredPackages = [], isLoading: registeredLoading } = useRegisteredPackages(viewMode === 'list')
 
   const isLoading = packagesLoading || extensionsLoading
   const extensionsReady = !extensionsLoading
@@ -286,55 +318,60 @@ export default function PackagesTopLevel() {
               <div>
                 <h1 className="text-2xl font-bold text-zinc-200">Packages</h1>
                 <p className="text-sm text-zinc-400 mt-1">
-                  {selectedExt ? `Extension: ${selectedExt.key}` : 'All Extensions'} · {visiblePackages.length} package{visiblePackages.length !== 1 ? 's' : ''}
+                  All registered · {registeredPackages.length} package{registeredPackages.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <NewPackageButton onNew={openNew} />
             </div>
 
-            {!selectedExt && (
-              <div className="mb-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-zinc-400 text-xs">
-                Select an extension in the top bar to create or filter packages.
+            {registeredLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-16 rounded-xl bg-zinc-900 border border-zinc-800 animate-pulse" />
+                ))}
               </div>
-            )}
-
-            {visiblePackages.length === 0 ? (
+            ) : registeredPackages.length === 0 ? (
               <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/30 p-10 flex flex-col items-center gap-2 text-center">
-                <p className="text-sm font-medium text-zinc-300">No packages yet</p>
-                <p className="text-xs text-zinc-500">
-                  {selectedExt
-                    ? 'Click + New Package above to create the first package for this extension.'
-                    : 'Select an extension in the top bar, then create a package.'}
-                </p>
+                <p className="text-sm font-medium text-zinc-300">No packages registered</p>
+                <p className="text-xs text-zinc-500">Select an extension in the top bar, then create a package.</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {visiblePackages.map((pkg) => (
-                  <button
-                    key={pkg.package_key}
-                    onClick={() => openEdit(pkg.package_key)}
-                    className="group w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/80 transition-all text-left"
-                  >
-                    <span className={`dashicons ${pkg.icon ?? 'dashicons-admin-generic'} text-zinc-500 group-hover:text-zinc-400 transition-colors`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-zinc-200 group-hover:text-zinc-100">{pkg.label || pkg.package_key}</p>
-                      <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.package_key}</p>
-                      {pkg.collection_keys.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {pkg.collection_keys.map((ck) => (
-                            <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
-                          ))}
-                        </div>
+                {registeredPackages.map((pkg) => {
+                  const editable = pkg.is_database_package
+                  return (
+                    <button
+                      key={pkg.key}
+                      onClick={() => editable ? openEdit(pkg.key) : undefined}
+                      disabled={!editable}
+                      className={`group w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 transition-all text-left ${editable ? 'hover:border-zinc-700 hover:bg-zinc-900/80 cursor-pointer' : 'cursor-default opacity-80'}`}
+                    >
+                      <span className={`dashicons ${pkg.icon ?? 'dashicons-admin-generic'} text-zinc-500 group-hover:text-zinc-400 transition-colors`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-zinc-200 group-hover:text-zinc-100">{pkg.label || pkg.key}</p>
+                        <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.key}</p>
+                        {pkg.collection_keys.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {pkg.collection_keys.map((ck) => (
+                              <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {!pkg.is_database_package && (
+                        <span className="text-[10px] text-blue-400/80 border border-blue-800/50 rounded px-1.5 py-0.5 bg-blue-950/40">
+                          code
+                        </span>
                       )}
-                    </div>
-                    {!pkg.has_collections && (
-                      <span title="No collections assigned" className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
-                        no collections
-                      </span>
-                    )}
-                    <ArrowIcon />
-                  </button>
-                ))}
+                      {pkg.collection_keys.length === 0 && (
+                        <span title="No collections assigned" className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
+                          no collections
+                        </span>
+                      )}
+                      {editable && <ArrowIcon />}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </div>

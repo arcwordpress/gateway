@@ -34,6 +34,12 @@ import { generateZodSchema } from '../../utils/zodSchemaGenerator';
 import { createGatewayFormContext, GatewayFormContext } from '../../utils/gatewayFormContext';
 
 // Helper: determine whether a prop is a collection key (string) or an actual collection object
+function resolveBaseEndpoint(routes) {
+  if (!Array.isArray(routes) || routes.length === 0) return null;
+  const r = routes.find((r) => r.type === 'create') ?? routes.find((r) => r.type === 'get_many') ?? null;
+  return r ? r.route : null;
+}
+
 const isCollectionKey = (value) => typeof value === 'string' && value.trim().length > 0;
 const isCollectionObject = (value) => {
   return value && typeof value === 'object' && (
@@ -168,7 +174,7 @@ const AppForm = ({
     try {
       setLoading(true);
       setError(null);
-      const endpoint = collection.routes?.endpoint;
+      const endpoint = resolveBaseEndpoint(collection.routes);
       if (!endpoint) {
         throw new Error('No endpoint available for this collection');
       }
@@ -194,7 +200,7 @@ const AppForm = ({
   };
 
   const updateField = async (fieldName, value) => {
-    const endpoint = collection?.routes?.endpoint;
+    const endpoint = resolveBaseEndpoint(collection?.routes);
     if (!endpoint) {
       console.error('No endpoint available for update');
       return;
