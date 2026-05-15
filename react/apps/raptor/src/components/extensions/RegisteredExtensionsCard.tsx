@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../../lib/api'
 
 type RegisteredExtension = {
@@ -12,6 +13,73 @@ type RegisteredExtensionsResponse = {
   success: boolean
   total: number
   extensions: RegisteredExtension[]
+}
+
+type MigrationGroup = {
+  key: string
+  version: string | null
+  migration_count: number
+  migrations: string[]
+}
+
+function MigrationCell({ extensionKey }: { extensionKey: string }) {
+  const queryClient = useQueryClient()
+  const [result, setResult] = useState<string | null>(null)
+
+  const url = apiUrl(`gateway/v1/migrations?extension=${extensionKey}`)
+  console.log('[Gateway Migrations] fetching:', url)
+
+  const { data, isLoading } = useQuery<{ success: boolean; groups: MigrationGroup[] }>({
+    queryKey: ['migrations', extensionKey],
+    queryFn: async () => {
+      console.log('[Gateway Migrations] GET', url)
+      const res = await fetch(url, { headers: authHeaders() })
+      const json = await res.json()
+      console.log('[Gateway Migrations] response for', extensionKey, json)
+      return json
+    },
+    staleTime: 60_000,
+  })
+
+  const group = data?.groups?.[0]
+  const runUrl = apiUrl(`gateway/v1/migrations/${extensionKey}`)
+
+  const runMutation = useMutation({
+    mutationFn: async () => {
+      console.log('[Gateway Migrations] POST', runUrl)
+      const res = await fetch(runUrl, { method: 'POST', headers: authHeaders() })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message ?? 'Failed')
+      return json
+    },
+    onSuccess: (json) => {
+      setResult(`Done — ${json.ran} ran`)
+      queryClient.invalidateQueries({ queryKey: ['migrations', extensionKey] })
+    },
+    onError: (e: Error) => setResult(e.message),
+  })
+
+  if (isLoading) return <span className="text-[10px] text-zinc-600">…</span>
+
+  if (!group) return <span className="text-[10px] text-zinc-600">—</span>
+
+  return (
+    <div className="flex items-center gap-2">
+      {result && (
+        <span className={`text-[10px] ${result.startsWith('Done') ? 'text-green-400' : 'text-red-400'}`}>
+          {result}
+        </span>
+      )}
+      <span className="text-[10px] text-zinc-500">{group.migration_count} migration{group.migration_count !== 1 ? 's' : ''}</span>
+      <button
+        onClick={() => runMutation.mutate()}
+        disabled={runMutation.isPending}
+        className="inline-flex items-center h-6 px-2 rounded text-[11px] font-medium border border-zinc-700 hover:bg-zinc-800 text-zinc-400 transition-colors disabled:opacity-40"
+      >
+        {runMutation.isPending ? 'Running…' : 'Run'}
+      </button>
+    </div>
+  )
 }
 
 export default function RegisteredExtensionsCard() {
@@ -69,15 +137,19 @@ export default function RegisteredExtensionsCard() {
               <tr>
                 <th className="px-4 py-2 font-medium">Key</th>
                 <th className="px-4 py-2 font-medium">Class</th>
+                <th className="px-4 py-2 font-medium">Migrations</th>
               </tr>
             </thead>
             <tbody>
               {extensions.map((extension) => (
-                <tr key={extension.key} className="border-t border-zinc-900 align-top">
+                <tr key={extension.key} className="border-t border-zinc-900 align-middle">
                   <td className="px-4 py-2.5 font-mono text-zinc-300">{extension.key}</td>
                   <td className="px-4 py-2.5 text-zinc-400">
                     <div className="font-medium text-zinc-300">{extension.class_name}</div>
                     <div className="mt-0.5 break-all text-[11px] text-zinc-500">{extension.class}</div>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <MigrationCell extensionKey={extension.key} />
                   </td>
                 </tr>
               ))}
