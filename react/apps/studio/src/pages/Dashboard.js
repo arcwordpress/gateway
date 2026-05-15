@@ -35,10 +35,6 @@ function Dashboard() {
         <button onClick={handleCreate} className="studio-sidebar__create">
           Create
         </button>
-        <button onClick={() => navigate(-1)} className="studio-sidebar__return">
-          <span className="studio-sidebar__return-icon" aria-hidden="true">↵</span>
-          Return
-        </button>
       </aside>
       <main className="studio-main">
         <CollectionsNav />
