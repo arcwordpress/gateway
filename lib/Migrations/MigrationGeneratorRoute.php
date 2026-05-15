@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Endpoints;
+namespace Gateway\Migrations;
 
 use Gateway\Plugin;
 use Gateway\Migrations\MigrationGenerator;
@@ -22,7 +22,7 @@ class MigrationGeneratorRoute
     public function registerRoute()
     {
         // Get migration for a specific collection
-        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)', [
+        register_rest_route('gateway/v1', '/migration-generator/(?P<key>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [$this, 'getCollectionMigration'],
             'permission_callback' => function () {
@@ -38,7 +38,7 @@ class MigrationGeneratorRoute
         ]);
 
         // Run migration for a specific collection
-        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/run', [
+        register_rest_route('gateway/v1', '/migration-generator/(?P<key>[a-zA-Z0-9_-]+)/run', [
             'methods' => 'POST',
             'callback' => [$this, 'runCollectionMigration'],
             'permission_callback' => function () {
@@ -54,7 +54,7 @@ class MigrationGeneratorRoute
         ]);
 
         // Install migration to a specific extension
-        register_rest_route('gateway/v1', '/migrations/(?P<key>[a-zA-Z0-9_-]+)/install', [
+        register_rest_route('gateway/v1', '/migration-generator/(?P<key>[a-zA-Z0-9_-]+)/install', [
             'methods' => 'POST',
             'callback' => [$this, 'installMigrationToExtension'],
             'permission_callback' => function () {
@@ -75,7 +75,7 @@ class MigrationGeneratorRoute
         ]);
 
         // Get available extensions
-        register_rest_route('gateway/v1', '/migrations/extensions/list', [
+        register_rest_route('gateway/v1', '/migration-generator/extensions/list', [
             'methods' => 'GET',
             'callback' => [$this, 'getAvailableExtensions'],
             'permission_callback' => function () {
@@ -84,7 +84,7 @@ class MigrationGeneratorRoute
         ]);
 
         // Get migrations for all collections
-        register_rest_route('gateway/v1', '/migrations', [
+        register_rest_route('gateway/v1', '/migration-generator', [
             'methods' => 'GET',
             'callback' => [$this, 'getAllMigrations'],
             'permission_callback' => function () {

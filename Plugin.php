@@ -91,6 +91,7 @@ class Plugin
             error_log('Gateway: Database connection failed. Plugin loading in degraded mode.');
             add_action('admin_notices', [$this, 'showConnectionNotice']);
             new Endpoints\ConnectionRoute();
+            new Migrations\MigrationRoutes();
             Admin\Page::init();
         } else {
             $this->bootEloquent();
@@ -116,10 +117,10 @@ class Plugin
         $this->settingsRoute = new Endpoints\SettingsRoute();
         new Endpoints\ConnectionRoute();
         new Endpoints\TestConnectionRoute();
-        $this->migrationGeneratorRoute = new Endpoints\MigrationGeneratorRoute();
-        $this->migrationRunnerRoute = new Endpoints\MigrationRunnerRoute();
+        $this->migrationGeneratorRoute = new Migrations\MigrationGeneratorRoute();
+        $this->migrationRunnerRoute = new Migrations\MigrationRunnerRoute();
         new Endpoints\SyncRoute();
-        new Endpoints\MigrationRoutes();
+        new Migrations\MigrationRoutes();
         new Endpoints\CoreCollectionUserRoute();
         new Blocks\BlockRoutes();
         new Blocks\JsonBlock\JsonBlockRoutes();
