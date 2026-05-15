@@ -258,10 +258,17 @@ class RaptorBuilder
 
     private function deleteDirectory(string $dir): void
     {
-        foreach (glob($dir . '/{,.}*', GLOB_BRACE) ?: [] as $item) {
-            if (in_array(basename($item), ['.', '..'], true)) continue;
-            is_dir($item) ? $this->deleteDirectory($item) : @unlink($item);
+        if (!is_dir($dir)) return;
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            $item->isDir() ? rmdir($item->getRealPath()) : unlink($item->getRealPath());
         }
-        @rmdir($dir);
+
+        rmdir($dir);
     }
 }
