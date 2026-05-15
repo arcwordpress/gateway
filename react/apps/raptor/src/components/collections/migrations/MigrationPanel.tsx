@@ -121,24 +121,19 @@ const MigrationPanel: React.FC<MigrationPanelProps> = ({ state, onClose, onState
 
             {/* Manual instructions */}
             {!state.installSuccess && (
-              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-700/40">
-                <p className="text-zinc-300 text-xs font-semibold mb-1.5">Manual Installation</p>
-                <ol className="list-decimal list-inside space-y-1 text-xs text-zinc-400">
-                  <li>
-                    Save to{' '}
-                    <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
-                      {state.migration.filePath ?? `lib/Migrations/${state.migration.className}.php`}
-                    </code>
-                  </li>
-                  <li>Require the file in your plugin</li>
-                  <li>
-                    Call{' '}
-                    <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
-                      {state.migration.className}::create()
-                    </code>{' '}
-                    from your activation hook
-                  </li>
-                </ol>
+              <div className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-700/40 space-y-1.5">
+                <p className="text-zinc-300 text-xs font-semibold">Manual Installation</p>
+                <p className="text-xs text-zinc-400">
+                  Save to{' '}
+                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
+                    {state.migration.filePath ?? `lib/Migrations/${state.migration.className}.php`}
+                  </code>
+                  {' '}and call{' '}
+                  <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
+                    {state.migration.className}::create()
+                  </code>
+                  {' '}from your activation hook.
+                </p>
               </div>
             )}
 

@@ -71,7 +71,6 @@ class MigrationGenerator
      */
     public static function generate(Collection $collection)
     {
-        $className = self::getClassName($collection);
         $tableName = $collection->getTable();
         $fillable = $collection->getFillable();
         $casts = $collection->getCasts();
@@ -115,6 +114,8 @@ class MigrationGenerator
         $namespace       = count($classParts) > 1 ? $classParts[0] : null;
         $extensionKey    = $namespace ? strtolower($namespace) : null;
 
+        $className = self::getClassName($collection, $namespace);
+
         $code = self::generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace, $extensionKey);
 
         return [
@@ -132,18 +133,13 @@ class MigrationGenerator
      * Get the class name for the migration
      *
      * @param Collection $collection
+     * @param string|null $namespace
      * @return string
      */
-    private static function getClassName(Collection $collection)
+    private static function getClassName(Collection $collection, $namespace = null)
     {
         $key = $collection->getKey();
-
-        // Convert to PascalCase if needed
-        $className = str_replace(['-', '_'], ' ', $key);
-        $className = ucwords($className);
-        $className = str_replace(' ', '', $className);
-
-        return $className . 'Migration';
+        return self::getClassNameFromKey($key, $namespace);
     }
 
     /**
@@ -388,7 +384,7 @@ class MigrationGenerator
         }
 
         // Generate class name
-        $className = self::getClassNameFromKey($key);
+        $className = self::getClassNameFromKey($key, $namespace);
 
         // Generate table name from key
         $tableName = $key;
@@ -430,13 +426,25 @@ class MigrationGenerator
     }
 
     /**
-     * Get class name from collection key
+     * Get class name from collection key, stripping namespace prefix if present.
+     *
+     * e.g. key=keystone-listing, namespace=Keystone → ListingMigration
      *
      * @param string $key
+     * @param string|null $namespace
      * @return string
      */
-    private static function getClassNameFromKey($key)
+    private static function getClassNameFromKey($key, $namespace = null)
     {
+        if ($namespace) {
+            $prefix = strtolower($namespace);
+            foreach (['-', '_'] as $sep) {
+                if (strpos($key, $prefix . $sep) === 0) {
+                    $key = substr($key, strlen($prefix) + 1);
+                    break;
+                }
+            }
+        }
         $className = str_replace(['-', '_'], ' ', $key);
         $className = ucwords($className);
         $className = str_replace(' ', '', $className);
