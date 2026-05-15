@@ -107,16 +107,26 @@ class MigrationGenerator
             $columns[] = "updated_at TIMESTAMP NULL DEFAULT NULL";
         }
 
-        // Generate the PHP class code
-        $code = self::generateClassCode($className, $tableName, $columns, $notes);
+        // Derive namespace and extension from the collection's own class root.
+        // e.g. Keystone\Collections\Listing → namespace=Keystone, extension=keystone
+        // Package key is separate (groups UI menus) and not used here.
+        $collectionClass = get_class($collection);
+        $classParts      = explode('\\', $collectionClass);
+        $namespace       = count($classParts) > 1 ? $classParts[0] : null;
+        $extensionKey    = $namespace ? strtolower($namespace) : null;
+
+        $code = self::generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace, $extensionKey);
 
         return [
-            'code' => $code,
+            'code'      => $code,
             'className' => $className,
             'tableName' => $tableName,
-            'notes' => $notes,
+            'namespace' => $namespace,
+            'filePath'  => 'lib/Migrations/' . $className . '.php',
+            'notes'     => $notes,
         ];
     }
+
 
     /**
      * Get the class name for the migration
@@ -133,7 +143,7 @@ class MigrationGenerator
         $className = ucwords($className);
         $className = str_replace(' ', '', $className);
 
-        return $className . 'Database';
+        return $className . 'Migration';
     }
 
     /**
@@ -500,9 +510,7 @@ class MigrationGenerator
             $notesSection .= "     */\n";
         }
 
-        $ext            = $extensionKey ? addslashes($extensionKey) : '';
-        $constantPrefix = $extensionKey ? strtoupper($extensionKey) : '';
-        $versionConst   = $constantPrefix ? "{$constantPrefix}_VERSION" : null;
+        $ext = $extensionKey ? addslashes($extensionKey) : '';
 
         $code = "<?php\n\n";
 
@@ -510,29 +518,18 @@ class MigrationGenerator
             $code .= "namespace {$namespace}\\Migrations;\n\n";
         }
 
-        $code .= "if (!defined('ABSPATH')) {\n";
-        $code .= "    exit;\n";
-        $code .= "}\n\n";
-
         $code .= "class {$className} extends \\Gateway\\Migration\n";
         $code .= "{\n";
         $code .= $notesSection;
         $code .= "    protected static string \$extension = '{$ext}';\n\n";
-
-        if ($versionConst) {
-            $code .= "    public static function getVersion(): ?string\n";
-            $code .= "    {\n";
-            $code .= "        return defined('{$versionConst}') ? {$versionConst} : null;\n";
-            $code .= "    }\n\n";
-        }
         $code .= "    public static function create(): void\n";
         $code .= "    {\n";
         $code .= "        global \$wpdb;\n\n";
-        $code .= "        \$table_name      = \$wpdb->prefix . '{$tableName}';\n";
-        $code .= "        \$charset_collate = \$wpdb->get_charset_collate();\n\n";
-        $code .= "        \$sql = \"CREATE TABLE \$table_name (\n";
+        $code .= "        \$table   = \$wpdb->prefix . '{$tableName}';\n";
+        $code .= "        \$charset = \$wpdb->get_charset_collate();\n\n";
+        $code .= "        \$sql = \"CREATE TABLE {\$table} (\n";
         $code .= "            {$columnsStr}\n";
-        $code .= "        ) \$charset_collate;\";\n\n";
+        $code .= "        ) {\$charset};\";\n\n";
         $code .= "        require_once ABSPATH . 'wp-admin/includes/upgrade.php';\n";
         $code .= "        dbDelta(\$sql);\n";
         $code .= "    }\n";

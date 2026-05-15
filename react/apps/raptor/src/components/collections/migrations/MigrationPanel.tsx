@@ -127,7 +127,7 @@ const MigrationPanel: React.FC<MigrationPanelProps> = ({ state, onClose, onState
                   <li>
                     Save to{' '}
                     <code className="text-zinc-300 bg-zinc-800/60 px-1 rounded">
-                      /lib/Database/{state.migration.className}.php
+                      {state.migration.filePath ?? `lib/Migrations/${state.migration.className}.php`}
                     </code>
                   </li>
                   <li>Require the file in your plugin</li>
