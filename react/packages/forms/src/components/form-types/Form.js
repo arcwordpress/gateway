@@ -9,6 +9,17 @@ import { createGatewayFormContext } from '../../utils/gatewayFormContext';
 // Import the shared context
 import { GatewayFormContext, useGatewayForm } from '../../utils/gatewayFormContext';
 
+/**
+ * Resolve the base REST endpoint from a collection's routes array.
+ * Prefers the 'create' route (same path as 'get_many'), falls back to 'get_many'.
+ * Returns null when routes is missing or has no usable entry.
+ */
+function resolveBaseEndpoint(routes) {
+  if (!Array.isArray(routes) || routes.length === 0) return null;
+  const r = routes.find((r) => r.type === 'create') ?? routes.find((r) => r.type === 'get_many') ?? null;
+  return r ? r.route : null;
+}
+
 // Memoized field renderer - now uses context instead of props
 const FieldRenderer = React.memo(({ fieldConfig }) => {
   // Debug: log the field config before using it
@@ -82,7 +93,7 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
     try {
       setLoading(true);
       setError(null);
-      const endpoint = collection.routes?.endpoint;
+      const endpoint = resolveBaseEndpoint(collection.routes);
       if (!endpoint) {
         throw new Error('No endpoint available for this collection');
       }
@@ -104,7 +115,7 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
   };
 
   const onSubmit = async (data) => {
-    const endpoint = collection?.routes?.endpoint;
+    const endpoint = resolveBaseEndpoint(collection?.routes);
     if (!endpoint) {
       setError('No endpoint available for submission');
       return;
