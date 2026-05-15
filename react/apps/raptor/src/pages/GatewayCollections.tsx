@@ -26,7 +26,7 @@ function RunMigrationPanel({
     onStateChange({ ...state, running: true, result: null })
     try {
       const res = await fetch(
-        apiUrl(`gateway/v1/migrations/${state.collectionKey}/run`),
+        apiUrl(`gateway/v1/migration-generator/${state.collectionKey}/run`),
         { method: 'POST', headers: authHeaders() }
       )
       const data = await res.json()
@@ -471,7 +471,7 @@ export default function GatewayCollections() {
 
   const fetchExtensions = async (): Promise<MigrationExtension[]> => {
     try {
-      const res = await fetch(apiUrl('gateway/v1/migrations/extensions/list'), { headers: authHeaders() })
+      const res = await fetch(apiUrl('gateway/v1/migration-generator/extensions/list'), { headers: authHeaders() })
       if (!res.ok) return []
       const json = await res.json()
       return json.extensions ?? []
@@ -495,7 +495,7 @@ export default function GatewayCollections() {
     setPanel({ mode: 'migration', data: initialState })
 
     const [migRes, extensions] = await Promise.all([
-      fetch(apiUrl(`gateway/v1/migrations/${collection.key}`), { headers: authHeaders() }),
+      fetch(apiUrl(`gateway/v1/migration-generator/${collection.key}`), { headers: authHeaders() }),
       fetchExtensions(),
     ])
 
