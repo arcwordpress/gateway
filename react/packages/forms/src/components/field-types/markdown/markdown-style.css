@@ -26,6 +26,48 @@
   /* SimpleMDE editor will be rendered inside */
 }
 
+/* ── EasyMDE / SimpleMDE theme overrides ─────────────────────────────────── */
+
+.markdown-field__wrapper .editor-toolbar {
+  background: var(--gty-offset-1);
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .editor-toolbar a,
+.markdown-field__wrapper .editor-toolbar button {
+  color: var(--gty-contrast-2) !important;
+}
+
+.markdown-field__wrapper .editor-toolbar a:hover,
+.markdown-field__wrapper .editor-toolbar button:hover,
+.markdown-field__wrapper .editor-toolbar a.active,
+.markdown-field__wrapper .editor-toolbar button.active {
+  background: var(--gty-bg-hover);
+  border-color: transparent;
+}
+
+.markdown-field__wrapper .editor-toolbar i.separator {
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .CodeMirror {
+  background: #33393C;
+  color: var(--gty-contrast-2);
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .CodeMirror .cm-comment {
+  color: var(--gty-contrast-2);
+}
+
+.markdown-field__wrapper .CodeMirror-cursor {
+  border-left-color: var(--gty-contrast-2);
+}
+
+.markdown-field__wrapper .CodeMirror-scroll {
+  background: #33393C;
+}
+
 .markdown-field__wrapper--error .CodeMirror {
   border-color: var(--gty-error);
 }
