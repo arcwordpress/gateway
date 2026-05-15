@@ -81,13 +81,14 @@ function MigrationCell({ extensionKey }: { extensionKey: string }) {
 
   const lastRun = group.last_run
   const ranAt = lastRun ? new Date(lastRun.ran_at).toLocaleString() : null
+  const displayVersion = lastRun?.version || group.version
 
   return (
     <div className="flex items-center gap-3">
       {lastRun ? (
         <div className="text-right">
           <div className={`text-[10px] font-mono ${lastRun.success ? 'text-green-400' : 'text-red-400'}`}>
-            v{lastRun.version}
+            {displayVersion ? `v${displayVersion}` : '—'}
           </div>
           <div className="text-[10px] text-zinc-600">{ranAt}</div>
         </div>

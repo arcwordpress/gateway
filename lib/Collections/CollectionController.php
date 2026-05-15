@@ -5,6 +5,7 @@ namespace Gateway\Collections;
 use Gateway\Controller;
 use Gateway\Plugin;
 use Gateway\Raptor\Collections\RaptorCollection;
+use Gateway\Traits\CollectionEagerLoadable;
 
 class CollectionController extends Controller
 {
@@ -256,43 +257,23 @@ class CollectionController extends Controller
      */
     public function discoverCollectionRelationships(object $collection): array
     {
+        $names = CollectionEagerLoadable::discoverRelations($collection);
+
         $relationships = [];
 
-        try {
-            $ref = new \ReflectionClass($collection);
-        } catch (\ReflectionException $e) {
-            return [];
-        }
-
-        foreach ($ref->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
-                continue;
-            }
-
-            $returnType = $method->getReturnType();
-
-            if (!($returnType instanceof \ReflectionNamedType) || $returnType->isBuiltin()) {
-                continue;
-            }
-
-            if (!str_starts_with($returnType->getName(), 'Illuminate\\Database\\Eloquent\\Relations\\')) {
-                continue;
-            }
-
+        foreach ($names as $name) {
             try {
-                $rel       = $method->invoke($collection);
-                $relType   = class_basename(get_class($rel));
-                $related   = $rel->getRelated();
-                $targetKey = method_exists($related, 'getKey') ? $related->getKey() : null;
+                $rel     = $collection->$name();
+                $related = $rel->getRelated();
 
                 $relationships[] = [
-                    'name'       => $method->getName(),
-                    'type'       => $relType,
-                    'target_key' => $targetKey,
+                    'name'       => $name,
+                    'type'       => class_basename(get_class($rel)),
+                    'target_key' => method_exists($related, 'getKey') ? $related->getKey() : null,
                 ];
             } catch (\Throwable $e) {
                 $relationships[] = [
-                    'name'       => $method->getName(),
+                    'name'       => $name,
                     'type'       => null,
                     'target_key' => null,
                 ];
