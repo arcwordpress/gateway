@@ -32,7 +32,7 @@ class PluginScaffolder
         string $projectName,
         RaptorExtension $extension
     ): array {
-        foreach (['lib/Packages', 'lib/Collections', 'lib/Views', 'schemas'] as $subDir) {
+        foreach (['lib/Packages', 'lib/Collections', 'lib/Migrations', 'lib/Views', 'schemas'] as $subDir) {
             if (!is_dir($pluginDir . '/' . $subDir) && !wp_mkdir_p($pluginDir . '/' . $subDir)) {
                 return ['success' => false, 'error' => "Failed to create plugin directory: {$subDir}"];
             }

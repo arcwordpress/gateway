@@ -85,26 +85,27 @@ class CollectionBuilder
     }
 
     /**
-     * Generate the migration PHP class, write it to lib/Database/, then execute
-     * its ::create() method to provision (or update) the database table.
+     * Generate the migration PHP class, write it to lib/Migrations/, register it
+     * with MigrationRegistry, then execute ::create() to provision the table.
      *
      * Always runs — collections with no custom fields still get a table.
      */
     public function runMigration(array $collectionData, string $pluginSlug, string $namespace): array
     {
-        $databaseDir = WP_PLUGIN_DIR . '/' . $pluginSlug . '/lib/Database';
+        $migrationsDir = WP_PLUGIN_DIR . '/' . $pluginSlug . '/lib/Migrations';
 
-        if (!is_dir($databaseDir) && !wp_mkdir_p($databaseDir)) {
+        if (!is_dir($migrationsDir) && !wp_mkdir_p($migrationsDir)) {
             return [
                 'success'             => false,
                 'migration_generated' => false,
                 'migration_ran'       => false,
-                'error'               => 'Failed to create Database directory.',
+                'error'               => 'Failed to create Migrations directory.',
             ];
         }
 
-        $migration     = \Gateway\Migrations\MigrationGenerator::generateFromData($collectionData, $namespace);
-        $migrationFile = $databaseDir . '/' . $migration['className'] . '.php';
+        $extensionKey  = str_replace('-', '_', $pluginSlug);
+        $migration     = \Gateway\Migrations\MigrationGenerator::generateFromData($collectionData, $namespace, $extensionKey);
+        $migrationFile = $migrationsDir . '/' . $migration['className'] . '.php';
 
         if (file_put_contents($migrationFile, $migration['code']) === false) {
             return [
@@ -117,7 +118,11 @@ class CollectionBuilder
 
         require_once $migrationFile;
 
-        $fullClass = $namespace . '\\Database\\' . $migration['className'];
+        $fullClass = $namespace . '\\Migrations\\' . $migration['className'];
+
+        if (class_exists($fullClass) && method_exists($fullClass, 'register')) {
+            $fullClass::register();
+        }
 
         if (class_exists($fullClass) && method_exists($fullClass, 'create')) {
             $fullClass::create();
