@@ -50,6 +50,7 @@ class RaptorFieldList extends \Gateway\Collection
 
     public function fields(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(RaptorField::class, 'field_list_id');
+        return $this->hasMany(RaptorField::class, 'field_list_id')
+                    ->orderBy('sort_order');
     }
 }

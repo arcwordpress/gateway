@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactSelect from 'react-select';
 
-// Scoped CSS to force the inner <input> colour regardless of WordPress admin CSS.
-// styles.input in react-select v5 targets the wrapper div, not the <input> itself.
+// Scoped CSS resets WordPress admin styles on the inner <input>.
+// styles.input in react-select v5 targets the wrapper div, not the <input> itself,
+// so the only reliable way to reach it is via a CSS rule with !important.
 const SCOPE_CLASS = 'gw-fts-root';
 const SCOPED_CSS = `
   .${SCOPE_CLASS} input {
@@ -39,38 +40,51 @@ const darkStyles = {
     boxSizing: 'border-box',
     outline: 'none',
   }),
-  // display:grid + shared grid-area makes singleValue and input wrapper overlap
+  // valueContainer is position:relative so singleValue/placeholder can be
+  // overlaid absolutely. The input wrapper sits in the normal flex flow and
+  // is always zero-width until the user types.
   valueContainer: () => ({
-    display: 'grid',
+    display: 'flex',
     flex: 1,
     alignItems: 'center',
     padding: '2px 0',
     overflow: 'hidden',
+    position: 'relative',
+    minHeight: '22px',
   }),
+  // Overlaid on top of the input; hidden while the user is typing so typed
+  // text is visible.
   singleValue: (_, { selectProps }) => ({
-    gridArea: '1/1/2/3',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: '50%',
+    transform: 'translateY(-50%)',
     display: selectProps.inputValue ? 'none' : 'block',
     color: '#f4f4f5',
     fontSize: '0.875rem',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    maxWidth: '100%',
+    pointerEvents: 'none',
   }),
-  placeholder: () => ({
-    gridArea: '1/1/2/3',
+  placeholder: (_, { selectProps }) => ({
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    display: selectProps.inputValue ? 'none' : 'block',
     color: '#71717a',
     fontSize: '0.875rem',
+    pointerEvents: 'none',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   }),
-  // Targets the input wrapper div; the inner <input> is handled by SCOPED_CSS
+  // styles.input targets the wrapper div around the <input> in react-select v5.
+  // Keep it minimal — the inner <input> is styled via SCOPED_CSS.
   input: () => ({
-    display: 'inline-grid',
-    gridArea: '1/1/2/3',
-    gridTemplateColumns: '0 min-content',
     flex: '1 1 auto',
     overflow: 'hidden',
-    color: '#f4f4f5',
-    fontSize: '0.875rem',
     margin: 0,
     padding: 0,
   }),

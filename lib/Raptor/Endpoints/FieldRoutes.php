@@ -70,7 +70,7 @@ class FieldRoutes
 
     public function getFields(\WP_REST_Request $request): \WP_REST_Response
     {
-        $query = RaptorField::orderBy('sort_order', 'asc')->orderBy('id', 'asc');
+        $query = RaptorField::orderBy('sort_order', 'asc');
 
         $field_list_id = $request->get_param('field_list_id');
         if ($field_list_id !== null) {
@@ -117,7 +117,9 @@ class FieldRoutes
             'name'          => $name,
             'type'          => sanitize_text_field($data['type'] ?? 'text'),
             'label'         => sanitize_text_field($data['label'] ?? ''),
-            'sort_order'    => isset($data['sort_order']) ? (int) $data['sort_order'] : 0,
+            'sort_order'    => isset($data['sort_order'])
+                ? (int) $data['sort_order']
+                : ((int) (RaptorField::where('field_list_id', $field_list_id)->max('sort_order') ?? 0)) + 1000,
             'config'        => $config,
         ]);
 

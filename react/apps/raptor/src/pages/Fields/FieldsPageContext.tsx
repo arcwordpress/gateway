@@ -3,6 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Field, Collection } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 
+function patchFieldSortOrder(id: number, sort_order: number) {
+  void fetch(apiUrl(`gateway/v1/raptor/field/${id}`), {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ sort_order }),
+  })
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type SurfaceState =
@@ -76,16 +84,26 @@ export function FieldsProvider({ children }: { children: React.ReactNode }) {
   const addField = (field: Field) =>
     setFields((prev) => [...prev, field])
 
-  const moveField = (name: string, dir: 'up' | 'down') =>
-    setFields((prev) => {
-      const i = prev.findIndex((f) => f.name === name)
-      if (dir === 'up' && i === 0) return prev
-      if (dir === 'down' && i === prev.length - 1) return prev
-      const next = [...prev]
-      const swap = dir === 'up' ? i - 1 : i + 1
-      ;[next[i], next[swap]] = [next[swap], next[i]]
-      return next
-    })
+  const moveField = (name: string, dir: 'up' | 'down') => {
+    const i = fields.findIndex((f) => f.name === name)
+    if (dir === 'up' && i === 0) return
+    if (dir === 'down' && i === fields.length - 1) return
+    const swap = dir === 'up' ? i - 1 : i + 1
+    const next = [...fields]
+    ;[next[i], next[swap]] = [next[swap], next[i]]
+    setFields(next)
+
+    const sortA = fields[i].sort_order
+    const sortB = fields[swap].sort_order
+    if (sortA !== sortB) {
+      // Swap sort_orders between the two adjacent fields
+      patchFieldSortOrder(fields[i].id, sortB)
+      patchFieldSortOrder(fields[swap].id, sortA)
+    } else {
+      // Equal sort_orders (legacy data) — renumber all to establish proper spacing
+      next.forEach((f, idx) => patchFieldSortOrder(f.id, (idx + 1) * 1000))
+    }
+  }
 
   const reorderFields = (newFields: Field[]) =>
     setFields(newFields.map((f, i) => ({ ...f, sort_order: i })))
