@@ -24,33 +24,41 @@ const darkStyles = {
     boxSizing: 'border-box',
     outline: 'none',
   }),
+  // display:grid + shared grid-area makes singleValue and input wrapper overlap
   valueContainer: () => ({
-    display: 'flex',
+    display: 'grid',
     flex: 1,
-    flexWrap: 'wrap',
     alignItems: 'center',
     padding: '2px 0',
     overflow: 'hidden',
+    position: 'relative',
   }),
-  singleValue: () => ({
+  singleValue: (_, { selectProps }) => ({
+    gridArea: '1/1/2/3',
+    display: selectProps.inputValue ? 'none' : 'block',
     color: '#f4f4f5',
     fontSize: '0.875rem',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   }),
   placeholder: () => ({
+    gridArea: '1/1/2/3',
     color: '#71717a',
     fontSize: '0.875rem',
   }),
+  // styles.input targets the wrapper div in react-select v5
   input: () => ({
+    display: 'inline-grid',
+    gridArea: '1/1/2/3',
+    gridTemplateColumns: '0 min-content',
+    flex: '1 1 auto',
+    overflow: 'hidden',
     color: '#f4f4f5',
     fontSize: '0.875rem',
-    background: 'none',
-    border: 0,
-    outline: 0,
-    padding: 0,
     margin: 0,
+    padding: 0,
   }),
   indicatorsContainer: () => ({
     display: 'flex',
