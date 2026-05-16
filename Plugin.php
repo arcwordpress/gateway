@@ -122,8 +122,6 @@ class Plugin
         new Endpoints\SyncRoute();
         new Migrations\MigrationRoutes();
         new Endpoints\CoreCollectionUserRoute();
-        new Blocks\BlockRoutes();
-        new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
         Migrations\MigrationHooks::init();
         PluginController::maybeRunMigrations();
@@ -139,9 +137,6 @@ class Plugin
         Raptor\ViewRenderer::init();
         Filters\Render::init();
         Gutenberg\BlockRegistry::init();
-        Blocks\BlockInit::init();
-        Blocks\JsonBlock\JsonBlockRegistrar::init();
-        Blocks\BlockBindings::init();
         Integrations\Breakdance\Breakdance::init();
         $this->patternRegistry->init();
         AppTemplate::init();
@@ -167,7 +162,6 @@ class Plugin
             mkdir(GATEWAY_DATA_DIR, 0755, true);
         }
         Collections\CoreCollections::seed();
-        Blocks\BlockSeeder::seedAll();
         flush_rewrite_rules();
     }
 
@@ -201,12 +195,6 @@ class Plugin
     public function seedCollections(): void
     {
         Collections\CoreCollections::seed();
-    }
-
-    /** @deprecated use Blocks\BlockSeeder::seedAll() */
-    public function seedBlockTypes(): void
-    {
-        Blocks\BlockSeeder::seedAll();
     }
 
     public static function bootEloquent() { Database\DatabaseConnection::boot(); }
