@@ -79,6 +79,9 @@ export { useUrlField } from './components/field-types/url';
 export { useUserField } from './components/field-types/user';
 export { useWysiwygField } from './components/field-types/wysiwyg';
 
+// UI utilities
+export { FieldTypeSelector } from './components/FieldTypeSelector';
+
 // Initialize field types when the package is imported.
 import { initializeFieldTypes } from './registerInternalFieldTypes';
 initializeFieldTypes();

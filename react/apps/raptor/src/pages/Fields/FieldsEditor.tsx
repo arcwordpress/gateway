@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import Select from 'react-select'
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JS-only package; declarations in src/types.d.ts
-import { ControlledForm, useFieldType } from '@arcwp/gateway-forms'
+import { ControlledForm, useFieldType, FieldTypeSelector } from '@arcwp/gateway-forms'
 import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
@@ -15,10 +16,6 @@ import SharedPanelShell from '../../components/ui/PanelShell'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatFieldTypeLabel(type: string): string {
-  return type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-}
 
 /**
  * Safely parse a fetch Response as JSON.
@@ -342,17 +339,12 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
     <div className="flex flex-col gap-4">
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Type</label>
-        <select
+        <FieldTypeSelector
           value={type}
-          onChange={e => setType(e.target.value)}
-          className={baseInput}
-          disabled={typesLoading}
-        >
-          {typesLoading && <option value={type}>{formatFieldTypeLabel(type)}</option>}
-          {fieldTypeDefs?.map(ft => (
-            <option key={ft.type} value={ft.type}>{formatFieldTypeLabel(ft.type)}</option>
-          ))}
-        </select>
+          onChange={(t: string) => setType(t)}
+          options={fieldTypeDefs ?? []}
+          isLoading={typesLoading}
+        />
       </div>
       <div>
         <label className="block text-sm font-medium text-zinc-300 mb-1.5">Label</label>
