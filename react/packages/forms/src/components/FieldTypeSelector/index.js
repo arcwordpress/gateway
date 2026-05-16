@@ -44,6 +44,7 @@ const darkStyles = {
     ...base,
     color: '#f4f4f5',
     fontSize: '0.875rem',
+    backgroundColor: 'transparent',
   }),
   valueContainer: (base) => ({
     ...base,
