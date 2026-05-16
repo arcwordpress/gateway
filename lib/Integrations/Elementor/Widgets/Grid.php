@@ -49,7 +49,7 @@ class Grid extends \Elementor\Widget_Base
         ]);
 
         $this->add_control('show_filters', [
-            'label'        => 'Show Filters',
+            'label'        => 'Show Facets',
             'type'         => \Elementor\Controls_Manager::SWITCHER,
             'label_on'     => 'Yes',
             'label_off'    => 'No',
