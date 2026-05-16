@@ -2,13 +2,15 @@ import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import Grid from './Grid';
 import Facets from './Facets';
+import Footer from './Footer';
 
-const App = ({ collectionKey, apiRoot, showFilters, perPage }) => {
+const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) => {
   const [collection, setCollection] = useState(null);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [facetValues, setFacetValues] = useState({});
+  const [perPage, setPerPage] = useState(initialPerPage);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -91,6 +93,11 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage }) => {
         />
       )}
       <Grid collection={collection} records={filtered} />
+      <Footer
+        totalRows={filtered.length}
+        perPage={perPage}
+        onPerPageChange={setPerPage}
+      />
     </div>
   );
 };
