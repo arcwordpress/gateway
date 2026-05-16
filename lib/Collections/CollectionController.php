@@ -243,7 +243,6 @@ class CollectionController extends Controller
             'casts'           => $casts,
             'routes'          => $registeredRoutes,
             'fields'          => method_exists($collection, 'getFields')       ? $collection->getFields()       : [],
-            'filters'         => method_exists($collection, 'getFilters')      ? $collection->getFilters()      : [],
             'grid'            => method_exists($collection, 'getGrid')         ? $collection->getGrid()         : [],
             'displayField'    => method_exists($collection, 'getDisplayField') ? $collection->getDisplayField() : null,
             'relationships'   => $this->discoverCollectionRelationships($collection),

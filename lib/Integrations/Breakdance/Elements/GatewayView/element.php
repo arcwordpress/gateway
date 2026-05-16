@@ -37,12 +37,12 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function name(): string
     {
-        return 'Gateway View';
+        return 'Gateway Grid';
     }
 
     public static function className(): string
     {
-        return 'gateway-breakdance-view';
+        return 'gateway-breakdance-grid';
     }
 
     public static function category(): string
@@ -72,7 +72,12 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function defaultProperties()
     {
-        return false;
+        return [
+            'content' => [
+                'show_filters' => true,
+                'per_page'     => 20,
+            ],
+        ];
     }
 
     public static function defaultChildren()
@@ -82,12 +87,18 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function contentControls(): array
     {
+        $collectionItems = self::buildCollectionItems();
+
+        $collectionControl = count($collectionItems) > 0
+            ? ['type' => 'select', 'layout' => 'inline', 'items' => $collectionItems]
+            : ['type' => 'text',   'layout' => 'inline', 'placeholder' => 'e.g. listings'];
+
         return [
             c(
-                'view_key',
-                'View Key',
+                'collection',
+                'Collection',
                 [],
-                ['type' => 'text', 'layout' => 'inline'],
+                $collectionControl,
                 false,
                 false,
                 []
@@ -101,7 +112,45 @@ class GatewayView extends \Breakdance\Elements\Element
                 false,
                 []
             ),
+            c(
+                'per_page',
+                'Per Page',
+                [],
+                ['type' => 'number', 'layout' => 'inline', 'min' => 1, 'max' => 200],
+                false,
+                false,
+                []
+            ),
         ];
+    }
+
+    /**
+     * Build select items from the Gateway collection registry.
+     * Falls back to an empty array when Gateway isn't fully booted yet.
+     *
+     * @return array  [['value' => 'key', 'title' => 'Label'], ...]
+     */
+    private static function buildCollectionItems(): array
+    {
+        try {
+            $plugin = \Gateway\Plugin::getInstance();
+            $registry = $plugin->getRegistry();
+            if (!$registry) return [];
+
+            $items = [['value' => '', 'title' => '— Select a collection —']];
+
+            foreach ($registry->getAll() as $key => $collection) {
+                if (method_exists($collection, 'isHidden') && $collection->isHidden()) {
+                    continue;
+                }
+                $title  = method_exists($collection, 'getTitle') ? $collection->getTitle() : $key;
+                $items[] = ['value' => $key, 'title' => $title . ' (' . $key . ')'];
+            }
+
+            return count($items) > 1 ? $items : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public static function designControls(): array
@@ -137,7 +186,7 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function propertyPathsToSsrElementWhenValueChanges(): array
     {
-        return ['content.view_key', 'content.show_filters'];
+        return ['content.collection', 'content.show_filters', 'content.per_page'];
     }
 
     public static function settings()

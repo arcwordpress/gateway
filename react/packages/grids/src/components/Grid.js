@@ -108,9 +108,9 @@ const Grid = ({
     setCurrentView(viewType);
   }, [viewType]);
 
-  // Get filters from collection metadata
+  // Get facets from collection metadata (defined under grid.facets)
   const filters = useMemo(() => {
-    return collection?.filters || [];
+    return collection?.grid?.facets || [];
   }, [collection]);
 
   // collection.grid.show_search === false overrides the showSearch prop
