@@ -1,6 +1,6 @@
 <?php
 /**
- * Server-side render for the Gateway View Breakdance element.
+ * Server-side render for the Gateway Grid Breakdance element.
  *
  * Breakdance calls this file when %%SSR%% appears in html.twig.
  * Available variables:
@@ -12,18 +12,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$view_key     = isset($properties['content']['view_key'])     ? sanitize_text_field((string) $properties['content']['view_key']) : '';
+$collection   = isset($properties['content']['collection'])   ? sanitize_text_field((string) $properties['content']['collection']) : '';
 $show_filters = isset($properties['content']['show_filters']) ? (bool) $properties['content']['show_filters'] : true;
+$per_page     = isset($properties['content']['per_page'])     ? max(1, (int) $properties['content']['per_page']) : 20;
 
-if (empty($view_key)) {
-    echo '<p class="gateway-breakdance-view__placeholder">'
-        . esc_html__('Gateway View: set a View Key in the element settings.', 'gateway')
+if (empty($collection)) {
+    echo '<p class="gateway-breakdance-grid__placeholder">'
+        . esc_html__('Gateway Grid: enter a Collection key in the element settings.', 'gateway')
         . '</p>';
     return;
 }
 
 // ---------------------------------------------------------------------------
-// Enqueue the compiled grid/view app (same bundle as the Gutenberg block)
+// Enqueue the compiled grid app
 // ---------------------------------------------------------------------------
 
 $build_path = GATEWAY_PATH . 'react/apps/grid/build/';
@@ -33,49 +34,37 @@ $asset      = file_exists($asset_file)
     ? require $asset_file
     : ['dependencies' => [], 'version' => GATEWAY_VERSION];
 
-if (!wp_script_is('gateway-view-app', 'registered')) {
+if (!wp_script_is('gateway-grid-app', 'registered')) {
     wp_register_script(
-        'gateway-view-app',
+        'gateway-grid-app',
         $build_url . 'index.js',
         $asset['dependencies'],
         $asset['version'],
         true
     );
 }
-wp_enqueue_script('gateway-view-app');
+wp_enqueue_script('gateway-grid-app');
 
-if (file_exists($build_path . 'style-index.css') && !wp_style_is('gateway-view-app-style', 'registered')) {
-    wp_register_style(
-        'gateway-view-app-style',
-        $build_url . 'style-index.css',
-        [],
-        $asset['version']
-    );
-}
-if (wp_style_is('gateway-view-app-style', 'registered')) {
-    wp_enqueue_style('gateway-view-app-style');
-}
-
-if (file_exists($build_path . 'index.css') && !wp_style_is('gateway-view-app', 'registered')) {
-    wp_register_style(
-        'gateway-view-app',
-        $build_url . 'index.css',
-        [],
-        $asset['version']
-    );
-}
-if (wp_style_is('gateway-view-app', 'registered')) {
-    wp_enqueue_style('gateway-view-app');
+foreach (['style-index.css' => 'gateway-grid-app-style', 'index.css' => 'gateway-grid-app'] as $file => $handle) {
+    if (file_exists($build_path . $file) && !wp_style_is($handle, 'registered')) {
+        wp_register_style($handle, $build_url . $file, [], $asset['version']);
+    }
+    if (wp_style_is($handle, 'registered')) {
+        wp_enqueue_style($handle);
+    }
 }
 
 // ---------------------------------------------------------------------------
-// Render the mount point — identical shape to the Gutenberg block render.php
+// Render the mount point — [data-gateway-grid] targets AppGrid in index.js
 // ---------------------------------------------------------------------------
 
-$config = wp_json_encode(['showFilters' => $show_filters]);
+$config = wp_json_encode([
+    'showFilters' => $show_filters,
+    'perPage'     => $per_page,
+]);
 
 echo '<div'
-    . ' data-gateway-view=""'
-    . ' data-view="'   . esc_attr($view_key) . '"'
-    . ' data-config="' . esc_attr($config)   . '"'
+    . ' data-gateway-grid=""'
+    . ' data-schema="'  . esc_attr($collection) . '"'
+    . ' data-config="'  . esc_attr($config)      . '"'
     . '></div>';

@@ -37,12 +37,12 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function name(): string
     {
-        return 'Gateway View';
+        return 'Gateway Grid';
     }
 
     public static function className(): string
     {
-        return 'gateway-breakdance-view';
+        return 'gateway-breakdance-grid';
     }
 
     public static function category(): string
@@ -72,7 +72,12 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function defaultProperties()
     {
-        return false;
+        return [
+            'content' => [
+                'show_filters' => true,
+                'per_page'     => 20,
+            ],
+        ];
     }
 
     public static function defaultChildren()
@@ -84,10 +89,10 @@ class GatewayView extends \Breakdance\Elements\Element
     {
         return [
             c(
-                'view_key',
-                'View Key',
+                'collection',
+                'Collection',
                 [],
-                ['type' => 'text', 'layout' => 'inline'],
+                ['type' => 'text', 'layout' => 'inline', 'placeholder' => 'e.g. listings'],
                 false,
                 false,
                 []
@@ -97,6 +102,15 @@ class GatewayView extends \Breakdance\Elements\Element
                 'Show Filters',
                 [],
                 ['type' => 'toggle', 'layout' => 'inline'],
+                false,
+                false,
+                []
+            ),
+            c(
+                'per_page',
+                'Per Page',
+                [],
+                ['type' => 'number', 'layout' => 'inline', 'min' => 1, 'max' => 200],
                 false,
                 false,
                 []
@@ -137,7 +151,7 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function propertyPathsToSsrElementWhenValueChanges(): array
     {
-        return ['content.view_key', 'content.show_filters'];
+        return ['content.collection', 'content.show_filters', 'content.per_page'];
     }
 
     public static function settings()
