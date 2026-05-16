@@ -87,12 +87,18 @@ class GatewayView extends \Breakdance\Elements\Element
 
     public static function contentControls(): array
     {
+        $collectionItems = self::buildCollectionItems();
+
+        $collectionControl = count($collectionItems) > 0
+            ? ['type' => 'select', 'layout' => 'inline', 'items' => $collectionItems]
+            : ['type' => 'text',   'layout' => 'inline', 'placeholder' => 'e.g. listings'];
+
         return [
             c(
                 'collection',
                 'Collection',
                 [],
-                ['type' => 'text', 'layout' => 'inline', 'placeholder' => 'e.g. listings'],
+                $collectionControl,
                 false,
                 false,
                 []
@@ -116,6 +122,35 @@ class GatewayView extends \Breakdance\Elements\Element
                 []
             ),
         ];
+    }
+
+    /**
+     * Build select items from the Gateway collection registry.
+     * Falls back to an empty array when Gateway isn't fully booted yet.
+     *
+     * @return array  [['value' => 'key', 'title' => 'Label'], ...]
+     */
+    private static function buildCollectionItems(): array
+    {
+        try {
+            $plugin = \Gateway\Plugin::getInstance();
+            $registry = $plugin->getRegistry();
+            if (!$registry) return [];
+
+            $items = [['value' => '', 'title' => '— Select a collection —']];
+
+            foreach ($registry->getAll() as $key => $collection) {
+                if (method_exists($collection, 'isHidden') && $collection->isHidden()) {
+                    continue;
+                }
+                $title  = method_exists($collection, 'getTitle') ? $collection->getTitle() : $key;
+                $items[] = ['value' => $key, 'title' => $title . ' (' . $key . ')'];
+            }
+
+            return count($items) > 1 ? $items : [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public static function designControls(): array
