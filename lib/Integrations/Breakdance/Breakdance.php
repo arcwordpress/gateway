@@ -19,7 +19,7 @@ class Breakdance
     {
         \Breakdance\ElementStudio\registerSaveLocation(
             getDirectoryPathRelativeToPluginFolder(__DIR__) . '/Elements',
-            'Gateway\\Integrations\\Breakdance\\Elements',
+            'GatewayElements',
             'element',
             'Gateway',
             false
