@@ -283,7 +283,7 @@ class Collection extends EloquentModel
         return $fields;
     }
 
-    public function getKey()
+    public function getCollectionKey(): string
     {
         if ($this->key) {
             return $this->key;

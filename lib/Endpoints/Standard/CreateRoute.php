@@ -45,8 +45,8 @@ class CreateRoute extends BaseEndpoint
 
         try {
             // Fire pre-hooks
-            do_action('gateway_pre_save_record', $data, $this->collection->getKey(), 'create');
-            do_action('gateway_pre_create_record', $data, $this->collection->getKey());
+            do_action('gateway_pre_save_record', $data, $this->collection->getCollectionKey(), 'create');
+            do_action('gateway_pre_create_record', $data, $this->collection->getCollectionKey());
 
             // Collection IS the model - create a new record
             $model = $this->collection->create($data);
@@ -60,14 +60,14 @@ class CreateRoute extends BaseEndpoint
 
         } catch (\Exception $e) {
             $response = $this->sendErrorResponse(
-                'Failed to create ' . $this->collection->getKey() . ': ' . $e->getMessage(),
+                'Failed to create ' . $this->collection->getCollectionKey() . ': ' . $e->getMessage(),
                 'create_failed',
                 500
             );
         } finally {
             // Fire post-hooks - these always run
-            do_action('gateway_save_record', $model, $this->collection->getKey(), 'create');
-            do_action('gateway_create_record', $model, $this->collection->getKey());
+            do_action('gateway_save_record', $model, $this->collection->getCollectionKey(), 'create');
+            do_action('gateway_create_record', $model, $this->collection->getCollectionKey());
         }
 
         return $response;

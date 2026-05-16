@@ -57,8 +57,8 @@ class PackageRoutes
             foreach ($collectionRegistry->getAll() as $collection) {
                 $pkgKey = method_exists($collection, 'getPackage') ? $collection->getPackage() : null;
                 if ($pkgKey) {
-                    $collectionsByPackage[$pkgKey][] = method_exists($collection, 'getKey')
-                        ? $collection->getKey()
+                    $collectionsByPackage[$pkgKey][] = method_exists($collection, 'getCollectionKey')
+                        ? $collection->getCollectionKey()
                         : (is_string($collection) ? $collection : null);
                 }
             }
@@ -92,7 +92,7 @@ class PackageRoutes
         if ($collectionRegistry !== null) {
             foreach ($collectionRegistry->getAll() as $collection) {
                 if (method_exists($collection, 'getPackage') && $collection->getPackage() === $key) {
-                    $collectionKeys[] = method_exists($collection, 'getKey') ? $collection->getKey() : null;
+                    $collectionKeys[] = method_exists($collection, 'getCollectionKey') ? $collection->getCollectionKey() : null;
                 }
             }
         }

@@ -138,7 +138,7 @@ class MigrationGenerator
      */
     private static function getClassName(Collection $collection, $namespace = null)
     {
-        $key = $collection->getKey();
+        $key = $collection->getCollectionKey();
         return self::getClassNameFromKey($key, $namespace);
     }
 

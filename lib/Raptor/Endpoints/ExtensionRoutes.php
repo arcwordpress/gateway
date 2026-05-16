@@ -459,7 +459,7 @@ class ExtensionRoutes
         $shortcodes = [];
 
         foreach ($registered as $collection) {
-            $key       = $collection->getKey();
+            $key       = $collection->getCollectionKey();
             $title     = $collection->getTitlePlural() ?: ($collection->getTitle() ?: $key);
 
             $shortcodes[] = [
@@ -498,7 +498,7 @@ class ExtensionRoutes
                 continue;
             }
 
-            if (!method_exists($collection, 'getKey')) {
+            if (!method_exists($collection, 'getCollectionKey')) {
                 continue;
             }
 

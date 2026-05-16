@@ -20,7 +20,7 @@ class CollectionRegistry
             throw new \InvalidArgumentException("Must pass a Collection instance");
         }
 
-        $key = $collection->getKey();
+        $key = $collection->getCollectionKey();
 
         // Key is required for all collections
         if (empty($key)) {
