@@ -27,7 +27,7 @@ require_once GATEWAY_PATH . 'vendor/autoload.php';
 require_once GATEWAY_PATH . 'includes/functions.php';
 
 spl_autoload_register(function ($class) {
-    $prefix = 'Gateway\\';
+    $prefix  = 'Gateway\\';
     $base_dir = GATEWAY_PATH . 'lib/';
 
     $len = strlen($prefix);
@@ -68,7 +68,7 @@ class Plugin
         return self::$instance;
     }
 
-    private function __construct() 
+    private function __construct()
     {
     }
 
@@ -89,12 +89,12 @@ class Plugin
 
         if (!$this->dbConnection) {
             error_log('Gateway: Database connection failed. Plugin loading in degraded mode.');
-            add_action('admin_notices', [$this, 'showConnectionNotice']);
+            add_action('admin_notices', [PluginController::class, 'showConnectionNotice']);
             new Endpoints\ConnectionRoute();
             new Migrations\MigrationRoutes();
             Admin\Page::init();
         } else {
-            $this->bootEloquent();
+            static::bootEloquent();
             $this->init();
         }
 
@@ -105,7 +105,7 @@ class Plugin
     {
         new Extensions\ExtensionRoutes();
         new Packages\PackageRoutes();
-        $this->raptorEndpoints();
+        Raptor\RaptorController::initEndpoints();
         $this->registry = new Collections\CollectionRegistry();
         $this->packageRegistry = new Packages\PackageRegistry();
         Raptor\Packages\PackageLoader::load();
@@ -122,11 +122,9 @@ class Plugin
         new Endpoints\SyncRoute();
         new Migrations\MigrationRoutes();
         new Endpoints\CoreCollectionUserRoute();
-        new Blocks\BlockRoutes();
-        new Blocks\JsonBlock\JsonBlockRoutes();
         $this->patternRegistry = new Patterns\PatternRegistry();
         Migrations\MigrationHooks::init();
-        $this->maybeRunMigrations();
+        PluginController::maybeRunMigrations();
         gateway_rest_dispatch_filter();
         Admin\Page::init();
         Admin\Records::init();
@@ -139,112 +137,44 @@ class Plugin
         Raptor\ViewRenderer::init();
         Filters\Render::init();
         Gutenberg\BlockRegistry::init();
-        Blocks\BlockInit::init();
-        Blocks\JsonBlock\JsonBlockRegistrar::init();
-        Blocks\BlockBindings::init();
         Integrations\Breakdance\Breakdance::init();
         $this->patternRegistry->init();
         AppTemplate::init();
 
-        add_action('gateway_loaded', [$this, 'registerCollections']);
+        add_action('gateway_loaded', [Collections\CoreCollections::class, 'register']);
 
         /*
-         *
-         * Refactor, there is no point to gateway_register if it runs at same momemnt as gateway_loaded this was supposed to run earlier, or gateway_loaded runs later.
-         * 
+         * Refactor: gateway_register fires at the same moment as gateway_loaded —
+         * it was intended to run earlier so packages/extensions could register before
+         * gateway_loaded fires. Keeping for back-compat; revisit hook ordering.
          */
         do_action('gateway_register');
         do_action('gateway_loaded');
     }
 
-    public function raptorEndpoints() 
+    public function activate()
     {
-        new Raptor\Endpoints\ExtensionCrudRoutes();
-        new Raptor\Endpoints\ExtensionRoutes();
-        new Raptor\Endpoints\CollectionRoutes();
-        new Raptor\Endpoints\FieldListRoutes();
-        new Raptor\Endpoints\FieldRoutes();
-        new Raptor\Endpoints\FormListRoutes();
-        new Raptor\Endpoints\FormRoutes();
-        new Raptor\Endpoints\UserLayoutRoutes();
-        new Raptor\Endpoints\PackageRoutes();
-        new Raptor\Endpoints\RelationshipRoutes();
+        if (!Database\DatabaseConnection::testConnection()) {
+            return;
+        }
+        Migrations\MigrationHooks::runCoreMigrations();
+        if (!is_dir(GATEWAY_DATA_DIR)) {
+            mkdir(GATEWAY_DATA_DIR, 0755, true);
+        }
+        Collections\CoreCollections::seed();
+        flush_rewrite_rules();
     }
 
-    public function seedBlockTypes()
+    public function deactivate()
     {
-        $gutenbergDir = GATEWAY_PATH . 'react/block-types/build/blocks';
-        if (is_dir($gutenbergDir)) {
-            foreach (glob($gutenbergDir . '/*/block.json') ?: [] as $jsonPath) {
-                $meta = json_decode(file_get_contents($jsonPath), true);
-                if (!empty($meta['name'])) {
-                    Collections\Gateway\BlockTypeUser::seedOne(
-                        $meta['name'],
-                        $meta['title'] ?? $meta['name'],
-                        'gutenberg'
-                    );
-                }
-            }
-        }
-
-        foreach (Blocks\BlockRegistry::instance()->getAll() as $block) {
-            Collections\Gateway\BlockTypeUser::seedOne(
-                $block::getName(),
-                $block::getTitle(),
-                'php'
-            );
-        }
-
-        foreach (Blocks\JsonBlock\JsonBlockLoader::getAll() as $definition) {
-            if (!empty($definition['name'])) {
-                Collections\Gateway\BlockTypeUser::seedOne(
-                    $definition['name'],
-                    $definition['title'] ?? $definition['name'],
-                    'json'
-                );
-            }
-        }
-
+        flush_rewrite_rules();
     }
 
-    public function registerCollections(): void
-    {
-        $map = self::getCoreCollectionMap();
-        foreach ($map as $key => $class) {
-            if (Collections\Gateway\CollectionUser::isActive($key)) {
-                $class::register();
-            }
-        }
-    }
-
-    public static function getCoreCollectionMap(): array
-    {
-        return [
-            'wp_post'               => Collections\WP\Post::class,
-            'wp_postmeta'           => Collections\WP\PostMeta::class,
-            'wp_user'               => Collections\WP\User::class,
-            'wp_usermeta'           => Collections\WP\UserMeta::class,
-            'wp_comment'            => Collections\WP\Comment::class,
-            'wp_commentmeta'        => Collections\WP\CommentMeta::class,
-            'wp_term'               => Collections\WP\Term::class,
-            'wp_termmeta'           => Collections\WP\TermMeta::class,
-            'wp_term_taxonomy'      => Collections\WP\TermTaxonomy::class,
-            'wp_term_relationship'  => Collections\WP\TermRelationship::class,
-            'wp_option'             => Collections\WP\Option::class,
-            'wp_link'               => Collections\WP\Link::class,
-        ];
-    }
-
-    public function seedCollections()
-    {
-        foreach (array_keys(self::getCoreCollectionMap()) as $key) {
-            Collections\Gateway\CollectionUser::seedOne($key);
-        }
-    }
+    // --- Public API (called by many lib classes via Plugin::getInstance()) ---
 
     public function isDbReady(): bool
     {
-        return $this->dbConnection && (bool) get_transient('gateway_tables_installed');
+        return Database\DatabaseController::isDbReady();
     }
 
     public function getRegistry() { return $this->registry; }
@@ -255,93 +185,39 @@ class Plugin
     public function getPatternRegistry() { return $this->patternRegistry; }
     public function getFieldTypeRegistry() { return $this->fieldTypeRegistry; }
 
+    /** @deprecated use Collections\CoreCollections::getMap() */
+    public static function getCoreCollectionMap(): array
+    {
+        return Collections\CoreCollections::getMap();
+    }
+
+    /** @deprecated use Collections\CoreCollections::seed() */
+    public function seedCollections(): void
+    {
+        Collections\CoreCollections::seed();
+    }
+
     public static function bootEloquent() { Database\DatabaseConnection::boot(); }
     public static function isSQLiteEnvironment() { return Database\DatabaseConnection::isSQLiteEnvironment(); }
     public static function findSQLiteDatabase() { return Database\DatabaseConnection::findSQLiteDatabase(); }
-
-    private function maybeRunMigrations(): void
-    {
-        $stored_version  = get_option('gateway_tables_schema', '');
-        $current_version = GATEWAY_VERSION;
-        if ($stored_version === $current_version && $this->coreTablesExist()) {
-            set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
-            return;
-        }
-
-        $success = Migrations\MigrationHooks::runCoreMigrations();
-
-        if ($success && $this->coreTablesExist()) {
-            update_option('gateway_tables_schema', $current_version, false);
-            set_transient('gateway_tables_installed', true, DAY_IN_SECONDS);
-        } else {
-            set_transient('gateway_tables_installed', false, DAY_IN_SECONDS);
-        }
-    }
-
-    private function coreTablesExist(): bool
-    {
-        try {
-            $capsule = Database\DatabaseConnection::getCapsule();
-            if ($capsule === null) {
-                return false;
-            }
-
-            $schema = $capsule->getConnection()->getSchemaBuilder();
-            if (!$schema || !is_object($schema)) {
-                return false;
-            }
-
-            return $schema->hasTable('gateway_settings') &&
-                   $schema->hasTable('gateway_raptor_extension') &&
-                   $schema->hasTable('gateway_raptor_package') &&
-                   $schema->hasTable('gateway_migration_run');
-            
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    public function activate()
-    {
-        if (!Database\DatabaseConnection::testConnection()) { return; }
-        Migrations\MigrationHooks::runCoreMigrations();
-        if (!is_dir(GATEWAY_DATA_DIR)) { mkdir(GATEWAY_DATA_DIR, 0755, true); }
-        $this->seedCollections();
-        $this->seedBlockTypes();
-        flush_rewrite_rules();
-    }
-
-    public function showConnectionNotice(): void
-    {
-        $settings_url = admin_url('admin.php?page=gateway#/settings/connection');
-        echo '<div class="notice notice-error"><p>'
-            . '<strong>Gateway:</strong> Cannot connect to the database. '
-            . '<a href="' . esc_url($settings_url) . '">Open Gateway Settings</a> '
-            . 'to restore the connection.'
-            . '</p></div>';
-    }
-
-    public function deactivate() { flush_rewrite_rules(); }
 }
 
 /**
  * DELAYED BOOTSTRAP FOR LICENSING AND CORE
- * This moves licensing client instantiation to 'init' to prevent 
+ * Moves licensing client instantiation to 'init' to prevent
  * early get_plugin_data() translation calls.
  */
-add_action('init', function() {
-    // 1. Core Licensing Check
-    if ( ! class_exists( 'SureCart\Licensing\Client' ) ) {
+add_action('init', function () {
+    if (!class_exists('SureCart\Licensing\Client')) {
         require_once GATEWAY_PATH . 'licensing/src/Client.php';
     }
-    
-    $client = new \SureCart\Licensing\Client( 'Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE );
-    $opts = get_option( 'gateway_license_options', [] );
-    $license_required = (bool) apply_filters( 'gateway_requires_license', true );
-    $has_activation = !empty( $opts['sc_activation_id'] );
 
-    if ( $license_required && !$has_activation ) {
-        // Fallback only when this copy requires licensing and it's not activated.
+    $client = new \SureCart\Licensing\Client('Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE);
+    $opts = get_option('gateway_license_options', []);
+    $license_required = (bool) apply_filters('gateway_requires_license', true);
+    $has_activation   = !empty($opts['sc_activation_id']);
+
+    if ($license_required && !$has_activation) {
         $client->settings()->add_page([
             'type'               => 'menu',
             'page_title'         => 'Gateway — Activate License',
@@ -350,18 +226,13 @@ add_action('init', function() {
             'menu_slug'          => 'gateway',
             'icon_url'           => 'dashicons-admin-plugins',
             'position'           => 30,
-            'activated_redirect' => admin_url( 'admin.php?page=gateway' ),
+            'activated_redirect' => admin_url('admin.php?page=gateway'),
         ]);
         return;
     }
 
-    // 2. Boot the Main Plugin Logic
     Plugin::getInstance()->boot();
-    
-    // 3. Signal that Gateway is fully ready
     do_action('gateway_plugin_loaded');
-    
 }, 5);
 
-// A. Signal that Gateway is activated.
 do_action('gateway_activated');

@@ -219,7 +219,6 @@ abstract class Block {
      * blocks content. This allows templates to include <InnerBlocks/> in
      * any form (attributes, self-closing or with closing tag).
      *
-     * @see BlockInit::registerBlocks() — registration will use this callback.
      */
     public function renderCallback(array $attributes, string $content, $block): string
     {
@@ -232,12 +231,7 @@ abstract class Block {
         return $output;
     }
     
-    /**
-     * Register this block
-     */
     public static function register(): void
     {
-        $instance = new static();
-        \Gateway\Blocks\BlockRegistry::instance()->register($instance);
     }
 }

@@ -41,12 +41,6 @@ class SyncRoute
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
-        register_rest_route('gateway/v1', '/sync/block-types', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'syncBlockTypes'],
-            'permission_callback' => [$this, 'checkPermissions'],
-        ]);
-
         register_rest_route('gateway/v1', '/sync/core-migrations', [
             'methods'             => 'POST',
             'callback'            => [$this, 'runCoreMigrations'],
@@ -85,55 +79,16 @@ class SyncRoute
             // Table may not exist yet
         }
 
-        // Block types currently registered in the plugin
-        $registeredBlockTypes = [];
-        try {
-            $gutenbergDir = GATEWAY_PATH . 'react/block-types/build/blocks';
-            if (is_dir($gutenbergDir)) {
-                foreach (glob($gutenbergDir . '/*/block.json') ?: [] as $jsonPath) {
-                    $meta = json_decode(file_get_contents($jsonPath), true);
-                    if (!empty($meta['name'])) {
-                        $registeredBlockTypes[] = $meta['name'];
-                    }
-                }
-            }
-            foreach (\Gateway\Blocks\BlockRegistry::instance()->getAll() as $block) {
-                $registeredBlockTypes[] = $block::getName();
-            }
-            foreach (\Gateway\Blocks\JsonBlock\JsonBlockLoader::getAll() as $def) {
-                if (!empty($def['name'])) {
-                    $registeredBlockTypes[] = $def['name'];
-                }
-            }
-        } catch (\Throwable $e) {
-            // Non-fatal
-        }
-
-        // Block type toggle rows that exist in the DB
-        $seededBlockTypes = [];
-        try {
-            $seededBlockTypes = \Gateway\Collections\Gateway\BlockTypeUser::pluck('slug')->toArray();
-        } catch (\Throwable $e) {
-            // Table may not exist yet
-        }
-
-        $unseededCollections  = array_values(array_diff(array_keys($coreMap), $seededCollections));
-        $unseededBlockTypes   = array_values(array_diff($registeredBlockTypes, $seededBlockTypes));
+        $unseededCollections = array_values(array_diff(array_keys($coreMap), $seededCollections));
 
         return new \WP_REST_Response([
-            'success'               => true,
-            'collections'           => [
-                'registered'        => $registeredCollections,
-                'core_known'        => array_keys($coreMap),
-                'seeded'            => $seededCollections,
-                'unseeded'          => $unseededCollections,
-                'needs_sync'        => !empty($unseededCollections),
-            ],
-            'block_types'           => [
-                'registered'        => array_values(array_unique($registeredBlockTypes)),
-                'seeded'            => $seededBlockTypes,
-                'unseeded'          => $unseededBlockTypes,
-                'needs_sync'        => !empty($unseededBlockTypes),
+            'success'     => true,
+            'collections' => [
+                'registered'  => $registeredCollections,
+                'core_known'  => array_keys($coreMap),
+                'seeded'      => $seededCollections,
+                'unseeded'    => $unseededCollections,
+                'needs_sync'  => !empty($unseededCollections),
             ],
         ], 200);
     }
@@ -149,22 +104,6 @@ class SyncRoute
         try {
             Plugin::getInstance()->seedCollections();
             return new \WP_REST_Response(['success' => true, 'message' => 'Core collections synced.'], 200);
-        } catch (\Throwable $e) {
-            return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * POST /sync/block-types
-     *
-     * Creates a toggle row for each currently-registered block type if one does
-     * not exist. Safe to call multiple times — uses firstOrCreate internally.
-     */
-    public function syncBlockTypes(\WP_REST_Request $request): \WP_REST_Response
-    {
-        try {
-            Plugin::getInstance()->seedBlockTypes();
-            return new \WP_REST_Response(['success' => true, 'message' => 'Block types synced.'], 200);
         } catch (\Throwable $e) {
             return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
         }
