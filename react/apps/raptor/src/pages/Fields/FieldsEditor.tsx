@@ -204,16 +204,33 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
     const reordered = arrayMove(fields, activeIndex, overIndex)
     reorderFields(reordered)
 
-    // Persist new sort_order for each field that moved
-    reordered.forEach((field, index) => {
-      if (field.sort_order !== index) {
-        void fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
-          method: 'PATCH',
-          headers: authHeaders(),
-          body: JSON.stringify({ sort_order: index }),
+    // Only PATCH the moved field using its new neighbours as bounds.
+    // If the midpoint would collide (e.g. all sort_orders are 0),
+    // renumber every field with 1000-step gaps instead.
+    const movedField = reordered[overIndex]
+    const prev = overIndex > 0 ? reordered[overIndex - 1] : null
+    const next = overIndex < reordered.length - 1 ? reordered[overIndex + 1] : null
+
+    let newSort: number
+    if (prev && next)   newSort = Math.floor((prev.sort_order + next.sort_order) / 2)
+    else if (prev)      newSort = prev.sort_order + 1000
+    else if (next)      newSort = Math.max(0, next.sort_order - 1000)
+    else                newSort = 1000
+
+    const collision = (prev && newSort <= prev.sort_order) || (next && newSort >= next.sort_order)
+    if (collision) {
+      reordered.forEach((f, idx) => {
+        void fetch(apiUrl(`gateway/v1/raptor/field/${f.id}`), {
+          method: 'PATCH', headers: authHeaders(),
+          body: JSON.stringify({ sort_order: (idx + 1) * 1000 }),
         })
-      }
-    })
+      })
+    } else {
+      void fetch(apiUrl(`gateway/v1/raptor/field/${movedField.id}`), {
+        method: 'PATCH', headers: authHeaders(),
+        body: JSON.stringify({ sort_order: newSort }),
+      })
+    }
   }
 
   return (
@@ -223,7 +240,10 @@ export function FieldsList({ setEditSurface }: { setEditSurface: (s: SurfaceStat
         <button
           className="disabled:opacity-50 cursor-pointer hover:text-zinc-300 transition-colors w-8 h-8 flex items-center justify-center rounded"
           disabled={addMutation.isPending || !fieldListId}
-          onClick={() => addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: fields.length })}
+          onClick={() => {
+            const maxSort = fields.length > 0 ? Math.max(...fields.map(f => f.sort_order)) : 0
+            addMutation.mutate({ name: `field_${fields.length}`, type: 'text', label: 'New Field', sort_order: maxSort + 1000 })
+          }}
         >
           <Plus size={20} strokeWidth={2} />
         </button>
