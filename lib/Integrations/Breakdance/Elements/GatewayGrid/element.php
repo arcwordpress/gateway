@@ -6,7 +6,7 @@ use function Breakdance\Elements\c;
 
 \Breakdance\ElementStudio\registerElementForEditing(
     'Gateway\\Integrations\\Breakdance\\Elements\\GatewayGrid',
-    \Breakdance\Util\getDirectoryPathRelativeToPluginFolder(__DIR__)
+    __DIR__
 );
 
 class GatewayGrid extends \Breakdance\Elements\Element

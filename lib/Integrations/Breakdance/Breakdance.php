@@ -2,8 +2,6 @@
 
 namespace Gateway\Integrations\Breakdance;
 
-use function Breakdance\Util\getDirectoryPathRelativeToPluginFolder;
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -18,7 +16,7 @@ class Breakdance
     public static function registerElements(): void
     {
         \Breakdance\ElementStudio\registerSaveLocation(
-            getDirectoryPathRelativeToPluginFolder(__DIR__) . '/Elements',
+            GATEWAY_PATH . 'lib/Integrations/Breakdance/Elements',
             'GatewayElements',
             'element',
             'Gateway',
