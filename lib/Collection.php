@@ -35,13 +35,6 @@ class Collection extends EloquentModel
     public $timestamps = true;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [];
-
-    /**
      * The table associated with the model.
      *
      * @var string
@@ -108,11 +101,6 @@ class Collection extends EloquentModel
             $this->table = $this->key;
         } elseif (!$this->table) {
             $this->table = $this->generateTableName();
-        }
-
-        // Set fillable from fields if not already set
-        if (empty($this->fillable) && !empty($this->getFields())) {
-            $this->fillable = array_keys($this->getFields());
         }
 
         // Set route if not configured
@@ -283,7 +271,7 @@ class Collection extends EloquentModel
         return $fields;
     }
 
-    public function getKey()
+    public function getCollectionKey(): string
     {
         if ($this->key) {
             return $this->key;

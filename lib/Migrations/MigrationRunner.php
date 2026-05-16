@@ -90,7 +90,7 @@ class MigrationRunner
      */
     private static function findMigrationClass(Collection $collection)
     {
-        $key = $collection->getKey();
+        $key = $collection->getCollectionKey();
 
         // Convert key to class name (same logic as MigrationGenerator)
         $className = str_replace(['-', '_'], ' ', $key);
@@ -148,7 +148,7 @@ class MigrationRunner
 
             return [
                 'success' => true,
-                'message' => "Successfully ran migration for '{$collection->getKey()}' using class '{$className}'",
+                'message' => "Successfully ran migration for '{$collection->getCollectionKey()}' using class '{$className}'",
                 'generated' => false,
                 'filePath' => null,
             ];
@@ -197,7 +197,7 @@ class MigrationRunner
 
                 return [
                     'success' => true,
-                    'message' => "Successfully generated and ran migration for '{$collection->getKey()}'",
+                    'message' => "Successfully generated and ran migration for '{$collection->getCollectionKey()}'",
                     'generated' => true,
                     'filePath' => $filePath,
                 ];

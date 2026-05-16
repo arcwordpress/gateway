@@ -151,7 +151,7 @@ class CollectionController extends Controller
                     continue;
                 }
 
-                if ($collection->getKey() === $key) {
+                if ($collection->getCollectionKey() === $key) {
                     return $this->respond(
                         $this->collectionToArray(
                             $collectionClass,
@@ -205,7 +205,7 @@ class CollectionController extends Controller
         array $dbManagedKeys = [],
         array $actualRoutes  = []
     ): array {
-        $key      = method_exists($collection, 'getKey')      ? $collection->getKey()      : null;
+        $key      = method_exists($collection, 'getCollectionKey')      ? $collection->getCollectionKey()      : null;
         $routeKey = method_exists($collection, 'getRoute')    ? $collection->getRoute()    : '';
 
         $casts = [];
@@ -270,7 +270,7 @@ class CollectionController extends Controller
                 $relationships[] = [
                     'name'       => $name,
                     'type'       => class_basename(get_class($rel)),
-                    'target_key' => method_exists($related, 'getKey') ? $related->getKey() : null,
+                    'target_key' => method_exists($related, 'getCollectionKey') ? $related->getCollectionKey() : null,
                 ];
             } catch (\Throwable $e) {
                 $relationships[] = [

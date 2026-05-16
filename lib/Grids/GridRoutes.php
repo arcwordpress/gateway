@@ -106,7 +106,7 @@ class GridRoutes
             'facets'       => $grid->getFacets(),
             'defaultSort'  => $grid->getDefaultSort(),
             'perPage'      => $grid->getPerPage(),
-            'collection'   => $collection ? $collection->getKey() : null,
+            'collection'   => $collection ? $collection->getCollectionKey() : null,
         ];
     }
 }

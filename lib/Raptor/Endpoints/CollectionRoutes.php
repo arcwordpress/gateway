@@ -148,7 +148,7 @@ class CollectionRoutes
 
         $raptorMap = [];
         if ($withNested) {
-            $keys = array_map(fn($col) => $col->getKey(), array_values($collections));
+            $keys = array_map(fn($col) => $col->getCollectionKey(), array_values($collections));
             try {
                 $raptorCollections = RaptorCollection::whereIn('collection_key', $keys)->get();
                 $raptorCollections->load('fieldList.fields');
@@ -161,7 +161,7 @@ class CollectionRoutes
         }
 
         $output = array_values(array_map(function (\Gateway\Collection $col) use ($raptorMap, $withNested) {
-            $key    = $col->getKey();
+            $key    = $col->getCollectionKey();
             $raptor = $raptorMap[$key] ?? null;
 
             $arr = [
@@ -490,9 +490,9 @@ class CollectionRoutes
 
         foreach ($collections as $col) {
             try {
-                $counts[$col->getKey()] = (int) $db->table($col->getTable())->count();
+                $counts[$col->getCollectionKey()] = (int) $db->table($col->getTable())->count();
             } catch (\Throwable $e) {
-                $counts[$col->getKey()] = null;
+                $counts[$col->getCollectionKey()] = null;
             }
         }
 
