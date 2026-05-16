@@ -24,38 +24,24 @@ if (empty($collection)) {
 }
 
 // ---------------------------------------------------------------------------
-// Enqueue the compiled grid app
+// Enqueue the Preact grid bundle (no WordPress React dependencies)
 // ---------------------------------------------------------------------------
 
-$build_path = GATEWAY_PATH . 'react/apps/grid/build/';
-$build_url  = GATEWAY_URL  . 'react/apps/grid/build/';
-$asset_file = $build_path . 'index.asset.php';
-$asset      = file_exists($asset_file)
-    ? require $asset_file
-    : ['dependencies' => [], 'version' => GATEWAY_VERSION];
+$script_path = GATEWAY_PATH . 'js/breakdance-grid/build/index.js';
+$script_url  = GATEWAY_URL  . 'js/breakdance-grid/build/index.js';
+$version     = file_exists($script_path) ? md5_file($script_path) : GATEWAY_VERSION;
 
-if (!wp_script_is('gateway-grid-app', 'registered')) {
-    wp_register_script(
-        'gateway-grid-app',
-        $build_url . 'index.js',
-        $asset['dependencies'],
-        $asset['version'],
-        true
-    );
-}
-wp_enqueue_script('gateway-grid-app');
+if (!wp_script_is('gateway-bd-grid', 'registered')) {
+    wp_register_script('gateway-bd-grid', $script_url, [], $version, true);
 
-foreach (['style-index.css' => 'gateway-grid-app-style', 'index.css' => 'gateway-grid-app'] as $file => $handle) {
-    if (file_exists($build_path . $file) && !wp_style_is($handle, 'registered')) {
-        wp_register_style($handle, $build_url . $file, [], $asset['version']);
-    }
-    if (wp_style_is($handle, 'registered')) {
-        wp_enqueue_style($handle);
-    }
+    wp_localize_script('gateway-bd-grid', 'gatewayBd', [
+        'apiRoot' => esc_url_raw(rest_url()),
+    ]);
 }
+wp_enqueue_script('gateway-bd-grid');
 
 // ---------------------------------------------------------------------------
-// Render the mount point — [data-gateway-grid] targets AppGrid in index.js
+// Render the mount point
 // ---------------------------------------------------------------------------
 
 $config = wp_json_encode([
