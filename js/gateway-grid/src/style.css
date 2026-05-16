@@ -163,6 +163,46 @@
   padding:      .25rem .5rem;
 }
 
+.gbd-facets__item--compound {
+  align-items: center;
+  flex-wrap:   wrap;
+  gap:         .4rem;
+}
+
+.gbd-facets__pair {
+  display:     flex;
+  align-items: center;
+  gap:         .25rem;
+}
+
+.gbd-facets__sep {
+  color:     var(--gbd-text-muted);
+  font-size: .75rem;
+}
+
+.gbd-facets__input--narrow {
+  width: 5rem;
+}
+
+.gbd-facets__input--date {
+  width: 8.5rem;
+}
+
+.gbd-facets__label--checkbox {
+  display:     flex;
+  align-items: center;
+  gap:         .35rem;
+  cursor:      pointer;
+  user-select: none;
+}
+
+.gbd-facets__checkbox {
+  accent-color: var(--gbd-border);
+  cursor:       pointer;
+  width:        1rem;
+  height:       1rem;
+}
+
 /* ── Footer ──────────────────────────────────────────────── */
 
 .gbd-footer {
