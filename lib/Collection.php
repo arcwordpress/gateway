@@ -62,7 +62,7 @@ class Collection extends EloquentModel
     /**
      * Whether this collection is a core plugin-internal collection.
      * Set by the plugin itself on structural collections (e.g. WP core tables,
-     * BlockTypeUser, CollectionUser). Excluded from generic listings by default.
+     * CollectionUser). Excluded from generic listings by default.
      * Plugin consumers should use $private instead.
      *
      * @var bool
