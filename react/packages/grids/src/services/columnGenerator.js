@@ -65,7 +65,7 @@ export const generateColumns = (collection) => {
       header: colDef.label || colDef.field,
       enableSorting: colDef.sortable !== false, // Default to true unless explicitly false
       enableColumnFilter: true,
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
         const value = getValue();
         // Handle null/undefined values
         if (value === null || value === undefined) return '-';
@@ -88,7 +88,12 @@ export const generateColumns = (collection) => {
           const displayType = fieldConfig.type;
           const DisplayComponent = getFieldTypeDisplay(displayType);
           const fieldRelConfig = fieldConfig[displayType] || {};
-          return DisplayComponent ? <DisplayComponent value={value} config={fieldRelConfig} /> : String(value);
+          // Prefer the embedded related object from ?relations=true
+          // e.g., for column 'listing_type_id', check row.original['listing_type']
+          const relationObjKey = colDef.field.endsWith('_id') ? colDef.field.slice(0, -3) : colDef.field;
+          const relatedObj = row.original[relationObjKey];
+          const displayValue = relatedObj && typeof relatedObj === 'object' ? relatedObj : value;
+          return DisplayComponent ? <DisplayComponent value={displayValue} config={fieldRelConfig} /> : String(value);
         }
 
         // Handle objects and arrays
@@ -124,7 +129,7 @@ export const generateColumns = (collection) => {
       header: field.label || key,
       enableSorting: true,
       enableColumnFilter: true,
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
         const value = getValue();
         if (value === null || value === undefined) return '-';
 
@@ -133,7 +138,12 @@ export const generateColumns = (collection) => {
           const displayType = field.type;
           const DisplayComponent = getFieldTypeDisplay(displayType);
           const fieldRelConfig = field[displayType] || {};
-          return DisplayComponent ? <DisplayComponent value={value} config={fieldRelConfig} /> : String(value);
+          // Prefer the embedded related object from ?relations=true
+          // e.g., for key 'listing_type_id', check row.original['listing_type']
+          const relationObjKey = key.endsWith('_id') ? key.slice(0, -3) : key;
+          const relatedObj = row.original[relationObjKey];
+          const displayValue = relatedObj && typeof relatedObj === 'object' ? relatedObj : value;
+          return DisplayComponent ? <DisplayComponent value={displayValue} config={fieldRelConfig} /> : String(value);
         }
 
         // Smart detection: if value is an object with 'id' and common label fields,
