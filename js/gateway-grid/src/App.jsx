@@ -23,13 +23,14 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage }) => {
         const meta = await metaRes.json();
         setCollection(meta);
 
-        // 2. Fetch records using the collection's route
-        const namespace = meta.routes?.namespace || 'gateway';
-        const version   = meta.routes?.version   || 'v1';
-        const route     = meta.routes?.route      || collectionKey;
-        const endpoint  = `${apiRoot}${namespace}/${version}/${route}`;
+        // 2. Resolve the get_many route from the routes array in the collection metadata
+        const getManyRoute = Array.isArray(meta.routes)
+          ? meta.routes.find(r => r.type === 'get_many')
+          : null;
 
-        const url = new URL(endpoint, window.location.origin);
+        if (!getManyRoute) throw new Error(`No get_many route found for collection: ${collectionKey}`);
+
+        const url = new URL(`${apiRoot}${getManyRoute.route}`, window.location.origin);
         url.searchParams.set('relations', 'true');
         url.searchParams.set('per_page', String(perPage));
 
