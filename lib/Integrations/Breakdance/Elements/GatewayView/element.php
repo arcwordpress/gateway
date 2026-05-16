@@ -8,11 +8,6 @@ if (!defined('ABSPATH')) {
 
 use function Breakdance\Elements\c;
 
-\Breakdance\ElementStudio\registerElementForEditing(
-    'Gateway\\Integrations\\Breakdance\\Elements\\GatewayView',
-    \Breakdance\Util\getDirectoryPathRelativeToPluginFolder(__DIR__)
-);
-
 class GatewayView extends \Breakdance\Elements\Element
 {
     public static function uiIcon(): string

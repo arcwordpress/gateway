@@ -23,12 +23,34 @@ class Breakdance
             }
         }, true, true);
 
-        add_action('breakdance_loaded', function () {
-            if (!function_exists('\Breakdance\ElementStudio\registerElementForEditing')) {
-                return;
-            }
+        add_action('breakdance_loaded', [__CLASS__, 'registerElements'], 9);
+    }
 
-            require_once __DIR__ . '/Elements/GatewayView/element.php';
-        }, 9);
+    public static function registerElements(): void
+    {
+        require_once __DIR__ . '/Elements/GatewayView/element.php';
+
+        $elementClass = 'Gateway\\Integrations\\Breakdance\\Elements\\GatewayView';
+        $elementDir   = __DIR__ . '/Elements/GatewayView';
+
+        // Register the category so elements appear under "Gateway" in the panel.
+        if (function_exists('\\Breakdance\\Elements\\addElementCategory')) {
+            \Breakdance\Elements\addElementCategory('gateway', 'Gateway', 'dashicons-database');
+        }
+
+        // Primary registration path used by third-party plugins.
+        if (function_exists('\\Breakdance\\Elements\\registerElement')) {
+            \Breakdance\Elements\registerElement($elementClass, $elementDir);
+            return;
+        }
+
+        // Fallback: some Breakdance versions use only registerElementForEditing
+        // as the single registration call.
+        if (function_exists('\\Breakdance\\ElementStudio\\registerElementForEditing')) {
+            \Breakdance\ElementStudio\registerElementForEditing(
+                $elementClass,
+                \Breakdance\Util\getDirectoryPathRelativeToPluginFolder($elementDir)
+            );
+        }
     }
 }
