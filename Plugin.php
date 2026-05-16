@@ -135,7 +135,6 @@ class Plugin
         Render\Render::init();
         Grids\Shortcode::init();
         Raptor\ViewRenderer::init();
-        Filters\Render::init();
         Gutenberg\BlockRegistry::init();
         Integrations\Breakdance\Breakdance::init();
         $this->patternRegistry->init();
