@@ -99,23 +99,31 @@ class Grid extends \Elementor\Widget_Base
 
     private function enqueuePreact(): void
     {
-        $script_path = GATEWAY_PATH . 'js/gateway-grid/build/index.js';
-        $script_url  = GATEWAY_URL  . 'js/gateway-grid/build/index.js';
+        $build    = GATEWAY_PATH . 'js/gateway-grid/build/';
+        $buildUrl = GATEWAY_URL  . 'js/gateway-grid/build/';
 
-        if (!file_exists($script_path)) {
+        $scriptPath = $build . 'index.js';
+        $cssPath    = $build . 'index.css';
+
+        if (!file_exists($scriptPath)) {
             return;
         }
 
-        $version = md5_file($script_path);
+        $version = md5_file($scriptPath);
 
         if (!wp_script_is('gateway-grid', 'registered')) {
-            wp_register_script('gateway-grid', $script_url, [], $version, true);
+            wp_register_script('gateway-grid', $buildUrl . 'index.js', [], $version, true);
             wp_localize_script('gateway-grid', 'gatewayBd', [
                 'apiRoot' => esc_url_raw(rest_url()),
             ]);
         }
 
+        if (file_exists($cssPath) && !wp_style_is('gateway-grid', 'registered')) {
+            wp_register_style('gateway-grid', $buildUrl . 'index.css', [], $version);
+        }
+
         wp_enqueue_script('gateway-grid');
+        wp_enqueue_style('gateway-grid');
     }
 
     private function getCollectionOptions(): array

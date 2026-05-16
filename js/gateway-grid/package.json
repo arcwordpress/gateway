@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "esbuild src/index.jsx --bundle --outfile=build/index.js --minify --jsx-factory=h --jsx-fragment=Fragment --define:process.env.NODE_ENV='\"production\"'",
-    "dev": "esbuild src/index.jsx --bundle --outfile=build/index.js --sourcemap --watch --jsx-factory=h --jsx-fragment=Fragment --define:process.env.NODE_ENV='\"development\"'"
+    "build": "esbuild src/index.jsx --bundle --outdir=build --minify --jsx-factory=h --jsx-fragment=Fragment --define:process.env.NODE_ENV='\"production\"'",
+    "dev": "esbuild src/index.jsx --bundle --outdir=build --sourcemap --watch --jsx-factory=h --jsx-fragment=Fragment --define:process.env.NODE_ENV='\"development\"'"
   },
   "dependencies": {
+    "lucide-preact": "^1.16.0",
     "preact": "^10.0.0"
   },
   "devDependencies": {

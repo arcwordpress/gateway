@@ -11,6 +11,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
   const [error, setError] = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage, setPerPage] = useState(initialPerPage);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -19,13 +20,11 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
       setLoading(true);
       setError(null);
       try {
-        // 1. Fetch collection metadata
         const metaRes = await fetch(`${apiRoot}gateway/v1/collections/${collectionKey}`);
         if (!metaRes.ok) throw new Error(`Collection not found: ${collectionKey}`);
         const meta = await metaRes.json();
         setCollection(meta);
 
-        // 2. Resolve the get_many route from the routes array in the collection metadata
         const getManyRoute = Array.isArray(meta.routes)
           ? meta.routes.find(r => r.type === 'get_many')
           : null;
@@ -39,10 +38,10 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
         const recRes = await fetch(url.toString());
         if (!recRes.ok) throw new Error(`Failed to fetch records`);
         const data = await recRes.json();
-        const rows = Array.isArray(data)             ? data
-          : Array.isArray(data?.data?.items)         ? data.data.items
-          : Array.isArray(data?.data)                ? data.data
-          : Array.isArray(data?.items)               ? data.items
+        const rows = Array.isArray(data)              ? data
+          : Array.isArray(data?.data?.items)          ? data.data.items
+          : Array.isArray(data?.data)                 ? data.data
+          : Array.isArray(data?.items)                ? data.items
           : [];
         setRecords(rows);
       } catch (err) {
@@ -55,16 +54,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
     load();
   }, [collectionKey, apiRoot, perPage]);
 
-  const handleFacetChange = (field, value) => {
-    setFacetValues((prev) => ({ ...prev, [field]: value }));
-  };
-
   if (loading) {
-    return <div class="gbd-grid__loading">Loading…</div>;
+    return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
   }
 
   if (error) {
-    return <div class="gbd-grid__error">Error: {error}</div>;
+    return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
   }
 
   if (!collection) return null;
@@ -73,31 +68,31 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
   const facets = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets = showFilters && facets.length > 0;
 
-  // Client-side facet filtering
   const filtered = records.filter((record) => {
     for (const [field, value] of Object.entries(facetValues)) {
       if (!value) continue;
-      const recordVal = String(record[field] ?? '');
-      if (!recordVal.toLowerCase().includes(String(value).toLowerCase())) return false;
+      if (!String(record[field] ?? '').toLowerCase().includes(String(value).toLowerCase())) return false;
     }
     return true;
   });
 
+  const rootClass = `gbd-grid${dark ? ' gbd-grid--dark' : ''}`;
+
   return (
-    <div class="gbd-grid">
+    <div class={rootClass}>
+      <div class="gbd-toolbar">
+        <button class="gbd-toolbar__toggle" onClick={() => setDark(d => !d)}>
+          {dark ? '☀ Light' : '☾ Dark'}
+        </button>
+      </div>
+
       {hasFacets && (
-        <Facets
-          facets={facets}
-          values={facetValues}
-          onChange={handleFacetChange}
-        />
+        <Facets facets={facets} values={facetValues} onChange={(f, v) => setFacetValues(p => ({ ...p, [f]: v }))} />
       )}
+
       <Grid collection={collection} records={filtered} />
-      <Footer
-        totalRows={filtered.length}
-        perPage={perPage}
-        onPerPageChange={setPerPage}
-      />
+
+      <Footer totalRows={filtered.length} perPage={perPage} onPerPageChange={setPerPage} />
     </div>
   );
 };
