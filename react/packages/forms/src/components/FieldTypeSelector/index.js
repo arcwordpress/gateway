@@ -1,8 +1,23 @@
 import React from 'react';
 import ReactSelect from 'react-select';
 
-// All styles are inline via the `styles` prop so WordPress admin CSS cannot
-// override them. `unstyled` removes emotion-generated class styles entirely.
+// Scoped CSS to force the inner <input> colour regardless of WordPress admin CSS.
+// styles.input in react-select v5 targets the wrapper div, not the <input> itself.
+const SCOPE_CLASS = 'gw-fts-root';
+const SCOPED_CSS = `
+  .${SCOPE_CLASS} input {
+    color: #f4f4f5 !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.875rem !important;
+    width: auto !important;
+  }
+`;
+
 const darkStyles = {
   container: () => ({
     position: 'relative',
@@ -31,7 +46,6 @@ const darkStyles = {
     alignItems: 'center',
     padding: '2px 0',
     overflow: 'hidden',
-    position: 'relative',
   }),
   singleValue: (_, { selectProps }) => ({
     gridArea: '1/1/2/3',
@@ -48,7 +62,7 @@ const darkStyles = {
     color: '#71717a',
     fontSize: '0.875rem',
   }),
-  // styles.input targets the wrapper div in react-select v5
+  // Targets the input wrapper div; the inner <input> is handled by SCOPED_CSS
   input: () => ({
     display: 'inline-grid',
     gridArea: '1/1/2/3',
@@ -143,18 +157,21 @@ export function FieldTypeSelector({
   const selected = normalised.find((o) => o.value === value) ?? null;
 
   return (
-    <ReactSelect
-      unstyled
-      value={selected}
-      onChange={(opt) => opt && onChange(opt.value)}
-      options={normalised}
-      isLoading={isLoading}
-      isDisabled={isDisabled}
-      isSearchable
-      placeholder={placeholder}
-      styles={darkStyles}
-      noOptionsMessage={() => 'No match'}
-    />
+    <div className={SCOPE_CLASS}>
+      <style>{SCOPED_CSS}</style>
+      <ReactSelect
+        unstyled
+        value={selected}
+        onChange={(opt) => opt && onChange(opt.value)}
+        options={normalised}
+        isLoading={isLoading}
+        isDisabled={isDisabled}
+        isSearchable
+        placeholder={placeholder}
+        styles={darkStyles}
+        noOptionsMessage={() => 'No match'}
+      />
+    </div>
   );
 }
 
