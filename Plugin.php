@@ -142,12 +142,6 @@ class Plugin
 
         add_action('gateway_loaded', [Collections\CoreCollections::class, 'register']);
 
-        /*
-         * Refactor: gateway_register fires at the same moment as gateway_loaded —
-         * it was intended to run earlier so packages/extensions could register before
-         * gateway_loaded fires. Keeping for back-compat; revisit hook ordering.
-         */
-        do_action('gateway_register');
         do_action('gateway_loaded');
     }
 
