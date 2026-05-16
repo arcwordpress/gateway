@@ -4,7 +4,8 @@ const getLabelField = (collection) => {
   if (collection?.displayField && collection.displayField !== 'id') {
     return collection.displayField;
   }
-  if (collection?.grid?.labelField) return collection.grid.labelField;
+  const grid = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
+  if (grid?.labelField) return grid.labelField;
 
   const fields = collection?.fields;
   const candidates = ['title', 'name', 'label'];
@@ -42,11 +43,12 @@ const getCellValue = (record, key, fields) => {
 const Grid = ({ collection, records }) => {
   const fields = collection?.fields || {};
   const labelField = getLabelField(collection);
+  const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
 
-  // Determine columns: explicit grid.columns, else first 5 non-id fields
+  // Determine columns: explicit grid.columns, else first 3 non-id fields
   let columns;
-  if (collection?.grid?.columns?.length) {
-    columns = collection.grid.columns.map((c) => ({
+  if (gridConfig?.columns?.length) {
+    columns = gridConfig.columns.map((c) => ({
       key: c.field,
       label: c.label || c.field,
     }));

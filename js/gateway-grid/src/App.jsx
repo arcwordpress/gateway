@@ -37,7 +37,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage }) => {
         const recRes = await fetch(url.toString());
         if (!recRes.ok) throw new Error(`Failed to fetch records`);
         const data = await recRes.json();
-        setRecords(Array.isArray(data) ? data : (data.data || []));
+        const rows = Array.isArray(data)             ? data
+          : Array.isArray(data?.data?.items)         ? data.data.items
+          : Array.isArray(data?.data)                ? data.data
+          : Array.isArray(data?.items)               ? data.items
+          : [];
+        setRecords(rows);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -62,7 +67,8 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage }) => {
 
   if (!collection) return null;
 
-  const facets = collection?.grid?.facets || [];
+  const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
+  const facets = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets = showFilters && facets.length > 0;
 
   // Client-side facet filtering
