@@ -1,4 +1,17 @@
 import { h } from 'preact';
+import TextFacet      from './facets/TextFacet';
+import SelectFacet    from './facets/SelectFacet';
+import CheckboxFacet  from './facets/CheckboxFacet';
+import RangeFacet     from './facets/RangeFacet';
+import DateRangeFacet from './facets/DateRangeFacet';
+
+const TYPE_MAP = {
+  text:       TextFacet,
+  select:     SelectFacet,
+  checkbox:   CheckboxFacet,
+  range:      RangeFacet,
+  date_range: DateRangeFacet,
+};
 
 const Facets = ({ facets, values, onChange }) => {
   if (!facets || facets.length === 0) return null;
@@ -6,44 +19,23 @@ const Facets = ({ facets, values, onChange }) => {
   return (
     <div class="gbd-facets">
       {facets.map((facet) => {
-        const field = facet.field || facet.key;
-        const label = facet.label || field;
-        const type  = facet.type || 'text';
+        // PHP uses field_name / facet_type; manual definitions may use field / type
+        const field   = facet.field_name || facet.field || facet.key;
+        const label   = facet.label || field;
+        const type    = facet.facet_type || facet.type || 'text';
+        const options = facet.config?.options ?? facet.options;
 
-        if (type === 'select' && facet.options?.length) {
-          return (
-            <div key={field} class="gbd-facets__item">
-              <label class="gbd-facets__label" for={`gbd-facet-${field}`}>{label}</label>
-              <select
-                id={`gbd-facet-${field}`}
-                class="gbd-facets__select"
-                value={values[field] || ''}
-                onChange={(e) => onChange(field, e.target.value)}
-              >
-                <option value="">All</option>
-                {facet.options.map((opt) => {
-                  const val   = typeof opt === 'object' ? opt.value : opt;
-                  const oLabel = typeof opt === 'object' ? opt.label : opt;
-                  return <option key={val} value={val}>{oLabel}</option>;
-                })}
-              </select>
-            </div>
-          );
-        }
+        const Component = TYPE_MAP[type] ?? TextFacet;
 
-        // Default: text search
         return (
-          <div key={field} class="gbd-facets__item">
-            <label class="gbd-facets__label" for={`gbd-facet-${field}`}>{label}</label>
-            <input
-              id={`gbd-facet-${field}`}
-              class="gbd-facets__input"
-              type="text"
-              placeholder={`Filter by ${label}…`}
-              value={values[field] || ''}
-              onInput={(e) => onChange(field, e.target.value)}
-            />
-          </div>
+          <Component
+            key={field}
+            field={field}
+            label={label}
+            value={values?.[field]}
+            options={options}
+            onChange={onChange}
+          />
         );
       })}
     </div>
