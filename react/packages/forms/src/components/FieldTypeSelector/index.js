@@ -1,112 +1,48 @@
-import React from 'react';
-import ReactSelect from 'react-select';
+import React, { useState, useRef, useEffect } from 'react';
 
-// Scoped CSS resets WordPress admin styles on the inner <input>.
-// styles.input in react-select v5 targets the wrapper div, not the <input> itself,
-// so the only reliable way to reach it is via a CSS rule with !important.
-const SCOPE_CLASS = 'gw-fts-root';
-const SCOPED_CSS = `
-  .${SCOPE_CLASS} input {
-    color: #f4f4f5 !important;
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: 0.875rem !important;
-    width: auto !important;
-  }
-`;
-
-const darkStyles = {
-  container: () => ({
+const S = {
+  wrap: {
     position: 'relative',
     width: '100%',
     boxSizing: 'border-box',
-  }),
-  control: (_, state) => ({
+    fontFamily: 'inherit',
+  },
+  control: (open) => ({
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
     width: '100%',
     minHeight: '38px',
     padding: '0 8px',
     backgroundColor: '#18181b',
-    border: `1px solid ${state.isFocused ? '#71717a' : '#27272a'}`,
+    border: `1px solid ${open ? '#71717a' : '#27272a'}`,
     borderRadius: '0.5rem',
-    boxShadow: state.isFocused ? '0 0 0 1px #71717a' : 'none',
-    cursor: 'default',
+    boxShadow: open ? '0 0 0 1px #71717a' : 'none',
     boxSizing: 'border-box',
+    cursor: 'default',
     outline: 'none',
+    userSelect: 'none',
   }),
-  // valueContainer is position:relative so singleValue/placeholder can be
-  // overlaid absolutely. The input wrapper sits in the normal flex flow and
-  // is always zero-width until the user types.
-  valueContainer: () => ({
-    display: 'flex',
+  label: {
     flex: 1,
-    alignItems: 'center',
-    padding: '2px 0',
-    overflow: 'hidden',
-    position: 'relative',
-    minHeight: '22px',
-  }),
-  // Overlaid on top of the input; hidden while the user is typing so typed
-  // text is visible.
-  singleValue: (_, { selectProps }) => ({
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    display: selectProps.inputValue ? 'none' : 'block',
+    fontSize: '0.875rem',
     color: '#f4f4f5',
-    fontSize: '0.875rem',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-  }),
-  placeholder: (_, { selectProps }) => ({
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    display: selectProps.inputValue ? 'none' : 'block',
+  },
+  placeholder: {
+    flex: 1,
+    fontSize: '0.875rem',
     color: '#71717a',
-    fontSize: '0.875rem',
-    pointerEvents: 'none',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  }),
-  // styles.input targets the wrapper div around the <input> in react-select v5.
-  // Keep it minimal — the inner <input> is styled via SCOPED_CSS.
-  input: () => ({
-    flex: '1 1 auto',
-    overflow: 'hidden',
-    margin: 0,
-    padding: 0,
-  }),
-  indicatorsContainer: () => ({
-    display: 'flex',
-    alignItems: 'center',
+  },
+  arrow: {
     flexShrink: 0,
-  }),
-  indicatorSeparator: () => ({ display: 'none' }),
-  dropdownIndicator: () => ({
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 4px',
+    marginLeft: '6px',
     color: '#71717a',
-  }),
-  loadingIndicator: () => ({
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 4px',
-    color: '#71717a',
-  }),
-  menu: () => ({
+    fontSize: '11px',
+    lineHeight: 1,
+  },
+  menu: {
     position: 'absolute',
     top: 'calc(100% + 4px)',
     left: 0,
@@ -117,41 +53,55 @@ const darkStyles = {
     boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
     zIndex: 9999,
     overflow: 'hidden',
-  }),
-  menuList: () => ({
-    maxHeight: '220px',
+  },
+  searchWrap: {
+    padding: '6px 8px',
+    borderBottom: '1px solid #27272a',
+  },
+  searchInput: {
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+    backgroundColor: '#27272a',
+    border: '1px solid #3f3f46',
+    borderRadius: '0.375rem',
+    color: '#f4f4f5',
+    fontSize: '0.875rem',
+    padding: '4px 8px',
+    outline: 'none',
+  },
+  list: {
+    maxHeight: '200px',
     overflowY: 'auto',
     padding: '4px 0',
-  }),
-  option: (_, { isFocused, isSelected }) => ({
+  },
+  option: (focused, selected) => ({
     padding: '6px 12px',
     fontSize: '0.875rem',
     cursor: 'pointer',
-    backgroundColor: isSelected ? '#3f3f46' : isFocused ? '#27272a' : 'transparent',
-    color: isSelected ? '#fff' : '#d4d4d8',
+    backgroundColor: selected ? '#3f3f46' : focused ? '#27272a' : 'transparent',
+    color: selected ? '#fff' : '#d4d4d8',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   }),
-  noOptionsMessage: () => ({
+  empty: {
     padding: '8px 12px',
-    color: '#71717a',
     fontSize: '0.875rem',
-  }),
-  loadingMessage: () => ({
-    padding: '8px 12px',
     color: '#71717a',
-    fontSize: '0.875rem',
-  }),
+  },
 };
 
 /**
- * Searchable field-type selector built on react-select.
+ * Searchable field-type selector (custom, no external UI library).
  *
  * Props:
- *   value        – current type string (e.g. "text", "relation")
- *   onChange     – (typeString) => void
- *   options      – FieldTypeDef[] ({ type, label? }) or plain { value, label }[]
- *   isLoading    – show loading state while types are being fetched
- *   isDisabled   – disable the control
- *   placeholder  – placeholder text
+ *   value       – current type string (e.g. "text", "relation")
+ *   onChange    – (typeString) => void
+ *   options     – FieldTypeDef[] ({ type, label? }) or plain { value, label }[]
+ *   isLoading   – show loading placeholder while types are being fetched
+ *   isDisabled  – disable the control
+ *   placeholder – placeholder text
  */
 export function FieldTypeSelector({
   value,
@@ -161,6 +111,13 @@ export function FieldTypeSelector({
   isDisabled = false,
   placeholder = 'Select type…',
 }) {
+  const [open, setOpen]           = useState(false);
+  const [query, setQuery]         = useState('');
+  const [focusedIdx, setFocusedIdx] = useState(0);
+  const wrapRef   = useRef(null);
+  const searchRef = useRef(null);
+  const listRef   = useRef(null);
+
   const normalised = options
     .map((o) => ({
       value: o.value ?? o.type,
@@ -168,23 +125,109 @@ export function FieldTypeSelector({
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
+  const filtered = query
+    ? normalised.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
+    : normalised;
+
   const selected = normalised.find((o) => o.value === value) ?? null;
 
+  // Focus search input when menu opens
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => searchRef.current?.focus(), 0);
+      setFocusedIdx(selected ? Math.max(0, filtered.findIndex((o) => o.value === value)) : 0);
+    } else {
+      setQuery('');
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset focused index when search query changes
+  useEffect(() => { setFocusedIdx(0); }, [query]);
+
+  // Scroll focused option into view
+  useEffect(() => {
+    if (!open) return;
+    listRef.current?.children[focusedIdx]?.scrollIntoView({ block: 'nearest' });
+  }, [focusedIdx, open]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (e.key === 'Escape')    { setOpen(false); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setFocusedIdx((i) => Math.min(i + 1, filtered.length - 1)); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); setFocusedIdx((i) => Math.max(i - 1, 0)); }
+      if (e.key === 'Enter')     { e.preventDefault(); const o = filtered[focusedIdx]; if (o) pick(o); }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, filtered, focusedIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pick = (opt) => { onChange(opt.value); setOpen(false); };
+
+  const openMenu = () => { if (!isDisabled && !isLoading) setOpen(true); };
+
+  const displayLabel = isLoading ? 'Loading…' : (selected?.label ?? null);
+
   return (
-    <div className={SCOPE_CLASS}>
-      <style>{SCOPED_CSS}</style>
-      <ReactSelect
-        unstyled
-        value={selected}
-        onChange={(opt) => opt && onChange(opt.value)}
-        options={normalised}
-        isLoading={isLoading}
-        isDisabled={isDisabled}
-        isSearchable
-        placeholder={placeholder}
-        styles={darkStyles}
-        noOptionsMessage={() => 'No match'}
-      />
+    <div ref={wrapRef} style={S.wrap}>
+      {/* Control — clicking opens the menu */}
+      <div
+        style={S.control(open)}
+        onClick={openMenu}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMenu(); } }}
+        tabIndex={isDisabled ? -1 : 0}
+        role="combobox"
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span style={displayLabel ? S.label : S.placeholder}>
+          {displayLabel ?? placeholder}
+        </span>
+        <span style={S.arrow} aria-hidden="true">{open ? '▲' : '▼'}</span>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div style={S.menu} role="listbox">
+          <div style={S.searchWrap}>
+            <input
+              ref={searchRef}
+              style={S.searchInput}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search…"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div ref={listRef} style={S.list}>
+            {filtered.length === 0
+              ? <div style={S.empty}>No match</div>
+              : filtered.map((opt, i) => (
+                <div
+                  key={opt.value}
+                  style={S.option(i === focusedIdx, opt.value === value)}
+                  onMouseDown={() => pick(opt)}
+                  onMouseEnter={() => setFocusedIdx(i)}
+                  role="option"
+                  aria-selected={opt.value === value}
+                >
+                  {opt.label}
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      )}
     </div>
   );
 }
