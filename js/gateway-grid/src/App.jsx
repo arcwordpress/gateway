@@ -4,14 +4,13 @@ import Grid from './Grid';
 import Facets from './Facets';
 import Footer from './Footer';
 
-const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) => {
+const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme }) => {
   const [collection, setCollection] = useState(null);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage, setPerPage] = useState(initialPerPage);
-  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -76,16 +75,10 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage }) =
     return true;
   });
 
-  const rootClass = `gbd-grid${dark ? ' gbd-grid--dark' : ''}`;
+  const rootClass = `gbd-grid${colorScheme === 'dark' ? ' gbd-grid--dark' : ''}`;
 
   return (
     <div class={rootClass}>
-      <div class="gbd-toolbar">
-        <button class="gbd-toolbar__toggle" onClick={() => setDark(d => !d)}>
-          {dark ? '☀ Light' : '☾ Dark'}
-        </button>
-      </div>
-
       {hasFacets && (
         <Facets facets={facets} values={facetValues} onChange={(f, v) => setFacetValues(p => ({ ...p, [f]: v }))} />
       )}

@@ -66,6 +66,23 @@ class Grid extends \Elementor\Widget_Base
         ]);
 
         $this->end_controls_section();
+
+        $this->start_controls_section('style_section', [
+            'label' => 'Style',
+            'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+        ]);
+
+        $this->add_control('color_scheme', [
+            'label'   => 'Color Scheme',
+            'type'    => \Elementor\Controls_Manager::SELECT,
+            'options' => [
+                'light' => 'Light',
+                'dark'  => 'Dark',
+            ],
+            'default' => 'light',
+        ]);
+
+        $this->end_controls_section();
     }
 
     protected function render(): void
@@ -74,6 +91,9 @@ class Grid extends \Elementor\Widget_Base
         $collection_key = sanitize_text_field($settings['collection'] ?? '');
         $show_filters   = ($settings['show_filters'] ?? 'yes') === 'yes';
         $per_page       = max(1, (int) ($settings['per_page'] ?? 20));
+        $color_scheme   = in_array($settings['color_scheme'] ?? 'light', ['light', 'dark'], true)
+                            ? $settings['color_scheme']
+                            : 'light';
 
         if (empty($collection_key)) {
             if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
@@ -86,8 +106,9 @@ class Grid extends \Elementor\Widget_Base
         $this->enqueuePreact();
 
         $config = wp_json_encode([
-            'showFilters' => $show_filters,
-            'perPage'     => $per_page,
+            'showFilters'  => $show_filters,
+            'perPage'      => $per_page,
+            'colorScheme'  => $color_scheme,
         ]);
 
         echo '<div'

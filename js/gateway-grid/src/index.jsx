@@ -17,6 +17,7 @@ function mountElement(el) {
       apiRoot={apiRoot}
       showFilters={config.showFilters !== false}
       perPage={config.perPage || 20}
+      colorScheme={config.colorScheme === 'dark' ? 'dark' : 'light'}
     />,
     el
   );
