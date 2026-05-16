@@ -98,17 +98,21 @@ export function FieldTypeSelector({
   const selected = normalised.find((o) => o.value === value) ?? null;
 
   return (
-    <ReactSelect
-      value={selected}
-      onChange={(opt) => opt && onChange(opt.value)}
-      options={normalised}
-      isLoading={isLoading}
-      isDisabled={isDisabled}
-      isSearchable
-      placeholder={placeholder}
-      styles={darkStyles}
-      noOptionsMessage={() => 'No match'}
-    />
+    <>
+      <style>{`.gw-fts__input input{outline:0;border:0;box-shadow:none;}`}</style>
+      <ReactSelect
+        value={selected}
+        onChange={(opt) => opt && onChange(opt.value)}
+        options={normalised}
+        isLoading={isLoading}
+        isDisabled={isDisabled}
+        isSearchable
+        placeholder={placeholder}
+        styles={darkStyles}
+        classNamePrefix="gw-fts"
+        noOptionsMessage={() => 'No match'}
+      />
+    </>
   );
 }
 

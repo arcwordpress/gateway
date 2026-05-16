@@ -140,8 +140,6 @@ class Plugin
         $this->patternRegistry->init();
         AppTemplate::init();
 
-        add_action('gateway_loaded', [Collections\CoreCollections::class, 'register']);
-
         do_action('gateway_loaded');
     }
 
