@@ -4,7 +4,7 @@ import ReactSelect from 'react-select';
 const darkStyles = {
   control: (base, state) => ({
     ...base,
-    backgroundColor: '#18181b',
+    backgroundColor: 'var(--gty-offset-1)',
     border: `1px solid ${state.isFocused ? '#71717a' : '#27272a'}`,
     borderRadius: '0.5rem',
     boxShadow: state.isFocused ? '0 0 0 1px #71717a' : 'none',
@@ -13,10 +13,10 @@ const darkStyles = {
   }),
   menu: (base) => ({
     ...base,
-    backgroundColor: '#18181b',
-    border: '1px solid #3f3f46',
+    backgroundColor: 'var(--gty-offset-1)',
+    border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: '0.5rem',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
     zIndex: 9999,
   }),
   menuList: (base) => ({
@@ -44,6 +44,7 @@ const darkStyles = {
     ...base,
     color: '#f4f4f5',
     fontSize: '0.875rem',
+    backgroundColor: 'transparent',
   }),
   valueContainer: (base) => ({
     ...base,
