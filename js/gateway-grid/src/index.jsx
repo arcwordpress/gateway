@@ -1,5 +1,6 @@
 import { h, render } from 'preact';
 import App from './App';
+import './style.css';
 
 function mount() {
   document.querySelectorAll('[data-gateway-grid]').forEach((el) => {
