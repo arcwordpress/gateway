@@ -138,7 +138,6 @@ class CollectionRegistry
                 'table' => $collection->getTable(),
                 'routes' => $collection->getRoutes(),
                 'fields' => $collection->getFields(),
-                'filters' => $collection->getFilters(),
             ];
         }
 

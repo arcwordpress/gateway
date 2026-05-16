@@ -72,7 +72,6 @@ class Collection extends EloquentModel
     protected $private = false;
 
     protected $fields = [];
-    protected $filters = [];
     protected $grid = [];
     protected $displayField = null;
     protected $searchable = [];
@@ -286,9 +285,15 @@ class Collection extends EloquentModel
         return $key;
     }
 
-    public function getFilters()
+    public function getFacets(): array
     {
-        return $this->filters;
+        return $this->grid['facets'] ?? [];
+    }
+
+    /** @deprecated use getFacets() */
+    public function getFilters(): array
+    {
+        return $this->getFacets();
     }
 
     public function getGrid()
