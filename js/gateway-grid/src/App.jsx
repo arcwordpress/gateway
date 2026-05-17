@@ -1,17 +1,22 @@
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
+import Toolbar        from './Toolbar';
 import Grid           from './Grid';
+import ListView       from './ListView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 
 const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme }) => {
-  const [collection, setCollection] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [collection,  setCollection]  = useState(null);
+  const [records,     setRecords]     = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
   const [facetValues, setFacetValues] = useState({});
-  const [perPage, setPerPage] = useState(initialPerPage);
+  const [perPage,     setPerPage]     = useState(initialPerPage);
+  const [showFacets,  setShowFacets]  = useState(true);
+  const [search,      setSearch]      = useState('');
+  const [view,        setView]        = useState('table');
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -38,10 +43,10 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         const recRes = await fetch(url.toString());
         if (!recRes.ok) throw new Error(`Failed to fetch records`);
         const data = await recRes.json();
-        const rows = Array.isArray(data)              ? data
-          : Array.isArray(data?.data?.items)          ? data.data.items
-          : Array.isArray(data?.data)                 ? data.data
-          : Array.isArray(data?.items)                ? data.items
+        const rows = Array.isArray(data)             ? data
+          : Array.isArray(data?.data?.items)         ? data.data.items
+          : Array.isArray(data?.data)                ? data.data
+          : Array.isArray(data?.items)               ? data.items
           : [];
         setRecords(rows);
       } catch (err) {
@@ -54,14 +59,8 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
     load();
   }, [collectionKey, apiRoot, perPage]);
 
-  if (loading) {
-    return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
-  }
-
-  if (error) {
-    return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
-  }
-
+  if (loading) return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
+  if (error)   return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
@@ -71,28 +70,26 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const handleFacetChange = (field, value) => setFacetValues(p => ({ ...p, [field]: value }));
 
   const filtered = records.filter((record) => {
+    if (search) {
+      const q = search.toLowerCase();
+      const hit = Object.values(record).some(
+        v => v !== null && typeof v !== 'object' && String(v).toLowerCase().includes(q)
+      );
+      if (!hit) return false;
+    }
+
     for (const [field, value] of Object.entries(facetValues)) {
       if (!value && value !== false) continue;
 
-      if (field === '__search') {
-        const q = String(value).toLowerCase();
-        const hit = Object.values(record).some((v) =>
-          v !== null && typeof v !== 'object' && String(v).toLowerCase().includes(q)
-        );
-        if (!hit) return false;
-        continue;
-      }
-
       if (field === 'listingType') {
         const lt = record.listingType;
-        const id = String(lt?.id ?? lt ?? '');
-        if (id !== String(value)) return false;
+        if (String(lt?.id ?? lt ?? '') !== String(value)) return false;
         continue;
       }
 
-      // Generic: scalar string match for defined facets
       if (!String(record[field] ?? '').toLowerCase().includes(String(value).toLowerCase())) return false;
     }
+
     return true;
   });
 
@@ -100,14 +97,26 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
 
   return (
     <div class={rootClass}>
-      {showFilters && hasFacets && (
-        <Facets facets={facets} values={facetValues} onChange={handleFacetChange} />
-      )}
-      {showFilters && !hasFacets && (
-        <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
+      <Toolbar
+        filtersEnabled={showFilters}
+        facetsVisible={showFacets}
+        onToggleFacets={() => setShowFacets(v => !v)}
+        view={view}
+        onViewChange={setView}
+        search={search}
+        onSearchChange={setSearch}
+      />
+
+      {showFilters && showFacets && (
+        hasFacets
+          ? <Facets facets={facets} values={facetValues} onChange={handleFacetChange} />
+          : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      <Grid collection={collection} records={filtered} />
+      {view === 'table'
+        ? <Grid collection={collection} records={filtered} />
+        : <ListView collection={collection} records={filtered} />
+      }
 
       <Footer totalRows={filtered.length} perPage={perPage} onPerPageChange={setPerPage} />
     </div>

@@ -1,12 +1,10 @@
 import { h } from 'preact';
-import TextFacet   from './facets/TextFacet';
 import SelectFacet from './facets/SelectFacet';
 
 const relLabel = (obj) =>
   obj?.title ?? obj?.name ?? obj?.label ?? String(obj?.id ?? obj ?? '');
 
 const FallbackFacets = ({ records, values, onChange }) => {
-  // Derive unique listing type options from already-loaded relation data
   const seen = new Map();
   for (const r of records) {
     const lt = r.listingType;
@@ -16,23 +14,17 @@ const FallbackFacets = ({ records, values, onChange }) => {
   }
   const typeOptions = [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
 
+  if (typeOptions.length === 0) return null;
+
   return (
     <div class="gbd-facets">
-      <TextFacet
-        field="__search"
-        label="Search"
-        value={values?.__search}
+      <SelectFacet
+        field="listingType"
+        label="Listing Type"
+        value={values?.listingType}
+        options={typeOptions}
         onChange={onChange}
       />
-      {typeOptions.length > 0 && (
-        <SelectFacet
-          field="listingType"
-          label="Listing Type"
-          value={values?.listingType}
-          options={typeOptions}
-          onChange={onChange}
-        />
-      )}
     </div>
   );
 };
