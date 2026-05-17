@@ -3,23 +3,25 @@ import { useState, useEffect } from 'preact/hooks';
 import Toolbar        from './Toolbar';
 import Grid           from './Grid';
 import ListView       from './ListView';
+import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 
-const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme }) => {
+const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage,     setPerPage]     = useState(initialPerPage);
-  const [page,        setPage]        = useState(1);
-  const [totalCount,  setTotalCount]  = useState(0);
-  const [totalPages,  setTotalPages]  = useState(1);
+  const [page,       setPage]       = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const totalPages = perPage > 0 ? Math.max(1, Math.ceil(totalCount / perPage)) : 1;
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
-  const [view,        setView]        = useState('table');
+  const [view,        setView]        = useState(defaultView || 'table');
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -57,16 +59,13 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
           : [];
         setRecords(rows);
 
-        // Prefer WP REST API headers; fall back to response body fields
+        // Gateway API wraps pagination in data.data.pagination
+        const pagination  = data?.data?.pagination ?? {};
         const headerTotal = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
-        const headerPages = parseInt(recRes.headers.get('X-WP-TotalPages') || '0', 10);
-        const bodyTotal   = data?.total ?? data?.meta?.total ?? data?.count ?? null;
+        const bodyTotal   = pagination.record_count ?? data?.total ?? data?.meta?.total ?? data?.count ?? null;
 
         const resolvedTotal = headerTotal || (typeof bodyTotal === 'number' ? bodyTotal : rows.length);
-        const resolvedPages = headerPages || (perPage > 0 ? Math.ceil(resolvedTotal / perPage) : 1);
-
         setTotalCount(resolvedTotal);
-        setTotalPages(Math.max(1, resolvedPages));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -135,6 +134,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         onToggleFacets={() => setShowFacets(v => !v)}
         view={view}
         onViewChange={setView}
+        enabledViews={enabledViews}
         search={search}
         onSearchChange={setSearch}
       />
@@ -145,9 +145,9 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
           : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      {view === 'table'
-        ? <Grid collection={collection} records={filtered} />
-        : <ListView collection={collection} records={filtered} />
+      {view === 'cards' ? <CardsView collection={collection} records={filtered} />
+        : view === 'list' ? <ListView collection={collection} records={filtered} />
+        : <Grid collection={collection} records={filtered} />
       }
 
       <Footer

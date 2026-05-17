@@ -11,6 +11,12 @@ function mountElement(el) {
 
   const apiRoot = (window.gatewayBd && window.gatewayBd.apiRoot) || '/wp-json/';
 
+  const allViews    = ['table', 'list', 'cards'];
+  const enabledViews = Array.isArray(config.enabledViews) && config.enabledViews.length
+    ? config.enabledViews.filter(v => allViews.includes(v))
+    : allViews;
+  const defaultView = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
+
   render(
     <App
       collectionKey={schema}
@@ -18,6 +24,8 @@ function mountElement(el) {
       showFilters={config.showFilters !== false}
       perPage={config.perPage || 20}
       colorScheme={config.colorScheme === 'dark' ? 'dark' : 'light'}
+      defaultView={defaultView}
+      enabledViews={enabledViews}
     />,
     el
   );
