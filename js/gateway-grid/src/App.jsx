@@ -1,8 +1,9 @@
 import { h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import Grid from './Grid';
-import Facets from './Facets';
-import Footer from './Footer';
+import Grid           from './Grid';
+import Facets         from './Facets';
+import FallbackFacets from './FallbackFacets';
+import Footer         from './Footer';
 
 const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme }) => {
   const [collection, setCollection] = useState(null);
@@ -64,12 +65,32 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   if (!collection) return null;
 
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
-  const facets = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
-  const hasFacets = showFilters && facets.length > 0;
+  const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
+  const hasFacets  = facets.length > 0;
+
+  const handleFacetChange = (field, value) => setFacetValues(p => ({ ...p, [field]: value }));
 
   const filtered = records.filter((record) => {
     for (const [field, value] of Object.entries(facetValues)) {
-      if (!value) continue;
+      if (!value && value !== false) continue;
+
+      if (field === '__search') {
+        const q = String(value).toLowerCase();
+        const hit = Object.values(record).some((v) =>
+          v !== null && typeof v !== 'object' && String(v).toLowerCase().includes(q)
+        );
+        if (!hit) return false;
+        continue;
+      }
+
+      if (field === 'listingType') {
+        const lt = record.listingType;
+        const id = String(lt?.id ?? lt ?? '');
+        if (id !== String(value)) return false;
+        continue;
+      }
+
+      // Generic: scalar string match for defined facets
       if (!String(record[field] ?? '').toLowerCase().includes(String(value).toLowerCase())) return false;
     }
     return true;
@@ -79,8 +100,11 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
 
   return (
     <div class={rootClass}>
-      {hasFacets && (
-        <Facets facets={facets} values={facetValues} onChange={(f, v) => setFacetValues(p => ({ ...p, [f]: v }))} />
+      {showFilters && hasFacets && (
+        <Facets facets={facets} values={facetValues} onChange={handleFacetChange} />
+      )}
+      {showFilters && !hasFacets && (
+        <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
       <Grid collection={collection} records={filtered} />
