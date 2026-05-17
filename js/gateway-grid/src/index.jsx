@@ -24,6 +24,7 @@ function mountElement(el) {
       showFilters={config.showFilters !== false}
       perPage={config.perPage || 20}
       colorScheme={config.colorScheme === 'dark' ? 'dark' : 'light'}
+      showFacetToggle={config.showFacetToggle !== false}
       defaultView={defaultView}
       enabledViews={enabledViews}
     />,

@@ -57,6 +57,16 @@ class Grid extends \Elementor\Widget_Base
             'default'      => 'yes',
         ]);
 
+        $this->add_control('show_facet_toggle', [
+            'label'        => 'Show Facet Toggle',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'condition'    => ['show_filters' => 'yes'],
+        ]);
+
         $this->add_control('per_page', [
             'label'       => 'Per Page',
             'type'        => \Elementor\Controls_Manager::NUMBER,
@@ -128,7 +138,8 @@ class Grid extends \Elementor\Widget_Base
     {
         $settings       = $this->get_settings_for_display();
         $collection_key = sanitize_text_field($settings['collection'] ?? '');
-        $show_filters   = ($settings['show_filters'] ?? 'yes') === 'yes';
+        $show_filters       = ($settings['show_filters']     ?? 'yes') === 'yes';
+        $show_facet_toggle  = ($settings['show_facet_toggle'] ?? 'yes') === 'yes';
         $per_page       = max(0, (int) ($settings['per_page'] ?? 20));
         $color_scheme   = in_array($settings['color_scheme'] ?? 'light', ['light', 'dark'], true)
                             ? $settings['color_scheme']
@@ -158,11 +169,12 @@ class Grid extends \Elementor\Widget_Base
         $this->enqueuePreact();
 
         $config = wp_json_encode([
-            'showFilters'  => $show_filters,
-            'perPage'      => $per_page,
-            'colorScheme'  => $color_scheme,
-            'defaultView'  => $default_view,
-            'enabledViews' => $enabled_views,
+            'showFilters'      => $show_filters,
+            'showFacetToggle'  => $show_facet_toggle,
+            'perPage'          => $per_page,
+            'colorScheme'      => $color_scheme,
+            'defaultView'      => $default_view,
+            'enabledViews'     => $enabled_views,
         ]);
 
         echo '<div'
