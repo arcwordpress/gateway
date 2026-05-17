@@ -16,6 +16,7 @@
   --gbd-select-bg:  oklch(100% 0 0);
 
   --gbd-zinc-950:   oklch(14.1% 0.005 285.823);
+  --gbd-zinc-700:   oklch(37% 0.013 285.805);
   --gbd-zinc-400:   oklch(70.5% 0.015 286.067);
 
   background:   var(--gbd-bg);
@@ -49,6 +50,33 @@
 .gbd-records--fetching {
   opacity:        0.4;
   pointer-events: none;
+}
+
+/* ── Sort indicators ─────────────────────────────────────── */
+
+.gbd-grid__th--sortable {
+  cursor:      pointer;
+  user-select: none;
+}
+
+.gbd-grid__th--sortable:hover {
+  color: var(--gbd-text);
+}
+
+.gbd-grid__th-inner {
+  display:     inline-flex;
+  align-items: center;
+  gap:         .3rem;
+}
+
+.gbd-grid__sort-icon {
+  color:       var(--gbd-zinc-700);
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.gbd-grid__th--sorted .gbd-grid__sort-icon {
+  color: var(--gbd-text-muted);
 }
 
 /* ── Table ───────────────────────────────────────────────── */
@@ -183,7 +211,7 @@
 }
 
 .gbd-toolbar__search::placeholder {
-  color: oklch(50% 0.01 285.823);
+  color: var(--gbd-zinc-700);
 }
 
 .gbd-toolbar__search-icon {

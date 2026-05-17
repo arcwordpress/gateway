@@ -23,6 +23,8 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState(defaultView || 'table');
+  const [sortField,   setSortField]   = useState('');
+  const [sortDir,     setSortDir]     = useState('asc');
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -49,6 +51,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
         if (perPage > 0) {
           url.searchParams.set('per_page', String(perPage));
           url.searchParams.set('page', String(page));
+        }
+        if (sortField) {
+          url.searchParams.set('order_by', sortField);
+          url.searchParams.set('order', sortDir);
         }
 
         const recRes = await fetch(url.toString());
@@ -78,10 +84,20 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     };
 
     load();
-  }, [collectionKey, apiRoot, perPage, page]);
+  }, [collectionKey, apiRoot, perPage, page, sortField, sortDir]);
 
   const handlePerPageChange = (n) => {
     setPerPage(n);
+    setPage(1);
+  };
+
+  const handleSort = (field) => {
+    if (field === sortField) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
     setPage(1);
   };
 
@@ -153,7 +169,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
       <div class={fetching ? 'gbd-records gbd-records--fetching' : 'gbd-records'}>
         {view === 'cards' ? <CardsView collection={collection} records={filtered} />
           : view === 'list' ? <ListView collection={collection} records={filtered} />
-          : <Grid collection={collection} records={filtered} />
+          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} />
         }
       </div>
 
