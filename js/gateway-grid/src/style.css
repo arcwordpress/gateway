@@ -165,6 +165,7 @@
   gap:             20px;
   padding:         .4rem .75rem;
   background:      var(--gty-zinc-950);
+  border-bottom:   1px solid var(--gty-zinc-700);
 }
 
 .gty-toolbar__controls {
@@ -243,7 +244,7 @@
   flex-wrap:     wrap;
   gap:           .75rem;
   padding:       .75rem;
-  border-bottom: 1px solid var(--gty-border);
+  border-bottom: 1px solid var(--gty-zinc-700);
   background:    var(--gty-surface);
 }
 
