@@ -8,6 +8,7 @@ import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 import RecordModal    from './RecordModal';
+import SkeletonLoader from './SkeletonLoader';
 import { getSortableFields, resolveRecordLink } from './utils';
 
 const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'] }) => {
@@ -115,7 +116,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     setPage(1);
   };
 
-  if (loading) return <div class="gty-grid"><div class="gty-grid__loading">Loading…</div></div>;
+  if (loading) {
+    const loadingClass = `gty-grid${colorScheme === 'dark' ? ' gty-grid--dark' : ''}`;
+    return <div class={loadingClass}><SkeletonLoader /></div>;
+  }
   if (error)   return <div class="gty-grid"><div class="gty-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 

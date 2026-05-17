@@ -693,3 +693,101 @@
 }
 
 .gty-grid__row-link:hover { text-decoration: underline; }
+
+/* ── Skeleton loader ─────────────────────────────────────── */
+
+.gty-grid {
+  --gty-skeleton-base:  oklch(91% 0 0);
+  --gty-skeleton-shine: oklch(98% 0 0);
+}
+
+.gty-grid--dark {
+  --gty-skeleton-base:  var(--gty-zinc-800);
+  --gty-skeleton-shine: var(--gty-zinc-700);
+}
+
+@keyframes gty-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.gty-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.gty-skeleton__bar {
+  border-radius: 3px;
+  background:    linear-gradient(
+    90deg,
+    var(--gty-skeleton-base)  0%,
+    var(--gty-skeleton-shine) 50%,
+    var(--gty-skeleton-base)  100%
+  );
+  background-size: 800px 100%;
+  animation: gty-shimmer 1.4s ease-in-out infinite;
+}
+
+.gty-skeleton__toolbar {
+  display:       flex;
+  align-items:   center;
+  justify-content: flex-end;
+  padding:       .4rem .75rem;
+  background:    var(--gty-zinc-950);
+  border-bottom: 1px solid var(--gty-zinc-700);
+}
+
+.gty-skeleton__toolbar-inner {
+  display:     flex;
+  align-items: center;
+  gap:         20px;
+}
+
+.gty-skeleton__thead {
+  display:    flex;
+  padding:    .5rem .75rem;
+  gap:        1rem;
+  background: var(--gty-surface);
+  border-bottom: 2px solid var(--gty-border);
+}
+
+.gty-skeleton__th {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.gty-skeleton__th:first-child { flex: 0 0 3rem; }
+
+.gty-skeleton__row {
+  display:    flex;
+  align-items: center;
+  padding:    .5rem .75rem;
+  gap:        1rem;
+  border-bottom: 1px solid var(--gty-border);
+}
+
+.gty-skeleton__row--odd  { background: var(--gty-row-odd); }
+.gty-skeleton__row--even { background: var(--gty-row-even); }
+
+.gty-skeleton__td {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.gty-skeleton__td:first-child { flex: 0 0 3rem; }
+
+.gty-skeleton__footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         .5rem .75rem;
+  border-top:      1px solid var(--gty-border);
+}
+
+.gty-skeleton__footer-right {
+  display:     flex;
+  align-items: center;
+  gap:         .5rem;
+}
