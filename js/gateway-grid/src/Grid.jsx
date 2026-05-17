@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
-import { getDisplayField, formatValue } from './utils';
+import { getDisplayField, getFieldLabel, formatValue } from './utils';
 
 const getCellValue = (record, key, fields) => {
   const field = fields?.[key];
@@ -79,7 +79,7 @@ const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = 
             {displayField && (
               <th class={thClass(displayField)} onClick={() => onSort(displayField)}>
                 <span class="gty-grid__th-inner">
-                  {fields?.[displayField]?.label || displayField}
+                  {getFieldLabel(fields, displayField)}
                   <span class="gty-grid__sort-icon">
                     <SortIcon field={displayField} sortField={sortField} sortDir={sortDir} />
                   </span>

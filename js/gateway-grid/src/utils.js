@@ -29,6 +29,14 @@ export const formatValue = (val, field) => {
   return null;
 };
 
+export const getFieldLabel = (fields, key) => {
+  if (!fields || !key) return key;
+  const f = Array.isArray(fields)
+    ? fields.find(f => f.name === key)
+    : fields[key];
+  return f?.label || key;
+};
+
 export const getDisplayField = (collection) => {
   if (collection?.displayField && collection.displayField !== 'id') return collection.displayField;
   const grid = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
@@ -62,10 +70,7 @@ export const getSortableFields = (collection) => {
 
   const result = [{ key: 'id', label: 'ID' }];
   if (displayField) {
-    const lf = Array.isArray(fields)
-      ? fields.find(f => f.name === displayField)
-      : fields[displayField];
-    result.push({ key: displayField, label: lf?.label || displayField });
+    result.push({ key: displayField, label: getFieldLabel(fields, displayField) });
   }
   for (const col of cols) {
     if (!result.some(r => r.key === col.key)) result.push(col);
