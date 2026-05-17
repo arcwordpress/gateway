@@ -19,11 +19,12 @@ const Facets = ({ facets, values, onChange }) => {
   return (
     <div class="gbd-facets">
       {facets.map((facet) => {
-        // PHP uses field_name / facet_type; manual definitions may use field / type
-        const field   = facet.field_name || facet.field || facet.key;
-        const label   = facet.label || field;
-        const type    = facet.facet_type || facet.type || 'text';
-        const options = facet.config?.options ?? facet.options;
+        const field           = facet.field_name || facet.field || facet.key;
+        const label           = facet.label || field;
+        const type            = facet.facet_type || facet.type || 'text';
+        const options         = facet.config?.options ?? facet.options;
+        const optionsEndpoint = facet.options_endpoint ?? facet.config?.options_endpoint;
+        const placeholder     = facet.placeholder ?? facet.config?.placeholder;
 
         const Component = TYPE_MAP[type] ?? TextFacet;
 
@@ -34,6 +35,8 @@ const Facets = ({ facets, values, onChange }) => {
             label={label}
             value={values?.[field]}
             options={options}
+            optionsEndpoint={optionsEndpoint}
+            placeholder={placeholder}
             onChange={onChange}
           />
         );
