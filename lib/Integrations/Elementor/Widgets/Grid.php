@@ -58,11 +58,12 @@ class Grid extends \Elementor\Widget_Base
         ]);
 
         $this->add_control('per_page', [
-            'label'   => 'Per Page',
-            'type'    => \Elementor\Controls_Manager::NUMBER,
-            'default' => 20,
-            'min'     => 1,
-            'max'     => 200,
+            'label'       => 'Per Page',
+            'type'        => \Elementor\Controls_Manager::NUMBER,
+            'default'     => 20,
+            'min'         => 0,
+            'max'         => 200,
+            'description' => 'Set to 0 to show all records.',
         ]);
 
         $this->end_controls_section();
@@ -90,7 +91,7 @@ class Grid extends \Elementor\Widget_Base
         $settings       = $this->get_settings_for_display();
         $collection_key = sanitize_text_field($settings['collection'] ?? '');
         $show_filters   = ($settings['show_filters'] ?? 'yes') === 'yes';
-        $per_page       = max(1, (int) ($settings['per_page'] ?? 20));
+        $per_page       = max(0, (int) ($settings['per_page'] ?? 20));
         $color_scheme   = in_array($settings['color_scheme'] ?? 'light', ['light', 'dark'], true)
                             ? $settings['color_scheme']
                             : 'light';

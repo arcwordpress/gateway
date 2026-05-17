@@ -2,7 +2,10 @@ import { h } from 'preact';
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-preact';
 
 const Footer = ({ totalRows, perPage, onPerPageChange }) => {
-  const pageSizes = [10, 20, 50, 100];
+  const base      = [10, 20, 50, 100];
+  // 0 = show all; keep it out of the numeric sort, append separately
+  const showAll   = perPage === 0;
+  const numeric   = [...new Set([...base, ...(showAll ? [] : [perPage])])].sort((a, b) => a - b);
 
   return (
     <div class="gbd-footer">
@@ -35,9 +38,10 @@ const Footer = ({ totalRows, perPage, onPerPageChange }) => {
           value={perPage}
           onChange={(e) => onPerPageChange && onPerPageChange(Number(e.target.value))}
         >
-          {pageSizes.map((n) => (
+          {numeric.map((n) => (
             <option key={n} value={n}>Show {n}</option>
           ))}
+          <option value={0}>Show all</option>
         </select>
       </div>
 

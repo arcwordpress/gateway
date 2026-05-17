@@ -38,7 +38,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
 
         const url = new URL(`${apiRoot}${getManyRoute.route}`, window.location.origin);
         url.searchParams.set('relations', 'true');
-        url.searchParams.set('per_page', String(perPage));
+        if (perPage > 0) url.searchParams.set('per_page', String(perPage));
 
         const recRes = await fetch(url.toString());
         if (!recRes.ok) throw new Error(`Failed to fetch records`);
