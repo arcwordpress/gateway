@@ -537,7 +537,8 @@
 
 /* ── Record modal ────────────────────────────────────────── */
 
-.gty-modal {
+.gty-modal,
+.gty-modal__overlay {
   position:        fixed;
   inset:           0;
   z-index:         99999;
