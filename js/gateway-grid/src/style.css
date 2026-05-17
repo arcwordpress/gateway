@@ -942,3 +942,38 @@
   text-align: center;
   margin:     0;
 }
+
+/* ── Record action buttons (edit, delete, etc.) ──────────── */
+
+.gty-actions {
+  display:     flex;
+  align-items: center;
+  gap:         .25rem;
+}
+
+.gty-action-btn {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      none;
+  border:          none;
+  border-radius:   4px;
+  color:           var(--gty-zinc-600);
+  cursor:          pointer;
+  line-height:     0;
+  padding:         .3rem;
+}
+
+.gty-action-btn:hover {
+  background: var(--gty-zinc-800);
+  color:      var(--gty-zinc-400);
+}
+
+/* ── Modal title ID badge ────────────────────────────────── */
+
+.gty-modal__title-id {
+  color:       var(--gty-zinc-600);
+  font-size:   .8em;
+  font-weight: 400;
+  margin-left: .35rem;
+}

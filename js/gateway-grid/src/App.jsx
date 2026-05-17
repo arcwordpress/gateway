@@ -9,10 +9,11 @@ import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 import RecordModal    from './RecordModal';
 import CreateModal    from './CreateModal';
+import UpdateModal    from './UpdateModal';
 import SkeletonLoader from './SkeletonLoader';
 import { getSortableFields, resolveRecordLink } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'], createActionEnabled = false, createActionRoles = ['administrator'] }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'], createActionEnabled = false, createActionRoles = ['administrator'], updateActionEnabled = false, updateActionRoles = ['administrator'] }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -31,6 +32,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [sortDir,        setSortDir]        = useState('asc');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showCreate,     setShowCreate]     = useState(false);
+  const [editRecord,     setEditRecord]     = useState(null);
   const [refreshToken,   setRefreshToken]   = useState(0);
 
   useEffect(() => {
@@ -130,6 +132,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     ? window.gatewayBd.currentUserRoles : [];
   const canSeeActions = actionsEnabled && actionRoles.some(r => currentUserRoles.includes(r));
   const canCreate     = createActionEnabled && createActionRoles.some(r => currentUserRoles.includes(r));
+  const canUpdate     = updateActionEnabled && updateActionRoles.some(r => currentUserRoles.includes(r));
 
   const onRecordClick  = recordViewMode === 'modal' ? setSelectedRecord : null;
   const getRecordHref  = recordViewMode === 'link' && recordLinkPattern
@@ -207,10 +210,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
 
       <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
         {view === 'cards'
-          ? <CardsView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
+          ? <CardsView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
           : view === 'list'
-            ? <ListView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
-            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
+            ? <ListView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
+            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
         }
       </div>
 
@@ -226,6 +229,19 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
           onCreated={() => {
             setShowCreate(false);
             setPage(1);
+            setRefreshToken(t => t + 1);
+          }}
+        />
+      )}
+
+      {editRecord && (
+        <UpdateModal
+          collection={collection}
+          record={editRecord}
+          apiRoot={apiRoot}
+          onClose={() => setEditRecord(null)}
+          onUpdated={() => {
+            setEditRecord(null);
             setRefreshToken(t => t + 1);
           }}
         />

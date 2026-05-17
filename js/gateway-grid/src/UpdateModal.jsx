@@ -2,19 +2,25 @@ import { h } from 'preact';
 import { useState, useReducer, useEffect } from 'preact/hooks';
 import { X } from 'lucide-preact';
 import FormField from './FormField';
-import { getFormFields, defaultFor, formReducer } from './formUtils';
+import { getFormFields, formReducer, buildUpdateUrl } from './formUtils';
 
-const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
-  const fields     = getFormFields(collection);
-  const initValues = Object.fromEntries(fields.map(([k, f]) => [k, defaultFor(f)]));
+const UpdateModal = ({ collection, record, apiRoot, onClose, onUpdated }) => {
+  const fields = getFormFields(collection);
 
-  const [values,    dispatch]    = useReducer(formReducer, initValues);
+  // Pre-populate from existing record; coerce booleans so checkboxes render correctly
+  const initValues = Object.fromEntries(
+    fields.map(([k, f]) => {
+      const val = record[k];
+      if (f.type === 'boolean' || f.type === 'checkbox') return [k, !!val];
+      return [k, val != null ? String(val) : ''];
+    })
+  );
+
+  const [values,     dispatch]     = useReducer(formReducer, initValues);
   const [submitting, setSubmitting] = useState(false);
   const [error,      setError]      = useState(null);
 
-  const createRoute = Array.isArray(collection.routes)
-    ? collection.routes.find(r => r.type === 'create')
-    : null;
+  const updateUrl = buildUpdateUrl(collection, apiRoot, record.id);
 
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose(); };
@@ -30,7 +36,7 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!createRoute) { setError('No create route found for this collection.'); return; }
+    if (!updateUrl) { setError('No update route found for this collection.'); return; }
 
     setSubmitting(true);
     setError(null);
@@ -44,14 +50,14 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
             ? !!val : val;
       }
 
-      const res  = await fetch(`${apiRoot}${createRoute.route}`, {
-        method:  'POST',
+      const res  = await fetch(updateUrl, {
+        method:  'PUT',
         headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.gatewayBd?.nonce || '' },
         body:    JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || `Server error ${res.status}`);
-      onCreated(data?.data ?? data);
+      onUpdated(data?.data ?? data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -65,7 +71,7 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
     <div class="gty-modal__overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div class="gty-modal__box">
         <div class="gty-modal__header">
-          <span class="gty-modal__title">New {title}</span>
+          <span class="gty-modal__title">Edit {title} <span class="gty-modal__title-id">#{record.id}</span></span>
           <button class="gty-modal__close" type="button" onClick={onClose}><X size={18} strokeWidth={2} /></button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -84,8 +90,8 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
           </div>
           <div class="gty-modal__footer">
             <button type="button" class="gty-btn gty-btn--ghost" onClick={onClose}>Cancel</button>
-            <button type="submit" class="gty-btn gty-btn--primary" disabled={submitting || !createRoute}>
-              {submitting ? 'Saving…' : 'Create'}
+            <button type="submit" class="gty-btn gty-btn--primary" disabled={submitting || !updateUrl}>
+              {submitting ? 'Saving…' : 'Save Changes'}
             </button>
           </div>
         </form>
@@ -94,4 +100,4 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
   );
 };
 
-export default CreateModal;
+export default UpdateModal;

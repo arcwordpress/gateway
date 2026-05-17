@@ -198,6 +198,27 @@ class Grid extends \Elementor\Widget_Base
             'condition'   => ['enable_actions' => 'yes', 'enable_create_action' => 'yes'],
         ]);
 
+        $this->add_control('enable_update_action', [
+            'label'        => 'Enable Update',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show an edit button on each record row.',
+            'condition'    => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->add_control('update_action_roles', [
+            'label'       => 'Update Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'description' => 'Only these roles see the Edit button.',
+            'condition'   => ['enable_actions' => 'yes', 'enable_update_action' => 'yes'],
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -256,6 +277,13 @@ class Grid extends \Elementor\Widget_Base
         }
         $create_action_roles = array_values(array_map('sanitize_key', $create_action_roles));
 
+        $enable_update_action = $enable_actions && ($settings['enable_update_action'] ?? '') === 'yes';
+        $update_action_roles  = $settings['update_action_roles'] ?? ['administrator'];
+        if (!is_array($update_action_roles) || empty($update_action_roles)) {
+            $update_action_roles = ['administrator'];
+        }
+        $update_action_roles = array_values(array_map('sanitize_key', $update_action_roles));
+
         $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
                                 ? $settings['record_view_mode']
                                 : 'modal';
@@ -292,6 +320,8 @@ class Grid extends \Elementor\Widget_Base
             'actionRoles'         => $action_roles,
             'createActionEnabled' => $enable_create_action,
             'createActionRoles'   => $create_action_roles,
+            'updateActionEnabled' => $enable_update_action,
+            'updateActionRoles'   => $update_action_roles,
         ]);
 
         echo '<div'
