@@ -21,6 +21,8 @@ function mountElement(el) {
   const recordLinkPattern   = config.recordLinkPattern || '';
   const actionsEnabled      = config.actionsEnabled === true;
   const actionRoles         = Array.isArray(config.actionRoles) ? config.actionRoles : ['administrator'];
+  const createActionEnabled = config.createActionEnabled === true;
+  const createActionRoles   = Array.isArray(config.createActionRoles) ? config.createActionRoles : ['administrator'];
 
   render(
     <App
@@ -37,6 +39,8 @@ function mountElement(el) {
       recordLinkPattern={recordLinkPattern}
       actionsEnabled={actionsEnabled}
       actionRoles={actionRoles}
+      createActionEnabled={createActionEnabled}
+      createActionRoles={createActionRoles}
     />,
     el
   );

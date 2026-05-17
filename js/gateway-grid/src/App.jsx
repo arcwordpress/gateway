@@ -8,10 +8,11 @@ import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 import RecordModal    from './RecordModal';
+import CreateModal    from './CreateModal';
 import SkeletonLoader from './SkeletonLoader';
 import { getSortableFields, resolveRecordLink } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'] }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'], createActionEnabled = false, createActionRoles = ['administrator'] }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -29,6 +30,8 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [sortField,      setSortField]      = useState('');
   const [sortDir,        setSortDir]        = useState('asc');
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [showCreate,     setShowCreate]     = useState(false);
+  const [refreshToken,   setRefreshToken]   = useState(0);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -88,7 +91,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     };
 
     load();
-  }, [collectionKey, apiRoot, perPage, page, sortField, sortDir]);
+  }, [collectionKey, apiRoot, perPage, page, sortField, sortDir, refreshToken]);
 
   const handlePerPageChange = (n) => {
     setPerPage(n);
@@ -126,6 +129,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const currentUserRoles = Array.isArray(window.gatewayBd?.currentUserRoles)
     ? window.gatewayBd.currentUserRoles : [];
   const canSeeActions = actionsEnabled && actionRoles.some(r => currentUserRoles.includes(r));
+  const canCreate     = createActionEnabled && createActionRoles.some(r => currentUserRoles.includes(r));
 
   const onRecordClick  = recordViewMode === 'modal' ? setSelectedRecord : null;
   const getRecordHref  = recordViewMode === 'link' && recordLinkPattern
@@ -191,6 +195,8 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
         sortDir={sortDir}
         onSortFieldChange={handleSortFieldChange}
         onSortDirToggle={handleSortDirToggle}
+        canCreate={canCreate}
+        onCreateClick={() => setShowCreate(true)}
       />
 
       {showFilters && showFacets && (
@@ -210,6 +216,19 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
 
       {selectedRecord && (
         <RecordModal record={selectedRecord} collection={collection} onClose={() => setSelectedRecord(null)} />
+      )}
+
+      {showCreate && (
+        <CreateModal
+          collection={collection}
+          apiRoot={apiRoot}
+          onClose={() => setShowCreate(false)}
+          onCreated={() => {
+            setShowCreate(false);
+            setPage(1);
+            setRefreshToken(t => t + 1);
+          }}
+        />
       )}
 
       <Footer

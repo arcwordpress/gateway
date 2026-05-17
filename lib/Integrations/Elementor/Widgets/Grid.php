@@ -177,6 +177,27 @@ class Grid extends \Elementor\Widget_Base
             'condition'   => ['enable_actions' => 'yes'],
         ]);
 
+        $this->add_control('enable_create_action', [
+            'label'        => 'Enable Create',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show a "+ New" button to create records.',
+            'condition'    => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->add_control('create_action_roles', [
+            'label'       => 'Create Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'description' => 'Only these roles see the Create button.',
+            'condition'   => ['enable_actions' => 'yes', 'enable_create_action' => 'yes'],
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -228,6 +249,13 @@ class Grid extends \Elementor\Widget_Base
         }
         $action_roles = array_values(array_map('sanitize_key', $action_roles));
 
+        $enable_create_action = $enable_actions && ($settings['enable_create_action'] ?? '') === 'yes';
+        $create_action_roles  = $settings['create_action_roles'] ?? ['administrator'];
+        if (!is_array($create_action_roles) || empty($create_action_roles)) {
+            $create_action_roles = ['administrator'];
+        }
+        $create_action_roles = array_values(array_map('sanitize_key', $create_action_roles));
+
         $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
                                 ? $settings['record_view_mode']
                                 : 'modal';
@@ -260,8 +288,10 @@ class Grid extends \Elementor\Widget_Base
             'hiddenFields'      => $hidden_fields,
             'recordViewMode'    => $record_view_mode,
             'recordLinkPattern' => $record_link_pattern,
-            'actionsEnabled'    => $enable_actions,
-            'actionRoles'       => $action_roles,
+            'actionsEnabled'      => $enable_actions,
+            'actionRoles'         => $action_roles,
+            'createActionEnabled' => $enable_create_action,
+            'createActionRoles'   => $create_action_roles,
         ]);
 
         echo '<div'
@@ -293,6 +323,7 @@ class Grid extends \Elementor\Widget_Base
                 'siteUrl'          => esc_url_raw(site_url()),
                 'currentUserId'    => get_current_user_id(),
                 'currentUserRoles' => array_values((array) $current_user->roles),
+                'nonce'            => wp_create_nonce('wp_rest'),
             ]);
         }
 
