@@ -1,5 +1,5 @@
 import { h, Fragment } from 'preact';
-import { SlidersHorizontal, Search, ArrowDownNarrowWide, ArrowUpNarrowWide, Plus } from 'lucide-preact';
+import { SlidersHorizontal, Search, ArrowDownNarrowWide, ArrowUpNarrowWide, LayersPlus } from 'lucide-preact';
 import ViewSwitcher from './ViewSwitcher';
 
 const Toolbar = ({
@@ -15,8 +15,8 @@ const Toolbar = ({
     <div class="gty-toolbar">
       {canCreate && (
         <button class="gty-toolbar__create" type="button" onClick={onCreateClick}>
-          <Plus size={13} strokeWidth={2.5} />
-          New
+          <LayersPlus size={16} strokeWidth={2} />
+          <span style="line-height:1">CREATE</span>
         </button>
       )}
       <div class="gty-toolbar__controls" style={canCreate ? 'margin-left:auto' : ''}>
