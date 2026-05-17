@@ -62,6 +62,7 @@ class ElementorController
             'siteUrl'          => esc_url_raw(site_url()),
             'currentUserId'    => get_current_user_id(),
             'currentUserRoles' => array_values((array) $current_user->roles),
+            'nonce'            => wp_create_nonce('wp_rest'),
         ]);
 
         $cssPath = $build . 'index.css';
