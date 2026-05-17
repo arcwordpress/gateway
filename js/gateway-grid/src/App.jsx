@@ -3,11 +3,12 @@ import { useState, useEffect } from 'preact/hooks';
 import Toolbar        from './Toolbar';
 import Grid           from './Grid';
 import ListView       from './ListView';
+import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 
-const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme }) => {
+const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -19,7 +20,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const [totalPages,  setTotalPages]  = useState(1);
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
-  const [view,        setView]        = useState('table');
+  const [view,        setView]        = useState(defaultView || 'table');
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -135,6 +136,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         onToggleFacets={() => setShowFacets(v => !v)}
         view={view}
         onViewChange={setView}
+        enabledViews={enabledViews}
         search={search}
         onSearchChange={setSearch}
       />
@@ -145,9 +147,9 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
           : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      {view === 'table'
-        ? <Grid collection={collection} records={filtered} />
-        : <ListView collection={collection} records={filtered} />
+      {view === 'cards' ? <CardsView collection={collection} records={filtered} />
+        : view === 'list' ? <ListView collection={collection} records={filtered} />
+        : <Grid collection={collection} records={filtered} />
       }
 
       <Footer

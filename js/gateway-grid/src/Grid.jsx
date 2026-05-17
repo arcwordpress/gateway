@@ -1,27 +1,5 @@
 import { h } from 'preact';
-
-const getLabelField = (collection) => {
-  if (collection?.displayField && collection.displayField !== 'id') {
-    return collection.displayField;
-  }
-  const grid = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
-  if (grid?.labelField) return grid.labelField;
-
-  const fields = collection?.fields;
-  const candidates = ['title', 'name', 'label'];
-
-  if (Array.isArray(fields)) {
-    const names = fields.map((f) => f.name);
-    for (const c of candidates) {
-      if (names.includes(c)) return c;
-    }
-  } else if (fields && typeof fields === 'object') {
-    for (const c of candidates) {
-      if (fields[c]) return c;
-    }
-  }
-  return null;
-};
+import { getLabelField } from './utils';
 
 const getCellValue = (record, key, fields) => {
   const field = fields?.[key];

@@ -66,6 +66,44 @@ class Grid extends \Elementor\Widget_Base
             'description' => 'Set to 0 to show all records.',
         ]);
 
+        $this->add_control('default_view', [
+            'label'   => 'Default View',
+            'type'    => \Elementor\Controls_Manager::SELECT,
+            'options' => [
+                'table' => 'Table',
+                'list'  => 'List',
+                'cards' => 'Cards',
+            ],
+            'default' => 'table',
+        ]);
+
+        $this->add_control('enable_table_view', [
+            'label'        => 'Table View',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'On',
+            'label_off'    => 'Off',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+        ]);
+
+        $this->add_control('enable_list_view', [
+            'label'        => 'List View',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'On',
+            'label_off'    => 'Off',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+        ]);
+
+        $this->add_control('enable_cards_view', [
+            'label'        => 'Cards View',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'On',
+            'label_off'    => 'Off',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -96,6 +134,19 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['color_scheme']
                             : 'light';
 
+        $enabled_views  = array_values(array_filter([
+            ($settings['enable_table_view'] ?? 'yes') === 'yes' ? 'table' : null,
+            ($settings['enable_list_view']  ?? 'yes') === 'yes' ? 'list'  : null,
+            ($settings['enable_cards_view'] ?? 'yes') === 'yes' ? 'cards' : null,
+        ]));
+        if (empty($enabled_views)) {
+            $enabled_views = ['table'];
+        }
+
+        $default_view = in_array($settings['default_view'] ?? 'table', $enabled_views, true)
+                            ? $settings['default_view']
+                            : $enabled_views[0];
+
         if (empty($collection_key)) {
             if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
                 echo '<div class="gateway-grid-placeholder">Gateway Grid: select a collection in the panel.</div>';
@@ -110,6 +161,8 @@ class Grid extends \Elementor\Widget_Base
             'showFilters'  => $show_filters,
             'perPage'      => $per_page,
             'colorScheme'  => $color_scheme,
+            'defaultView'  => $default_view,
+            'enabledViews' => $enabled_views,
         ]);
 
         echo '<div'
