@@ -36,7 +36,7 @@ class Grid extends \Elementor\Widget_Base
     protected function _register_controls(): void
     {
         $this->start_controls_section('content_section', [
-            'label' => 'Gateway Grid',
+            'label' => 'Grid Display',
             'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
         ]);
 
