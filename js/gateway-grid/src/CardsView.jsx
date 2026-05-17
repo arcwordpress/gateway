@@ -1,8 +1,8 @@
 import { h } from 'preact';
-import { getLabelField } from './utils';
+import { getDisplayField } from './utils';
 
 const CardsView = ({ collection, records }) => {
-  const labelField = getLabelField(collection);
+  const displayField = getDisplayField(collection);
 
   if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
 
@@ -12,8 +12,8 @@ const CardsView = ({ collection, records }) => {
         <div key={record.id} class="gty-cards__card">
           <div class="gty-cards__header">
             <span class="gty-cards__id">#{record.id}</span>
-            {labelField && record[labelField] != null && (
-              <span class="gty-cards__title">{String(record[labelField])}</span>
+            {displayField && record[displayField] != null && (
+              <span class="gty-cards__title">{String(record[displayField])}</span>
             )}
           </div>
           {record.description && (
