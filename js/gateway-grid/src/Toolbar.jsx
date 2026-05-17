@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { SlidersHorizontal } from 'lucide-preact';
+import { SlidersHorizontal, Search } from 'lucide-preact';
 import ViewSwitcher from './ViewSwitcher';
 
 const Toolbar = ({ filtersEnabled, facetToggleEnabled, facetsVisible, onToggleFacets, view, onViewChange, enabledViews, search, onSearchChange }) => (
@@ -18,13 +18,16 @@ const Toolbar = ({ filtersEnabled, facetToggleEnabled, facetsVisible, onToggleFa
       <div class="gbd-toolbar__sep" />
       <ViewSwitcher view={view} onViewChange={onViewChange} enabledViews={enabledViews} />
     </div>
-    <input
-      class="gbd-toolbar__search"
-      type="search"
-      placeholder="Search…"
-      value={search}
-      onInput={(e) => onSearchChange(e.target.value)}
-    />
+    <div class="gbd-toolbar__search-wrap">
+      <input
+        class="gbd-toolbar__search"
+        type="search"
+        placeholder="Search…"
+        value={search}
+        onInput={(e) => onSearchChange(e.target.value)}
+      />
+      <span class="gbd-toolbar__search-icon"><Search size={12} strokeWidth={2} /></span>
+    </div>
   </div>
 );
 
