@@ -1,11 +1,11 @@
 import { h } from 'preact';
 
 const CheckboxFacet = ({ field, label, value, onChange }) => (
-  <div class="gbd-facets__item">
-    <label class="gbd-facets__label gbd-facets__label--checkbox" for={`gbd-facet-${field}`}>
+  <div class="gty-facets__item">
+    <label class="gty-facets__label gty-facets__label--checkbox" for={`gty-facet-${field}`}>
       <input
-        id={`gbd-facet-${field}`}
-        class="gbd-facets__checkbox"
+        id={`gty-facet-${field}`}
+        class="gty-facets__checkbox"
         type="checkbox"
         checked={!!value}
         onChange={(e) => onChange && onChange(field, e.target.checked)}

@@ -7,6 +7,7 @@ import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
+import { getSortableFields } from './utils';
 
 const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
   const [collection,  setCollection]  = useState(null);
@@ -23,6 +24,8 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState(defaultView || 'table');
+  const [sortField,   setSortField]   = useState('');
+  const [sortDir,     setSortDir]     = useState('asc');
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -49,6 +52,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
         if (perPage > 0) {
           url.searchParams.set('per_page', String(perPage));
           url.searchParams.set('page', String(page));
+        }
+        if (sortField) {
+          url.searchParams.set('order_by', sortField);
+          url.searchParams.set('order', sortDir);
         }
 
         const recRes = await fetch(url.toString());
@@ -78,17 +85,39 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     };
 
     load();
-  }, [collectionKey, apiRoot, perPage, page]);
+  }, [collectionKey, apiRoot, perPage, page, sortField, sortDir]);
 
   const handlePerPageChange = (n) => {
     setPerPage(n);
     setPage(1);
   };
 
-  if (loading) return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
-  if (error)   return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
+  const handleSort = (field) => {
+    if (field === sortField) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+    setPage(1);
+  };
+
+  const handleSortFieldChange = (field) => {
+    setSortField(field);
+    setSortDir('asc');
+    setPage(1);
+  };
+
+  const handleSortDirToggle = () => {
+    setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    setPage(1);
+  };
+
+  if (loading) return <div class="gty-grid"><div class="gty-grid__loading">Loading…</div></div>;
+  if (error)   return <div class="gty-grid"><div class="gty-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 
+  const sortFields  = getSortableFields(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
   const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets  = facets.length > 0;
@@ -128,7 +157,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     return true;
   });
 
-  const rootClass = `gbd-grid${colorScheme === 'dark' ? ' gbd-grid--dark' : ''}`;
+  const rootClass = `gty-grid${colorScheme === 'dark' ? ' gty-grid--dark' : ''}`;
 
   return (
     <div class={rootClass}>
@@ -142,6 +171,11 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
         enabledViews={enabledViews}
         search={search}
         onSearchChange={setSearch}
+        sortFields={sortFields}
+        sortField={sortField}
+        sortDir={sortDir}
+        onSortFieldChange={handleSortFieldChange}
+        onSortDirToggle={handleSortDirToggle}
       />
 
       {showFilters && showFacets && (
@@ -150,10 +184,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
           : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      <div class={fetching ? 'gbd-records gbd-records--fetching' : 'gbd-records'}>
+      <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
         {view === 'cards' ? <CardsView collection={collection} records={filtered} />
           : view === 'list' ? <ListView collection={collection} records={filtered} />
-          : <Grid collection={collection} records={filtered} />
+          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} />
         }
       </div>
 

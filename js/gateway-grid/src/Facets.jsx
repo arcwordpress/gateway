@@ -17,7 +17,7 @@ const Facets = ({ facets, values, onChange }) => {
   if (!facets || facets.length === 0) return null;
 
   return (
-    <div class="gbd-facets">
+    <div class="gty-facets">
       {facets.map((facet) => {
         const field           = facet.field_name || facet.field || facet.key;
         const label           = facet.label || field;

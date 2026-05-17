@@ -33,11 +33,11 @@ const SelectFacet = ({ field, label, value, options = [], optionsEndpoint, place
   const resolvedOptions = fetched ?? options;
 
   return (
-    <div class="gbd-facets__item">
-      <label class="gbd-facets__label" for={`gbd-facet-${field}`}>{label}</label>
+    <div class="gty-facets__item">
+      <label class="gty-facets__label" for={`gty-facet-${field}`}>{label}</label>
       <select
-        id={`gbd-facet-${field}`}
-        class="gbd-facets__select"
+        id={`gty-facet-${field}`}
+        class="gty-facets__select"
         value={value || ''}
         onChange={(e) => onChange && onChange(field, e.target.value)}
       >

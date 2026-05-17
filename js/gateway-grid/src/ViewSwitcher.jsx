@@ -26,9 +26,9 @@ const ViewSwitcher = ({ view, onViewChange, enabledViews = ['table', 'list', 'ca
   const current = VIEW_CONFIGS[view] ?? VIEW_CONFIGS.table;
 
   return (
-    <div class="gbd-vsw" ref={ref}>
+    <div class="gty-vsw" ref={ref}>
       <button
-        class={`gbd-toolbar__btn${open ? ' gbd-toolbar__btn--on' : ''}`}
+        class={`gty-toolbar__btn${open ? ' gty-toolbar__btn--on' : ''}`}
         onClick={() => setOpen(v => !v)}
         title={`View: ${current.label}`}
         type="button"
@@ -37,14 +37,14 @@ const ViewSwitcher = ({ view, onViewChange, enabledViews = ['table', 'list', 'ca
       </button>
 
       {open && (
-        <ul class="gbd-vsw__dropdown">
+        <ul class="gty-vsw__dropdown">
           {otherViews.map((key) => {
             const cfg = VIEW_CONFIGS[key];
             if (!cfg) return null;
             return (
               <li key={key}>
                 <button
-                  class="gbd-vsw__option"
+                  class="gty-vsw__option"
                   type="button"
                   onClick={() => { setOpen(false); onViewChange(key); }}
                 >

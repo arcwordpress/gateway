@@ -10,33 +10,33 @@ const Footer = ({ totalCount, page, totalPages, onPageChange, perPage, onPerPage
   const atLast  = page >= totalPages;
 
   return (
-    <div class="gbd-footer">
+    <div class="gty-footer">
 
-      <div class="gbd-footer__left">
-        <div class="gbd-footer__pagination">
-          <button class="gbd-footer__btn" disabled={atFirst} onClick={() => onPageChange(1)} title="First page">
+      <div class="gty-footer__left">
+        <div class="gty-footer__pagination">
+          <button class="gty-footer__btn" disabled={atFirst} onClick={() => onPageChange(1)} title="First page">
             <ChevronsLeft size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled={atFirst} onClick={() => onPageChange(page - 1)} title="Previous page">
+          <button class="gty-footer__btn" disabled={atFirst} onClick={() => onPageChange(page - 1)} title="Previous page">
             <ChevronLeft size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled={atLast} onClick={() => onPageChange(page + 1)} title="Next page">
+          <button class="gty-footer__btn" disabled={atLast} onClick={() => onPageChange(page + 1)} title="Next page">
             <ChevronRight size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled={atLast} onClick={() => onPageChange(totalPages)} title="Last page">
+          <button class="gty-footer__btn" disabled={atLast} onClick={() => onPageChange(totalPages)} title="Last page">
             <ChevronsRight size={14} strokeWidth={2} />
           </button>
         </div>
       </div>
 
-      <div class="gbd-footer__center">
-        <span class="gbd-footer__page">Page {page} of {totalPages}</span>
+      <div class="gty-footer__center">
+        <span class="gty-footer__page">Page {page} of {totalPages}</span>
       </div>
 
-      <div class="gbd-footer__right">
-        <span class="gbd-footer__count">{totalCount} {totalCount === 1 ? 'record' : 'records'}</span>
+      <div class="gty-footer__right">
+        <span class="gty-footer__count">{totalCount} {totalCount === 1 ? 'record' : 'records'}</span>
         <select
-          class="gbd-footer__select"
+          class="gty-footer__select"
           value={perPage}
           onChange={(e) => onPerPageChange && onPerPageChange(Number(e.target.value))}
         >
