@@ -114,19 +114,38 @@ class Grid extends \Elementor\Widget_Base
             'default'      => 'yes',
         ]);
 
-        $this->add_control('show_record_modal', [
-            'label'        => 'Row Click — Open Record',
-            'type'         => \Elementor\Controls_Manager::SWITCHER,
-            'label_on'     => 'Yes',
-            'label_off'    => 'No',
-            'return_value' => 'yes',
-            'default'      => 'yes',
-        ]);
-
         $this->add_control('hidden_fields', [
             'label'   => 'Hidden Fields',
             'type'    => \Elementor\Controls_Manager::HIDDEN,
             'default' => '[]',
+        ]);
+
+        $this->end_controls_section();
+
+        // ── Single Record View ─────────────────────────────────────────────
+
+        $this->start_controls_section('record_view_section', [
+            'label' => 'Single Record View',
+            'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+        ]);
+
+        $this->add_control('record_view_mode', [
+            'label'   => 'On Row Click',
+            'type'    => \Elementor\Controls_Manager::SELECT,
+            'options' => [
+                'modal'    => 'Open Modal',
+                'link'     => 'Link to Single Page',
+                'disabled' => 'Disabled',
+            ],
+            'default' => 'modal',
+        ]);
+
+        $this->add_control('record_link_pattern', [
+            'label'       => 'Link Pattern',
+            'type'        => \Elementor\Controls_Manager::TEXT,
+            'placeholder' => '/listings/{{record.id}}',
+            'description' => 'Use {{record.field}} tokens — e.g. {{record.slug}} or {{record.id}}',
+            'condition'   => ['record_view_mode' => 'link'],
         ]);
 
         $this->end_controls_section();
@@ -173,7 +192,10 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['default_view']
                             : $enabled_views[0];
 
-        $show_record_modal = ($settings['show_record_modal'] ?? 'yes') === 'yes';
+        $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
+                                ? $settings['record_view_mode']
+                                : 'modal';
+        $record_link_pattern = sanitize_text_field($settings['record_link_pattern'] ?? '');
 
         $hidden_fields_raw = $settings['hidden_fields'] ?? '[]';
         $hidden_fields     = json_decode($hidden_fields_raw, true);
@@ -193,14 +215,15 @@ class Grid extends \Elementor\Widget_Base
         $this->enqueuePreact();
 
         $config = wp_json_encode([
-            'showFilters'      => $show_filters,
-            'showFacetToggle'  => $show_facet_toggle,
-            'perPage'          => $per_page,
-            'colorScheme'      => $color_scheme,
-            'defaultView'      => $default_view,
-            'enabledViews'     => $enabled_views,
-            'hiddenFields'     => $hidden_fields,
-            'showRecordModal'  => $show_record_modal,
+            'showFilters'       => $show_filters,
+            'showFacetToggle'   => $show_facet_toggle,
+            'perPage'           => $per_page,
+            'colorScheme'       => $color_scheme,
+            'defaultView'       => $default_view,
+            'enabledViews'      => $enabled_views,
+            'hiddenFields'      => $hidden_fields,
+            'recordViewMode'    => $record_view_mode,
+            'recordLinkPattern' => $record_link_pattern,
         ]);
 
         echo '<div'

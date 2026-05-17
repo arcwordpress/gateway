@@ -1,3 +1,11 @@
+export const resolveRecordLink = (pattern, record) => {
+  if (!pattern || !record) return null;
+  return pattern.replace(/\{\{record\.([^}]+)\}\}/g, (_, path) => {
+    const val = path.split('.').reduce((obj, key) => obj?.[key], record);
+    return val != null ? String(val) : '';
+  });
+};
+
 export const formatValue = (val, field) => {
   const fmt = field?.format ?? field?.config?.format;
   if (!fmt || val === null || val === undefined || val === '') return null;
