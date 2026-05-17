@@ -4,16 +4,16 @@
    ============================================================ */
 
 .gbd-grid {
-  --gbd-bg:          #ffffff;
-  --gbd-surface:     #f5f5f5;
-  --gbd-border:      #000000;
-  --gbd-text:        #000000;
-  --gbd-text-muted:  #555555;
-  --gbd-btn-bg:      #f5f5f5;
-  --gbd-btn-text:    #000000;
-  --gbd-btn-hover:   #e0e0e0;
-  --gbd-row-hover:   #f5f5f5;
-  --gbd-select-bg:   #ffffff;
+  --gbd-bg:         oklch(100% 0 0);
+  --gbd-surface:    oklch(96% 0 0);
+  --gbd-border:     oklch(0% 0 0);
+  --gbd-text:       oklch(0% 0 0);
+  --gbd-text-muted: oklch(40% 0 0);
+  --gbd-btn-bg:     oklch(96% 0 0);
+  --gbd-btn-text:   oklch(0% 0 0);
+  --gbd-btn-hover:  oklch(88% 0 0);
+  --gbd-row-hover:  oklch(96% 0 0);
+  --gbd-select-bg:  oklch(100% 0 0);
 
   background:   var(--gbd-bg);
   color:        var(--gbd-text);
@@ -25,16 +25,16 @@
 }
 
 .gbd-grid--dark {
-  --gbd-bg:          #000000;
-  --gbd-surface:     #111111;
-  --gbd-border:      #ffffff;
-  --gbd-text:        #ffffff;
-  --gbd-text-muted:  #aaaaaa;
-  --gbd-btn-bg:      #111111;
-  --gbd-btn-text:    #ffffff;
-  --gbd-btn-hover:   #222222;
-  --gbd-row-hover:   #111111;
-  --gbd-select-bg:   #000000;
+  --gbd-bg:         oklch(14.1% 0.005 285.823);
+  --gbd-surface:    oklch(18.5% 0.005 285.823);
+  --gbd-border:     oklch(28% 0.005 285.823);
+  --gbd-text:       oklch(96% 0 0);
+  --gbd-text-muted: oklch(62% 0.005 285.823);
+  --gbd-btn-bg:     oklch(18.5% 0.005 285.823);
+  --gbd-btn-text:   oklch(96% 0 0);
+  --gbd-btn-hover:  oklch(23% 0.005 285.823);
+  --gbd-row-hover:  oklch(18.5% 0.005 285.823);
+  --gbd-select-bg:  oklch(14.1% 0.005 285.823);
 }
 
 /* ── Records wrapper (fade on page/size change) ─────────── */
