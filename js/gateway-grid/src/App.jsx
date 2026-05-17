@@ -67,6 +67,11 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets  = facets.length > 0;
 
+  // Build a type lookup so the filter can use equality vs. substring per facet
+  const facetTypeMap = Object.fromEntries(
+    facets.map(f => [f.field_name || f.field || f.key, f.facet_type || f.type || 'text'])
+  );
+
   const handleFacetChange = (field, value) => setFacetValues(p => ({ ...p, [field]: value }));
 
   const filtered = records.filter((record) => {
@@ -87,7 +92,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         continue;
       }
 
-      if (!String(record[field] ?? '').toLowerCase().includes(String(value).toLowerCase())) return false;
+      const type = facetTypeMap[field] || 'text';
+      if (type === 'select' || type === 'checkbox') {
+        if (String(record[field] ?? '') !== String(value)) return false;
+      } else {
+        if (!String(record[field] ?? '').toLowerCase().includes(String(value).toLowerCase())) return false;
+      }
     }
 
     return true;
