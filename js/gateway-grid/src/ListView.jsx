@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { getDisplayField } from './utils';
 
-const ListView = ({ collection, records, onRecordClick, getRecordHref }) => {
+const ListView = ({ collection, records, onRecordClick, getRecordHref, canSeeActions }) => {
   const displayField = getDisplayField(collection);
 
   if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
@@ -29,6 +29,11 @@ const ListView = ({ collection, records, onRecordClick, getRecordHref }) => {
               <p class="gty-list__desc">{record.description}</p>
             )}
           </div>
+          {canSeeActions && (
+            <div class="gty-list__actions">
+              <span class="gty-actions-placeholder">ACTIONS</span>
+            </div>
+          )}
         </Tag>
         );
       })}

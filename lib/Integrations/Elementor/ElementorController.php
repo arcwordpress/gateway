@@ -56,9 +56,12 @@ class ElementorController
         $version = md5_file($scriptPath);
 
         wp_enqueue_script('gateway-grid', $buildUrl . 'index.js', [], $version, true);
+        $current_user = wp_get_current_user();
         wp_localize_script('gateway-grid', 'gatewayBd', [
-            'apiRoot' => esc_url_raw(rest_url()),
-            'siteUrl' => esc_url_raw(site_url()),
+            'apiRoot'          => esc_url_raw(rest_url()),
+            'siteUrl'          => esc_url_raw(site_url()),
+            'currentUserId'    => get_current_user_id(),
+            'currentUserRoles' => array_values((array) $current_user->roles),
         ]);
 
         $cssPath = $build . 'index.css';

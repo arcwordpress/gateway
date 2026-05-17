@@ -19,6 +19,8 @@ function mountElement(el) {
   const hiddenFields        = Array.isArray(config.hiddenFields) ? config.hiddenFields : [];
   const recordViewMode      = config.recordViewMode || 'modal';
   const recordLinkPattern   = config.recordLinkPattern || '';
+  const actionsEnabled      = config.actionsEnabled === true;
+  const actionRoles         = Array.isArray(config.actionRoles) ? config.actionRoles : ['administrator'];
 
   render(
     <App
@@ -33,6 +35,8 @@ function mountElement(el) {
       hiddenFields={hiddenFields}
       recordViewMode={recordViewMode}
       recordLinkPattern={recordLinkPattern}
+      actionsEnabled={actionsEnabled}
+      actionRoles={actionRoles}
     />,
     el
   );

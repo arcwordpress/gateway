@@ -150,6 +150,35 @@ class Grid extends \Elementor\Widget_Base
 
         $this->end_controls_section();
 
+        // ── Actions ────────────────────────────────────────────────────────
+
+        $this->start_controls_section('actions_section', [
+            'label' => 'Actions',
+            'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+        ]);
+
+        $this->add_control('enable_actions', [
+            'label'        => 'Enable Actions',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show an Actions column/area on each record row.',
+        ]);
+
+        $this->add_control('action_roles', [
+            'label'       => 'Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'description' => 'Actions are only shown to users with one of these roles.',
+            'condition'   => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->end_controls_section();
+
         $this->start_controls_section('style_section', [
             'label' => 'Style',
             'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
@@ -192,6 +221,13 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['default_view']
                             : $enabled_views[0];
 
+        $enable_actions = ($settings['enable_actions'] ?? '') === 'yes';
+        $action_roles   = $settings['action_roles'] ?? ['administrator'];
+        if (!is_array($action_roles) || empty($action_roles)) {
+            $action_roles = ['administrator'];
+        }
+        $action_roles = array_values(array_map('sanitize_key', $action_roles));
+
         $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
                                 ? $settings['record_view_mode']
                                 : 'modal';
@@ -224,6 +260,8 @@ class Grid extends \Elementor\Widget_Base
             'hiddenFields'      => $hidden_fields,
             'recordViewMode'    => $record_view_mode,
             'recordLinkPattern' => $record_link_pattern,
+            'actionsEnabled'    => $enable_actions,
+            'actionRoles'       => $action_roles,
         ]);
 
         echo '<div'
@@ -248,10 +286,13 @@ class Grid extends \Elementor\Widget_Base
         $version = md5_file($scriptPath);
 
         if (!wp_script_is('gateway-grid', 'registered')) {
+            $current_user = wp_get_current_user();
             wp_register_script('gateway-grid', $buildUrl . 'index.js', [], $version, true);
             wp_localize_script('gateway-grid', 'gatewayBd', [
-                'apiRoot' => esc_url_raw(rest_url()),
-                'siteUrl' => esc_url_raw(site_url()),
+                'apiRoot'          => esc_url_raw(rest_url()),
+                'siteUrl'          => esc_url_raw(site_url()),
+                'currentUserId'    => get_current_user_id(),
+                'currentUserRoles' => array_values((array) $current_user->roles),
             ]);
         }
 
@@ -261,6 +302,16 @@ class Grid extends \Elementor\Widget_Base
 
         wp_enqueue_script('gateway-grid');
         wp_enqueue_style('gateway-grid');
+    }
+
+    private function getRoleOptions(): array
+    {
+        $roles   = wp_roles()->roles;
+        $options = [];
+        foreach ($roles as $role_key => $role_data) {
+            $options[$role_key] = translate_user_role($role_data['name']);
+        }
+        return $options;
     }
 
     private function getCollectionOptions(): array
