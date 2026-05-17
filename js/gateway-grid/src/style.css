@@ -832,12 +832,13 @@
 }
 
 .gty-btn--primary {
-  background: oklch(55% 0.18 250);
-  color:      oklch(98% 0 0);
+  background: var(--gty-zinc-700);
+  color:      var(--gty-zinc-300);
 }
 
 .gty-btn--primary:hover:not(:disabled) {
-  background: oklch(50% 0.18 250);
+  background: var(--gty-zinc-600);
+  color:      oklch(96% 0 0);
 }
 
 .gty-btn--primary:disabled {
