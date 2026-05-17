@@ -1,38 +1,40 @@
 import { h } from 'preact';
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-preact';
 
-const Footer = ({ totalRows, perPage, onPerPageChange }) => {
+const Footer = ({ totalCount, page, totalPages, onPageChange, perPage, onPerPageChange }) => {
   const base      = [10, 20, 50, 100];
-  // 0 = show all; keep it out of the numeric sort, append separately
   const showAll   = perPage === 0;
   const numeric   = [...new Set([...base, ...(showAll ? [] : [perPage])])].sort((a, b) => a - b);
+
+  const atFirst = page <= 1;
+  const atLast  = page >= totalPages;
 
   return (
     <div class="gbd-footer">
 
       <div class="gbd-footer__left">
         <div class="gbd-footer__pagination">
-          <button class="gbd-footer__btn" disabled title="First page">
-            <ChevronsLeft size={14} />
+          <button class="gbd-footer__btn" disabled={atFirst} onClick={() => onPageChange(1)} title="First page">
+            <ChevronsLeft size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled title="Previous page">
-            <ChevronLeft size={14} />
+          <button class="gbd-footer__btn" disabled={atFirst} onClick={() => onPageChange(page - 1)} title="Previous page">
+            <ChevronLeft size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled title="Next page">
-            <ChevronRight size={14} />
+          <button class="gbd-footer__btn" disabled={atLast} onClick={() => onPageChange(page + 1)} title="Next page">
+            <ChevronRight size={14} strokeWidth={2} />
           </button>
-          <button class="gbd-footer__btn" disabled title="Last page">
-            <ChevronsRight size={14} />
+          <button class="gbd-footer__btn" disabled={atLast} onClick={() => onPageChange(totalPages)} title="Last page">
+            <ChevronsRight size={14} strokeWidth={2} />
           </button>
         </div>
       </div>
 
       <div class="gbd-footer__center">
-        <span class="gbd-footer__page">Page 1 of 1</span>
+        <span class="gbd-footer__page">Page {page} of {totalPages}</span>
       </div>
 
       <div class="gbd-footer__right">
-        <span class="gbd-footer__count">{totalRows} {totalRows === 1 ? 'row' : 'rows'}</span>
+        <span class="gbd-footer__count">{totalCount} {totalCount === 1 ? 'record' : 'records'}</span>
         <select
           class="gbd-footer__select"
           value={perPage}

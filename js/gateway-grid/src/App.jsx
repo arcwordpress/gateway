@@ -14,6 +14,9 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const [error,       setError]       = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage,     setPerPage]     = useState(initialPerPage);
+  const [page,        setPage]        = useState(1);
+  const [totalCount,  setTotalCount]  = useState(0);
+  const [totalPages,  setTotalPages]  = useState(1);
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState('table');
@@ -38,17 +41,32 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
 
         const url = new URL(`${apiRoot}${getManyRoute.route}`, window.location.origin);
         url.searchParams.set('relations', 'true');
-        if (perPage > 0) url.searchParams.set('per_page', String(perPage));
+        if (perPage > 0) {
+          url.searchParams.set('per_page', String(perPage));
+          url.searchParams.set('page', String(page));
+        }
 
         const recRes = await fetch(url.toString());
         if (!recRes.ok) throw new Error(`Failed to fetch records`);
         const data = await recRes.json();
+
         const rows = Array.isArray(data)             ? data
           : Array.isArray(data?.data?.items)         ? data.data.items
           : Array.isArray(data?.data)                ? data.data
           : Array.isArray(data?.items)               ? data.items
           : [];
         setRecords(rows);
+
+        // Prefer WP REST API headers; fall back to response body fields
+        const headerTotal = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
+        const headerPages = parseInt(recRes.headers.get('X-WP-TotalPages') || '0', 10);
+        const bodyTotal   = data?.total ?? data?.meta?.total ?? data?.count ?? null;
+
+        const resolvedTotal = headerTotal || (typeof bodyTotal === 'number' ? bodyTotal : rows.length);
+        const resolvedPages = headerPages || (perPage > 0 ? Math.ceil(resolvedTotal / perPage) : 1);
+
+        setTotalCount(resolvedTotal);
+        setTotalPages(Math.max(1, resolvedPages));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -57,7 +75,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
     };
 
     load();
-  }, [collectionKey, apiRoot, perPage]);
+  }, [collectionKey, apiRoot, perPage, page]);
+
+  const handlePerPageChange = (n) => {
+    setPerPage(n);
+    setPage(1);
+  };
 
   if (loading) return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
   if (error)   return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
@@ -67,7 +90,6 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets  = facets.length > 0;
 
-  // Build a type lookup so the filter can use equality vs. substring per facet
   const facetTypeMap = Object.fromEntries(
     facets.map(f => [f.field_name || f.field || f.key, f.facet_type || f.type || 'text'])
   );
@@ -128,7 +150,14 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         : <ListView collection={collection} records={filtered} />
       }
 
-      <Footer totalRows={filtered.length} perPage={perPage} onPerPageChange={setPerPage} />
+      <Footer
+        totalCount={totalCount}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        perPage={perPage}
+        onPerPageChange={handlePerPageChange}
+      />
     </div>
   );
 };
