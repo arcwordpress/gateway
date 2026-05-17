@@ -15,9 +15,10 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const [error,       setError]       = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage,     setPerPage]     = useState(initialPerPage);
-  const [page,        setPage]        = useState(1);
-  const [totalCount,  setTotalCount]  = useState(0);
-  const [totalPages,  setTotalPages]  = useState(1);
+  const [page,       setPage]       = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const totalPages = perPage > 0 ? Math.max(1, Math.ceil(totalCount / perPage)) : 1;
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState(defaultView || 'table');
@@ -59,17 +60,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         setRecords(rows);
 
         // Gateway API wraps pagination in data.data.pagination
-        const pagination    = data?.data?.pagination ?? {};
-        const headerTotal   = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
-        const headerPages   = parseInt(recRes.headers.get('X-WP-TotalPages') || '0', 10);
-        const bodyTotal     = pagination.record_count ?? data?.total ?? data?.meta?.total ?? data?.count ?? null;
-        const bodyPages     = pagination.total_pages  ?? null;
+        const pagination  = data?.data?.pagination ?? {};
+        const headerTotal = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
+        const bodyTotal   = pagination.record_count ?? data?.total ?? data?.meta?.total ?? data?.count ?? null;
 
         const resolvedTotal = headerTotal || (typeof bodyTotal === 'number' ? bodyTotal : rows.length);
-        const resolvedPages = headerPages || bodyPages || (perPage > 0 ? Math.ceil(resolvedTotal / perPage) : 1);
-
         setTotalCount(resolvedTotal);
-        setTotalPages(Math.max(1, resolvedPages));
       } catch (err) {
         setError(err.message);
       } finally {
