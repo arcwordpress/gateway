@@ -8,7 +8,7 @@ import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 
-const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -134,6 +134,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
     <div class={rootClass}>
       <Toolbar
         filtersEnabled={showFilters}
+        facetToggleEnabled={showFacetToggle}
         facetsVisible={showFacets}
         onToggleFacets={() => setShowFacets(v => !v)}
         view={view}
