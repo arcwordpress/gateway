@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { ListFilter } from 'lucide-preact';
+import { SlidersHorizontal } from 'lucide-preact';
 import ViewSwitcher from './ViewSwitcher';
 
 const Toolbar = ({ filtersEnabled, facetToggleEnabled, facetsVisible, onToggleFacets, view, onViewChange, enabledViews, search, onSearchChange }) => (
@@ -12,7 +12,7 @@ const Toolbar = ({ filtersEnabled, facetToggleEnabled, facetsVisible, onToggleFa
           title="Toggle filters"
           type="button"
         >
-          <ListFilter size={14} strokeWidth={2} />
+          <SlidersHorizontal size={14} strokeWidth={2} />
         </button>
       )}
       <div class="gbd-toolbar__sep" />
