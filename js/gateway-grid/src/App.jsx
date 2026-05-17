@@ -12,6 +12,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
+  const [fetching,    setFetching]    = useState(false);
   const [error,       setError]       = useState(null);
   const [facetValues, setFacetValues] = useState({});
   const [perPage,     setPerPage]     = useState(initialPerPage);
@@ -27,7 +28,9 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
     if (!collectionKey) return;
 
     const load = async () => {
-      setLoading(true);
+      // Initial load shows full loader; page/size changes just dim the records
+      if (records.length === 0) setLoading(true);
+      else setFetching(true);
       setError(null);
       try {
         const metaRes = await fetch(`${apiRoot}gateway/v1/collections/${collectionKey}`);
@@ -70,6 +73,7 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
         setError(err.message);
       } finally {
         setLoading(false);
+        setFetching(false);
       }
     };
 
@@ -145,10 +149,12 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
           : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      {view === 'cards' ? <CardsView collection={collection} records={filtered} />
-        : view === 'list' ? <ListView collection={collection} records={filtered} />
-        : <Grid collection={collection} records={filtered} />
-      }
+      <div class={fetching ? 'gbd-records gbd-records--fetching' : 'gbd-records'}>
+        {view === 'cards' ? <CardsView collection={collection} records={filtered} />
+          : view === 'list' ? <ListView collection={collection} records={filtered} />
+          : <Grid collection={collection} records={filtered} />
+        }
+      </div>
 
       <Footer
         totalCount={totalCount}

@@ -37,6 +37,17 @@
   --gbd-select-bg:   #000000;
 }
 
+/* ── Records wrapper (fade on page/size change) ─────────── */
+
+.gbd-records {
+  transition: opacity .18s ease;
+}
+
+.gbd-records--fetching {
+  opacity:        0.4;
+  pointer-events: none;
+}
+
 /* ── Table ───────────────────────────────────────────────── */
 
 .gbd-grid__table-wrap {
