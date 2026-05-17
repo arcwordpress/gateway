@@ -7,6 +7,7 @@ import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
+import { getSortableFields } from './utils';
 
 const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
   const [collection,  setCollection]  = useState(null);
@@ -101,10 +102,22 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     setPage(1);
   };
 
+  const handleSortFieldChange = (field) => {
+    setSortField(field);
+    setSortDir('asc');
+    setPage(1);
+  };
+
+  const handleSortDirToggle = () => {
+    setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    setPage(1);
+  };
+
   if (loading) return <div class="gty-grid"><div class="gty-grid__loading">Loading…</div></div>;
   if (error)   return <div class="gty-grid"><div class="gty-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 
+  const sortFields  = getSortableFields(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
   const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
   const hasFacets  = facets.length > 0;
@@ -158,6 +171,11 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
         enabledViews={enabledViews}
         search={search}
         onSearchChange={setSearch}
+        sortFields={sortFields}
+        sortField={sortField}
+        sortDir={sortDir}
+        onSortFieldChange={handleSortFieldChange}
+        onSortDirToggle={handleSortDirToggle}
       />
 
       {showFilters && showFacets && (
