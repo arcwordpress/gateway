@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
-import { getLabelField } from './utils';
+import { getLabelField, formatValue } from './utils';
 
 const getCellValue = (record, key, fields) => {
   const field = fields?.[key];
@@ -15,6 +15,8 @@ const getCellValue = (record, key, fields) => {
   const val = record[key];
   if (val === null || val === undefined) return '—';
   if (typeof val === 'object') return JSON.stringify(val);
+  const formatted = formatValue(val, field);
+  if (formatted !== null) return formatted;
   return String(val);
 };
 
