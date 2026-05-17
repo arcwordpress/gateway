@@ -7,9 +7,10 @@ import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
+import RecordModal    from './RecordModal';
 import { getSortableFields } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [] }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], showRecordModal = true }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -24,8 +25,9 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState(defaultView || 'table');
-  const [sortField,   setSortField]   = useState('');
-  const [sortDir,     setSortDir]     = useState('asc');
+  const [sortField,      setSortField]      = useState('');
+  const [sortDir,        setSortDir]        = useState('asc');
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -185,11 +187,17 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
       )}
 
       <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
-        {view === 'cards' ? <CardsView collection={collection} records={filtered} />
-          : view === 'list' ? <ListView collection={collection} records={filtered} />
-          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} />
+        {view === 'cards'
+          ? <CardsView collection={collection} records={filtered} onRecordClick={showRecordModal ? setSelectedRecord : null} />
+          : view === 'list'
+            ? <ListView collection={collection} records={filtered} onRecordClick={showRecordModal ? setSelectedRecord : null} />
+            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={showRecordModal ? setSelectedRecord : null} />
         }
       </div>
+
+      {selectedRecord && (
+        <RecordModal record={selectedRecord} collection={collection} onClose={() => setSelectedRecord(null)} />
+      )}
 
       <Footer
         totalCount={totalCount}

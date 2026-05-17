@@ -27,7 +27,7 @@ const SortIcon = ({ field, sortField, sortDir }) => {
     : <ArrowUpNarrowWide size={11} strokeWidth={2} />;
 };
 
-const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [] }) => {
+const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [], onRecordClick }) => {
   const fields = collection?.fields || {};
   let displayField = getDisplayField(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
@@ -100,7 +100,11 @@ const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = 
         </thead>
         <tbody>
           {records.map((record, i) => (
-            <tr key={record.id} class={`gty-grid__row gty-grid__row--${i % 2 === 0 ? 'even' : 'odd'}`}>
+            <tr
+              key={record.id}
+              class={`gty-grid__row gty-grid__row--${i % 2 === 0 ? 'even' : 'odd'}${onRecordClick ? ' gty-grid__row--clickable' : ''}`}
+              onClick={onRecordClick ? () => onRecordClick(record) : undefined}
+            >
               <td class="gty-grid__td gty-grid__td--id">#{record.id}</td>
               {displayField && (
                 <td class="gty-grid__td">{getCellValue(record, displayField, fields)}</td>

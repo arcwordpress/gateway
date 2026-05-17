@@ -114,6 +114,15 @@ class Grid extends \Elementor\Widget_Base
             'default'      => 'yes',
         ]);
 
+        $this->add_control('show_record_modal', [
+            'label'        => 'Row Click — Open Record',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+        ]);
+
         $this->add_control('hidden_fields', [
             'label'   => 'Hidden Fields',
             'type'    => \Elementor\Controls_Manager::HIDDEN,
@@ -164,6 +173,8 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['default_view']
                             : $enabled_views[0];
 
+        $show_record_modal = ($settings['show_record_modal'] ?? 'yes') === 'yes';
+
         $hidden_fields_raw = $settings['hidden_fields'] ?? '[]';
         $hidden_fields     = json_decode($hidden_fields_raw, true);
         if (!is_array($hidden_fields)) {
@@ -189,6 +200,7 @@ class Grid extends \Elementor\Widget_Base
             'defaultView'      => $default_view,
             'enabledViews'     => $enabled_views,
             'hiddenFields'     => $hidden_fields,
+            'showRecordModal'  => $show_record_modal,
         ]);
 
         echo '<div'

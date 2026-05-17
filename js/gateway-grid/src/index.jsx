@@ -16,7 +16,8 @@ function mountElement(el) {
     ? config.enabledViews.filter(v => allViews.includes(v))
     : allViews;
   const defaultView   = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
-  const hiddenFields  = Array.isArray(config.hiddenFields) ? config.hiddenFields : [];
+  const hiddenFields      = Array.isArray(config.hiddenFields) ? config.hiddenFields : [];
+  const showRecordModal   = config.showRecordModal !== false;
 
   render(
     <App
@@ -29,6 +30,7 @@ function mountElement(el) {
       defaultView={defaultView}
       enabledViews={enabledViews}
       hiddenFields={hiddenFields}
+      showRecordModal={showRecordModal}
     />,
     el
   );
