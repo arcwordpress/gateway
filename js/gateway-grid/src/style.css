@@ -167,9 +167,9 @@
   align-items:     center;
   justify-content: center;
   background:      none;
-  border:          1px solid transparent;
+  border:          none;
   border-radius:   4px;
-  color:           var(--gty-zinc-400);
+  color:           var(--gty-zinc-700);
   cursor:          pointer;
   line-height:     0;
   padding:         .3rem;
@@ -181,9 +181,8 @@
 }
 
 .gty-toolbar__btn--on {
-  background:   oklch(20% 0.005 285.823);
-  border-color: var(--gty-zinc-400);
-  color:        var(--gty-zinc-400);
+  background: oklch(20% 0.005 285.823);
+  color:      var(--gty-zinc-400);
 }
 
 .gty-toolbar__sort-select {
