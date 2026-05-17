@@ -625,10 +625,41 @@
   to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* Clickable rows ─────────────────────────────────────────── */
+/* Clickable / linked rows ───────────────────────────────── */
 
 .gty-grid__row--clickable,
 .gty-list__item--clickable,
 .gty-cards__card--clickable {
   cursor: pointer;
 }
+
+.gty-list__item--link,
+.gty-cards__card--link {
+  cursor:          pointer;
+  text-decoration: none;
+  color:           inherit;
+  display:         flex;
+}
+
+.gty-cards__card--link {
+  display: block;
+}
+
+/* Stretched link: <a> in display-field td covers the whole row */
+.gty-grid__row--linked { position: relative; }
+
+.gty-grid__td--display-link { position: relative; }
+
+.gty-grid__row-link {
+  color:           inherit;
+  text-decoration: none;
+}
+
+.gty-grid__row-link::after {
+  content:  '';
+  position: absolute;
+  inset:    0;
+  z-index:  1;
+}
+
+.gty-grid__row-link:hover { text-decoration: underline; }

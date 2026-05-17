@@ -1,17 +1,21 @@
 import { h } from 'preact';
 import { getDisplayField } from './utils';
 
-const ListView = ({ collection, records, onRecordClick }) => {
+const ListView = ({ collection, records, onRecordClick, getRecordHref }) => {
   const displayField = getDisplayField(collection);
 
   if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
 
   return (
     <div class="gty-list">
-      {records.map((record, i) => (
-        <div
+      {records.map((record, i) => {
+        const Tag  = getRecordHref ? 'a' : 'div';
+        const href = getRecordHref ? getRecordHref(record) : undefined;
+        return (
+        <Tag
           key={record.id}
-          class={`gty-list__item gty-list__item--${i % 2 === 0 ? 'even' : 'odd'}${onRecordClick ? ' gty-list__item--clickable' : ''}`}
+          href={href}
+          class={`gty-list__item gty-list__item--${i % 2 === 0 ? 'even' : 'odd'}${onRecordClick ? ' gty-list__item--clickable' : ''}${getRecordHref ? ' gty-list__item--link' : ''}`}
           onClick={onRecordClick ? () => onRecordClick(record) : undefined}
         >
           <div class="gty-list__content">
@@ -25,8 +29,9 @@ const ListView = ({ collection, records, onRecordClick }) => {
               <p class="gty-list__desc">{record.description}</p>
             )}
           </div>
-        </div>
-      ))}
+        </Tag>
+        );
+      })}
     </div>
   );
 };
