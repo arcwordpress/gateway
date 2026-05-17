@@ -62,7 +62,14 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
       <table class="gty-grid__table">
         <thead>
           <tr>
-            <th class="gty-grid__th gty-grid__th--id">ID</th>
+            <th class={thClass('id')} style="width:3rem" onClick={() => onSort('id')}>
+              <span class="gty-grid__th-inner">
+                ID
+                <span class="gty-grid__sort-icon">
+                  <SortIcon field="id" sortField={sortField} sortDir={sortDir} />
+                </span>
+              </span>
+            </th>
             {labelField && (
               <th class={thClass(labelField)} onClick={() => onSort(labelField)}>
                 <span class="gty-grid__th-inner">

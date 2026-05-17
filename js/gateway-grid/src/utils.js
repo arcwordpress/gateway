@@ -29,7 +29,7 @@ export const getSortableFields = (collection) => {
       .map(([k, f]) => ({ key: k, label: f.label || k }));
   }
 
-  const result = [];
+  const result = [{ key: 'id', label: 'ID' }];
   if (labelField) {
     const lf = Array.isArray(fields)
       ? fields.find(f => f.name === labelField)
