@@ -27,9 +27,9 @@ const SortIcon = ({ field, sortField, sortDir }) => {
     : <ArrowUpNarrowWide size={11} strokeWidth={2} />;
 };
 
-const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
+const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [] }) => {
   const fields = collection?.fields || {};
-  const labelField = getLabelField(collection);
+  let labelField = getLabelField(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
 
   let columns;
@@ -45,9 +45,13 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
       : Object.entries(fields);
     columns = fieldEntries
       .filter(([k]) => !SKIP.has(k))
-      .slice(0, 3)
+      .slice(0, 5)
       .map(([k, f]) => ({ key: k, label: f.label || k }));
   }
+
+  const hidden = new Set(hiddenFields);
+  if (hidden.has(labelField)) labelField = null;
+  columns = columns.filter(col => !hidden.has(col.key));
 
   if (records.length === 0) {
     return <p class="gty-grid__empty">No records found.</p>;

@@ -15,7 +15,8 @@ function mountElement(el) {
   const enabledViews = Array.isArray(config.enabledViews) && config.enabledViews.length
     ? config.enabledViews.filter(v => allViews.includes(v))
     : allViews;
-  const defaultView = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
+  const defaultView   = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
+  const hiddenFields  = Array.isArray(config.hiddenFields) ? config.hiddenFields : [];
 
   render(
     <App
@@ -27,6 +28,7 @@ function mountElement(el) {
       showFacetToggle={config.showFacetToggle !== false}
       defaultView={defaultView}
       enabledViews={enabledViews}
+      hiddenFields={hiddenFields}
     />,
     el
   );

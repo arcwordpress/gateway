@@ -9,7 +9,7 @@ import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
 import { getSortableFields } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [] }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -187,7 +187,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
       <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
         {view === 'cards' ? <CardsView collection={collection} records={filtered} />
           : view === 'list' ? <ListView collection={collection} records={filtered} />
-          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} />
         }
       </div>
 

@@ -114,6 +114,12 @@ class Grid extends \Elementor\Widget_Base
             'default'      => 'yes',
         ]);
 
+        $this->add_control('hidden_fields', [
+            'label'   => 'Hidden Fields',
+            'type'    => \Elementor\Controls_Manager::HIDDEN,
+            'default' => '[]',
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -158,6 +164,13 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['default_view']
                             : $enabled_views[0];
 
+        $hidden_fields_raw = $settings['hidden_fields'] ?? '[]';
+        $hidden_fields     = json_decode($hidden_fields_raw, true);
+        if (!is_array($hidden_fields)) {
+            $hidden_fields = [];
+        }
+        $hidden_fields = array_values(array_filter(array_map('sanitize_key', $hidden_fields)));
+
         if (empty($collection_key)) {
             if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
                 echo '<div class="gateway-grid-placeholder">Gateway Grid: select a collection in the panel.</div>';
@@ -175,6 +188,7 @@ class Grid extends \Elementor\Widget_Base
             'colorScheme'      => $color_scheme,
             'defaultView'      => $default_view,
             'enabledViews'     => $enabled_views,
+            'hiddenFields'     => $hidden_fields,
         ]);
 
         echo '<div'
