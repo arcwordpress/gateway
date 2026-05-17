@@ -33,7 +33,7 @@ const ViewSwitcher = ({ view, onViewChange, enabledViews = ['table', 'list', 'ca
         title={`View: ${current.label}`}
         type="button"
       >
-        <current.Icon size={14} strokeWidth={2} />
+        <current.Icon size={16} strokeWidth={2} />
       </button>
 
       {open && (
@@ -48,7 +48,7 @@ const ViewSwitcher = ({ view, onViewChange, enabledViews = ['table', 'list', 'ca
                   type="button"
                   onClick={() => { setOpen(false); onViewChange(key); }}
                 >
-                  <cfg.Icon size={14} strokeWidth={2} />
+                  <cfg.Icon size={16} strokeWidth={2} />
                   <span>{cfg.label}</span>
                 </button>
               </li>
