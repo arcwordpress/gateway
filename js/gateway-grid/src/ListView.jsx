@@ -8,8 +8,8 @@ const ListView = ({ collection, records }) => {
 
   return (
     <div class="gty-list">
-      {records.map((record) => (
-        <div key={record.id} class="gty-list__item">
+      {records.map((record, i) => (
+        <div key={record.id} class={`gty-list__item gty-list__item--${i % 2 === 0 ? 'even' : 'odd'}`}>
           <div class="gty-list__content">
             <div class="gty-list__header">
               <span class="gty-list__id">#{record.id}</span>

@@ -99,8 +99,8 @@ const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = 
           </tr>
         </thead>
         <tbody>
-          {records.map((record) => (
-            <tr key={record.id} class="gty-grid__row">
+          {records.map((record, i) => (
+            <tr key={record.id} class={`gty-grid__row gty-grid__row--${i % 2 === 0 ? 'even' : 'odd'}`}>
               <td class="gty-grid__td gty-grid__td--id">#{record.id}</td>
               {displayField && (
                 <td class="gty-grid__td">{getCellValue(record, displayField, fields)}</td>
