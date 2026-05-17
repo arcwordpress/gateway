@@ -15,7 +15,12 @@ function mountElement(el) {
   const enabledViews = Array.isArray(config.enabledViews) && config.enabledViews.length
     ? config.enabledViews.filter(v => allViews.includes(v))
     : allViews;
-  const defaultView = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
+  const defaultView   = enabledViews.includes(config.defaultView) ? config.defaultView : enabledViews[0];
+  const hiddenFields        = Array.isArray(config.hiddenFields) ? config.hiddenFields : [];
+  const recordViewMode      = config.recordViewMode || 'modal';
+  const recordLinkPattern   = config.recordLinkPattern || '';
+  const actionsEnabled      = config.actionsEnabled === true;
+  const actionRoles         = Array.isArray(config.actionRoles) ? config.actionRoles : ['administrator'];
 
   render(
     <App
@@ -27,6 +32,11 @@ function mountElement(el) {
       showFacetToggle={config.showFacetToggle !== false}
       defaultView={defaultView}
       enabledViews={enabledViews}
+      hiddenFields={hiddenFields}
+      recordViewMode={recordViewMode}
+      recordLinkPattern={recordLinkPattern}
+      actionsEnabled={actionsEnabled}
+      actionRoles={actionRoles}
     />,
     el
   );

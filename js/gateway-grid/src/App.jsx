@@ -7,9 +7,10 @@ import CardsView      from './CardsView';
 import Facets         from './Facets';
 import FallbackFacets from './FallbackFacets';
 import Footer         from './Footer';
-import { getSortableFields } from './utils';
+import RecordModal    from './RecordModal';
+import { getSortableFields, resolveRecordLink } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'] }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -24,8 +25,9 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [showFacets,  setShowFacets]  = useState(true);
   const [search,      setSearch]      = useState('');
   const [view,        setView]        = useState(defaultView || 'table');
-  const [sortField,   setSortField]   = useState('');
-  const [sortDir,     setSortDir]     = useState('asc');
+  const [sortField,      setSortField]      = useState('');
+  const [sortDir,        setSortDir]        = useState('asc');
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     if (!collectionKey) return;
@@ -117,6 +119,15 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   if (error)   return <div class="gty-grid"><div class="gty-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 
+  const currentUserRoles = Array.isArray(window.gatewayBd?.currentUserRoles)
+    ? window.gatewayBd.currentUserRoles : [];
+  const canSeeActions = actionsEnabled && actionRoles.some(r => currentUserRoles.includes(r));
+
+  const onRecordClick  = recordViewMode === 'modal' ? setSelectedRecord : null;
+  const getRecordHref  = recordViewMode === 'link' && recordLinkPattern
+    ? (record) => resolveRecordLink(recordLinkPattern, record)
+    : null;
+
   const sortFields  = getSortableFields(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
   const facets     = Array.isArray(gridConfig?.facets) ? gridConfig.facets : [];
@@ -185,11 +196,17 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
       )}
 
       <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
-        {view === 'cards' ? <CardsView collection={collection} records={filtered} />
-          : view === 'list' ? <ListView collection={collection} records={filtered} />
-          : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+        {view === 'cards'
+          ? <CardsView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
+          : view === 'list'
+            ? <ListView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
+            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} />
         }
       </div>
+
+      {selectedRecord && (
+        <RecordModal record={selectedRecord} collection={collection} onClose={() => setSelectedRecord(null)} />
+      )}
 
       <Footer
         totalCount={totalCount}

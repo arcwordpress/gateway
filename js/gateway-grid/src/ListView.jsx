@@ -1,28 +1,42 @@
 import { h } from 'preact';
-import { getLabelField } from './utils';
+import { getDisplayField } from './utils';
 
-const ListView = ({ collection, records }) => {
-  const labelField = getLabelField(collection);
+const ListView = ({ collection, records, onRecordClick, getRecordHref, canSeeActions }) => {
+  const displayField = getDisplayField(collection);
 
   if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
 
   return (
     <div class="gty-list">
-      {records.map((record) => (
-        <div key={record.id} class="gty-list__item">
+      {records.map((record, i) => {
+        const Tag  = getRecordHref ? 'a' : 'div';
+        const href = getRecordHref ? getRecordHref(record) : undefined;
+        return (
+        <Tag
+          key={record.id}
+          href={href}
+          class={`gty-list__item gty-list__item--${i % 2 === 0 ? 'even' : 'odd'}${onRecordClick ? ' gty-list__item--clickable' : ''}${getRecordHref ? ' gty-list__item--link' : ''}`}
+          onClick={onRecordClick ? () => onRecordClick(record) : undefined}
+        >
           <div class="gty-list__content">
             <div class="gty-list__header">
               <span class="gty-list__id">#{record.id}</span>
-              {labelField && record[labelField] != null && (
-                <span class="gty-list__title">{String(record[labelField])}</span>
+              {displayField && record[displayField] != null && (
+                <span class="gty-list__title">{String(record[displayField])}</span>
               )}
             </div>
             {record.description && (
               <p class="gty-list__desc">{record.description}</p>
             )}
           </div>
-        </div>
-      ))}
+          {canSeeActions && (
+            <div class="gty-list__actions">
+              <span class="gty-actions-placeholder">ACTIONS</span>
+            </div>
+          )}
+        </Tag>
+        );
+      })}
     </div>
   );
 };

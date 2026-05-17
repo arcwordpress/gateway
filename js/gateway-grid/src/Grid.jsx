@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
-import { getLabelField, formatValue } from './utils';
+import { getDisplayField, getFieldLabel, formatValue } from './utils';
 
 const getCellValue = (record, key, fields) => {
   const field = fields?.[key];
@@ -8,8 +8,8 @@ const getCellValue = (record, key, fields) => {
     const relKey = key.endsWith('_id') ? key.slice(0, -3) : key;
     const relObj = record[relKey];
     if (relObj && typeof relObj === 'object') {
-      const labelField = field?.relation?.labelField || field?.labelField || 'title';
-      return relObj[labelField] || relObj.name || relObj.title || relObj.label || String(record[key] ?? '');
+      const displayField = field?.relation?.displayField || field?.displayField || 'title';
+      return relObj[displayField] || relObj.name || relObj.title || relObj.label || String(record[key] ?? '');
     }
   }
   const val = record[key];
@@ -27,9 +27,9 @@ const SortIcon = ({ field, sortField, sortDir }) => {
     : <ArrowUpNarrowWide size={11} strokeWidth={2} />;
 };
 
-const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
+const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [], onRecordClick, getRecordHref, canSeeActions }) => {
   const fields = collection?.fields || {};
-  const labelField = getLabelField(collection);
+  let displayField = getDisplayField(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
 
   let columns;
@@ -39,15 +39,19 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
       label: c.label || c.field,
     }));
   } else {
-    const SKIP = new Set(['id', labelField].filter(Boolean));
+    const SKIP = new Set(['id', displayField].filter(Boolean));
     const fieldEntries = Array.isArray(fields)
       ? fields.map((f) => [f.name, f])
       : Object.entries(fields);
     columns = fieldEntries
       .filter(([k]) => !SKIP.has(k))
-      .slice(0, 3)
+      .slice(0, 5)
       .map(([k, f]) => ({ key: k, label: f.label || k }));
   }
+
+  const hidden = new Set(hiddenFields);
+  if (hidden.has(displayField)) displayField = null;
+  columns = columns.filter(col => !hidden.has(col.key));
 
   if (records.length === 0) {
     return <p class="gty-grid__empty">No records found.</p>;
@@ -72,12 +76,12 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
                 </span>
               </span>
             </th>
-            {labelField && (
-              <th class={thClass(labelField)} onClick={() => onSort(labelField)}>
+            {displayField && (
+              <th class={thClass(displayField)} onClick={() => onSort(displayField)}>
                 <span class="gty-grid__th-inner">
-                  {fields?.[labelField]?.label || labelField}
+                  {getFieldLabel(fields, displayField)}
                   <span class="gty-grid__sort-icon">
-                    <SortIcon field={labelField} sortField={sortField} sortDir={sortDir} />
+                    <SortIcon field={displayField} sortField={sortField} sortDir={sortDir} />
                   </span>
                 </span>
               </th>
@@ -92,20 +96,37 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
                 </span>
               </th>
             ))}
+            {canSeeActions && (
+              <th class="gty-grid__th gty-grid__th--actions">Actions</th>
+            )}
           </tr>
         </thead>
         <tbody>
-          {records.map((record) => (
-            <tr key={record.id} class="gty-grid__row">
+          {records.map((record, i) => (
+            <tr
+              key={record.id}
+              class={`gty-grid__row gty-grid__row--${i % 2 === 0 ? 'even' : 'odd'}${onRecordClick ? ' gty-grid__row--clickable' : ''}${getRecordHref ? ' gty-grid__row--linked' : ''}`}
+              onClick={onRecordClick ? () => onRecordClick(record) : undefined}
+            >
               <td class="gty-grid__td gty-grid__td--id">#{record.id}</td>
-              {labelField && (
-                <td class="gty-grid__td">{getCellValue(record, labelField, fields)}</td>
+              {displayField && (
+                <td class={`gty-grid__td${getRecordHref ? ' gty-grid__td--display-link' : ''}`}>
+                  {getRecordHref
+                    ? <a href={getRecordHref(record)} class="gty-grid__row-link">{getCellValue(record, displayField, fields)}</a>
+                    : getCellValue(record, displayField, fields)
+                  }
+                </td>
               )}
               {columns.map((col) => (
                 <td key={col.key} class="gty-grid__td">
                   {getCellValue(record, col.key, fields)}
                 </td>
               ))}
+              {canSeeActions && (
+                <td class="gty-grid__td gty-grid__td--actions">
+                  <span class="gty-actions-placeholder">ACTIONS</span>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

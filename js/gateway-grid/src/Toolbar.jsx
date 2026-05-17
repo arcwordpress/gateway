@@ -20,14 +20,12 @@ const Toolbar = ({
             title="Toggle filters"
             type="button"
           >
-            <SlidersHorizontal size={14} strokeWidth={2} />
+            <SlidersHorizontal size={16} strokeWidth={2} />
           </button>
         )}
-        <div class="gty-toolbar__sep" />
         <ViewSwitcher view={view} onViewChange={onViewChange} enabledViews={enabledViews} />
         {showSort && (
           <>
-            <div class="gty-toolbar__sep" />
             <select
               class="gty-toolbar__sort-select"
               value={sortField}
@@ -46,8 +44,8 @@ const Toolbar = ({
                 type="button"
               >
                 {sortDir === 'asc'
-                  ? <ArrowDownNarrowWide size={14} strokeWidth={2} />
-                  : <ArrowUpNarrowWide size={14} strokeWidth={2} />
+                  ? <ArrowDownNarrowWide size={16} strokeWidth={2} />
+                  : <ArrowUpNarrowWide size={16} strokeWidth={2} />
                 }
               </button>
             )}
@@ -62,7 +60,7 @@ const Toolbar = ({
           value={search}
           onInput={(e) => onSearchChange(e.target.value)}
         />
-        <span class="gty-toolbar__search-icon"><Search size={12} strokeWidth={2} /></span>
+        <span class="gty-toolbar__search-icon"><Search size={14} strokeWidth={2} /></span>
       </div>
     </div>
   );

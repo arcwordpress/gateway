@@ -114,6 +114,69 @@ class Grid extends \Elementor\Widget_Base
             'default'      => 'yes',
         ]);
 
+        $this->add_control('hidden_fields', [
+            'label'   => 'Hidden Fields',
+            'type'    => \Elementor\Controls_Manager::HIDDEN,
+            'default' => '[]',
+        ]);
+
+        $this->end_controls_section();
+
+        // ── Single Record View ─────────────────────────────────────────────
+
+        $this->start_controls_section('record_view_section', [
+            'label' => 'Single Record View',
+            'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+        ]);
+
+        $this->add_control('record_view_mode', [
+            'label'   => 'On Row Click',
+            'type'    => \Elementor\Controls_Manager::SELECT,
+            'options' => [
+                'modal'    => 'Open Modal',
+                'link'     => 'Link to Single Page',
+                'disabled' => 'Disabled',
+            ],
+            'default' => 'modal',
+        ]);
+
+        $this->add_control('record_link_pattern', [
+            'label'       => 'Link Pattern',
+            'type'        => \Elementor\Controls_Manager::TEXT,
+            'placeholder' => '/listings/{{record.id}}',
+            'description' => 'Use {{record.field}} tokens — e.g. {{record.slug}} or {{record.id}}',
+            'condition'   => ['record_view_mode' => 'link'],
+        ]);
+
+        $this->end_controls_section();
+
+        // ── Actions ────────────────────────────────────────────────────────
+
+        $this->start_controls_section('actions_section', [
+            'label' => 'Actions',
+            'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+        ]);
+
+        $this->add_control('enable_actions', [
+            'label'        => 'Enable Actions',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show an Actions column/area on each record row.',
+        ]);
+
+        $this->add_control('action_roles', [
+            'label'       => 'Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'description' => 'Actions are only shown to users with one of these roles.',
+            'condition'   => ['enable_actions' => 'yes'],
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -158,6 +221,25 @@ class Grid extends \Elementor\Widget_Base
                             ? $settings['default_view']
                             : $enabled_views[0];
 
+        $enable_actions = ($settings['enable_actions'] ?? '') === 'yes';
+        $action_roles   = $settings['action_roles'] ?? ['administrator'];
+        if (!is_array($action_roles) || empty($action_roles)) {
+            $action_roles = ['administrator'];
+        }
+        $action_roles = array_values(array_map('sanitize_key', $action_roles));
+
+        $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
+                                ? $settings['record_view_mode']
+                                : 'modal';
+        $record_link_pattern = sanitize_text_field($settings['record_link_pattern'] ?? '');
+
+        $hidden_fields_raw = $settings['hidden_fields'] ?? '[]';
+        $hidden_fields     = json_decode($hidden_fields_raw, true);
+        if (!is_array($hidden_fields)) {
+            $hidden_fields = [];
+        }
+        $hidden_fields = array_values(array_filter(array_map('sanitize_key', $hidden_fields)));
+
         if (empty($collection_key)) {
             if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
                 echo '<div class="gateway-grid-placeholder">Gateway Grid: select a collection in the panel.</div>';
@@ -169,12 +251,17 @@ class Grid extends \Elementor\Widget_Base
         $this->enqueuePreact();
 
         $config = wp_json_encode([
-            'showFilters'      => $show_filters,
-            'showFacetToggle'  => $show_facet_toggle,
-            'perPage'          => $per_page,
-            'colorScheme'      => $color_scheme,
-            'defaultView'      => $default_view,
-            'enabledViews'     => $enabled_views,
+            'showFilters'       => $show_filters,
+            'showFacetToggle'   => $show_facet_toggle,
+            'perPage'           => $per_page,
+            'colorScheme'       => $color_scheme,
+            'defaultView'       => $default_view,
+            'enabledViews'      => $enabled_views,
+            'hiddenFields'      => $hidden_fields,
+            'recordViewMode'    => $record_view_mode,
+            'recordLinkPattern' => $record_link_pattern,
+            'actionsEnabled'    => $enable_actions,
+            'actionRoles'       => $action_roles,
         ]);
 
         echo '<div'
@@ -199,9 +286,13 @@ class Grid extends \Elementor\Widget_Base
         $version = md5_file($scriptPath);
 
         if (!wp_script_is('gateway-grid', 'registered')) {
+            $current_user = wp_get_current_user();
             wp_register_script('gateway-grid', $buildUrl . 'index.js', [], $version, true);
             wp_localize_script('gateway-grid', 'gatewayBd', [
-                'apiRoot' => esc_url_raw(rest_url()),
+                'apiRoot'          => esc_url_raw(rest_url()),
+                'siteUrl'          => esc_url_raw(site_url()),
+                'currentUserId'    => get_current_user_id(),
+                'currentUserRoles' => array_values((array) $current_user->roles),
             ]);
         }
 
@@ -211,6 +302,16 @@ class Grid extends \Elementor\Widget_Base
 
         wp_enqueue_script('gateway-grid');
         wp_enqueue_style('gateway-grid');
+    }
+
+    private function getRoleOptions(): array
+    {
+        $roles   = wp_roles()->roles;
+        $options = [];
+        foreach ($roles as $role_key => $role_data) {
+            $options[$role_key] = translate_user_role($role_data['name']);
+        }
+        return $options;
     }
 
     private function getCollectionOptions(): array
