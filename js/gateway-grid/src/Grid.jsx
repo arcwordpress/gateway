@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
-import { getLabelField } from './utils';
+import { getLabelField, formatValue } from './utils';
 
 const getCellValue = (record, key, fields) => {
   const field = fields?.[key];
@@ -15,6 +15,8 @@ const getCellValue = (record, key, fields) => {
   const val = record[key];
   if (val === null || val === undefined) return '—';
   if (typeof val === 'object') return JSON.stringify(val);
+  const formatted = formatValue(val, field);
+  if (formatted !== null) return formatted;
   return String(val);
 };
 
@@ -62,7 +64,14 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
       <table class="gty-grid__table">
         <thead>
           <tr>
-            <th class="gty-grid__th gty-grid__th--id">ID</th>
+            <th class={thClass('id')} style="width:3rem" onClick={() => onSort('id')}>
+              <span class="gty-grid__th-inner">
+                ID
+                <span class="gty-grid__sort-icon">
+                  <SortIcon field="id" sortField={sortField} sortDir={sortDir} />
+                </span>
+              </span>
+            </th>
             {labelField && (
               <th class={thClass(labelField)} onClick={() => onSort(labelField)}>
                 <span class="gty-grid__th-inner">

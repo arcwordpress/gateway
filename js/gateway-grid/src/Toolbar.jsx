@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { SlidersHorizontal, Search, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
 import ViewSwitcher from './ViewSwitcher';
 
