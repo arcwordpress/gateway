@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide, FilePenLine } from 'lucide-preact';
+import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide, FilePenLine, Trash2 } from 'lucide-preact';
 import { getDisplayField, getFieldLabel, formatValue } from './utils';
 
 const getCellValue = (record, key, fields) => {
@@ -27,7 +27,7 @@ const SortIcon = ({ field, sortField, sortDir }) => {
     : <ArrowUpNarrowWide size={11} strokeWidth={2} />;
 };
 
-const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [], onRecordClick, getRecordHref, canSeeActions, canUpdate, onRecordEdit }) => {
+const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = [], onRecordClick, getRecordHref, canSeeActions, canUpdate, onRecordEdit, canDelete, onRecordDelete }) => {
   const fields = collection?.fields || {};
   let displayField = getDisplayField(collection);
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
@@ -126,13 +126,15 @@ const Grid = ({ collection, records, sortField, sortDir, onSort, hiddenFields = 
                 <td class="gty-grid__td gty-grid__td--actions">
                   <div class="gty-actions">
                     {canUpdate && (
-                      <button
-                        type="button"
-                        class="gty-action-btn"
-                        title="Edit record"
-                        onClick={e => { e.stopPropagation(); onRecordEdit(record); }}
-                      >
+                      <button type="button" class="gty-action-btn" title="Edit record"
+                        onClick={e => { e.stopPropagation(); onRecordEdit(record); }}>
                         <FilePenLine size={14} strokeWidth={2} />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button type="button" class="gty-action-btn gty-action-btn--danger" title="Delete record"
+                        onClick={e => { e.stopPropagation(); onRecordDelete(record); }}>
+                        <Trash2 size={14} strokeWidth={2} />
                       </button>
                     )}
                   </div>

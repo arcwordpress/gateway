@@ -25,6 +25,8 @@ function mountElement(el) {
   const createActionRoles   = Array.isArray(config.createActionRoles) ? config.createActionRoles : ['administrator'];
   const updateActionEnabled = config.updateActionEnabled === true;
   const updateActionRoles   = Array.isArray(config.updateActionRoles) ? config.updateActionRoles : ['administrator'];
+  const deleteActionEnabled = config.deleteActionEnabled === true;
+  const deleteActionRoles   = Array.isArray(config.deleteActionRoles) ? config.deleteActionRoles : ['administrator'];
 
   render(
     <App
@@ -45,6 +47,8 @@ function mountElement(el) {
       createActionRoles={createActionRoles}
       updateActionEnabled={updateActionEnabled}
       updateActionRoles={updateActionRoles}
+      deleteActionEnabled={deleteActionEnabled}
+      deleteActionRoles={deleteActionRoles}
     />,
     el
   );

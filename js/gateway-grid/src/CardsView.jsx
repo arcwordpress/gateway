@@ -1,8 +1,8 @@
 import { h } from 'preact';
-import { FilePenLine } from 'lucide-preact';
+import { FilePenLine, Trash2 } from 'lucide-preact';
 import { getDisplayField } from './utils';
 
-const CardsView = ({ collection, records, onRecordClick, getRecordHref, canSeeActions, canUpdate, onRecordEdit }) => {
+const CardsView = ({ collection, records, onRecordClick, getRecordHref, canSeeActions, canUpdate, onRecordEdit, canDelete, onRecordDelete }) => {
   const displayField = getDisplayField(collection);
 
   if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
@@ -32,13 +32,15 @@ const CardsView = ({ collection, records, onRecordClick, getRecordHref, canSeeAc
             <div class="gty-cards__actions">
               <div class="gty-actions">
                 {canUpdate && (
-                  <button
-                    type="button"
-                    class="gty-action-btn"
-                    title="Edit record"
-                    onClick={e => { e.stopPropagation(); onRecordEdit(record); }}
-                  >
+                  <button type="button" class="gty-action-btn" title="Edit record"
+                    onClick={e => { e.stopPropagation(); onRecordEdit(record); }}>
                     <FilePenLine size={14} strokeWidth={2} />
+                  </button>
+                )}
+                {canDelete && (
+                  <button type="button" class="gty-action-btn gty-action-btn--danger" title="Delete record"
+                    onClick={e => { e.stopPropagation(); onRecordDelete(record); }}>
+                    <Trash2 size={14} strokeWidth={2} />
                   </button>
                 )}
               </div>

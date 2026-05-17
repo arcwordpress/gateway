@@ -10,10 +10,11 @@ import Footer         from './Footer';
 import RecordModal    from './RecordModal';
 import CreateModal    from './CreateModal';
 import UpdateModal    from './UpdateModal';
+import DeleteConfirm  from './DeleteConfirm';
 import SkeletonLoader from './SkeletonLoader';
 import { getSortableFields, resolveRecordLink } from './utils';
 
-const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'], createActionEnabled = false, createActionRoles = ['administrator'], updateActionEnabled = false, updateActionRoles = ['administrator'] }) => {
+const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: initialPerPage, colorScheme, defaultView, enabledViews, hiddenFields = [], recordViewMode = 'modal', recordLinkPattern = '', actionsEnabled = false, actionRoles = ['administrator'], createActionEnabled = false, createActionRoles = ['administrator'], updateActionEnabled = false, updateActionRoles = ['administrator'], deleteActionEnabled = false, deleteActionRoles = ['administrator'] }) => {
   const [collection,  setCollection]  = useState(null);
   const [records,     setRecords]     = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -33,6 +34,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showCreate,     setShowCreate]     = useState(false);
   const [editRecord,     setEditRecord]     = useState(null);
+  const [deleteRecord,   setDeleteRecord]   = useState(null);
   const [refreshToken,   setRefreshToken]   = useState(0);
 
   useEffect(() => {
@@ -133,6 +135,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
   const canSeeActions = actionsEnabled && actionRoles.some(r => currentUserRoles.includes(r));
   const canCreate     = createActionEnabled && createActionRoles.some(r => currentUserRoles.includes(r));
   const canUpdate     = updateActionEnabled && updateActionRoles.some(r => currentUserRoles.includes(r));
+  const canDelete     = deleteActionEnabled && deleteActionRoles.some(r => currentUserRoles.includes(r));
 
   const onRecordClick  = recordViewMode === 'modal' ? setSelectedRecord : null;
   const getRecordHref  = recordViewMode === 'link' && recordLinkPattern
@@ -210,10 +213,10 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
 
       <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
         {view === 'cards'
-          ? <CardsView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
+          ? <CardsView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} canDelete={canDelete} onRecordDelete={setDeleteRecord} />
           : view === 'list'
-            ? <ListView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
-            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} />
+            ? <ListView collection={collection} records={filtered} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} canDelete={canDelete} onRecordDelete={setDeleteRecord} />
+            : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} hiddenFields={hiddenFields} onRecordClick={onRecordClick} getRecordHref={getRecordHref} canSeeActions={canSeeActions} canUpdate={canUpdate} onRecordEdit={setEditRecord} canDelete={canDelete} onRecordDelete={setDeleteRecord} />
         }
       </div>
 
@@ -242,6 +245,19 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
           onClose={() => setEditRecord(null)}
           onUpdated={() => {
             setEditRecord(null);
+            setRefreshToken(t => t + 1);
+          }}
+        />
+      )}
+
+      {deleteRecord && (
+        <DeleteConfirm
+          collection={collection}
+          record={deleteRecord}
+          apiRoot={apiRoot}
+          onClose={() => setDeleteRecord(null)}
+          onDeleted={() => {
+            setDeleteRecord(null);
             setRefreshToken(t => t + 1);
           }}
         />

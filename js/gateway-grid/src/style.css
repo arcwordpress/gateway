@@ -852,6 +852,20 @@
   color:      oklch(96% 0 0);
 }
 
+.gty-btn--danger {
+  background: oklch(50% 0.2 25);
+  color:      oklch(98% 0 0);
+}
+
+.gty-btn--danger:hover:not(:disabled) {
+  background: oklch(45% 0.2 25);
+}
+
+.gty-btn--danger:disabled {
+  opacity: 0.5;
+  cursor:  not-allowed;
+}
+
 /* ── Create form ─────────────────────────────────────────── */
 
 .gty-form__body {
@@ -935,6 +949,23 @@
   margin:     0;
 }
 
+/* ── Delete confirmation modal ───────────────────────────── */
+
+.gty-modal__box--sm {
+  max-width: 420px;
+}
+
+.gty-delete__body {
+  padding: 1.25rem;
+}
+
+.gty-delete__msg {
+  color:       oklch(96% 0 0);
+  font-size:   .9rem;
+  line-height: 1.5;
+  margin:      0 0 .5rem;
+}
+
 /* ── Record action buttons (edit, delete, etc.) ──────────── */
 
 .gty-actions {
@@ -959,6 +990,11 @@
 .gty-action-btn:hover {
   background: var(--gty-zinc-800);
   color:      var(--gty-zinc-400);
+}
+
+.gty-action-btn--danger:hover {
+  background: oklch(20% 0.05 25);
+  color:      oklch(65% 0.2 25);
 }
 
 /* ── Modal title ID badge ────────────────────────────────── */
