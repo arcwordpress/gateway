@@ -102,6 +102,67 @@
   color: #c0392b;
 }
 
+/* ── Toolbar ─────────────────────────────────────────────── */
+
+.gbd-toolbar {
+  display:       flex;
+  align-items:   center;
+  gap:           .5rem;
+  padding:       .4rem .75rem;
+  border-bottom: 1px solid var(--gbd-border);
+  background:    var(--gbd-surface);
+}
+
+.gbd-toolbar__controls {
+  display:     flex;
+  align-items: center;
+  gap:         .2rem;
+  flex-shrink: 0;
+}
+
+.gbd-toolbar__sep {
+  width:      1px;
+  height:     1rem;
+  background: var(--gbd-border);
+  margin:     0 .2rem;
+  opacity:    .4;
+}
+
+.gbd-toolbar__btn {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      none;
+  border:          1px solid transparent;
+  border-radius:   4px;
+  color:           var(--gbd-text-muted);
+  cursor:          pointer;
+  line-height:     0;
+  padding:         .3rem;
+}
+
+.gbd-toolbar__btn:hover {
+  background: var(--gbd-btn-hover);
+  color:      var(--gbd-text);
+}
+
+.gbd-toolbar__btn--on {
+  background:   var(--gbd-btn-hover);
+  border-color: var(--gbd-border);
+  color:        var(--gbd-text);
+}
+
+.gbd-toolbar__search {
+  flex:          1;
+  background:    var(--gbd-select-bg);
+  border:        1px solid var(--gbd-border);
+  border-radius: 4px;
+  color:         var(--gbd-text);
+  font-size:     .8rem;
+  min-width:     0;
+  padding:       .25rem .5rem;
+}
+
 /* ── Facets ──────────────────────────────────────────────── */
 
 .gbd-facets {
@@ -174,6 +235,39 @@
   cursor:       pointer;
   width:        1rem;
   height:       1rem;
+}
+
+/* ── List view ───────────────────────────────────────────── */
+
+.gbd-list {
+  list-style: none;
+  margin:     0;
+  padding:    0;
+}
+
+.gbd-list__item {
+  display:       flex;
+  align-items:   center;
+  gap:           .75rem;
+  padding:       .5rem .75rem;
+  border-bottom: 1px solid var(--gbd-border);
+}
+
+.gbd-list__item:last-child { border-bottom: none; }
+
+.gbd-list__item:hover { background: var(--gbd-row-hover); }
+
+.gbd-list__id {
+  color:       var(--gbd-text-muted);
+  font-family: monospace;
+  font-size:   .8rem;
+  flex-shrink: 0;
+  min-width:   3rem;
+}
+
+.gbd-list__label {
+  color:       var(--gbd-text);
+  font-weight: 500;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
