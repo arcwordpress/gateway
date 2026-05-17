@@ -58,13 +58,15 @@ const App = ({ collectionKey, apiRoot, showFilters, perPage: initialPerPage, col
           : [];
         setRecords(rows);
 
-        // Prefer WP REST API headers; fall back to response body fields
-        const headerTotal = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
-        const headerPages = parseInt(recRes.headers.get('X-WP-TotalPages') || '0', 10);
-        const bodyTotal   = data?.total ?? data?.meta?.total ?? data?.count ?? null;
+        // Gateway API wraps pagination in data.data.pagination
+        const pagination    = data?.data?.pagination ?? {};
+        const headerTotal   = parseInt(recRes.headers.get('X-WP-Total') || '0', 10);
+        const headerPages   = parseInt(recRes.headers.get('X-WP-TotalPages') || '0', 10);
+        const bodyTotal     = pagination.record_count ?? data?.total ?? data?.meta?.total ?? data?.count ?? null;
+        const bodyPages     = pagination.total_pages  ?? null;
 
         const resolvedTotal = headerTotal || (typeof bodyTotal === 'number' ? bodyTotal : rows.length);
-        const resolvedPages = headerPages || (perPage > 0 ? Math.ceil(resolvedTotal / perPage) : 1);
+        const resolvedPages = headerPages || bodyPages || (perPage > 0 ? Math.ceil(resolvedTotal / perPage) : 1);
 
         setTotalCount(resolvedTotal);
         setTotalPages(Math.max(1, resolvedPages));
