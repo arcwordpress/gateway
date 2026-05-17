@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-preact';
+import { ArrowUpDown, ArrowDownNarrowWide, ArrowUpNarrowWide } from 'lucide-preact';
 import { getLabelField } from './utils';
 
 const getCellValue = (record, key, fields) => {
@@ -19,10 +19,10 @@ const getCellValue = (record, key, fields) => {
 };
 
 const SortIcon = ({ field, sortField, sortDir }) => {
-  if (field !== sortField) return <ChevronsUpDown size={11} strokeWidth={2} />;
+  if (field !== sortField) return <ArrowUpDown size={11} strokeWidth={2} />;
   return sortDir === 'asc'
-    ? <ChevronUp size={11} strokeWidth={2} />
-    : <ChevronDown size={11} strokeWidth={2} />;
+    ? <ArrowDownNarrowWide size={11} strokeWidth={2} />
+    : <ArrowUpNarrowWide size={11} strokeWidth={2} />;
 };
 
 const Grid = ({ collection, records, sortField, sortDir, onSort }) => {

@@ -76,7 +76,7 @@
 }
 
 .gbd-grid__th--sorted .gbd-grid__sort-icon {
-  color: var(--gbd-text-muted);
+  color: var(--gbd-zinc-400);
 }
 
 /* ── Table ───────────────────────────────────────────────── */
