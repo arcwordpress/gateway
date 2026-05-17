@@ -17,7 +17,7 @@ const FallbackFacets = ({ records, values, onChange }) => {
   if (typeOptions.length === 0) return null;
 
   return (
-    <div class="gbd-facets">
+    <div class="gty-facets">
       <SelectFacet
         field="listingType"
         label="Listing Type"

@@ -101,8 +101,8 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     setPage(1);
   };
 
-  if (loading) return <div class="gbd-grid"><div class="gbd-grid__loading">Loading…</div></div>;
-  if (error)   return <div class="gbd-grid"><div class="gbd-grid__error">Error: {error}</div></div>;
+  if (loading) return <div class="gty-grid"><div class="gty-grid__loading">Loading…</div></div>;
+  if (error)   return <div class="gty-grid"><div class="gty-grid__error">Error: {error}</div></div>;
   if (!collection) return null;
 
   const gridConfig = collection?.grid && !Array.isArray(collection.grid) ? collection.grid : {};
@@ -144,7 +144,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
     return true;
   });
 
-  const rootClass = `gbd-grid${colorScheme === 'dark' ? ' gbd-grid--dark' : ''}`;
+  const rootClass = `gty-grid${colorScheme === 'dark' ? ' gty-grid--dark' : ''}`;
 
   return (
     <div class={rootClass}>
@@ -166,7 +166,7 @@ const App = ({ collectionKey, apiRoot, showFilters, showFacetToggle, perPage: in
           : <FallbackFacets records={records} values={facetValues} onChange={handleFacetChange} />
       )}
 
-      <div class={fetching ? 'gbd-records gbd-records--fetching' : 'gbd-records'}>
+      <div class={fetching ? 'gty-records gty-records--fetching' : 'gty-records'}>
         {view === 'cards' ? <CardsView collection={collection} records={filtered} />
           : view === 'list' ? <ListView collection={collection} records={filtered} />
           : <Grid collection={collection} records={filtered} sortField={sortField} sortDir={sortDir} onSort={handleSort} />

@@ -1,19 +1,19 @@
 import { h } from 'preact';
 
 const RangeFacet = ({ field, label, value = {}, onChange }) => (
-  <div class="gbd-facets__item gbd-facets__item--compound">
-    <span class="gbd-facets__label">{label}</span>
-    <div class="gbd-facets__pair">
+  <div class="gty-facets__item gty-facets__item--compound">
+    <span class="gty-facets__label">{label}</span>
+    <div class="gty-facets__pair">
       <input
-        class="gbd-facets__input gbd-facets__input--narrow"
+        class="gty-facets__input gty-facets__input--narrow"
         type="number"
         placeholder="Min"
         value={value.min ?? ''}
         onInput={(e) => onChange && onChange(field, { ...value, min: e.target.value })}
       />
-      <span class="gbd-facets__sep">–</span>
+      <span class="gty-facets__sep">–</span>
       <input
-        class="gbd-facets__input gbd-facets__input--narrow"
+        class="gty-facets__input gty-facets__input--narrow"
         type="number"
         placeholder="Max"
         value={value.max ?? ''}

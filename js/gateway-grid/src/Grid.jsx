@@ -48,26 +48,26 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
   }
 
   if (records.length === 0) {
-    return <p class="gbd-grid__empty">No records found.</p>;
+    return <p class="gty-grid__empty">No records found.</p>;
   }
 
   const thClass = (key) => {
-    let cls = 'gbd-grid__th gbd-grid__th--sortable';
-    if (key === sortField) cls += ' gbd-grid__th--sorted';
+    let cls = 'gty-grid__th gty-grid__th--sortable';
+    if (key === sortField) cls += ' gty-grid__th--sorted';
     return cls;
   };
 
   return (
-    <div class="gbd-grid__table-wrap">
-      <table class="gbd-grid__table">
+    <div class="gty-grid__table-wrap">
+      <table class="gty-grid__table">
         <thead>
           <tr>
-            <th class="gbd-grid__th gbd-grid__th--id">ID</th>
+            <th class="gty-grid__th gty-grid__th--id">ID</th>
             {labelField && (
               <th class={thClass(labelField)} onClick={() => onSort(labelField)}>
-                <span class="gbd-grid__th-inner">
+                <span class="gty-grid__th-inner">
                   {fields?.[labelField]?.label || labelField}
-                  <span class="gbd-grid__sort-icon">
+                  <span class="gty-grid__sort-icon">
                     <SortIcon field={labelField} sortField={sortField} sortDir={sortDir} />
                   </span>
                 </span>
@@ -75,9 +75,9 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
             )}
             {columns.map((col) => (
               <th key={col.key} class={thClass(col.key)} onClick={() => onSort(col.key)}>
-                <span class="gbd-grid__th-inner">
+                <span class="gty-grid__th-inner">
                   {col.label}
-                  <span class="gbd-grid__sort-icon">
+                  <span class="gty-grid__sort-icon">
                     <SortIcon field={col.key} sortField={sortField} sortDir={sortDir} />
                   </span>
                 </span>
@@ -87,13 +87,13 @@ const Grid = ({ collection, records, sortField, sortDir, onSort }) => {
         </thead>
         <tbody>
           {records.map((record) => (
-            <tr key={record.id} class="gbd-grid__row">
-              <td class="gbd-grid__td gbd-grid__td--id">#{record.id}</td>
+            <tr key={record.id} class="gty-grid__row">
+              <td class="gty-grid__td gty-grid__td--id">#{record.id}</td>
               {labelField && (
-                <td class="gbd-grid__td">{getCellValue(record, labelField, fields)}</td>
+                <td class="gty-grid__td">{getCellValue(record, labelField, fields)}</td>
               )}
               {columns.map((col) => (
-                <td key={col.key} class="gbd-grid__td">
+                <td key={col.key} class="gty-grid__td">
                   {getCellValue(record, col.key, fields)}
                 </td>
               ))}

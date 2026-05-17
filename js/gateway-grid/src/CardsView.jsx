@@ -4,20 +4,20 @@ import { getLabelField } from './utils';
 const CardsView = ({ collection, records }) => {
   const labelField = getLabelField(collection);
 
-  if (records.length === 0) return <p class="gbd-grid__empty">No records found.</p>;
+  if (records.length === 0) return <p class="gty-grid__empty">No records found.</p>;
 
   return (
-    <div class="gbd-cards">
+    <div class="gty-cards">
       {records.map((record) => (
-        <div key={record.id} class="gbd-cards__card">
-          <div class="gbd-cards__header">
-            <span class="gbd-cards__id">#{record.id}</span>
+        <div key={record.id} class="gty-cards__card">
+          <div class="gty-cards__header">
+            <span class="gty-cards__id">#{record.id}</span>
             {labelField && record[labelField] != null && (
-              <span class="gbd-cards__title">{String(record[labelField])}</span>
+              <span class="gty-cards__title">{String(record[labelField])}</span>
             )}
           </div>
           {record.description && (
-            <p class="gbd-cards__desc">{record.description}</p>
+            <p class="gty-cards__desc">{record.description}</p>
           )}
         </div>
       ))}
