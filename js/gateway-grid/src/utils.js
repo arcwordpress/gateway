@@ -1,9 +1,14 @@
 export const resolveRecordLink = (pattern, record) => {
   if (!pattern || !record) return null;
-  return pattern.replace(/\{\{record\.([^}]+)\}\}/g, (_, path) => {
+  const resolved = pattern.replace(/\{\{record\.([^}]+)\}\}/g, (_, path) => {
     const val = path.split('.').reduce((obj, key) => obj?.[key], record);
     return val != null ? String(val) : '';
   });
+  if (resolved.startsWith('/')) {
+    const base = (window.gatewayBd?.siteUrl || '').replace(/\/$/, '');
+    return base + resolved;
+  }
+  return resolved;
 };
 
 export const formatValue = (val, field) => {

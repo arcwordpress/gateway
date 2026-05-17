@@ -58,6 +58,7 @@ class ElementorController
         wp_enqueue_script('gateway-grid', $buildUrl . 'index.js', [], $version, true);
         wp_localize_script('gateway-grid', 'gatewayBd', [
             'apiRoot' => esc_url_raw(rest_url()),
+            'siteUrl' => esc_url_raw(site_url()),
         ]);
 
         $cssPath = $build . 'index.css';
