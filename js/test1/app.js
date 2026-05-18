@@ -1,137 +1,106 @@
-import { h, render } from 'https://esm.sh/preact';
-import { useState, useRef, useCallback, useEffect } from 'https://esm.sh/preact/hooks';
+import { h, render } from 'https://esm.sh/preact@10';
+import { useState, useCallback, useRef }  from 'https://esm.sh/preact@10/hooks';
 import htm from 'https://esm.sh/htm';
+
+import {
+  ReactFlow,
+  ReactFlowProvider,
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  Panel,
+} from 'https://esm.sh/@xyflow/react?external=react,react-dom,react-dom/client,react/jsx-runtime';
 
 const html = htm.bind(h);
 
-// ── Palette definitions ──────────────────────────────────────────────────────
+// ── Palette ──────────────────────────────────────────────────────────────────
 
 const PALETTE = [
-  { type: 'heading', label: 'Heading', icon: '𝐇', defaults: { text: 'Heading', level: 'h2' } },
-  { type: 'text',    label: 'Text',    icon: '¶', defaults: { text: 'Paragraph text here.' } },
-  { type: 'button',  label: 'Button',  icon: '⬡', defaults: { label: 'Click me' } },
-  { type: 'image',   label: 'Image',   icon: '🖼', defaults: { alt: 'Image', w: 200, h: 120 } },
-  { type: 'box',     label: 'Box',     icon: '□', defaults: { bg: '#e0e7ff', w: 200, h: 100, r: 8 } },
-  { type: 'divider', label: 'Divider', icon: '─', defaults: { width: 240 } },
+  { type: 'gwHeading', label: 'Heading', icon: '𝐇', defaults: { text: 'Heading', level: 'h2' } },
+  { type: 'gwText',    label: 'Text',    icon: '¶', defaults: { text: 'Paragraph text here.' } },
+  { type: 'gwButton',  label: 'Button',  icon: '⬡', defaults: { label: 'Click me' } },
+  { type: 'gwImage',   label: 'Image',   icon: '🖼', defaults: { alt: 'Image', w: 200, h: 120 } },
+  { type: 'gwBox',     label: 'Box',     icon: '□', defaults: { bg: '#e0e7ff', w: 180, h: 90, r: 8 } },
+  { type: 'gwDivider', label: 'Divider', icon: '─', defaults: { width: 220 } },
 ];
 
 let _id = 1;
-const uid = () => 'e' + _id++;
+const uid = () => 'n' + _id++;
 
-// ── Element renderers ────────────────────────────────────────────────────────
+// ── Custom node components ───────────────────────────────────────────────────
+// Defined at module scope so React Flow gets stable references.
 
-function Preview({ el }) {
-  const p = el.props;
-  if (el.type === 'heading') {
-    const T = p.level || 'h2';
-    return html`<${T} style="margin:0;line-height:1.2">${p.text}</${T}>`;
-  }
-  if (el.type === 'text')
-    return html`<p style="margin:0;max-width:320px;line-height:1.5">${p.text}</p>`;
-  if (el.type === 'button')
-    return html`<button style="padding:8px 20px;background:#4f46e5;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">${p.label}</button>`;
-  if (el.type === 'image')
-    return html`<div style=${{ width:p.w+'px', height:p.h+'px', background:'#e2e8f0', borderRadius:'4px', display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'4px', color:'#94a3b8', fontSize:'12px' }}>
-      <span style="font-size:24px">🖼</span><span>${p.alt}</span>
-    </div>`;
-  if (el.type === 'box')
-    return html`<div style=${{ width:p.w+'px', height:p.h+'px', background:p.bg, borderRadius:p.r+'px', border:'1px solid rgba(0,0,0,.08)' }} />`;
-  if (el.type === 'divider')
-    return html`<hr style=${{ margin:0, width:p.width+'px', border:'none', borderTop:'2px solid #cbd5e1' }} />`;
-  return null;
+function GwHeadingNode({ data }) {
+  const T = data.level || 'h2';
+  return html`<div style="padding:6px 10px;min-width:120px">
+    <${T} style="margin:0;line-height:1.2">${data.text}</${T}>
+  </div>`;
 }
 
-// ── Placed canvas element (free-drag) ────────────────────────────────────────
+function GwTextNode({ data }) {
+  return html`<div style="padding:6px 10px;max-width:300px">
+    <p style="margin:0;line-height:1.5">${data.text}</p>
+  </div>`;
+}
 
-function CanvasEl({ el, selected, onSelect, onMove }) {
-  const drag = useRef(false);
-  const o    = useRef({});
+function GwButtonNode({ data }) {
+  return html`<div style="padding:6px 10px">
+    <button style="padding:8px 20px;background:#4f46e5;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer">
+      ${data.label}
+    </button>
+  </div>`;
+}
 
-  function onMouseDown(e) {
-    e.stopPropagation();
-    onSelect(el.id);
-    drag.current = true;
-    o.current = { mx: e.clientX, my: e.clientY, ox: el.x, oy: el.y };
-
-    const mv = e => {
-      if (!drag.current) return;
-      onMove(el.id,
-        o.current.ox + e.clientX - o.current.mx,
-        o.current.oy + e.clientY - o.current.my,
-      );
-    };
-    const up = () => {
-      drag.current = false;
-      removeEventListener('mousemove', mv);
-      removeEventListener('mouseup', up);
-    };
-    addEventListener('mousemove', mv);
-    addEventListener('mouseup', up);
-  }
-
-  return html`
-    <div onMouseDown=${onMouseDown} style=${{
-      position: 'absolute', left: el.x+'px', top: el.y+'px',
-      cursor: 'move', userSelect: 'none', padding: '4px',
-      outline: selected ? '2px solid #4f46e5' : '2px solid transparent',
-      outlineOffset: '3px', borderRadius: '4px',
-    }}>
-      <${Preview} el=${el} />
+function GwImageNode({ data }) {
+  return html`<div style="padding:6px 10px">
+    <div style=${{ width:data.w+'px', height:data.h+'px', background:'#e2e8f0', borderRadius:'4px',
+      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      gap:'4px', color:'#94a3b8', fontSize:'12px' }}>
+      <span style="font-size:24px">🖼</span>
+      <span>${data.alt}</span>
     </div>
-  `;
+  </div>`;
 }
 
-// ── Canvas drop zone ─────────────────────────────────────────────────────────
-
-function Canvas({ elements, selectedId, onDrop, onSelect, onMove }) {
-  const ref = useRef(null);
-
-  return html`
-    <div ref=${ref}
-      onDragOver=${e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
-      onDrop=${e => {
-        e.preventDefault();
-        const type = e.dataTransfer.getData('gw/type');
-        if (!type) return;
-        const r = ref.current.getBoundingClientRect();
-        onDrop(type, e.clientX - r.left - 40, e.clientY - r.top - 20);
-      }}
-      onMouseDown=${e => { if (e.target === ref.current) onSelect(null); }}
-      style=${{
-        position: 'relative', flex: 1, overflow: 'auto',
-        background: '#fff',
-        backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
-      }}
-    >
-      ${elements.map(el => html`
-        <${CanvasEl} key=${el.id} el=${el}
-          selected=${el.id === selectedId}
-          onSelect=${onSelect} onMove=${onMove} />
-      `)}
-      ${elements.length === 0 && html`
-        <div style=${{ position:'absolute', inset:0, display:'flex', flexDirection:'column',
-          alignItems:'center', justifyContent:'center', color:'#94a3b8', pointerEvents:'none', gap:'10px' }}>
-          <span style="font-size:48px">🎨</span>
-          <span style="font-size:14px">Drag elements here to build</span>
-        </div>
-      `}
-    </div>
-  `;
+function GwBoxNode({ data }) {
+  return html`<div style="padding:6px 10px">
+    <div style=${{ width:data.w+'px', height:data.h+'px', background:data.bg,
+      borderRadius:data.r+'px', border:'1px solid rgba(0,0,0,.08)' }} />
+  </div>`;
 }
+
+function GwDividerNode({ data }) {
+  return html`<div style="padding:10px">
+    <hr style=${{ margin:0, width:data.width+'px', border:'none', borderTop:'2px solid #cbd5e1' }} />
+  </div>`;
+}
+
+const nodeTypes = {
+  gwHeading: GwHeadingNode,
+  gwText:    GwTextNode,
+  gwButton:  GwButtonNode,
+  gwImage:   GwImageNode,
+  gwBox:     GwBoxNode,
+  gwDivider: GwDividerNode,
+};
 
 // ── Palette sidebar ──────────────────────────────────────────────────────────
 
 function PaletteItem({ type, label, icon }) {
   return html`
-    <div draggable="true"
+    <div
+      draggable="true"
       onDragStart=${e => { e.dataTransfer.setData('gw/type', type); e.dataTransfer.effectAllowed = 'copy'; }}
       style=${{
         display:'flex', alignItems:'center', gap:'8px',
         padding:'7px 10px', marginBottom:'6px',
         border:'1px solid #e2e8f0', borderRadius:'6px',
         background:'#f8fafc', cursor:'grab', userSelect:'none', fontSize:'13px',
-      }}>
+      }}
+    >
       <span style="width:20px;text-align:center;font-size:15px">${icon}</span>
       <span>${label}</span>
     </div>
@@ -140,7 +109,10 @@ function PaletteItem({ type, label, icon }) {
 
 // ── Properties panel ─────────────────────────────────────────────────────────
 
-const inp = { width:'100%', padding:'6px 8px', border:'1px solid #e2e8f0', borderRadius:'4px', fontSize:'13px', boxSizing:'border-box' };
+const inp = {
+  width:'100%', padding:'6px 8px', border:'1px solid #e2e8f0',
+  borderRadius:'4px', fontSize:'13px', boxSizing:'border-box',
+};
 
 function Field({ label, children }) {
   return html`
@@ -153,187 +125,232 @@ function Field({ label, children }) {
   `;
 }
 
-function PropsPanel({ el, onChange, onDelete }) {
-  if (!el) return html`
+function PropsPanel({ node, onUpdate, onDelete }) {
+  if (!node) return html`
     <div style="padding:20px;color:#94a3b8;font-size:13px;text-align:center;line-height:1.6">
-      Select an element<br/>to edit properties.
+      Select a node<br/>to edit properties.
     </div>
   `;
 
-  const set = (k, v) => onChange(el.id, { ...el.props, [k]: v });
+  const d   = node.data;
+  const set = (k, v) => onUpdate(node.id, { [k]: v });
 
   return html`
     <div style="padding:16px">
       <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">
-        ${el.type}
+        ${node.type.replace('gw', '')}
       </div>
 
-      ${el.type === 'heading' && html`
+      ${node.type === 'gwHeading' && html`
         <${Field} label="Text">
-          <input style=${inp} value=${el.props.text} onInput=${e => set('text', e.target.value)} />
+          <input style=${inp} value=${d.text} onInput=${e => set('text', e.target.value)} />
         </${Field}>
         <${Field} label="Level">
-          <select style=${inp} value=${el.props.level} onChange=${e => set('level', e.target.value)}>
+          <select style=${inp} value=${d.level} onChange=${e => set('level', e.target.value)}>
             <option value="h1">H1</option><option value="h2">H2</option>
             <option value="h3">H3</option><option value="h4">H4</option>
           </select>
         </${Field}>
       `}
 
-      ${el.type === 'text' && html`
+      ${node.type === 'gwText' && html`
         <${Field} label="Content">
           <textarea style=${{ ...inp, minHeight:'80px', resize:'vertical' }}
-            onInput=${e => set('text', e.target.value)}>${el.props.text}</textarea>
+            onInput=${e => set('text', e.target.value)}>${d.text}</textarea>
         </${Field}>
       `}
 
-      ${el.type === 'button' && html`
+      ${node.type === 'gwButton' && html`
         <${Field} label="Label">
-          <input style=${inp} value=${el.props.label} onInput=${e => set('label', e.target.value)} />
+          <input style=${inp} value=${d.label} onInput=${e => set('label', e.target.value)} />
         </${Field}>
       `}
 
-      ${el.type === 'image' && html`
+      ${node.type === 'gwImage' && html`
         <${Field} label="Alt">
-          <input style=${inp} value=${el.props.alt} onInput=${e => set('alt', e.target.value)} />
+          <input style=${inp} value=${d.alt} onInput=${e => set('alt', e.target.value)} />
         </${Field}>
         <${Field} label="Width">
-          <input type="number" style=${inp} value=${el.props.w} onInput=${e => set('w', +e.target.value || 40)} />
+          <input type="number" style=${inp} value=${d.w} onInput=${e => set('w', +e.target.value || 40)} />
         </${Field}>
         <${Field} label="Height">
-          <input type="number" style=${inp} value=${el.props.h} onInput=${e => set('h', +e.target.value || 40)} />
+          <input type="number" style=${inp} value=${d.h} onInput=${e => set('h', +e.target.value || 40)} />
         </${Field}>
       `}
 
-      ${el.type === 'box' && html`
+      ${node.type === 'gwBox' && html`
         <${Field} label="Color">
           <input type="color" style=${{ ...inp, height:'36px', padding:'2px 4px' }}
-            value=${el.props.bg} onChange=${e => set('bg', e.target.value)} />
+            value=${d.bg} onChange=${e => set('bg', e.target.value)} />
         </${Field}>
         <${Field} label="Width">
-          <input type="number" style=${inp} value=${el.props.w} onInput=${e => set('w', +e.target.value || 40)} />
+          <input type="number" style=${inp} value=${d.w} onInput=${e => set('w', +e.target.value || 40)} />
         </${Field}>
         <${Field} label="Height">
-          <input type="number" style=${inp} value=${el.props.h} onInput=${e => set('h', +e.target.value || 40)} />
+          <input type="number" style=${inp} value=${d.h} onInput=${e => set('h', +e.target.value || 40)} />
         </${Field}>
         <${Field} label="Radius">
-          <input type="number" style=${inp} value=${el.props.r} onInput=${e => set('r', +e.target.value)} />
+          <input type="number" style=${inp} value=${d.r} onInput=${e => set('r', +e.target.value)} />
         </${Field}>
       `}
 
-      ${el.type === 'divider' && html`
+      ${node.type === 'gwDivider' && html`
         <${Field} label="Width">
-          <input type="number" style=${inp} value=${el.props.width} onInput=${e => set('width', +e.target.value || 40)} />
+          <input type="number" style=${inp} value=${d.width} onInput=${e => set('width', +e.target.value || 40)} />
         </${Field}>
       `}
 
       <div style="border-top:1px solid #f1f5f9;padding-top:12px;margin-top:4px">
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">
-          Position: ${Math.round(el.x)}, ${Math.round(el.y)}
-        </div>
         <button onClick=${onDelete}
           style="width:100%;padding:7px;background:#fef2f2;color:#ef4444;border:1px solid #fecaca;border-radius:5px;cursor:pointer;font-size:13px">
-          Delete element
+          Delete node
         </button>
       </div>
     </div>
   `;
 }
 
-// ── Root app ─────────────────────────────────────────────────────────────────
+// ── Inner canvas (needs access to rfInstance via onInit) ──────────────────────
+
+function FlowCanvas({ nodes, edges, onNodesChange, onEdgesChange, onDrop, onNodeClick, onPaneClick, onInit }) {
+  return html`
+    <${ReactFlow}
+      nodes=${nodes}
+      edges=${edges}
+      onNodesChange=${onNodesChange}
+      onEdgesChange=${onEdgesChange}
+      onDrop=${onDrop}
+      onDragOver=${e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
+      onNodeClick=${onNodeClick}
+      onPaneClick=${onPaneClick}
+      onInit=${onInit}
+      nodeTypes=${nodeTypes}
+      fitView
+      deleteKeyCode=${null}
+      style=${{ width:'100%', height:'100%' }}
+    >
+      <${Background} variant=${BackgroundVariant.Dots} gap=${24} size=${1} color="#cbd5e1" />
+      <${Controls} />
+      <${MiniMap} nodeStrokeWidth=${3} zoomable pannable />
+    </${ReactFlow}>
+  `;
+}
+
+// ── Root app ──────────────────────────────────────────────────────────────────
 
 function App() {
-  const [elements,   setElements]   = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, , onEdgesChange]         = useEdgesState([]);
+  const [selectedId, setSelectedId]      = useState(null);
+  const rfInstance                       = useRef(null);
 
-  const selected = elements.find(e => e.id === selectedId) ?? null;
+  const selectedNode = nodes.find(n => n.id === selectedId) ?? null;
 
-  const addElement = useCallback((type, x, y) => {
-    const def = PALETTE.find(p => p.type === type);
-    if (!def) return;
-    const el = { id: uid(), type, x: Math.max(0, x), y: Math.max(0, y), props: { ...def.defaults } };
-    setElements(p => [...p, el]);
-    setSelectedId(el.id);
-  }, []);
+  const onDrop = useCallback(e => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('gw/type');
+    if (!type || !rfInstance.current) return;
 
-  const moveElement = useCallback((id, x, y) =>
-    setElements(p => p.map(e => e.id === id ? { ...e, x: Math.max(0, x), y: Math.max(0, y) } : e)), []);
+    const def      = PALETTE.find(p => p.type === type);
+    const position = rfInstance.current.screenToFlowPosition({ x: e.clientX, y: e.clientY });
 
-  const updateProps = useCallback((id, props) =>
-    setElements(p => p.map(e => e.id === id ? { ...e, props } : e)), []);
+    const node = {
+      id:          uid(),
+      type,
+      position,
+      data:        { ...def.defaults },
+      connectable: false,
+    };
+    setNodes(nds => nds.concat(node));
+    setSelectedId(node.id);
+  }, [setNodes]);
+
+  const onNodeClick  = useCallback((_, node) => setSelectedId(node.id), []);
+  const onPaneClick  = useCallback(() => setSelectedId(null), []);
+  const onInit       = useCallback(inst => { rfInstance.current = inst; }, []);
+
+  const updateNode   = useCallback((id, patch) => {
+    setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, ...patch } } : n));
+  }, [setNodes]);
 
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
-    setElements(p => p.filter(e => e.id !== selectedId));
+    setNodes(nds => nds.filter(n => n.id !== selectedId));
     setSelectedId(null);
-  }, [selectedId]);
+  }, [selectedId, setNodes]);
 
   const clearAll = () => {
-    if (!elements.length || !confirm('Remove all elements?')) return;
-    setElements([]);
+    if (!nodes.length || !confirm('Remove all nodes?')) return;
+    setNodes([]);
     setSelectedId(null);
   };
 
-  useEffect(() => {
-    const fn = e => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) deleteSelected();
-      if (e.key === 'Escape') setSelectedId(null);
-    };
-    addEventListener('keydown', fn);
-    return () => removeEventListener('keydown', fn);
-  }, [deleteSelected, selectedId]);
-
   return html`
-    <div style=${{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden', color:'#0f172a',
-      fontFamily:'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+    <${ReactFlowProvider}>
+      <div style=${{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden',
+        fontFamily:'-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color:'#0f172a' }}>
 
-      <!-- Toolbar -->
-      <div style=${{ display:'flex', alignItems:'center', justifyContent:'space-between',
-        padding:'0 16px', height:'44px', background:'#1e293b', color:'#f1f5f9', flexShrink:0, gap:'12px' }}>
-        <span style="font-size:14px;font-weight:600;letter-spacing:.3px">Gateway Builder</span>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:12px;color:#64748b">${elements.length} element${elements.length !== 1 ? 's' : ''}</span>
-          ${selected && html`
-            <button onClick=${deleteSelected}
-              style="padding:4px 12px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px">
-              Delete
+        <!-- Toolbar -->
+        <div style=${{ display:'flex', alignItems:'center', justifyContent:'space-between',
+          padding:'0 16px', height:'44px', background:'#1e293b', color:'#f1f5f9', flexShrink:0, gap:'12px' }}>
+          <span style="font-size:14px;font-weight:600;letter-spacing:.3px">Gateway Builder</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:12px;color:#64748b">${nodes.length} node${nodes.length !== 1 ? 's' : ''}</span>
+            ${selectedNode && html`
+              <button onClick=${deleteSelected}
+                style="padding:4px 12px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px">
+                Delete
+              </button>
+            `}
+            <button onClick=${clearAll}
+              style="padding:4px 12px;background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:4px;cursor:pointer;font-size:12px">
+              Clear all
             </button>
-          `}
-          <button onClick=${clearAll}
-            style="padding:4px 12px;background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:4px;cursor:pointer;font-size:12px">
-            Clear all
-          </button>
+          </div>
+        </div>
+
+        <!-- Three-column layout -->
+        <div style=${{ display:'flex', flex:1, overflow:'hidden' }}>
+
+          <!-- Palette -->
+          <div style=${{ width:'192px', flexShrink:0, background:'#fff', borderRight:'1px solid #e2e8f0',
+            padding:'14px 12px', overflowY:'auto' }}>
+            <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">
+              Elements
+            </div>
+            ${PALETTE.map(p => html`
+              <${PaletteItem} key=${p.type} type=${p.type} label=${p.label} icon=${p.icon} />
+            `)}
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:11px;color:#94a3b8;line-height:1.5">
+              Drag an element onto the canvas. Select a node to reposition or edit it.
+            </div>
+          </div>
+
+          <!-- React Flow canvas -->
+          <div style=${{ flex:1, overflow:'hidden' }}>
+            <${FlowCanvas}
+              nodes=${nodes}
+              edges=${edges}
+              onNodesChange=${onNodesChange}
+              onEdgesChange=${onEdgesChange}
+              onDrop=${onDrop}
+              onNodeClick=${onNodeClick}
+              onPaneClick=${onPaneClick}
+              onInit=${onInit}
+            />
+          </div>
+
+          <!-- Properties -->
+          <div style=${{ width:'220px', flexShrink:0, background:'#fff', borderLeft:'1px solid #e2e8f0', overflowY:'auto' }}>
+            <div style="padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px">
+              Properties
+            </div>
+            <${PropsPanel} node=${selectedNode} onUpdate=${updateNode} onDelete=${deleteSelected} />
+          </div>
+
         </div>
       </div>
-
-      <!-- Three-column layout -->
-      <div style=${{ display:'flex', flex:1, overflow:'hidden' }}>
-
-        <!-- Palette -->
-        <div style=${{ width:'192px', flexShrink:0, background:'#fff', borderRight:'1px solid #e2e8f0', padding:'14px 12px', overflowY:'auto' }}>
-          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">
-            Elements
-          </div>
-          ${PALETTE.map(p => html`
-            <${PaletteItem} key=${p.type} type=${p.type} label=${p.label} icon=${p.icon} />
-          `)}
-        </div>
-
-        <!-- Canvas -->
-        <${Canvas} elements=${elements} selectedId=${selectedId}
-          onDrop=${addElement} onSelect=${setSelectedId} onMove=${moveElement} />
-
-        <!-- Properties -->
-        <div style=${{ width:'220px', flexShrink:0, background:'#fff', borderLeft:'1px solid #e2e8f0', overflowY:'auto' }}>
-          <div style="padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px">
-            Properties
-          </div>
-          <${PropsPanel} el=${selected} onChange=${updateProps} onDelete=${deleteSelected} />
-        </div>
-
-      </div>
-    </div>
+    </${ReactFlowProvider}>
   `;
 }
 
