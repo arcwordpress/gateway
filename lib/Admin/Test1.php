@@ -45,23 +45,20 @@ class Test1
         wp_enqueue_script('gateway-test1', $url, [], $version, true);
         ?>
         <style>
-            /* Full-screen canvas layout */
             .gateway-test1-page #wpbody-content { padding: 0 !important; }
             .gateway-test1-page #wpfooter       { display: none; }
             #gw-test1 {
                 position: fixed;
-                top: 32px;   /* WP admin bar */
+                top: 32px;
                 bottom: 0;
-                left: 160px; /* default menu width */
+                left: 160px;
                 right: 0;
                 display: flex;
                 flex-direction: column;
                 background: #f8fafc;
             }
             .folded #gw-test1 { left: 36px; }
-            @media (max-width: 782px) {
-                #gw-test1 { top: 46px; left: 0; }
-            }
+            @media (max-width: 782px) { #gw-test1 { top: 46px; left: 0; } }
         </style>
         <div id="gw-test1"></div>
         <script>document.body.classList.add('gateway-test1-page');</script>
