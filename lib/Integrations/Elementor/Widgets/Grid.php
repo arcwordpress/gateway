@@ -36,7 +36,7 @@ class Grid extends \Elementor\Widget_Base
     protected function _register_controls(): void
     {
         $this->start_controls_section('content_section', [
-            'label' => 'Gateway Grid',
+            'label' => 'Grid Display',
             'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
         ]);
 
@@ -177,6 +177,96 @@ class Grid extends \Elementor\Widget_Base
             'condition'   => ['enable_actions' => 'yes'],
         ]);
 
+        $this->add_control('enable_create_action', [
+            'label'        => 'Enable Create',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show a "+ New" button to create records.',
+            'condition'    => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->add_control('create_roles_inherit', [
+            'label'        => 'Inherit Roles from Actions',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'condition'    => ['enable_actions' => 'yes', 'enable_create_action' => 'yes'],
+        ]);
+
+        $this->add_control('create_action_roles', [
+            'label'       => 'Create Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'condition'   => ['enable_actions' => 'yes', 'enable_create_action' => 'yes', 'create_roles_inherit!' => 'yes'],
+        ]);
+
+        $this->add_control('enable_update_action', [
+            'label'        => 'Enable Update',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show an edit button on each record row.',
+            'condition'    => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->add_control('update_roles_inherit', [
+            'label'        => 'Inherit Roles from Actions',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'condition'    => ['enable_actions' => 'yes', 'enable_update_action' => 'yes'],
+        ]);
+
+        $this->add_control('update_action_roles', [
+            'label'       => 'Update Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'condition'   => ['enable_actions' => 'yes', 'enable_update_action' => 'yes', 'update_roles_inherit!' => 'yes'],
+        ]);
+
+        $this->add_control('enable_delete_action', [
+            'label'        => 'Enable Delete',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => '',
+            'description'  => 'Show a delete button on each record row.',
+            'condition'    => ['enable_actions' => 'yes'],
+        ]);
+
+        $this->add_control('delete_roles_inherit', [
+            'label'        => 'Inherit Roles from Actions',
+            'type'         => \Elementor\Controls_Manager::SWITCHER,
+            'label_on'     => 'Yes',
+            'label_off'    => 'No',
+            'return_value' => 'yes',
+            'default'      => 'yes',
+            'condition'    => ['enable_actions' => 'yes', 'enable_delete_action' => 'yes'],
+        ]);
+
+        $this->add_control('delete_action_roles', [
+            'label'       => 'Delete Visible to Roles',
+            'type'        => \Elementor\Controls_Manager::SELECT2,
+            'multiple'    => true,
+            'options'     => $this->getRoleOptions(),
+            'default'     => ['administrator'],
+            'condition'   => ['enable_actions' => 'yes', 'enable_delete_action' => 'yes', 'delete_roles_inherit!' => 'yes'],
+        ]);
+
         $this->end_controls_section();
 
         $this->start_controls_section('style_section', [
@@ -228,6 +318,30 @@ class Grid extends \Elementor\Widget_Base
         }
         $action_roles = array_values(array_map('sanitize_key', $action_roles));
 
+        $enable_create_action  = $enable_actions && ($settings['enable_create_action'] ?? '') === 'yes';
+        $create_roles_inherit  = ($settings['create_roles_inherit'] ?? 'yes') !== '';
+        $create_action_roles   = $create_roles_inherit ? $action_roles : $settings['create_action_roles'] ?? ['administrator'];
+        if (!is_array($create_action_roles) || empty($create_action_roles)) {
+            $create_action_roles = ['administrator'];
+        }
+        $create_action_roles = array_values(array_map('sanitize_key', $create_action_roles));
+
+        $enable_update_action  = $enable_actions && ($settings['enable_update_action'] ?? '') === 'yes';
+        $update_roles_inherit  = ($settings['update_roles_inherit'] ?? 'yes') !== '';
+        $update_action_roles   = $update_roles_inherit ? $action_roles : $settings['update_action_roles'] ?? ['administrator'];
+        if (!is_array($update_action_roles) || empty($update_action_roles)) {
+            $update_action_roles = ['administrator'];
+        }
+        $update_action_roles = array_values(array_map('sanitize_key', $update_action_roles));
+
+        $enable_delete_action  = $enable_actions && ($settings['enable_delete_action'] ?? '') === 'yes';
+        $delete_roles_inherit  = ($settings['delete_roles_inherit'] ?? 'yes') !== '';
+        $delete_action_roles   = $delete_roles_inherit ? $action_roles : $settings['delete_action_roles'] ?? ['administrator'];
+        if (!is_array($delete_action_roles) || empty($delete_action_roles)) {
+            $delete_action_roles = ['administrator'];
+        }
+        $delete_action_roles = array_values(array_map('sanitize_key', $delete_action_roles));
+
         $record_view_mode    = in_array($settings['record_view_mode'] ?? 'modal', ['modal', 'link', 'disabled'], true)
                                 ? $settings['record_view_mode']
                                 : 'modal';
@@ -260,8 +374,14 @@ class Grid extends \Elementor\Widget_Base
             'hiddenFields'      => $hidden_fields,
             'recordViewMode'    => $record_view_mode,
             'recordLinkPattern' => $record_link_pattern,
-            'actionsEnabled'    => $enable_actions,
-            'actionRoles'       => $action_roles,
+            'actionsEnabled'      => $enable_actions,
+            'actionRoles'         => $action_roles,
+            'createActionEnabled' => $enable_create_action,
+            'createActionRoles'   => $create_action_roles,
+            'updateActionEnabled' => $enable_update_action,
+            'updateActionRoles'   => $update_action_roles,
+            'deleteActionEnabled' => $enable_delete_action,
+            'deleteActionRoles'   => $delete_action_roles,
         ]);
 
         echo '<div'
@@ -293,6 +413,7 @@ class Grid extends \Elementor\Widget_Base
                 'siteUrl'          => esc_url_raw(site_url()),
                 'currentUserId'    => get_current_user_id(),
                 'currentUserRoles' => array_values((array) $current_user->roles),
+                'nonce'            => wp_create_nonce('wp_rest'),
             ]);
         }
 

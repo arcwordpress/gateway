@@ -21,6 +21,7 @@
   --gty-zinc-700:   oklch(37% 0.013 285.805);
   --gty-zinc-600:   oklch(44.2% 0.017 285.786);
   --gty-zinc-400:   oklch(70.5% 0.015 286.067);
+  --gty-zinc-300:   oklch(87.1% 0.006 286.286);
 
   --gty-row-odd:    oklch(98% 0 0);
   --gty-row-even:   oklch(100% 0 0);
@@ -534,17 +535,10 @@
   border-top:  1px solid var(--gty-border);
 }
 
-.gty-actions-placeholder {
-  color:       var(--gty-zinc-600);
-  font-size:   .7rem;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-
 /* ── Record modal ────────────────────────────────────────── */
 
-.gty-modal {
+.gty-modal,
+.gty-modal__overlay {
   position:        fixed;
   inset:           0;
   z-index:         99999;
@@ -693,3 +687,325 @@
 }
 
 .gty-grid__row-link:hover { text-decoration: underline; }
+
+/* ── Skeleton loader ─────────────────────────────────────── */
+
+.gty-grid {
+  --gty-skeleton-base:  oklch(91% 0 0);
+  --gty-skeleton-shine: oklch(98% 0 0);
+}
+
+.gty-grid--dark {
+  --gty-skeleton-base:  var(--gty-zinc-800);
+  --gty-skeleton-shine: var(--gty-zinc-700);
+}
+
+@keyframes gty-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.gty-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.gty-skeleton__bar {
+  border-radius: 3px;
+  background:    linear-gradient(
+    90deg,
+    var(--gty-skeleton-base)  0%,
+    var(--gty-skeleton-shine) 50%,
+    var(--gty-skeleton-base)  100%
+  );
+  background-size: 800px 100%;
+  animation: gty-shimmer 1.4s ease-in-out infinite;
+}
+
+.gty-skeleton__toolbar {
+  display:       flex;
+  align-items:   center;
+  justify-content: flex-end;
+  padding:       .4rem .75rem;
+  background:    var(--gty-zinc-950);
+  border-bottom: 1px solid var(--gty-zinc-700);
+}
+
+.gty-skeleton__toolbar-inner {
+  display:     flex;
+  align-items: center;
+  gap:         20px;
+}
+
+.gty-skeleton__thead {
+  display:    flex;
+  padding:    .5rem .75rem;
+  gap:        1rem;
+  background: var(--gty-surface);
+  border-bottom: 2px solid var(--gty-border);
+}
+
+.gty-skeleton__th {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.gty-skeleton__th:first-child { flex: 0 0 3rem; }
+
+.gty-skeleton__row {
+  display:    flex;
+  align-items: center;
+  padding:    .5rem .75rem;
+  gap:        1rem;
+  border-bottom: 1px solid var(--gty-border);
+}
+
+.gty-skeleton__row--odd  { background: var(--gty-row-odd); }
+.gty-skeleton__row--even { background: var(--gty-row-even); }
+
+.gty-skeleton__td {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.gty-skeleton__td:first-child { flex: 0 0 3rem; }
+
+.gty-skeleton__footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         .5rem .75rem;
+  border-top:      1px solid var(--gty-border);
+}
+
+.gty-skeleton__footer-right {
+  display:     flex;
+  align-items: center;
+  gap:         .5rem;
+}
+
+/* ── Toolbar: create button ──────────────────────────────── */
+
+.gty-toolbar__create {
+  display:     flex;
+  align-items: center;
+  gap:         .35rem;
+  background:  none;
+  border:      none;
+  color:       var(--gty-zinc-300);
+  cursor:      pointer;
+  font-size:   .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  padding:     .3rem 0;
+  white-space: nowrap;
+  line-height: 0;
+}
+
+.gty-toolbar__create:hover {
+  color: oklch(96% 0 0);
+}
+
+/* ── Modal footer ────────────────────────────────────────── */
+
+.gty-modal__footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: flex-end;
+  gap:             .5rem;
+  padding:         .75rem 1.25rem;
+  border-top:      1px solid var(--gty-zinc-800);
+  flex-shrink:     0;
+}
+
+/* ── Shared buttons ──────────────────────────────────────── */
+
+.gty-btn {
+  border:        none;
+  border-radius: 4px;
+  cursor:        pointer;
+  font-size:     .8rem;
+  font-weight:   500;
+  padding:       .4rem .85rem;
+}
+
+.gty-btn--primary {
+  background: var(--gty-zinc-700);
+  color:      var(--gty-zinc-300);
+}
+
+.gty-btn--primary:hover:not(:disabled) {
+  background: var(--gty-zinc-600);
+  color:      oklch(96% 0 0);
+}
+
+.gty-btn--primary:disabled {
+  opacity: 0.5;
+  cursor:  not-allowed;
+}
+
+.gty-btn--ghost {
+  background: var(--gty-zinc-800);
+  color:      var(--gty-zinc-400);
+}
+
+.gty-btn--ghost:hover {
+  background: var(--gty-zinc-700);
+  color:      oklch(96% 0 0);
+}
+
+.gty-btn--danger {
+  background: oklch(50% 0.2 25);
+  color:      oklch(98% 0 0);
+}
+
+.gty-btn--danger:hover:not(:disabled) {
+  background: oklch(45% 0.2 25);
+}
+
+.gty-btn--danger:disabled {
+  opacity: 0.5;
+  cursor:  not-allowed;
+}
+
+/* ── Create form ─────────────────────────────────────────── */
+
+.gty-form__body {
+  display:        flex;
+  flex-direction: column;
+  gap:            1rem;
+  padding:        1.25rem;
+}
+
+.gty-form__field {
+  display:        flex;
+  flex-direction: column;
+  gap:            .35rem;
+}
+
+.gty-form__field--checkbox {
+  flex-direction: row;
+  align-items:    center;
+  gap:            .5rem;
+}
+
+.gty-form__label {
+  color:       var(--gty-zinc-400);
+  font-size:   .75rem;
+  font-weight: 500;
+}
+
+.gty-form__label--inline {
+  color:     oklch(96% 0 0);
+  font-size: .85rem;
+}
+
+.gty-form__req {
+  color:       oklch(65% 0.2 25);
+  margin-left: .2rem;
+}
+
+.gty-form__input {
+  background:    var(--gty-zinc-900);
+  border:        1px solid var(--gty-zinc-700);
+  border-radius: 4px;
+  color:         oklch(96% 0 0);
+  font-size:     .85rem;
+  padding:       .4rem .6rem;
+  width:         100%;
+  box-sizing:    border-box;
+}
+
+.gty-form__input:focus {
+  border-color: oklch(55% 0.18 250);
+  outline:      none;
+}
+
+.gty-form__textarea {
+  resize:     vertical;
+  min-height: 80px;
+}
+
+.gty-form__select {
+  cursor: pointer;
+}
+
+.gty-form__checkbox {
+  width:  1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: oklch(55% 0.18 250);
+}
+
+.gty-form__error {
+  color:       oklch(65% 0.2 25);
+  font-size:   .8rem;
+  margin:      0;
+  padding-top: .25rem;
+}
+
+.gty-form__empty {
+  color:      var(--gty-zinc-600);
+  font-size:  .85rem;
+  text-align: center;
+  margin:     0;
+}
+
+/* ── Delete confirmation modal ───────────────────────────── */
+
+.gty-modal__box--sm {
+  max-width: 420px;
+}
+
+.gty-delete__body {
+  padding: 1.25rem;
+}
+
+.gty-delete__msg {
+  color:       oklch(96% 0 0);
+  font-size:   .9rem;
+  line-height: 1.5;
+  margin:      0 0 .5rem;
+}
+
+/* ── Record action buttons (edit, delete, etc.) ──────────── */
+
+.gty-actions {
+  display:     flex;
+  align-items: center;
+  gap:         .25rem;
+}
+
+.gty-action-btn {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      none;
+  border:          none;
+  border-radius:   4px;
+  color:           var(--gty-zinc-600);
+  cursor:          pointer;
+  line-height:     0;
+  padding:         .3rem;
+}
+
+.gty-action-btn:hover {
+  background: var(--gty-zinc-800);
+  color:      var(--gty-zinc-400);
+}
+
+.gty-action-btn--danger:hover {
+  background: oklch(20% 0.05 25);
+  color:      oklch(65% 0.2 25);
+}
+
+/* ── Modal title ID badge ────────────────────────────────── */
+
+.gty-modal__title-id {
+  color:       var(--gty-zinc-600);
+  font-size:   .8em;
+  font-weight: 400;
+  margin-left: .35rem;
+}

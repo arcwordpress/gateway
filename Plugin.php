@@ -137,6 +137,7 @@ class Plugin
         Raptor\ViewRenderer::init();
         Gutenberg\BlockRegistry::init();
         Integrations\Elementor\ElementorController::init();
+        Integrations\Gutenberg\GutenbergController::init();
         $this->patternRegistry->init();
         AppTemplate::init();
 
