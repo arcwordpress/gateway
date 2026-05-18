@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { useState, useReducer, useEffect } from 'preact/hooks';
 import { X } from 'lucide-preact';
 import FormField from './FormField';
-import { getFormFields, defaultFor, formReducer } from './formUtils';
+import { getFormFields, defaultFor, formReducer, buildRouteUrl } from './formUtils';
 
 const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
   const fields     = getFormFields(collection);
@@ -30,8 +30,12 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!createRoute) { setError('No create route found for this collection.'); return; }
+    if (!createRoute) {
+      setError(`No create route found. Routes available: ${JSON.stringify((collection.routes||[]).map(r=>r.type))}`);
+      return;
+    }
 
+    const url = buildRouteUrl(apiRoot, createRoute.route);
     setSubmitting(true);
     setError(null);
     try {
@@ -44,13 +48,14 @@ const CreateModal = ({ collection, apiRoot, onClose, onCreated }) => {
             ? !!val : val;
       }
 
-      const res  = await fetch(`${apiRoot}${createRoute.route}`, {
+      console.log('[Gateway] CREATE', url, payload);
+      const res  = await fetch(url, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.gatewayBd?.nonce || '' },
         body:    JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || `Server error ${res.status}`);
+      if (!res.ok) throw new Error(`${data?.message || `Server error ${res.status}`} (URL: ${url})`);
       onCreated(data?.data ?? data);
     } catch (err) {
       setError(err.message);

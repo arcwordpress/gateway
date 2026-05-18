@@ -36,7 +36,10 @@ const UpdateModal = ({ collection, record, apiRoot, onClose, onUpdated }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!updateUrl) { setError('No update route found for this collection.'); return; }
+    if (!updateUrl) {
+      setError(`No update route found. Routes available: ${JSON.stringify((collection.routes||[]).map(r=>r.type))}`);
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -50,13 +53,14 @@ const UpdateModal = ({ collection, record, apiRoot, onClose, onUpdated }) => {
             ? !!val : val;
       }
 
+      console.log('[Gateway] UPDATE', updateUrl, payload);
       const res  = await fetch(updateUrl, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': window.gatewayBd?.nonce || '' },
         body:    JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || `Server error ${res.status}`);
+      if (!res.ok) throw new Error(`${data?.message || `Server error ${res.status}`} (URL: ${updateUrl})`);
       onUpdated(data?.data ?? data);
     } catch (err) {
       setError(err.message);
