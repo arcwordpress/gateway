@@ -129,6 +129,7 @@ class Plugin
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init();
+        Admin\Test1::init();
         Packages\PackageMenus::init();
         Forms\Render::init();
         Forms\Shortcode::init();
