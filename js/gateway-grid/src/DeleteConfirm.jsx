@@ -28,18 +28,22 @@ const DeleteConfirm = ({ collection, record, apiRoot, onClose, onDeleted }) => {
   }, []);
 
   const handleDelete = async () => {
-    if (!deleteUrl) { setError('No delete route found for this collection.'); return; }
+    if (!deleteUrl) {
+      setError(`No delete route found. Routes available: ${JSON.stringify((collection.routes||[]).map(r=>r.type))}`);
+      return;
+    }
 
     setDeleting(true);
     setError(null);
     try {
+      console.log('[Gateway] DELETE', deleteUrl);
       const res = await fetch(deleteUrl, {
         method:  'DELETE',
         headers: { 'X-WP-Nonce': window.gatewayBd?.nonce || '' },
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.message || `Server error ${res.status}`);
+        throw new Error(`${data?.message || `Server error ${res.status}`} (URL: ${deleteUrl})`);
       }
       onDeleted(record.id);
     } catch (err) {

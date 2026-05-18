@@ -29,15 +29,25 @@ export function formReducer(state, action) {
   return state;
 }
 
+export function normalizeApiRoot(apiRoot) {
+  return apiRoot ? apiRoot.replace(/\/?$/, '/') : '/wp-json/';
+}
+
+export function buildRouteUrl(apiRoot, route) {
+  const base = normalizeApiRoot(apiRoot);
+  return base + route.replace(/^\//, '');
+}
+
 export function buildUpdateUrl(collection, apiRoot, recordId) {
   const routes = Array.isArray(collection.routes) ? collection.routes : [];
   const update = routes.find(r => r.type === 'update');
+  const del    = routes.find(r => r.type === 'delete');
   const create = routes.find(r => r.type === 'create');
-  const base   = update || create;
+  const base   = update || del || create;
   if (!base) return null;
-  // Strip WP REST regex tail (e.g. /(?P<id>[\d]+)) or {placeholder}
+  // Strip WP REST regex tail (e.g. /(?P<id>\d+)) or {placeholder}
   const path = base.route
     .replace(/\/\(\?P<[^>]+>[^)]+\)$/, '')
     .replace(/\/\{[^}]+\}$/, '');
-  return `${apiRoot}${path}/${recordId}`;
+  return buildRouteUrl(apiRoot, path) + recordId;
 }
