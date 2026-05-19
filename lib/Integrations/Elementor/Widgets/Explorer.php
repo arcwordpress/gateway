@@ -56,15 +56,24 @@ class Explorer extends \Elementor\Widget_Base
             'description' => 'Collection whose records form the navigation groups (e.g. doc_groups). Items are grouped by a foreign-key field in the main collection that references this collection\'s ID.',
         ]);
 
+        $this->add_control('set_collection', [
+            'label'       => 'Set Collection',
+            'type'        => \Elementor\Controls_Manager::SELECT,
+            'options'     => $this->getCollectionOptions(true),
+            'default'     => '',
+            'description' => 'Optional. A collection one level above groups (e.g. doc_sets). A dropdown at the top of the widget lets visitors switch sets; only groups belonging to the selected set are shown.',
+        ]);
+
         $this->end_controls_section();
     }
 
     protected function render(): void
     {
         $settings         = $this->get_settings_for_display();
-        $collection_key   = sanitize_text_field($settings['collection']       ?? '');
-        $group_coll_key   = sanitize_text_field($settings['group_collection'] ?? '');
-        $is_edit          = \Elementor\Plugin::$instance->editor->is_edit_mode();
+        $collection_key = sanitize_text_field($settings['collection']       ?? '');
+        $group_coll_key = sanitize_text_field($settings['group_collection'] ?? '');
+        $set_coll_key   = sanitize_text_field($settings['set_collection']   ?? '');
+        $is_edit        = \Elementor\Plugin::$instance->editor->is_edit_mode();
 
         if (empty($collection_key)) {
             if ($is_edit) {
@@ -75,9 +84,9 @@ class Explorer extends \Elementor\Widget_Base
         }
 
         // Resolve collection instances from the registry.
-        $registry       = null;
-        $mainCollection = null;
+        $mainCollection  = null;
         $groupCollection = null;
+        $setCollection   = null;
 
         try {
             $registry = \Gateway\Plugin::getInstance()->getRegistry();
@@ -86,12 +95,30 @@ class Explorer extends \Elementor\Widget_Base
                 if (!empty($group_coll_key)) {
                     $groupCollection = $registry->get($group_coll_key);
                 }
+                if (!empty($set_coll_key)) {
+                    $setCollection = $registry->get($set_coll_key);
+                }
             }
         } catch (\Throwable $e) {
             // Registry not ready.
         }
 
-        // Fetch groups, then items grouped under each.
+        // Fetch sets (optional top-level).
+        $sets          = [];
+        $setFkField    = '';
+        $active_set_id = null;
+
+        if ($setCollection && $groupCollection) {
+            try {
+                $sets       = $setCollection->newQuery()->get()->all();
+                $setFkField = $this->discoverForeignKey($groupCollection, $setCollection);
+                $active_set_id = isset($_GET['explorer_set']) ? (int) $_GET['explorer_set'] : null;
+            } catch (\Throwable $e) {
+                // Sets unavailable — continue without them.
+            }
+        }
+
+        // Fetch groups filtered by active set when applicable, then items per group.
         $groups         = [];
         $items_by_group = [];
         $fkField        = '';
@@ -99,11 +126,17 @@ class Explorer extends \Elementor\Widget_Base
         if ($groupCollection && $mainCollection) {
             try {
                 $fkField = $this->discoverForeignKey($mainCollection, $groupCollection);
-                $groups  = $groupCollection->newQuery()->get()->all();
+                $query   = $groupCollection->newQuery();
+
+                if ($setFkField && $active_set_id !== null) {
+                    $query->where($setFkField, $active_set_id);
+                }
+
+                $groups = $query->get()->all();
 
                 foreach ($groups as $group) {
-                    $gid                   = (int) ($group->id ?? 0);
-                    $items_by_group[$gid]  = $mainCollection->newQuery()
+                    $gid                  = (int) ($group->id ?? 0);
+                    $items_by_group[$gid] = $mainCollection->newQuery()
                         ->where($fkField, $gid)
                         ->get()
                         ->all();
@@ -113,11 +146,14 @@ class Explorer extends \Elementor\Widget_Base
             }
         }
 
-        $active_item_id = isset($_GET['explorer_item'])
-            ? (int) $_GET['explorer_item']
-            : null;
+        $active_item_id = isset($_GET['explorer_item']) ? (int) $_GET['explorer_item'] : null;
 
-        $this->renderExplorer($collection_key, $group_coll_key, $groups, $items_by_group, $fkField, $active_item_id, $is_edit);
+        $this->renderExplorer(
+            $collection_key, $group_coll_key, $set_coll_key,
+            $sets, $active_set_id,
+            $groups, $items_by_group, $fkField,
+            $active_item_id, $is_edit
+        );
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
@@ -125,55 +161,107 @@ class Explorer extends \Elementor\Widget_Base
     private function renderExplorer(
         string $collection_key,
         string $group_coll_key,
+        string $set_coll_key,
+        array  $sets,
+        ?int   $active_set_id,
         array  $groups,
         array  $items_by_group,
         string $fkField,
         ?int   $active_item_id,
         bool   $is_edit
     ): void {
+        $has_sets   = !empty($sets);
         $has_groups = !empty($groups);
         ?>
         <div class="gateway-explorer"
              data-gateway-explorer=""
              data-schema="<?php echo esc_attr($collection_key); ?>"
              data-group-schema="<?php echo esc_attr($group_coll_key); ?>"
+             data-set-schema="<?php echo esc_attr($set_coll_key); ?>"
              data-fk-field="<?php echo esc_attr($fkField); ?>"
-             style="display:flex;gap:0;font-family:sans-serif;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:300px;">
+             style="display:flex;flex-direction:column;font-family:sans-serif;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:300px;">
 
-            <?php if ($has_groups): ?>
-            <nav class="gateway-explorer-nav"
-                 style="width:240px;flex-shrink:0;background:#f8fafc;border-right:1px solid #e2e8f0;padding:.5rem 0;overflow-y:auto;">
-
-                <?php foreach ($groups as $group):
-                    $gid   = (int) ($group->id ?? 0);
-                    $items = $items_by_group[$gid] ?? [];
-                    $this->renderNavGroup($group, $items, $active_item_id, $is_edit);
-                endforeach; ?>
-
-            </nav>
+            <?php if ($has_sets): ?>
+            <div class="gateway-explorer-set-bar"
+                 style="padding:.75rem 1rem;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:.75rem;">
+                <label style="font-size:.8rem;font-weight:600;color:#64748b;white-space:nowrap;">
+                    <?php echo esc_html($this->getCollectionTitle($set_coll_key)); ?>
+                </label>
+                <?php $this->renderSetSelector($sets, $active_set_id, $is_edit); ?>
+            </div>
             <?php endif; ?>
 
-            <div class="gateway-explorer-content"
-                 style="flex:1;padding:1.5rem;display:flex;align-items:center;justify-content:center;color:#94a3b8;">
-                <div style="text-align:center;">
-                    <div style="font-size:1.25rem;font-weight:600;color:#64748b;margin-bottom:.5rem;">Gateway Explorer</div>
-                    <div style="font-size:.875rem;">
-                        Collection: <code><?php echo esc_html($collection_key); ?></code>
-                        <?php if ($active_item_id): ?>
-                            &mdash; item&nbsp;<code><?php echo esc_html($active_item_id); ?></code>
+            <div style="display:flex;flex:1;overflow:hidden;">
+
+                <?php if ($has_groups): ?>
+                <nav class="gateway-explorer-nav"
+                     style="width:240px;flex-shrink:0;background:#f8fafc;border-right:1px solid #e2e8f0;padding:.5rem 0;overflow-y:auto;">
+
+                    <?php foreach ($groups as $group):
+                        $gid   = (int) ($group->id ?? 0);
+                        $items = $items_by_group[$gid] ?? [];
+                        $this->renderNavGroup($group, $items, $active_item_id, $is_edit);
+                    endforeach; ?>
+
+                </nav>
+                <?php endif; ?>
+
+                <div class="gateway-explorer-content"
+                     style="flex:1;padding:1.5rem;display:flex;align-items:center;justify-content:center;color:#94a3b8;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.25rem;font-weight:600;color:#64748b;margin-bottom:.5rem;">Gateway Explorer</div>
+                        <div style="font-size:.875rem;">
+                            Collection: <code><?php echo esc_html($collection_key); ?></code>
+                            <?php if ($active_item_id): ?>
+                                &mdash; item&nbsp;<code><?php echo esc_html($active_item_id); ?></code>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($is_edit && !$has_groups && !empty($group_coll_key)): ?>
+                            <div style="margin-top:.75rem;font-size:.8rem;opacity:.7;">
+                                No records found in <code><?php echo esc_html($group_coll_key); ?></code><?php
+                                    echo $active_set_id ? ' for the selected set' : '';
+                                ?>, or the collection could not be queried.
+                            </div>
                         <?php endif; ?>
                     </div>
-                    <?php if ($is_edit && !$has_groups && !empty($group_coll_key)): ?>
-                        <div style="margin-top:.75rem;font-size:.8rem;opacity:.7;">
-                            No records found in <code><?php echo esc_html($group_coll_key); ?></code>,
-                            or the collection could not be queried.
-                        </div>
-                    <?php endif; ?>
                 </div>
+
             </div>
 
         </div>
         <?php
+    }
+
+    private function renderSetSelector(array $sets, ?int $active_set_id, bool $is_edit): void
+    {
+        $base   = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
+        $params = $_GET;
+        unset($params['explorer_set'], $params['explorer_item']);
+
+        $all_url = $base . ($params ? '?' . http_build_query($params) : '');
+
+        echo '<select'
+            . ' style="font-size:.875rem;padding:.35rem .6rem;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#374151;cursor:pointer;"'
+            . ($is_edit ? '' : ' onchange="location.href=this.value"')
+            . '>';
+
+        $selected = $active_set_id === null ? ' selected' : '';
+        echo '<option value="' . esc_attr($all_url) . '"' . $selected . '>All</option>';
+
+        foreach ($sets as $set) {
+            $id       = (int) ($set->id ?? 0);
+            $label    = $this->getGroupLabel($set);
+            $p        = $params;
+            $p['explorer_set'] = $id;
+            $url      = $base . '?' . http_build_query($p);
+            $selected = ($active_set_id === $id) ? ' selected' : '';
+
+            echo '<option value="' . esc_attr($url) . '"' . $selected . '>'
+                . esc_html($label)
+                . '</option>';
+        }
+
+        echo '</select>';
     }
 
     private function renderNavGroup(object $group, array $items, ?int $active_item_id, bool $is_edit): void
@@ -272,9 +360,25 @@ class Explorer extends \Elementor\Widget_Base
         return $base . '?' . http_build_query($params);
     }
 
-    private function getCollectionOptions(): array
+    private function getCollectionTitle(string $key): string
     {
-        $options = ['' => '— Select a collection —'];
+        try {
+            $registry = \Gateway\Plugin::getInstance()->getRegistry();
+            if ($registry) {
+                $col = $registry->get($key);
+                if ($col && method_exists($col, 'getTitle')) {
+                    return $col->getTitle();
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        return $key;
+    }
+
+    private function getCollectionOptions(bool $optional = false): array
+    {
+        $options = ['' => $optional ? '— None —' : '— Select a collection —'];
 
         try {
             $registry = \Gateway\Plugin::getInstance()->getRegistry();
