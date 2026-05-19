@@ -8,25 +8,11 @@ if (!defined('ABSPATH')) {
 
 class Explorer extends \Elementor\Widget_Base
 {
-    public function get_name(): string
-    {
-        return 'gateway_explorer';
-    }
+    public function get_name(): string  { return 'gateway_explorer'; }
+    public function get_title(): string { return 'Gateway Explorer'; }
+    public function get_icon(): string  { return 'eicon-search'; }
 
-    public function get_title(): string
-    {
-        return 'Gateway Explorer';
-    }
-
-    public function get_icon(): string
-    {
-        return 'eicon-search';
-    }
-
-    public function get_categories(): array
-    {
-        return ['general'];
-    }
+    public function get_categories(): array { return ['general']; }
 
     public function get_keywords(): array
     {
@@ -53,7 +39,7 @@ class Explorer extends \Elementor\Widget_Base
             'type'        => \Elementor\Controls_Manager::SELECT,
             'options'     => $this->getCollectionOptions(),
             'default'     => '',
-            'description' => 'Collection whose records form the navigation groups (e.g. doc_groups). Items are grouped by a foreign-key field in the main collection that references this collection\'s ID.',
+            'description' => 'Collection whose records form the nav groups (e.g. doc_groups). Items are grouped by the FK in the main collection that points here.',
         ]);
 
         $this->add_control('set_collection', [
@@ -61,15 +47,17 @@ class Explorer extends \Elementor\Widget_Base
             'type'        => \Elementor\Controls_Manager::SELECT,
             'options'     => $this->getCollectionOptions(true),
             'default'     => '',
-            'description' => 'Optional. A collection one level above groups (e.g. doc_sets). A dropdown at the top of the widget lets visitors switch sets; only groups belonging to the selected set are shown.',
+            'description' => 'Optional. A collection one level above groups (e.g. doc_sets). Adds a dropdown at the top; switching sets filters the nav to that set\'s groups.',
         ]);
 
         $this->end_controls_section();
     }
 
+    // ── Render ────────────────────────────────────────────────────────────────
+
     protected function render(): void
     {
-        $settings         = $this->get_settings_for_display();
+        $settings       = $this->get_settings_for_display();
         $collection_key = sanitize_text_field($settings['collection']       ?? '');
         $group_coll_key = sanitize_text_field($settings['group_collection'] ?? '');
         $set_coll_key   = sanitize_text_field($settings['set_collection']   ?? '');
@@ -77,7 +65,8 @@ class Explorer extends \Elementor\Widget_Base
 
         if (empty($collection_key)) {
             if ($is_edit) {
-                echo '<div class="gateway-explorer-placeholder" style="border:2px dashed #cbd5e1;border-radius:6px;padding:1.5rem;color:#64748b;font-family:sans-serif;">Gateway Explorer: select a collection in the panel.</div>';
+                echo '<div style="border:2px dashed #cbd5e1;border-radius:6px;padding:1.5rem;color:#64748b;font-family:sans-serif;">'
+                    . 'Gateway Explorer: select a collection in the panel.</div>';
                 $this->renderCollectionList();
             }
             return;
@@ -92,93 +81,121 @@ class Explorer extends \Elementor\Widget_Base
             $registry = \Gateway\Plugin::getInstance()->getRegistry();
             if ($registry) {
                 $mainCollection  = $registry->get($collection_key);
-                if (!empty($group_coll_key)) {
-                    $groupCollection = $registry->get($group_coll_key);
-                }
-                if (!empty($set_coll_key)) {
-                    $setCollection = $registry->get($set_coll_key);
-                }
+                if ($group_coll_key) $groupCollection = $registry->get($group_coll_key);
+                if ($set_coll_key)   $setCollection   = $registry->get($set_coll_key);
             }
-        } catch (\Throwable $e) {
-            // Registry not ready.
-        }
+        } catch (\Throwable $e) {}
 
-        // Fetch sets (optional top-level).
-        $sets          = [];
-        $setFkField    = '';
-        $active_set_id = null;
+        // Base path for slug URLs (e.g. "/docs"). No trailing slash.
+        $base_path = rtrim(parse_url(get_permalink() ?: '', PHP_URL_PATH) ?: '', '/');
+
+        // Parse active slugs from the current request path (for SSR initial state).
+        $request_path  = rtrim(strtok($_SERVER['REQUEST_URI'] ?? '', '?'), '/');
+        $explorer_path = str_starts_with($request_path, $base_path)
+            ? substr($request_path, strlen($base_path))
+            : '';
+        $segments = array_values(array_filter(explode('/', trim($explorer_path, '/'))));
+
+        // ── Sets ──────────────────────────────────────────────────────────────
+
+        $sets         = [];
+        $set_fk_field = '';
 
         if ($setCollection && $groupCollection) {
             try {
-                $sets       = $setCollection->newQuery()->get()->all();
-                $setFkField = $this->discoverForeignKey($groupCollection, $setCollection);
-                $active_set_id = isset($_GET['explorer_set']) ? (int) $_GET['explorer_set'] : null;
-            } catch (\Throwable $e) {
-                // Sets unavailable — continue without them.
+                $sets         = $setCollection->newQuery()->get()->all();
+                $set_fk_field = $this->discoverForeignKey($groupCollection, $setCollection);
+            } catch (\Throwable $e) {}
+        }
+
+        $has_sets = !empty($sets);
+
+        // Map set_id → set record for quick lookup when annotating groups.
+        $sets_by_id = [];
+        $active_set = null;
+        foreach ($sets as $set) {
+            $sid             = (int) ($set->id ?? 0);
+            $sets_by_id[$sid] = $set;
+        }
+
+        // Determine active slugs from URL segments.
+        $active_set_slug   = $has_sets ? ($segments[0] ?? null) : null;
+        $active_group_slug =             $segments[$has_sets ? 1 : 0] ?? null;
+        $active_item_slug  =             $segments[$has_sets ? 2 : 1] ?? null;
+
+        if ($active_set_slug) {
+            foreach ($sets as $set) {
+                if (($set->slug ?? '') === $active_set_slug) {
+                    $active_set = $set;
+                    break;
+                }
             }
         }
 
-        // Fetch groups filtered by active set when applicable, then items per group.
+        // ── Groups + Items ────────────────────────────────────────────────────
+
         $groups         = [];
         $items_by_group = [];
-        $fkField        = '';
+        $fk_field       = '';
 
         if ($groupCollection && $mainCollection) {
             try {
-                $fkField = $this->discoverForeignKey($mainCollection, $groupCollection);
-                $query   = $groupCollection->newQuery();
-
-                if ($setFkField && $active_set_id !== null) {
-                    $query->where($setFkField, $active_set_id);
-                }
-
-                $groups = $query->get()->all();
+                $fk_field = $this->discoverForeignKey($mainCollection, $groupCollection);
+                $groups   = $groupCollection->newQuery()->get()->all();
 
                 foreach ($groups as $group) {
                     $gid                  = (int) ($group->id ?? 0);
                     $items_by_group[$gid] = $mainCollection->newQuery()
-                        ->where($fkField, $gid)
+                        ->where($fk_field, $gid)
                         ->get()
                         ->all();
                 }
-            } catch (\Throwable $e) {
-                // Leave nav empty; render without groups.
-            }
+            } catch (\Throwable $e) {}
         }
 
-        $active_item_id = isset($_GET['explorer_item']) ? (int) $_GET['explorer_item'] : null;
+        $widget_id = 'gw-explorer-' . $this->get_id();
 
-        $this->renderExplorer(
+        $this->renderWidget(
+            $widget_id, $base_path,
             $collection_key, $group_coll_key, $set_coll_key,
-            $sets, $active_set_id,
-            $groups, $items_by_group, $fkField,
-            $active_item_id, $is_edit
+            $sets, $sets_by_id, $set_fk_field, $active_set,
+            $groups, $items_by_group, $fk_field,
+            $active_set_slug, $active_group_slug, $active_item_slug,
+            $has_sets, $is_edit
         );
     }
 
-    // ── Rendering ─────────────────────────────────────────────────────────────
+    // ── Widget shell ──────────────────────────────────────────────────────────
 
-    private function renderExplorer(
-        string $collection_key,
-        string $group_coll_key,
-        string $set_coll_key,
-        array  $sets,
-        ?int   $active_set_id,
-        array  $groups,
-        array  $items_by_group,
-        string $fkField,
-        ?int   $active_item_id,
-        bool   $is_edit
+    private function renderWidget(
+        string  $widget_id,
+        string  $base_path,
+        string  $collection_key,
+        string  $group_coll_key,
+        string  $set_coll_key,
+        array   $sets,
+        array   $sets_by_id,
+        string  $set_fk_field,
+        ?object $active_set,
+        array   $groups,
+        array   $items_by_group,
+        string  $fk_field,
+        ?string $active_set_slug,
+        ?string $active_group_slug,
+        ?string $active_item_slug,
+        bool    $has_sets,
+        bool    $is_edit
     ): void {
-        $has_sets   = !empty($sets);
         $has_groups = !empty($groups);
         ?>
-        <div class="gateway-explorer"
+        <div id="<?php echo esc_attr($widget_id); ?>"
+             class="gateway-explorer"
              data-gateway-explorer=""
              data-schema="<?php echo esc_attr($collection_key); ?>"
              data-group-schema="<?php echo esc_attr($group_coll_key); ?>"
              data-set-schema="<?php echo esc_attr($set_coll_key); ?>"
-             data-fk-field="<?php echo esc_attr($fkField); ?>"
+             data-base-path="<?php echo esc_attr($base_path); ?>"
+             data-has-sets="<?php echo $has_sets ? '1' : '0'; ?>"
              style="display:flex;flex-direction:column;font-family:sans-serif;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;min-height:300px;">
 
             <?php if ($has_sets): ?>
@@ -187,7 +204,7 @@ class Explorer extends \Elementor\Widget_Base
                 <label style="font-size:.8rem;font-weight:600;color:#64748b;white-space:nowrap;">
                     <?php echo esc_html($this->getCollectionTitle($set_coll_key)); ?>
                 </label>
-                <?php $this->renderSetSelector($sets, $active_set_id, $is_edit); ?>
+                <?php $this->renderSetSelector($sets, $active_set, $base_path); ?>
             </div>
             <?php endif; ?>
 
@@ -198,9 +215,21 @@ class Explorer extends \Elementor\Widget_Base
                      style="width:240px;flex-shrink:0;background:#f8fafc;border-right:1px solid #e2e8f0;padding:.5rem 0;overflow-y:auto;">
 
                     <?php foreach ($groups as $group):
-                        $gid   = (int) ($group->id ?? 0);
+                        $gid = (int) ($group->id ?? 0);
                         $items = $items_by_group[$gid] ?? [];
-                        $this->renderNavGroup($group, $items, $active_item_id, $is_edit);
+
+                        // Which set does this group belong to?
+                        $group_set_id   = $set_fk_field ? (int) ($group->$set_fk_field ?? 0) : 0;
+                        $group_set      = $group_set_id ? ($sets_by_id[$group_set_id] ?? null) : null;
+                        $group_set_slug = $group_set ? ($group_set->slug ?? '') : '';
+
+                        // SSR: hide groups whose set doesn't match the active set.
+                        $hidden = $has_sets && $active_set_slug && $group_set_slug !== $active_set_slug;
+
+                        $this->renderNavGroup(
+                            $group, $group_set_slug, $items, $base_path,
+                            $active_group_slug, $active_item_slug, $has_sets, $hidden, $is_edit
+                        );
                     endforeach; ?>
 
                 </nav>
@@ -212,16 +241,15 @@ class Explorer extends \Elementor\Widget_Base
                         <div style="font-size:1.25rem;font-weight:600;color:#64748b;margin-bottom:.5rem;">Gateway Explorer</div>
                         <div style="font-size:.875rem;">
                             Collection: <code><?php echo esc_html($collection_key); ?></code>
-                            <?php if ($active_item_id): ?>
-                                &mdash; item&nbsp;<code><?php echo esc_html($active_item_id); ?></code>
+                            <?php if ($active_item_slug): ?>
+                                &mdash; <code><?php echo esc_html($active_item_slug); ?></code>
                             <?php endif; ?>
                         </div>
-                        <?php if ($is_edit && !$has_groups && !empty($group_coll_key)): ?>
-                            <div style="margin-top:.75rem;font-size:.8rem;opacity:.7;">
-                                No records found in <code><?php echo esc_html($group_coll_key); ?></code><?php
-                                    echo $active_set_id ? ' for the selected set' : '';
-                                ?>, or the collection could not be queried.
-                            </div>
+                        <?php if ($is_edit && !$has_groups && $group_coll_key): ?>
+                        <div style="margin-top:.75rem;font-size:.8rem;opacity:.7;">
+                            No records found in <code><?php echo esc_html($group_coll_key); ?></code>,
+                            or the collection could not be queried.
+                        </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -229,135 +257,236 @@ class Explorer extends \Elementor\Widget_Base
             </div>
 
         </div>
+
+        <?php if (!$is_edit): $this->renderScript($widget_id, $base_path, $has_sets); endif; ?>
         <?php
     }
 
-    private function renderSetSelector(array $sets, ?int $active_set_id, bool $is_edit): void
+    // ── Nav pieces ────────────────────────────────────────────────────────────
+
+    private function renderSetSelector(array $sets, ?object $active_set, string $base_path): void
     {
-        $base   = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
-        $params = $_GET;
-        unset($params['explorer_set'], $params['explorer_item']);
+        // onchange is handled by the inline script via pushState.
+        echo '<select class="gw-explorer-set-select"'
+            . ' style="font-size:.875rem;padding:.35rem .6rem;border:1px solid #cbd5e1;'
+            . 'border-radius:5px;background:#fff;color:#374151;cursor:pointer;">';
 
-        $all_url = $base . ($params ? '?' . http_build_query($params) : '');
-
-        echo '<select'
-            . ' style="font-size:.875rem;padding:.35rem .6rem;border:1px solid #cbd5e1;border-radius:5px;background:#fff;color:#374151;cursor:pointer;"'
-            . ($is_edit ? '' : ' onchange="location.href=this.value"')
-            . '>';
-
-        $selected = $active_set_id === null ? ' selected' : '';
-        echo '<option value="' . esc_attr($all_url) . '"' . $selected . '>All</option>';
+        $all_selected = $active_set === null ? ' selected' : '';
+        echo '<option value="' . esc_attr($base_path . '/') . '"' . $all_selected . '>All</option>';
 
         foreach ($sets as $set) {
-            $id       = (int) ($set->id ?? 0);
-            $label    = $this->getGroupLabel($set);
-            $p        = $params;
-            $p['explorer_set'] = $id;
-            $url      = $base . '?' . http_build_query($p);
-            $selected = ($active_set_id === $id) ? ' selected' : '';
+            $slug     = $set->slug ?? '';
+            $label    = $this->getRecordLabel($set);
+            $url      = $base_path . '/' . rawurlencode($slug) . '/';
+            $selected = ($active_set && ($active_set->slug ?? '') === $slug) ? ' selected' : '';
 
             echo '<option value="' . esc_attr($url) . '"' . $selected . '>'
-                . esc_html($label)
-                . '</option>';
+                . esc_html($label) . '</option>';
         }
 
         echo '</select>';
     }
 
-    private function renderNavGroup(object $group, array $items, ?int $active_item_id, bool $is_edit): void
-    {
-        $label = $this->getGroupLabel($group);
+    private function renderNavGroup(
+        object  $group,
+        string  $group_set_slug,
+        array   $items,
+        string  $base_path,
+        ?string $active_group_slug,
+        ?string $active_item_slug,
+        bool    $has_sets,
+        bool    $hidden,
+        bool    $is_edit
+    ): void {
+        $group_slug = $group->slug ?? '';
+        $label      = $this->getRecordLabel($group);
+        $display    = $hidden ? 'display:none;' : '';
 
-        // Group heading — not clickable, acts as a section label.
+        echo '<div class="gw-nav-group" data-set-slug="' . esc_attr($group_set_slug) . '" style="' . $display . '">';
+
+        // Group label — section heading, not a link.
         echo '<div style="padding:.5rem 1rem .25rem;font-size:.7rem;font-weight:700;'
             . 'text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;">'
-            . esc_html($label)
-            . '</div>';
+            . esc_html($label) . '</div>';
 
         if (empty($items)) {
             echo '<div style="padding:.25rem 1rem .5rem;font-size:.8rem;color:#cbd5e1;font-style:italic;">No items</div>';
-            return;
-        }
+        } else {
+            foreach ($items as $item) {
+                $item_slug  = $item->slug ?? '';
+                $item_label = $this->getRecordLabel($item);
+                $is_active  = !$is_edit
+                    && $active_group_slug === $group_slug
+                    && $active_item_slug  === $item_slug;
 
-        foreach ($items as $item) {
-            $id        = (int) ($item->id ?? 0);
-            $itemLabel = $this->getGroupLabel($item);
-            $is_active = ($active_item_id === $id);
+                // Build slug URL: /{base}/{set}/{group}/{item}/ or /{base}/{group}/{item}/
+                if ($has_sets && $group_set_slug) {
+                    $href = $base_path . '/' . rawurlencode($group_set_slug)
+                                       . '/' . rawurlencode($group_slug)
+                                       . '/' . rawurlencode($item_slug) . '/';
+                } else {
+                    $href = $base_path . '/' . rawurlencode($group_slug)
+                                       . '/' . rawurlencode($item_slug) . '/';
+                }
 
-            $href   = $is_edit ? '#' : esc_url($this->itemUrl($id));
-            $bg     = $is_active ? '#e0f2fe' : 'transparent';
-            $color  = $is_active ? '#0369a1' : '#374151';
-            $weight = $is_active ? '600' : '400';
+                $bg     = $is_active ? '#e0f2fe' : '';
+                $color  = $is_active ? '#0369a1' : '#374151';
+                $weight = $is_active ? '600'     : '400';
+                $border = $is_active ? '#0369a1' : 'transparent';
 
-            echo '<a href="' . $href . '"'
-                . ' style="display:block;padding:.375rem 1rem .375rem 1.5rem;font-size:.875rem;'
-                . 'text-decoration:none;background:' . $bg . ';color:' . $color . ';font-weight:' . $weight . ';'
-                . 'border-left:3px solid ' . ($is_active ? '#0369a1' : 'transparent') . ';">'
-                . esc_html($itemLabel)
-                . '</a>';
+                echo '<a href="' . esc_attr($href) . '"'
+                    . ' style="display:block;padding:.375rem 1rem .375rem 1.5rem;font-size:.875rem;'
+                    . 'text-decoration:none;background:' . $bg . ';color:' . $color . ';'
+                    . 'font-weight:' . $weight . ';border-left:3px solid ' . $border . ';">'
+                    . esc_html($item_label) . '</a>';
+            }
         }
 
         echo '<div style="height:.5rem;"></div>';
+        echo '</div>'; // .gw-nav-group
+    }
+
+    // ── Client-side router ────────────────────────────────────────────────────
+
+    private function renderScript(string $widget_id, string $base_path, bool $has_sets): void
+    {
+        $id_json       = wp_json_encode($widget_id);
+        $base_json     = wp_json_encode(rtrim($base_path, '/'));
+        $has_sets_json = $has_sets ? 'true' : 'false';
+        ?>
+        <script>
+        (function () {
+            'use strict';
+
+            var wrapper  = document.getElementById(<?php echo $id_json; ?>);
+            var basePath = <?php echo $base_json; ?>;
+            var hasSets  = <?php echo $has_sets_json; ?>;
+
+            if (!wrapper) return;
+
+            // Parse the active set/group/item slugs out of a pathname.
+            function parsePath(pathname) {
+                var rel  = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname;
+                var segs = rel.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+                return {
+                    set:   hasSets         ? (segs[0] || null) : null,
+                    group: segs[hasSets ? 1 : 0] || null,
+                    item:  segs[hasSets ? 2 : 1] || null,
+                };
+            }
+
+            // Apply active state + group visibility to match a given pathname.
+            function updateUI(pathname) {
+                var active = parsePath(pathname);
+                var norm   = pathname.replace(/\/?$/, '/');   // normalise trailing slash
+
+                // ── Set selector ──────────────────────────────────────────────
+                var sel = wrapper.querySelector('.gw-explorer-set-select');
+                if (sel) {
+                    Array.from(sel.options).forEach(function (opt) {
+                        try {
+                            var optPath = new URL(opt.value, location.origin).pathname;
+                            var optRel  = optPath.startsWith(basePath) ? optPath.slice(basePath.length) : optPath;
+                            var optSegs = optRel.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
+                            var optSet  = optSegs[0] || null;
+                            opt.selected = (optSet === active.set);
+                        } catch (e) {}
+                    });
+                }
+
+                // ── Group visibility ──────────────────────────────────────────
+                wrapper.querySelectorAll('.gw-nav-group').forEach(function (g) {
+                    if (!hasSets || !active.set || (g.dataset.setSlug || '') === active.set) {
+                        g.style.display = '';
+                    } else {
+                        g.style.display = 'none';
+                    }
+                });
+
+                // ── Active item highlight ─────────────────────────────────────
+                wrapper.querySelectorAll('.gateway-explorer-nav a').forEach(function (a) {
+                    var isActive = a.pathname.replace(/\/?$/, '/') === norm;
+                    a.style.background      = isActive ? '#e0f2fe'    : '';
+                    a.style.color           = isActive ? '#0369a1'    : '#374151';
+                    a.style.fontWeight      = isActive ? '600'        : '400';
+                    a.style.borderLeftColor = isActive ? '#0369a1'    : 'transparent';
+                });
+            }
+
+            // Intercept nav item clicks — pushState instead of full navigation.
+            var nav = wrapper.querySelector('.gateway-explorer-nav');
+            if (nav) {
+                nav.addEventListener('click', function (e) {
+                    var a = e.target.closest('a[href]');
+                    if (!a) return;
+                    e.preventDefault();
+                    history.pushState(null, '', a.href);
+                    updateUI(location.pathname);
+                });
+            }
+
+            // Set selector — pushState on change.
+            var sel = wrapper.querySelector('.gw-explorer-set-select');
+            if (sel) {
+                sel.addEventListener('change', function () {
+                    history.pushState(null, '', this.value);
+                    updateUI(location.pathname);
+                });
+            }
+
+            // Browser back / forward.
+            window.addEventListener('popstate', function () {
+                updateUI(location.pathname);
+            });
+
+            // Initial paint — sync highlight to the current URL.
+            updateUI(location.pathname);
+        }());
+        </script>
+        <?php
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Try to find the BelongsTo foreign-key column on $mainCollection that
-     * references $groupCollection. Falls back to "{group_key}_id".
+     * Find the BelongsTo FK column on $child that points to $parent.
+     * Falls back to "{parent_collection_key}_id" convention.
      */
-    private function discoverForeignKey(object $mainCollection, object $groupCollection): string
+    private function discoverForeignKey(object $child, object $parent): string
     {
-        $groupClass = get_class($groupCollection);
+        $parentClass = get_class($parent);
 
         try {
-            $methods = \Gateway\Collections\RelationDiscovery::discover($mainCollection);
+            $methods = \Gateway\Collections\RelationDiscovery::discover($child);
 
             foreach ($methods as $methodName) {
-                $relation = $mainCollection->$methodName();
+                $relation = $child->$methodName();
                 if (!($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo)) {
                     continue;
                 }
-                if (get_class($relation->getRelated()) !== $groupClass) {
+                if (get_class($relation->getRelated()) !== $parentClass) {
                     continue;
                 }
                 return $relation->getForeignKeyName();
             }
-        } catch (\Throwable $e) {
-            // Fall through to convention-based default.
-        }
+        } catch (\Throwable $e) {}
 
-        // Convention: strip trailing "s" only when it produces a plausible key.
-        $key = method_exists($groupCollection, 'getCollectionKey')
-            ? $groupCollection->getCollectionKey()
-            : (property_exists($groupCollection, 'key') ? $groupCollection->key : '');
+        $key = method_exists($parent, 'getCollectionKey')
+            ? $parent->getCollectionKey()
+            : (property_exists($parent, 'key') ? $parent->key : '');
 
         return rtrim($key, 's') . '_id';
     }
 
-    /**
-     * Return the best human-readable label for a group record.
-     * Checks common title/name/label field names, falls back to ID.
-     */
-    private function getGroupLabel(object $group): string
+    /** Best human-readable label for any record — tries common field names. */
+    private function getRecordLabel(object $record): string
     {
         foreach (['title', 'name', 'label', 'slug'] as $field) {
-            if (!empty($group->$field)) {
-                return (string) $group->$field;
+            if (!empty($record->$field)) {
+                return (string) $record->$field;
             }
         }
-        return 'ID ' . ($group->id ?? '?');
-    }
-
-    /**
-     * Build a URL for the given item, preserving existing query params.
-     */
-    private function itemUrl(int $id): string
-    {
-        $base   = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
-        $params = $_GET;
-        $params['explorer_item'] = $id;
-        return $base . '?' . http_build_query($params);
+        return 'ID ' . ($record->id ?? '?');
     }
 
     private function getCollectionTitle(string $key): string
@@ -366,13 +495,9 @@ class Explorer extends \Elementor\Widget_Base
             $registry = \Gateway\Plugin::getInstance()->getRegistry();
             if ($registry) {
                 $col = $registry->get($key);
-                if ($col && method_exists($col, 'getTitle')) {
-                    return $col->getTitle();
-                }
+                if ($col && method_exists($col, 'getTitle')) return $col->getTitle();
             }
-        } catch (\Throwable $e) {
-            // ignore
-        }
+        } catch (\Throwable $e) {}
         return $key;
     }
 
@@ -385,15 +510,11 @@ class Explorer extends \Elementor\Widget_Base
             if (!$registry) return $options;
 
             foreach ($registry->getAll() as $key => $collection) {
-                if (method_exists($collection, 'isHidden') && $collection->isHidden()) {
-                    continue;
-                }
+                if (method_exists($collection, 'isHidden') && $collection->isHidden()) continue;
                 $title         = method_exists($collection, 'getTitle') ? $collection->getTitle() : $key;
                 $options[$key] = $title . ' (' . $key . ')';
             }
-        } catch (\Throwable $e) {
-            // Registry not ready — return blank options.
-        }
+        } catch (\Throwable $e) {}
 
         return $options;
     }
