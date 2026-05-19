@@ -91,25 +91,33 @@ class Explorer extends \Elementor\Widget_Base
             // Registry not ready.
         }
 
-        // Fetch group records and determine the foreign key field name.
-        $groups   = [];
-        $fkField  = '';
+        // Fetch groups, then items grouped under each.
+        $groups         = [];
+        $items_by_group = [];
+        $fkField        = '';
 
         if ($groupCollection && $mainCollection) {
             try {
-                $groups  = $groupCollection->newQuery()->get()->all();
                 $fkField = $this->discoverForeignKey($mainCollection, $groupCollection);
+                $groups  = $groupCollection->newQuery()->get()->all();
+
+                foreach ($groups as $group) {
+                    $gid                   = (int) ($group->id ?? 0);
+                    $items_by_group[$gid]  = $mainCollection->newQuery()
+                        ->where($fkField, $gid)
+                        ->get()
+                        ->all();
+                }
             } catch (\Throwable $e) {
-                // Leave groups empty; render without nav.
+                // Leave nav empty; render without groups.
             }
         }
 
-        // Determine the active group from the query string.
-        $active_group_id = isset($_GET['explorer_group'])
-            ? (int) $_GET['explorer_group']
+        $active_item_id = isset($_GET['explorer_item'])
+            ? (int) $_GET['explorer_item']
             : null;
 
-        $this->renderExplorer($collection_key, $group_coll_key, $groups, $fkField, $active_group_id, $is_edit);
+        $this->renderExplorer($collection_key, $group_coll_key, $groups, $items_by_group, $fkField, $active_item_id, $is_edit);
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
@@ -118,8 +126,9 @@ class Explorer extends \Elementor\Widget_Base
         string $collection_key,
         string $group_coll_key,
         array  $groups,
+        array  $items_by_group,
         string $fkField,
-        ?int   $active_group_id,
+        ?int   $active_item_id,
         bool   $is_edit
     ): void {
         $has_groups = !empty($groups);
@@ -133,14 +142,12 @@ class Explorer extends \Elementor\Widget_Base
 
             <?php if ($has_groups): ?>
             <nav class="gateway-explorer-nav"
-                 style="width:220px;flex-shrink:0;background:#f8fafc;border-right:1px solid #e2e8f0;padding:.75rem 0;">
-
-                <?php $this->renderNavItem(null, 'All', $active_group_id, $is_edit); ?>
+                 style="width:240px;flex-shrink:0;background:#f8fafc;border-right:1px solid #e2e8f0;padding:.5rem 0;overflow-y:auto;">
 
                 <?php foreach ($groups as $group):
-                    $id    = (int) ($group->id ?? 0);
-                    $label = $this->getGroupLabel($group);
-                    $this->renderNavItem($id, $label, $active_group_id, $is_edit);
+                    $gid   = (int) ($group->id ?? 0);
+                    $items = $items_by_group[$gid] ?? [];
+                    $this->renderNavGroup($group, $items, $active_item_id, $is_edit);
                 endforeach; ?>
 
             </nav>
@@ -152,8 +159,8 @@ class Explorer extends \Elementor\Widget_Base
                     <div style="font-size:1.25rem;font-weight:600;color:#64748b;margin-bottom:.5rem;">Gateway Explorer</div>
                     <div style="font-size:.875rem;">
                         Collection: <code><?php echo esc_html($collection_key); ?></code>
-                        <?php if ($has_groups && $active_group_id): ?>
-                            &mdash; group&nbsp;<code><?php echo esc_html($active_group_id); ?></code>
+                        <?php if ($active_item_id): ?>
+                            &mdash; item&nbsp;<code><?php echo esc_html($active_item_id); ?></code>
                         <?php endif; ?>
                     </div>
                     <?php if ($is_edit && !$has_groups && !empty($group_coll_key)): ?>
@@ -169,26 +176,40 @@ class Explorer extends \Elementor\Widget_Base
         <?php
     }
 
-    private function renderNavItem(?int $id, string $label, ?int $active_group_id, bool $is_edit): void
+    private function renderNavGroup(object $group, array $items, ?int $active_item_id, bool $is_edit): void
     {
-        $is_active = ($id === null)
-            ? ($active_group_id === null)
-            : ($active_group_id === $id);
+        $label = $this->getGroupLabel($group);
 
-        $href = $is_edit
-            ? '#'
-            : esc_url($this->groupUrl($id));
-
-        $bg    = $is_active ? '#e0f2fe' : 'transparent';
-        $color = $is_active ? '#0369a1' : '#374151';
-        $weight = $is_active ? '600' : '400';
-
-        echo '<a href="' . $href . '"'
-            . ' style="display:block;padding:.5rem 1rem;font-size:.875rem;text-decoration:none;'
-            . 'background:' . $bg . ';color:' . $color . ';font-weight:' . $weight . ';'
-            . 'border-left:3px solid ' . ($is_active ? '#0369a1' : 'transparent') . ';">'
+        // Group heading — not clickable, acts as a section label.
+        echo '<div style="padding:.5rem 1rem .25rem;font-size:.7rem;font-weight:700;'
+            . 'text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;">'
             . esc_html($label)
-            . '</a>';
+            . '</div>';
+
+        if (empty($items)) {
+            echo '<div style="padding:.25rem 1rem .5rem;font-size:.8rem;color:#cbd5e1;font-style:italic;">No items</div>';
+            return;
+        }
+
+        foreach ($items as $item) {
+            $id        = (int) ($item->id ?? 0);
+            $itemLabel = $this->getGroupLabel($item);
+            $is_active = ($active_item_id === $id);
+
+            $href   = $is_edit ? '#' : esc_url($this->itemUrl($id));
+            $bg     = $is_active ? '#e0f2fe' : 'transparent';
+            $color  = $is_active ? '#0369a1' : '#374151';
+            $weight = $is_active ? '600' : '400';
+
+            echo '<a href="' . $href . '"'
+                . ' style="display:block;padding:.375rem 1rem .375rem 1.5rem;font-size:.875rem;'
+                . 'text-decoration:none;background:' . $bg . ';color:' . $color . ';font-weight:' . $weight . ';'
+                . 'border-left:3px solid ' . ($is_active ? '#0369a1' : 'transparent') . ';">'
+                . esc_html($itemLabel)
+                . '</a>';
+        }
+
+        echo '<div style="height:.5rem;"></div>';
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -241,17 +262,14 @@ class Explorer extends \Elementor\Widget_Base
     }
 
     /**
-     * Build a URL for the given group, preserving existing query params.
+     * Build a URL for the given item, preserving existing query params.
      */
-    private function groupUrl(?int $id): string
+    private function itemUrl(int $id): string
     {
-        $base = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
+        $base   = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
         $params = $_GET;
-        unset($params['explorer_group']);
-        if ($id !== null) {
-            $params['explorer_group'] = $id;
-        }
-        return $base . ($params ? '?' . http_build_query($params) : '');
+        $params['explorer_item'] = $id;
+        return $base . '?' . http_build_query($params);
     }
 
     private function getCollectionOptions(): array
