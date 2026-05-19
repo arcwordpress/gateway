@@ -19,6 +19,9 @@ class ElementorController
     {
         require_once __DIR__ . '/Widgets/Grid.php';
         $manager->register(new Widgets\Grid());
+
+        require_once __DIR__ . '/Widgets/Explorer.php';
+        $manager->register(new Widgets\Explorer());
     }
 
     public static function enqueueEditorAssets(): void
