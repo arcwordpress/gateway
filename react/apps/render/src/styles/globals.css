@@ -159,14 +159,16 @@
   padding: 0 12px;
 }
 
-/* Bottom — thick, full width */
+/* Bottom — thick, full width; console fills it so no extra padding */
 .render-panel--bottom {
   bottom: 0;
   left: 0;
   right: 0;
   height: var(--panel-bottom-h);
   border-top: 1px solid var(--render-border);
-  padding: 10px 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Left — moderate width, between top and bottom panels */
@@ -208,6 +210,14 @@
   right: var(--panel-side-w);
 }
 
+/* ── Header actions ─────────────────────────────────────────────────────────── */
+
+.render-dashboard__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* ── Buttons ────────────────────────────────────────────────────────────────── */
 
 .render-btn {
@@ -231,6 +241,99 @@
   background: var(--render-border);
   border-color: var(--render-border-hover);
 }
+
+/* Primary (save) button variant */
+.render-btn--primary {
+  background: #1e1e2e;
+  border-color: #4f4f7a;
+  color: #c0c0f0;
+}
+
+.render-btn--primary:hover {
+  background: #2a2a40;
+  border-color: #7070b0;
+}
+
+.render-btn--loading,
+.render-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+}
+
+/* ── Console ────────────────────────────────────────────────────────────────── */
+
+.render-console {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.render-console__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 28px;
+  border-bottom: 1px solid var(--render-border);
+  flex-shrink: 0;
+}
+
+.render-console__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--render-text-faint);
+}
+
+.render-console__link {
+  font-size: 11px;
+  color: #7da2f0;
+  text-decoration: none;
+}
+
+.render-console__link:hover { color: #a0bdf8; }
+
+.render-console__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.render-console__empty {
+  color: var(--render-text-faint);
+  font-style: italic;
+}
+
+.render-console__line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.render-console__prefix {
+  flex-shrink: 0;
+  width: 12px;
+  text-align: center;
+  color: var(--render-text-faint);
+}
+
+.render-console__line--info   { color: #c0c0c8; }
+.render-console__line--success { color: #6ee7b7; }
+.render-console__line--error  { color: #fca5a5; }
+
+.render-console__line--success .render-console__prefix { color: #6ee7b7; }
+.render-console__line--error   .render-console__prefix { color: #fca5a5; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.render-console__prefix--spin { display: inline-block; animation: spin 1s linear infinite; }
 
 /* ── React Flow overrides ───────────────────────────────────────────────────── */
 

@@ -131,6 +131,7 @@ class Plugin
         Admin\Records::init();
         Admin\Builder::init();
         Admin\Render::init();
+        Apps\AppSaveRoute::init();
         Packages\PackageMenus::init();
         Forms\Render::init();
         Forms\Shortcode::init();
@@ -154,6 +155,10 @@ class Plugin
         Migrations\MigrationHooks::runCoreMigrations();
         if (!is_dir(GATEWAY_DATA_DIR)) {
             mkdir(GATEWAY_DATA_DIR, 0755, true);
+        }
+        $apps_dir = GATEWAY_DATA_DIR . '/apps';
+        if (!is_dir($apps_dir)) {
+            mkdir($apps_dir, 0755, true);
         }
         Collections\CoreCollections::seed();
         flush_rewrite_rules();
