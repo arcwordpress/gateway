@@ -3,16 +3,20 @@ import { Outlet } from '@tanstack/react-router'
 import { appConfig } from '../config'
 
 export default function Layout() {
-  const [shellHeight, setShellHeight] = useState(0)
-  const [topOffset, setTopOffset] = useState(0)
+  const [shellStyle, setShellStyle] = useState<React.CSSProperties>({})
   const isWP = appConfig.isWordPress
 
   useEffect(() => {
     const updateGeometry = () => {
       const adminBar = document.getElementById('wpadminbar')
       const top = isWP ? (adminBar ? adminBar.offsetHeight : 32) : 0
-      setTopOffset(top)
-      setShellHeight(Math.max(window.innerHeight - top, 0))
+      const height = Math.max(window.innerHeight - top, 0)
+
+      setShellStyle(
+        isWP
+          ? { position: 'fixed', top, left: 0, right: 0, height }
+          : { height: '100vh' },
+      )
     }
 
     updateGeometry()
@@ -30,16 +34,8 @@ export default function Layout() {
     return () => window.removeEventListener('resize', updateGeometry)
   }, [isWP])
 
-  const shellStyle = isWP
-    ? { position: 'fixed' as const, top: topOffset, left: 0, right: 0, height: shellHeight }
-    : { height: '100vh' }
-
   return (
-    <div
-      id="gateway-render-shell"
-      className="flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden"
-      style={shellStyle}
-    >
+    <div className="render-shell" style={shellStyle}>
       <Outlet />
     </div>
   )

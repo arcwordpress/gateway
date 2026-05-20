@@ -11,7 +11,12 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-const nodeStyle = { background: '#27272a', border: '1px solid #3f3f46', color: '#f4f4f5', borderRadius: '0.5rem' }
+const nodeStyle = {
+  background: '#27272a',
+  border: '1px solid #3f3f46',
+  color: '#f4f4f5',
+  borderRadius: '0.5rem',
+}
 
 const initialNodes = [
   { id: '1', type: 'default', position: { x: 200, y: 150 }, data: { label: 'Start' }, style: nodeStyle },
@@ -47,21 +52,18 @@ export default function Dashboard() {
   }, [setNodes])
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0">
+    <div className="render-dashboard">
+      <div className="render-dashboard__header">
         <div>
-          <h1 className="text-sm font-semibold text-zinc-100 tracking-wide">Render</h1>
-          <p className="text-xs text-zinc-500 mt-0.5">Visual flow canvas</p>
+          <p className="render-dashboard__title">Render</p>
+          <p className="render-dashboard__subtitle">Visual flow canvas</p>
         </div>
-        <button
-          onClick={addNode}
-          className="px-3 py-1.5 text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded transition-colors"
-        >
+        <button className="render-btn" onClick={addNode}>
           Add node
         </button>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="render-dashboard__canvas">
         <ReactFlow
           nodes={nodes}
           edges={edges}

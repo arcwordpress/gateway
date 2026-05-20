@@ -1,27 +1,40 @@
-@import "tailwindcss";
-
-:root {
-  --render-bg: #09090b;
-  --render-surface: #18181b;
-  --render-border: #27272a;
-  --render-text: #d4d4d8;
-  --render-text-muted: #71717a;
-}
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
 
 #gateway-render-root {
+  --render-bg:           #09090b;
+  --render-surface:      #18181b;
+  --render-surface-2:    #27272a;
+  --render-border:       #3f3f46;
+  --render-border-hover: #52525b;
+  --render-text:         #f4f4f5;
+  --render-text-muted:   #a1a1aa;
+  --render-text-faint:   #71717a;
+  --render-accent:       #6366f1;
+
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: var(--render-bg);
+  font-size: 14px;
   color: var(--render-text);
+  background-color: var(--render-bg);
+  box-sizing: border-box;
 }
 
-/* Heading reset — defeat WP admin specificity */
+#gateway-render-root *,
+#gateway-render-root *::before,
+#gateway-render-root *::after {
+  box-sizing: inherit;
+}
+
+/* ── Heading reset — defeat WP admin global specificity ─────────────────────
+   WP admin targets bare heading elements at (0,0,1)–(0,1,1); our ID-scoped
+   selector (1,0,1) wins cleanly without !important.                          */
+
 #gateway-render-root h1,
 #gateway-render-root h2,
 #gateway-render-root h3,
 #gateway-render-root h4,
 #gateway-render-root h5,
 #gateway-render-root h6 {
-  color: #d4d4d4;
+  color: var(--render-text);
   margin: 0;
   padding: 0;
   font-size: inherit;
@@ -29,54 +42,25 @@
   line-height: inherit;
 }
 
-/* React Flow dark-mode overrides */
-#gateway-render-root .react-flow__background {
-  background-color: var(--render-bg);
+#gateway-render-root p {
+  margin: 0;
+  padding: 0;
 }
 
-#gateway-render-root .react-flow__minimap {
-  background-color: #27272a;
-  border: 1px solid #3f3f46;
-  border-radius: 0.375rem;
+/* Defeat WP anchor hover/active color */
+#gateway-render-root a:hover,
+#gateway-render-root a:active {
+  color: inherit !important;
+  opacity: 1 !important;
 }
 
-#gateway-render-root .react-flow__minimap-svg {
-  display: block;
-}
-
-#gateway-render-root .react-flow__minimap-mask {
-  fill: rgba(0, 0, 0, 0.28) !important;
-  stroke: #3f3f46 !important;
-}
-
-#gateway-render-root .react-flow__controls {
-  border: 1px solid #27272a;
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-#gateway-render-root .react-flow__controls-button {
-  background-color: #27272a;
-  border-bottom: 1px solid #3f3f46;
-  color: #a1a1aa;
-}
-
-#gateway-render-root .react-flow__controls-button:hover {
-  background-color: #3f3f46;
-  color: #f4f4f5;
-}
-
-#gateway-render-root .react-flow__controls-button svg {
-  fill: currentColor;
-}
-
-/* WP admin form control overrides */
+/* WP admin overrides for form controls */
 #gateway-render-root select,
 #gateway-render-root input,
 #gateway-render-root textarea {
-  color: #f4f4f5 !important;
-  background-color: #27272a !important;
-  border-color: #3f3f46 !important;
+  color: var(--render-text) !important;
+  background-color: var(--render-surface-2) !important;
+  border-color: var(--render-border) !important;
   box-shadow: none !important;
 }
 
@@ -84,18 +68,11 @@
 #gateway-render-root input:focus,
 #gateway-render-root textarea:focus {
   outline: none !important;
-  border-color: #71717a !important;
-  box-shadow: 0 0 0 1px #71717a !important;
+  border-color: var(--render-border-hover) !important;
+  box-shadow: 0 0 0 1px var(--render-border-hover) !important;
 }
 
-/* Defeat WP anchor hover color */
-#gateway-render-root a:hover,
-#gateway-render-root a:active {
-  color: inherit !important;
-  opacity: 1 !important;
-}
-
-/* Cursors */
+/* Interactive cursors */
 #gateway-render-root button:not(:disabled),
 #gateway-render-root [role="button"]:not([aria-disabled="true"]),
 #gateway-render-root input[type="submit"]:not(:disabled),
@@ -103,30 +80,117 @@
   cursor: pointer;
 }
 
-/* Scrollbars */
-#gateway-render-root ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Scrollbars ─────────────────────────────────────────────────────────────── */
+
+#gateway-render-root ::-webkit-scrollbar       { width: 6px; height: 6px; }
+#gateway-render-root ::-webkit-scrollbar-track { background: transparent; }
+#gateway-render-root ::-webkit-scrollbar-thumb { background: var(--render-border); border-radius: 3px; }
+#gateway-render-root ::-webkit-scrollbar-thumb:hover { background: var(--render-border-hover); }
+#gateway-render-root ::-webkit-scrollbar-corner { background: transparent; }
+#gateway-render-root * { scrollbar-width: thin; scrollbar-color: var(--render-border) transparent; }
+
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+
+.render-shell {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--render-bg);
+  color: var(--render-text);
 }
 
-#gateway-render-root ::-webkit-scrollbar-track {
-  background: transparent;
+/* ── Dashboard ──────────────────────────────────────────────────────────────── */
+
+.render-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-#gateway-render-root ::-webkit-scrollbar-thumb {
+.render-dashboard__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--render-border);
+  background-color: var(--render-surface);
+  flex-shrink: 0;
+}
+
+.render-dashboard__title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--render-text);
+}
+
+.render-dashboard__subtitle {
+  font-size: 11px;
+  color: var(--render-text-faint);
+  margin-top: 2px;
+}
+
+.render-dashboard__canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────────── */
+
+.render-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--render-text);
+  background: var(--render-surface-2);
+  border: 1px solid var(--render-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  white-space: nowrap;
+}
+
+.render-btn:hover {
   background: #3f3f46;
-  border-radius: 3px;
+  border-color: var(--render-border-hover);
 }
 
-#gateway-render-root ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+/* ── React Flow dark-mode overrides ─────────────────────────────────────────── */
+
+#gateway-render-root .react-flow__background {
+  background-color: var(--render-bg);
 }
 
-#gateway-render-root ::-webkit-scrollbar-corner {
-  background: transparent;
+#gateway-render-root .react-flow__minimap {
+  background-color: var(--render-surface-2);
+  border: 1px solid var(--render-border);
+  border-radius: 6px;
 }
 
-#gateway-render-root * {
-  scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+#gateway-render-root .react-flow__minimap-svg    { display: block; }
+#gateway-render-root .react-flow__minimap-mask   { fill: rgba(0,0,0,0.28) !important; stroke: var(--render-border) !important; }
+
+#gateway-render-root .react-flow__controls {
+  border: 1px solid var(--render-border);
+  border-radius: 6px;
+  overflow: hidden;
 }
+
+#gateway-render-root .react-flow__controls-button {
+  background-color: var(--render-surface-2);
+  border-bottom: 1px solid var(--render-border);
+  color: var(--render-text-muted);
+}
+
+#gateway-render-root .react-flow__controls-button:hover {
+  background-color: var(--render-border);
+  color: var(--render-text);
+}
+
+#gateway-render-root .react-flow__controls-button svg { fill: currentColor; }
