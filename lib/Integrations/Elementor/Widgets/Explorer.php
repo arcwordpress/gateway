@@ -204,7 +204,7 @@ class Explorer extends \Elementor\Widget_Base
                 <label style="font-size:.8rem;font-weight:600;color:#64748b;white-space:nowrap;">
                     <?php echo esc_html($this->getCollectionTitle($set_coll_key)); ?>
                 </label>
-                <?php $this->renderSetSelector($sets, $active_set, $base_path); ?>
+                <?php $this->renderSetSelector($sets, $active_set, $base_path, $is_edit); ?>
             </div>
             <?php endif; ?>
 
@@ -258,29 +258,34 @@ class Explorer extends \Elementor\Widget_Base
 
         </div>
 
-        <?php if (!$is_edit): $this->renderScript($widget_id, $base_path, $has_sets); endif; ?>
+        <?php $this->renderScript($widget_id, $base_path, $has_sets, $is_edit); ?>
         <?php
     }
 
     // ── Nav pieces ────────────────────────────────────────────────────────────
 
-    private function renderSetSelector(array $sets, ?object $active_set, string $base_path): void
+    private function renderSetSelector(array $sets, ?object $active_set, string $base_path, bool $is_edit): void
     {
-        // onchange is handled by the inline script via pushState.
+        // onchange is handled by the inline script (pushState on frontend, hash on editor).
         echo '<select class="gw-explorer-set-select"'
             . ' style="font-size:.875rem;padding:.35rem .6rem;border:1px solid #cbd5e1;'
             . 'border-radius:5px;background:#fff;color:#374151;cursor:pointer;">';
 
+        // "All" option — hash is empty, path is the base.
+        $all_value    = $is_edit ? '#' : esc_attr($base_path . '/');
         $all_selected = $active_set === null ? ' selected' : '';
-        echo '<option value="' . esc_attr($base_path . '/') . '"' . $all_selected . '>All</option>';
+        echo '<option value="' . $all_value . '"' . $all_selected . '>All</option>';
 
         foreach ($sets as $set) {
             $slug     = $set->slug ?? '';
             $label    = $this->getRecordLabel($set);
-            $url      = $base_path . '/' . rawurlencode($slug) . '/';
-            $selected = ($active_set && ($active_set->slug ?? '') === $slug) ? ' selected' : '';
+            $value    = $is_edit
+                ? '#/' . rawurlencode($slug)
+                : $base_path . '/' . rawurlencode($slug) . '/';
+            // Active set is always determined by JS in editor (hash is client-only).
+            $selected = (!$is_edit && $active_set && ($active_set->slug ?? '') === $slug) ? ' selected' : '';
 
-            echo '<option value="' . esc_attr($url) . '"' . $selected . '>'
+            echo '<option value="' . esc_attr($value) . '"' . $selected . '>'
                 . esc_html($label) . '</option>';
         }
 
@@ -315,18 +320,20 @@ class Explorer extends \Elementor\Widget_Base
             foreach ($items as $item) {
                 $item_slug  = $item->slug ?? '';
                 $item_label = $this->getRecordLabel($item);
-                $is_active  = !$is_edit
-                    && $active_group_slug === $group_slug
-                    && $active_item_slug  === $item_slug;
+                // In editor mode use hash routing so we never navigate away.
+                if ($is_edit) {
+                    $href = $has_sets && $group_set_slug
+                        ? '#/' . rawurlencode($group_set_slug) . '/' . rawurlencode($group_slug) . '/' . rawurlencode($item_slug)
+                        : '#/' . rawurlencode($group_slug) . '/' . rawurlencode($item_slug);
 
-                // Build slug URL: /{base}/{set}/{group}/{item}/ or /{base}/{group}/{item}/
-                if ($has_sets && $group_set_slug) {
-                    $href = $base_path . '/' . rawurlencode($group_set_slug)
-                                       . '/' . rawurlencode($group_slug)
-                                       . '/' . rawurlencode($item_slug) . '/';
+                    // SSR active state is unknown in editor (hash is client-only); JS sets it.
+                    $is_active = false;
                 } else {
-                    $href = $base_path . '/' . rawurlencode($group_slug)
-                                       . '/' . rawurlencode($item_slug) . '/';
+                    $href = $has_sets && $group_set_slug
+                        ? $base_path . '/' . rawurlencode($group_set_slug) . '/' . rawurlencode($group_slug) . '/' . rawurlencode($item_slug) . '/'
+                        : $base_path . '/' . rawurlencode($group_slug) . '/' . rawurlencode($item_slug) . '/';
+
+                    $is_active = $active_group_slug === $group_slug && $active_item_slug === $item_slug;
                 }
 
                 $bg     = $is_active ? '#e0f2fe' : '';
@@ -348,99 +355,115 @@ class Explorer extends \Elementor\Widget_Base
 
     // ── Client-side router ────────────────────────────────────────────────────
 
-    private function renderScript(string $widget_id, string $base_path, bool $has_sets): void
+    private function renderScript(string $widget_id, string $base_path, bool $has_sets, bool $is_edit): void
     {
-        $id_json       = wp_json_encode($widget_id);
-        $base_json     = wp_json_encode(rtrim($base_path, '/'));
-        $has_sets_json = $has_sets ? 'true' : 'false';
         ?>
         <script>
         (function () {
             'use strict';
 
-            var wrapper  = document.getElementById(<?php echo $id_json; ?>);
-            var basePath = <?php echo $base_json; ?>;
-            var hasSets  = <?php echo $has_sets_json; ?>;
+            var wrapper  = document.getElementById(<?php echo wp_json_encode($widget_id); ?>);
+            var basePath = <?php echo wp_json_encode(rtrim($base_path, '/')); ?>;
+            var hasSets  = <?php echo $has_sets ? 'true' : 'false'; ?>;
+            var hashMode = <?php echo $is_edit  ? 'true' : 'false'; ?>; // editor uses #/slug routing
 
             if (!wrapper) return;
 
-            // Parse the active set/group/item slugs out of a pathname.
-            function parsePath(pathname) {
-                var rel  = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname;
+            // ── Parse slugs ───────────────────────────────────────────────────
+
+            function parseSegments(str) {
+                // Accepts a pathname ("/docs/set/group/item/") or a hash ("#/set/group/item").
+                var rel = str.replace(/^#/, '');                     // strip leading #
+                if (!hashMode) {
+                    rel = rel.startsWith(basePath) ? rel.slice(basePath.length) : rel;
+                }
                 var segs = rel.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
                 return {
-                    set:   hasSets         ? (segs[0] || null) : null,
+                    set:   hasSets ? (segs[0] || null) : null,
                     group: segs[hasSets ? 1 : 0] || null,
                     item:  segs[hasSets ? 2 : 1] || null,
                 };
             }
 
-            // Apply active state + group visibility to match a given pathname.
-            function updateUI(pathname) {
-                var active = parsePath(pathname);
-                var norm   = pathname.replace(/\/?$/, '/');   // normalise trailing slash
+            function currentSource() {
+                return hashMode ? location.hash : location.pathname;
+            }
 
-                // ── Set selector ──────────────────────────────────────────────
+            // ── Update UI ─────────────────────────────────────────────────────
+
+            function updateUI(source) {
+                var active = parseSegments(source);
+
+                // Set selector — match option whose slug equals the active set.
                 var sel = wrapper.querySelector('.gw-explorer-set-select');
                 if (sel) {
                     Array.from(sel.options).forEach(function (opt) {
-                        try {
-                            var optPath = new URL(opt.value, location.origin).pathname;
-                            var optRel  = optPath.startsWith(basePath) ? optPath.slice(basePath.length) : optPath;
-                            var optSegs = optRel.replace(/^\/|\/$/g, '').split('/').filter(Boolean);
-                            var optSet  = optSegs[0] || null;
-                            opt.selected = (optSet === active.set);
-                        } catch (e) {}
+                        var optSegs = opt.value.replace(/^#\/|^\/?/, '').split('/').filter(Boolean);
+                        var optSet  = optSegs[0] || null;
+                        opt.selected = (optSet === active.set);
                     });
                 }
 
-                // ── Group visibility ──────────────────────────────────────────
+                // Group visibility — hide groups not belonging to the active set.
                 wrapper.querySelectorAll('.gw-nav-group').forEach(function (g) {
-                    if (!hasSets || !active.set || (g.dataset.setSlug || '') === active.set) {
-                        g.style.display = '';
-                    } else {
-                        g.style.display = 'none';
-                    }
+                    var gs = g.dataset.setSlug || '';
+                    g.style.display = (!hasSets || !active.set || gs === active.set) ? '' : 'none';
                 });
 
-                // ── Active item highlight ─────────────────────────────────────
+                // Active item highlight.
                 wrapper.querySelectorAll('.gateway-explorer-nav a').forEach(function (a) {
-                    var isActive = a.pathname.replace(/\/?$/, '/') === norm;
-                    a.style.background      = isActive ? '#e0f2fe'    : '';
-                    a.style.color           = isActive ? '#0369a1'    : '#374151';
-                    a.style.fontWeight      = isActive ? '600'        : '400';
-                    a.style.borderLeftColor = isActive ? '#0369a1'    : 'transparent';
+                    var linkSegs = parseSegments(hashMode ? a.getAttribute('href') : a.pathname);
+                    var isActive = linkSegs.set   === active.set
+                                && linkSegs.group === active.group
+                                && linkSegs.item  === active.item
+                                && active.item    !== null;
+
+                    a.style.background      = isActive ? '#e0f2fe' : '';
+                    a.style.color           = isActive ? '#0369a1' : '#374151';
+                    a.style.fontWeight      = isActive ? '600'     : '400';
+                    a.style.borderLeftColor = isActive ? '#0369a1' : 'transparent';
                 });
             }
 
-            // Intercept nav item clicks — pushState instead of full navigation.
+            // ── Event wiring ──────────────────────────────────────────────────
+
             var nav = wrapper.querySelector('.gateway-explorer-nav');
             if (nav) {
                 nav.addEventListener('click', function (e) {
                     var a = e.target.closest('a[href]');
                     if (!a) return;
                     e.preventDefault();
-                    history.pushState(null, '', a.href);
-                    updateUI(location.pathname);
+                    e.stopPropagation(); // prevent Elementor editor intercepting the click
+                    if (hashMode) {
+                        location.hash = a.getAttribute('href');
+                    } else {
+                        history.pushState(null, '', a.href);
+                        updateUI(location.pathname);
+                    }
                 });
             }
 
-            // Set selector — pushState on change.
             var sel = wrapper.querySelector('.gw-explorer-set-select');
             if (sel) {
-                sel.addEventListener('change', function () {
-                    history.pushState(null, '', this.value);
-                    updateUI(location.pathname);
+                sel.addEventListener('change', function (e) {
+                    e.stopPropagation();
+                    if (hashMode) {
+                        location.hash = this.value;
+                    } else {
+                        history.pushState(null, '', this.value);
+                        updateUI(location.pathname);
+                    }
                 });
             }
 
-            // Browser back / forward.
-            window.addEventListener('popstate', function () {
-                updateUI(location.pathname);
-            });
+            if (hashMode) {
+                window.addEventListener('hashchange', function () { updateUI(location.hash); });
+            } else {
+                window.addEventListener('popstate',   function () { updateUI(location.pathname); });
+            }
 
-            // Initial paint — sync highlight to the current URL.
-            updateUI(location.pathname);
+            // Initial paint.
+            updateUI(currentSource());
         }());
         </script>
         <?php
