@@ -135,8 +135,10 @@ class ElementorController
     {
         require_once __DIR__ . '/Widgets/Grid.php';
         require_once __DIR__ . '/Widgets/GatewayApp.php';
+        require_once __DIR__ . '/Widgets/Explorer.php';
         $manager->register(new Widgets\Grid());
         $manager->register(new Widgets\GatewayApp());
+        $manager->register(new Widgets\Explorer());
     }
 
     // ── Asset enqueueing ──────────────────────────────────────────────────────
