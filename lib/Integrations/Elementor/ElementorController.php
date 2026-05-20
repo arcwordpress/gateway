@@ -10,9 +10,48 @@ class ElementorController
 {
     public static function init(): void
     {
-        add_action('elementor/widgets/register', [__CLASS__, 'registerWidgets']);
-        add_action('elementor/preview/enqueue_scripts', [__CLASS__, 'enqueuePreviewAssets']);
+        add_action('init',                                 [__CLASS__, 'registerExplorerRewriteRules']);
+        add_action('elementor/widgets/register',           [__CLASS__, 'registerWidgets']);
+        add_action('elementor/preview/enqueue_scripts',    [__CLASS__, 'enqueuePreviewAssets']);
         add_action('elementor/editor/after_enqueue_scripts', [__CLASS__, 'enqueueEditorAssets']);
+    }
+
+    /**
+     * Called on 'init'. Reads stored Explorer routes and adds a WordPress
+     * rewrite rule for each so that deep slug URLs (e.g. /el2/set/group/item/)
+     * resolve back to the page that hosts the widget.
+     */
+    public static function registerExplorerRewriteRules(): void
+    {
+        $routes = get_option('gateway_explorer_routes', []);
+        foreach ($routes as $slug => $page_id) {
+            if (!$slug || !$page_id) continue;
+            // Match /{slug}/{one-or-more-segments}[/] → serve the host page.
+            add_rewrite_rule(
+                '^' . preg_quote($slug, '/') . '/(.+?)/?$',
+                'index.php?page_id=' . (int) $page_id,
+                'top'
+            );
+        }
+    }
+
+    /**
+     * Called from Explorer::render() on the first frontend load after a new
+     * page/slug is configured. Persists the route and flushes rewrite rules
+     * only when something actually changed.
+     */
+    public static function recordExplorerRoute(string $base_path, int $page_id): void
+    {
+        $slug = trim($base_path, '/');
+        if (!$slug || !$page_id) return;
+
+        $routes = get_option('gateway_explorer_routes', []);
+
+        if (($routes[$slug] ?? null) === $page_id) return; // already registered, nothing to do
+
+        $routes[$slug] = $page_id;
+        update_option('gateway_explorer_routes', $routes, false);
+        flush_rewrite_rules(false); // rebuild rules cache; skips .htaccess update
     }
 
     public static function registerWidgets(\Elementor\Widgets_Manager $manager): void

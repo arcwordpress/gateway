@@ -85,8 +85,16 @@ class Explorer extends \Elementor\Widget_Base
             }
         } catch (\Throwable $e) {}
 
-        // Base path for slug URLs (e.g. "/docs"). No trailing slash.
+        // Base path for slug URLs (e.g. "/el2"). No trailing slash.
         $base_path = rtrim(parse_url(get_permalink() ?: '', PHP_URL_PATH) ?: '', '/');
+
+        // Ensure WordPress routes deep Explorer URLs back to this page on refresh.
+        if (!$is_edit && $base_path) {
+            $page_id = get_queried_object_id();
+            if ($page_id) {
+                \Gateway\Integrations\Elementor\ElementorController::recordExplorerRoute($base_path, $page_id);
+            }
+        }
 
         // Parse active slugs from the request path (SSR initial state, frontend only).
         $request_path  = rtrim(strtok($_SERVER['REQUEST_URI'] ?? '', '?'), '/');
