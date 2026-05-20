@@ -134,10 +134,9 @@ class ElementorController
     public static function registerWidgets(\Elementor\Widgets_Manager $manager): void
     {
         require_once __DIR__ . '/Widgets/Grid.php';
+        require_once __DIR__ . '/Widgets/GatewayApp.php';
         $manager->register(new Widgets\Grid());
-
-        require_once __DIR__ . '/Widgets/Explorer.php';
-        $manager->register(new Widgets\Explorer());
+        $manager->register(new Widgets\GatewayApp());
     }
 
     // ── Asset enqueueing ──────────────────────────────────────────────────────
