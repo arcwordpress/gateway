@@ -131,11 +131,8 @@ class Plugin
         Admin\Builder::init();
         Packages\PackageMenus::init();
         Forms\Render::init();
-        Forms\Shortcode::init();
         Render\Render::init();
-        Grids\Shortcode::init();
         Raptor\ViewRenderer::init();
-        Gutenberg\BlockRegistry::init();
         $this->patternRegistry->init();
 
         do_action('gateway_loaded');
