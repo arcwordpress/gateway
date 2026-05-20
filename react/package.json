@@ -10,14 +10,11 @@
     "@types/react-dom": "^18.3.0"
   },
   "scripts": {
-    "build": "npm run build:packages && npm run build:apps && npm run build:block-types",
+    "build": "npm run build:packages && npm run build:apps",
     "build:packages": "npm run build -w packages/data && npm run build -w packages/forms && npm run build -w packages/grids",
     "build:apps": "npm --prefix apps run build",
-    "build:block-types": "npm --prefix block-types run build",
     "build:data": "npm run build -w packages/data",
     "build:forms": "npm run build -w packages/forms",
-    "build:grids": "npm run build -w packages/grids",
-    "start:block-types": "npm --prefix block-types run start",
-    "run:block-types": "npm run start:block-types"
+    "build:grids": "npm run build -w packages/grids"
   }
 }

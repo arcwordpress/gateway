@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 import { BuilderLayout } from './Builders/BuilderLayout'
-import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './Packages/GlobalPackagesGraph'
+import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './packages/GlobalPackagesGraph'
 import { PackagePanel } from './PackagePanel'
 
 // ─── Registered package shape (gateway/v1/packages/registered) ────────────
