@@ -93,7 +93,6 @@ class Plugin
             new Endpoints\ConnectionRoute();
             new Migrations\MigrationRoutes();
             Admin\Page::init();
-            Admin\Render::init();
         } else {
             static::bootEloquent();
             $this->init();
@@ -130,8 +129,6 @@ class Plugin
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init();
-        Admin\Render::init();
-        Apps\AppSaveRoute::init();
         Packages\PackageMenus::init();
         Forms\Render::init();
         Forms\Shortcode::init();
@@ -139,21 +136,15 @@ class Plugin
         Grids\Shortcode::init();
         Raptor\ViewRenderer::init();
         Gutenberg\BlockRegistry::init();
-        Integrations\Elementor\ElementorController::init();
-        Integrations\Gutenberg\GutenbergController::init();
         $this->patternRegistry->init();
-        AppTemplate::init();
 
         do_action('gateway_loaded');
     }
 
     public function activate()
     {
-        // Always create data directories — independent of DB state.
-        foreach ([GATEWAY_DATA_DIR, GATEWAY_DATA_DIR . '/apps'] as $dir) {
-            if (!is_dir($dir)) {
-                mkdir($dir, 0755, true);
-            }
+        if (!is_dir(GATEWAY_DATA_DIR)) {
+            mkdir(GATEWAY_DATA_DIR, 0755, true);
         }
 
         if (!Database\DatabaseConnection::testConnection()) {
