@@ -51,6 +51,17 @@ class ElementorController
 
         $routes[$slug] = $page_id;
         update_option('gateway_explorer_routes', $routes, false);
+
+        // Add the rule to the live WP_Rewrite instance NOW so that the
+        // subsequent flush includes it in the stored rewrite_rules option.
+        // (registerExplorerRewriteRules already ran on 'init' but saw an
+        // empty option at that point, so the rule wasn't registered yet.)
+        add_rewrite_rule(
+            '^' . preg_quote($slug, '/') . '/(.+?)/?$',
+            'index.php?page_id=' . (int) $page_id,
+            'top'
+        );
+
         flush_rewrite_rules(false); // rebuild rules cache; skips .htaccess update
     }
 
