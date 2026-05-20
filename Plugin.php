@@ -130,7 +130,6 @@ class Plugin
         Admin\Records::init();
         Admin\Builder::init();
         Packages\PackageMenus::init();
-        Forms\Render::init();
         Render\Render::init();
         Raptor\ViewRenderer::init();
         $this->patternRegistry->init();
