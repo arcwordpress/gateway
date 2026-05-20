@@ -30,9 +30,6 @@ import RecordFormPage from './pages/records/RecordForm'
 import RecordViewPage from './pages/records/RecordView'
 import CollectionsRelationshipsPage from './pages/CollectionsRelationshipsPage'
 import PackagesTopLevelPage from './pages/PackagesTopLevel'
-import ExtensionShortcodesPage from './pages/ExtensionShortcodes'
-import ShortcodesPage from './pages/ShortcodesPage'
-import BlocksPage from './pages/BlocksPage'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -98,24 +95,6 @@ const extensionsEditorRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/extensions/editor',
   component: ExtensionsEditorPage,
-})
-
-export const extensionShortcodesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/$key/shortcodes',
-  component: ExtensionShortcodesPage,
-})
-
-const shortcodesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/shortcodes',
-  component: ShortcodesPage,
-})
-
-const blocksRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/blocks',
-  component: BlocksPage,
 })
 
 const packagesRoute = createRoute({
@@ -189,9 +168,6 @@ const routeTree = rootRoute.addChildren([
   viewsTopLevelRoute,
   extensionsRoute,
   extensionsEditorRoute,
-  extensionShortcodesRoute,
-  shortcodesRoute,
-  blocksRoute,
   packagesRoute,
   fieldsRoute,
   formsRoute,

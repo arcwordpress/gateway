@@ -83,13 +83,7 @@ export default function Sidebar({
         <NavLink to="/extensions" label="Extensions" />
         <NavLink to="/packages" label="Packages" />
         <NavLink to="/collections" label="Collections" />
-
-        <SectionLabel label="Builders" />
         <NavLink to="/fields" label="Fields" />
-        <NavLink to="/shortcodes" label="Shortcodes" />
-        <NavLink to="/blocks" label="Blocks" />
-        {/* <NavLink to="/forms" label="Forms" /> */}
-        {/* <NavLink to="/views" label="Views" /> */}
 
         <SectionLabel label="Records" />
         <NavLink to="/records" label="Records" />
