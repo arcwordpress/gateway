@@ -149,17 +149,17 @@ class Plugin
 
     public function activate()
     {
+        // Always create data directories — independent of DB state.
+        foreach ([GATEWAY_DATA_DIR, GATEWAY_DATA_DIR . '/apps'] as $dir) {
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+        }
+
         if (!Database\DatabaseConnection::testConnection()) {
             return;
         }
         Migrations\MigrationHooks::runCoreMigrations();
-        if (!is_dir(GATEWAY_DATA_DIR)) {
-            mkdir(GATEWAY_DATA_DIR, 0755, true);
-        }
-        $apps_dir = GATEWAY_DATA_DIR . '/apps';
-        if (!is_dir($apps_dir)) {
-            mkdir($apps_dir, 0755, true);
-        }
         Collections\CoreCollections::seed();
         flush_rewrite_rules();
     }

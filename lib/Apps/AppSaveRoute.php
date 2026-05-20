@@ -54,8 +54,8 @@ class AppSaveRoute
         $log[] = self::entry('info', "Writing output files...");
 
         $writes = [
-            'index.html' => AppTemplate::buildIndex($key),
-            'embed.js'   => AppTemplate::buildEmbed($key),
+            'embed.js'  => AppTemplate::buildEmbed($key),
+            'embed.css' => AppTemplate::buildStyles(),
         ];
 
         foreach ($writes as $filename => $content) {
