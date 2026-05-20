@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+:root {
+  --render-bg: #09090b;
+  --render-surface: #18181b;
+  --render-border: #27272a;
+  --render-text: #d4d4d8;
+  --render-text-muted: #71717a;
+}
+
+#gateway-render-root {
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--render-bg);
+  color: var(--render-text);
+}
+
+/* Heading reset — defeat WP admin specificity */
+#gateway-render-root h1,
+#gateway-render-root h2,
+#gateway-render-root h3,
+#gateway-render-root h4,
+#gateway-render-root h5,
+#gateway-render-root h6 {
+  color: #d4d4d4;
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* React Flow dark-mode overrides */
+#gateway-render-root .react-flow__background {
+  background-color: var(--render-bg);
+}
+
+#gateway-render-root .react-flow__minimap {
+  background-color: #27272a;
+  border: 1px solid #3f3f46;
+  border-radius: 0.375rem;
+}
+
+#gateway-render-root .react-flow__minimap-svg {
+  display: block;
+}
+
+#gateway-render-root .react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.28) !important;
+  stroke: #3f3f46 !important;
+}
+
+#gateway-render-root .react-flow__controls {
+  border: 1px solid #27272a;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+#gateway-render-root .react-flow__controls-button {
+  background-color: #27272a;
+  border-bottom: 1px solid #3f3f46;
+  color: #a1a1aa;
+}
+
+#gateway-render-root .react-flow__controls-button:hover {
+  background-color: #3f3f46;
+  color: #f4f4f5;
+}
+
+#gateway-render-root .react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+/* WP admin form control overrides */
+#gateway-render-root select,
+#gateway-render-root input,
+#gateway-render-root textarea {
+  color: #f4f4f5 !important;
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+  box-shadow: none !important;
+}
+
+#gateway-render-root select:focus,
+#gateway-render-root input:focus,
+#gateway-render-root textarea:focus {
+  outline: none !important;
+  border-color: #71717a !important;
+  box-shadow: 0 0 0 1px #71717a !important;
+}
+
+/* Defeat WP anchor hover color */
+#gateway-render-root a:hover,
+#gateway-render-root a:active {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Cursors */
+#gateway-render-root button:not(:disabled),
+#gateway-render-root [role="button"]:not([aria-disabled="true"]),
+#gateway-render-root input[type="submit"]:not(:disabled),
+#gateway-render-root select:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Scrollbars */
+#gateway-render-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#gateway-render-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#gateway-render-root ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+#gateway-render-root ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+#gateway-render-root ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+#gateway-render-root * {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
