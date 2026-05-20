@@ -67,35 +67,42 @@ class GatewayApp extends \Elementor\Widget_Base
         $embed_path = $app_dir . '/embed.js';
 
         if (!file_exists($embed_path)) {
-            if (\Elementor\Plugin::$instance->editor->is_edit_mode()) {
-                printf(
-                    '<div style="padding:20px;border:1px dashed #555;color:#888;font-size:13px;">'
-                    . 'Gateway App <code>%s</code> not found — save it from Gateway &rsaquo; Render first.'
-                    . '</div>',
-                    esc_html($key)
-                );
-            }
+            printf(
+                '<div style="padding:20px;border:1px dashed #555;color:#888;font-size:13px;font-family:system-ui,sans-serif;">'
+                . 'Gateway App <code>%s</code> not found — save it from Gateway &rsaquo; Render first.'
+                . '</div>',
+                esc_html($key)
+            );
             return;
         }
 
-        $handle    = 'gateway-app-' . $key;
         $base_url  = content_url('gateway/apps/' . $key . '/');
-        $version   = md5_file($embed_path);
+        $js_ver    = substr(md5_file($embed_path), 0, 8);
 
-        // Styles saved alongside embed.js
-        $css_path = $app_dir . '/embed.css';
-        if (file_exists($css_path)) {
-            wp_enqueue_style($handle . '-css', $base_url . 'embed.css', [], md5_file($css_path));
-        }
+        // Output <link> and <script type="module"> inline rather than via
+        // wp_enqueue_script, because wp_footer never fires inside Elementor's
+        // preview iframe — inline tags are the only reliable way to load assets
+        // in both the editor preview and the live frontend.
+        // Static array deduplicates when the same key appears more than once.
+        static $printed = [];
 
-        wp_enqueue_script($handle, $base_url . 'embed.js', [], $version, true);
+        if (!isset($printed[$key])) {
+            $printed[$key] = true;
 
-        add_filter('script_loader_tag', function ($tag, $h) use ($handle) {
-            if ($h === $handle) {
-                return str_replace('<script ', '<script type="module" ', $tag);
+            $css_path = $app_dir . '/embed.css';
+            if (file_exists($css_path)) {
+                $css_ver = substr(md5_file($css_path), 0, 8);
+                printf(
+                    '<link rel="stylesheet" href="%s">',
+                    esc_url($base_url . 'embed.css?v=' . $css_ver)
+                );
             }
-            return $tag;
-        }, 10, 2);
+
+            printf(
+                '<script type="module" src="%s"></script>',
+                esc_url($base_url . 'embed.js?v=' . $js_ver)
+            );
+        }
 
         printf(
             '<div id="gateway-app-%s" style="min-height:%dpx;"></div>',
