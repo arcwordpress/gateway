@@ -11,11 +11,11 @@
   --render-text-faint:   #71717a;
   --render-accent:       #6366f1;
 
-  /* Panel sizes */
+  /* Panel sizes — change these to resize any zone */
+  --header-h:       36px;
   --panel-top-h:    40px;
   --panel-bottom-h: 180px;
   --panel-side-w:   220px;
-  --header-h:       36px;
 
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 14px;
@@ -84,14 +84,16 @@
 #gateway-render-root ::-webkit-scrollbar-corner { background: transparent; }
 #gateway-render-root * { scrollbar-width: thin; scrollbar-color: var(--render-border) transparent; }
 
-/* ── Shell ──────────────────────────────────────────────────────────────────── */
+/* ── Shell ───────────────────────────────────────────────────────────────────
+   Stays in normal WP page flow (no position:fixed). Height is set in JS to
+   fill the viewport below the admin bar.                                      */
 
 .render-shell {
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
   background-color: var(--render-bg);
   color: var(--render-text);
+  border-left: 1px solid var(--render-border);
+  border-top: 1px solid var(--render-border);
 }
 
 /* ── Dashboard ──────────────────────────────────────────────────────────────── */
@@ -103,92 +105,88 @@
   overflow: hidden;
 }
 
-/* Slim app header */
+/* Slim app header — in normal flow above the body */
 .render-dashboard__header {
   height: var(--header-h);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
   background-color: var(--render-surface);
   border-bottom: 1px solid var(--render-border);
-  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .render-dashboard__title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--render-text-muted);
 }
 
-/* Everything below the header */
+/* Body — position:relative makes it the containing block for all absolute panels */
 .render-dashboard__body {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Middle row: left panel + canvas + right panel */
-.render-dashboard__mid {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-}
-
-/* React Flow container — bounded by flex so it never overlaps a panel */
-.render-dashboard__canvas {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
-/* ── Panels ─────────────────────────────────────────────────────────────────── */
+/* ── Panels — all absolute inside .render-dashboard__body ───────────────────
+   Using absolute positioning relative to the body keeps panels out of the
+   normal flow while guaranteeing the React Flow canvas is tightly bounded
+   by the panel insets, never sliding under them.                             */
 
 .render-panel {
-  display: flex;
-  align-items: flex-start;
-  padding: 8px 12px;
+  position: absolute;
   background-color: var(--render-surface);
   overflow: hidden;
+  z-index: 1;
 }
 
 /* Top — slim, full width */
 .render-panel--top {
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--panel-top-h);
-  flex-shrink: 0;
   border-bottom: 1px solid var(--render-border);
+  display: flex;
   align-items: center;
+  padding: 0 12px;
 }
 
 /* Bottom — thick, full width */
 .render-panel--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: var(--panel-bottom-h);
-  flex-shrink: 0;
   border-top: 1px solid var(--render-border);
-  flex-direction: column;
+  padding: 10px 12px;
 }
 
-/* Left — moderate width */
+/* Left — moderate width, between top and bottom panels */
 .render-panel--left {
+  top: var(--panel-top-h);
+  bottom: var(--panel-bottom-h);
+  left: 0;
   width: var(--panel-side-w);
-  flex-shrink: 0;
   border-right: 1px solid var(--render-border);
-  flex-direction: column;
+  padding: 10px 12px;
 }
 
-/* Right — moderate width */
+/* Right — moderate width, between top and bottom panels */
 .render-panel--right {
+  top: var(--panel-top-h);
+  bottom: var(--panel-bottom-h);
+  right: 0;
   width: var(--panel-side-w);
-  flex-shrink: 0;
   border-left: 1px solid var(--render-border);
-  flex-direction: column;
+  padding: 10px 12px;
 }
 
 .render-panel__label {
@@ -198,6 +196,16 @@
   text-transform: uppercase;
   color: var(--render-text-faint);
   user-select: none;
+}
+
+/* ── Canvas — absolute, inset to panel edges so React Flow is fully bounded ── */
+
+.render-dashboard__canvas {
+  position: absolute;
+  top: var(--panel-top-h);
+  bottom: var(--panel-bottom-h);
+  left: var(--panel-side-w);
+  right: var(--panel-side-w);
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────────── */
