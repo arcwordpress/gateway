@@ -19,8 +19,8 @@ const nodeStyle = {
 }
 
 const initialNodes = [
-  { id: '1', type: 'default', position: { x: 200, y: 150 }, data: { label: 'Start' }, style: nodeStyle },
-  { id: '2', type: 'default', position: { x: 500, y: 150 }, data: { label: 'Render' }, style: nodeStyle },
+  { id: '1', type: 'default', position: { x: 200, y: 100 }, data: { label: 'Start' }, style: nodeStyle },
+  { id: '2', type: 'default', position: { x: 500, y: 100 }, data: { label: 'Render' }, style: nodeStyle },
 ]
 
 const initialEdges = [
@@ -44,7 +44,7 @@ export default function Dashboard() {
       {
         id,
         type: 'default',
-        position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 50 },
+        position: { x: Math.random() * 400 + 100, y: Math.random() * 200 + 50 },
         data: { label: `Node ${id}` },
         style: nodeStyle,
       },
@@ -53,30 +53,58 @@ export default function Dashboard() {
 
   return (
     <div className="render-dashboard">
-      <div className="render-dashboard__header">
-        <div>
-          <p className="render-dashboard__title">Render</p>
-          <p className="render-dashboard__subtitle">Visual flow canvas</p>
-        </div>
-        <button className="render-btn" onClick={addNode}>
-          Add node
-        </button>
-      </div>
 
-      <div className="render-dashboard__canvas">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-          colorMode="dark"
-        >
-          <Background />
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
+      {/* ── Slim app header ───────────────────────────────────────────────── */}
+      <header className="render-dashboard__header">
+        <span className="render-dashboard__title">Render</span>
+        <button className="render-btn" onClick={addNode}>Add node</button>
+      </header>
+
+      {/* ── Body: top · (left · canvas · right) · bottom ─────────────────── */}
+      <div className="render-dashboard__body">
+
+        {/* Top panel — full width, slim */}
+        <div className="render-panel render-panel--top">
+          <span className="render-panel__label">Top</span>
+        </div>
+
+        {/* Middle row */}
+        <div className="render-dashboard__mid">
+
+          {/* Left panel — moderate width */}
+          <div className="render-panel render-panel--left">
+            <span className="render-panel__label">Left</span>
+          </div>
+
+          {/* React Flow — fills the remaining space exactly */}
+          <div className="render-dashboard__canvas">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              fitView
+              colorMode="dark"
+            >
+              <Background />
+              <Controls />
+              <MiniMap />
+            </ReactFlow>
+          </div>
+
+          {/* Right panel — moderate width */}
+          <div className="render-panel render-panel--right">
+            <span className="render-panel__label">Right</span>
+          </div>
+
+        </div>
+
+        {/* Bottom panel — full width, much thicker */}
+        <div className="render-panel render-panel--bottom">
+          <span className="render-panel__label">Bottom</span>
+        </div>
+
       </div>
     </div>
   )

@@ -32,7 +32,7 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-0knWQsT8.js",
+    "file": "assets/main-BG4X5bYn.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
@@ -42,7 +42,7 @@
       "_vendor-flow-CES2RtcJ.js"
     ],
     "css": [
-      "assets/main-DW0yJ81J.css"
+      "assets/main-C52ieAjy.css"
     ]
   }
 }

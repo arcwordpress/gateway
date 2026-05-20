@@ -11,6 +11,12 @@
   --render-text-faint:   #71717a;
   --render-accent:       #6366f1;
 
+  /* Panel sizes */
+  --panel-top-h:    40px;
+  --panel-bottom-h: 180px;
+  --panel-side-w:   220px;
+  --header-h:       36px;
+
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 14px;
   color: var(--render-text);
@@ -24,9 +30,9 @@
   box-sizing: inherit;
 }
 
-/* ── Heading reset — defeat WP admin global specificity ─────────────────────
-   WP admin targets bare heading elements at (0,0,1)–(0,1,1); our ID-scoped
-   selector (1,0,1) wins cleanly without !important.                          */
+/* ── WP admin element resets ─────────────────────────────────────────────────
+   WP admin targets bare elements at (0,0,1)–(0,1,1); our ID-scoped selector
+   (1,0,1) wins cleanly without !important.                                    */
 
 #gateway-render-root h1,
 #gateway-render-root h2,
@@ -42,19 +48,11 @@
   line-height: inherit;
 }
 
-#gateway-render-root p {
-  margin: 0;
-  padding: 0;
-}
+#gateway-render-root p { margin: 0; padding: 0; }
 
-/* Defeat WP anchor hover/active color */
 #gateway-render-root a:hover,
-#gateway-render-root a:active {
-  color: inherit !important;
-  opacity: 1 !important;
-}
+#gateway-render-root a:active { color: inherit !important; opacity: 1 !important; }
 
-/* WP admin overrides for form controls */
 #gateway-render-root select,
 #gateway-render-root input,
 #gateway-render-root textarea {
@@ -72,13 +70,10 @@
   box-shadow: 0 0 0 1px var(--render-border-hover) !important;
 }
 
-/* Interactive cursors */
 #gateway-render-root button:not(:disabled),
 #gateway-render-root [role="button"]:not([aria-disabled="true"]),
 #gateway-render-root input[type="submit"]:not(:disabled),
-#gateway-render-root select:not(:disabled) {
-  cursor: pointer;
-}
+#gateway-render-root select:not(:disabled) { cursor: pointer; }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────────── */
 
@@ -108,33 +103,101 @@
   overflow: hidden;
 }
 
+/* Slim app header */
 .render-dashboard__header {
+  height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--render-border);
+  padding: 0 12px;
   background-color: var(--render-surface);
+  border-bottom: 1px solid var(--render-border);
   flex-shrink: 0;
 }
 
 .render-dashboard__title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--render-text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--render-text-muted);
 }
 
-.render-dashboard__subtitle {
-  font-size: 11px;
-  color: var(--render-text-faint);
-  margin-top: 2px;
-}
-
-.render-dashboard__canvas {
+/* Everything below the header */
+.render-dashboard__body {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Middle row: left panel + canvas + right panel */
+.render-dashboard__mid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+/* React Flow container — bounded by flex so it never overlaps a panel */
+.render-dashboard__canvas {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
   position: relative;
+}
+
+/* ── Panels ─────────────────────────────────────────────────────────────────── */
+
+.render-panel {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background-color: var(--render-surface);
+  overflow: hidden;
+}
+
+/* Top — slim, full width */
+.render-panel--top {
+  height: var(--panel-top-h);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--render-border);
+  align-items: center;
+}
+
+/* Bottom — thick, full width */
+.render-panel--bottom {
+  height: var(--panel-bottom-h);
+  flex-shrink: 0;
+  border-top: 1px solid var(--render-border);
+  flex-direction: column;
+}
+
+/* Left — moderate width */
+.render-panel--left {
+  width: var(--panel-side-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--render-border);
+  flex-direction: column;
+}
+
+/* Right — moderate width */
+.render-panel--right {
+  width: var(--panel-side-w);
+  flex-shrink: 0;
+  border-left: 1px solid var(--render-border);
+  flex-direction: column;
+}
+
+.render-panel__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--render-text-faint);
+  user-select: none;
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────────── */
@@ -143,8 +206,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 5px 10px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1;
   color: var(--render-text);
@@ -157,11 +220,11 @@
 }
 
 .render-btn:hover {
-  background: #3f3f46;
+  background: var(--render-border);
   border-color: var(--render-border-hover);
 }
 
-/* ── React Flow dark-mode overrides ─────────────────────────────────────────── */
+/* ── React Flow overrides ───────────────────────────────────────────────────── */
 
 #gateway-render-root .react-flow__background {
   background-color: var(--render-bg);
