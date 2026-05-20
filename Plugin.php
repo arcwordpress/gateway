@@ -93,6 +93,7 @@ class Plugin
             new Endpoints\ConnectionRoute();
             new Migrations\MigrationRoutes();
             Admin\Page::init();
+            Admin\Render::init();
         } else {
             static::bootEloquent();
             $this->init();
@@ -129,6 +130,7 @@ class Plugin
         Admin\Page::init();
         Admin\Records::init();
         Admin\Builder::init();
+        Admin\Render::init();
         Packages\PackageMenus::init();
         Forms\Render::init();
         Forms\Shortcode::init();

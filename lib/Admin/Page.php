@@ -98,7 +98,17 @@ class Page
             76
         );
 
-        // remove_submenu_page('gateway', 'gateway');
+        // Replace the auto-generated "Gateway" duplicate with a labelled "Editor" entry
+        remove_submenu_page('gateway', 'gateway');
+
+        add_submenu_page(
+            'gateway',
+            'Editor',
+            'Editor',
+            'manage_options',
+            'gateway',
+            [__CLASS__, 'render_page']
+        );
     }
 
     /**
