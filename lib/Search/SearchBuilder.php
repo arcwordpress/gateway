@@ -3,7 +3,6 @@
 namespace Gateway\Search;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class SearchBuilder
 {
@@ -31,20 +30,12 @@ class SearchBuilder
     protected static function supportsFullText(): bool
     {
         try {
-            $rows = DB::select("SHOW VARIABLES LIKE 'default_storage_engine'");
+            global $wpdb;
 
-            if (empty($rows)) {
-                error_log('[Gateway] SearchBuilder: supportsFullText — query returned no rows');
-                return false;
-            }
-
-            $row = $rows[0];
-
-            // MySQL may return Value or value depending on the client/driver
-            $engine = $row->Value ?? $row->value ?? null;
+            $engine = $wpdb->get_var('SELECT @@default_storage_engine');
 
             if ($engine === null) {
-                error_log('[Gateway] SearchBuilder: supportsFullText — could not read Value from row: ' . json_encode($row));
+                error_log('[Gateway] SearchBuilder: supportsFullText — query returned null');
                 return false;
             }
 
