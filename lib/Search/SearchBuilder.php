@@ -19,6 +19,8 @@ class SearchBuilder
             return $query->whereFullText($columns, $term);
         }
 
+        error_log('[Gateway] SearchBuilder: falling back to LIKE search — FULLTEXT index not available. Run the collection migration to add a FULLTEXT index on: ' . implode(', ', $columns));
+
         return $query->where(function ($q) use ($columns, $term) {
             foreach ($columns as $col) {
                 $q->orWhere($col, 'LIKE', '%' . $term . '%');
