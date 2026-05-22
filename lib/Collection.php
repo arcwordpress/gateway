@@ -384,6 +384,18 @@ class Collection extends EloquentModel
         return $this->isCore() || $this->isPrivate();
     }
 
+    public function getSearchable(): array
+    {
+        if ($this->searchable === false || $this->searchable === null) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map('trim', (array) $this->searchable),
+            static fn ($col) => $col !== ''
+        ));
+    }
+
     public function search(string $term)
     {
         return $this->runDefaultSearch($term);

@@ -3,6 +3,7 @@
 namespace Gateway\Endpoints\Standard;
 
 use Gateway\Endpoints\BaseEndpoint;
+use Gateway\Search\SearchBuilder;
 use Gateway\Traits\CollectionEagerLoadable;
 use Gateway\Traits\CollectionFilterable;
 use WP_REST_Request;
@@ -73,41 +74,14 @@ class GetManyRoute extends BaseEndpoint
                 'order' => $order,
             ];
 
-            // Handle search separately since it returns Collection not Builder
-            if ($search && method_exists($this->collection, 'search')) {
-                $results = $this->collection->search($search);
-
-                // Convert to arrays
-                $items = [];
-                foreach ($results as $model) {
-                    $items[] = is_object($model) && method_exists($model, 'toArray')
-                        ? $model->toArray()
-                        : (array) $model;
-                }
-
-                $total = count($items);
-
-                // Apply pagination only if not fetching all
-                if (!$fetch_all) {
-                    $offset = ($page - 1) * $per_page;
-                    $items = array_slice($items, $offset, $per_page);
-                }
-
-                $response = [
-                    'items' => $items,
-                    'pagination' => [
-                        'page' => $fetch_all ? 1 : $page,
-                        'per_page' => $fetch_all ? $total : $per_page,
-                        'record_count' => $total,
-                        'total_pages' => $fetch_all ? 1 : ceil($total / $per_page)
-                    ]
-                ];
-
-                return $this->sendSuccessResponse($response);
-            }
-
-            // Start with base query builder - Collection IS the model now
+            // Start with base query builder
             $query = $this->collection->query();
+
+            // Apply search as a query constraint so it composes with filters
+            $searchableColumns = $this->collection->getSearchable();
+            if ($search && !empty($searchableColumns)) {
+                SearchBuilder::apply($query, $search, $searchableColumns);
+            }
 
             // Eager-load requested relations to avoid N+1 fetches
             $relations = self::resolveEagerLoads($request, $this->collection);

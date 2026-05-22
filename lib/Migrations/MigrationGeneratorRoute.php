@@ -201,6 +201,15 @@ class MigrationGeneratorRoute
                 $columns[] = "updated_at TIMESTAMP NULL DEFAULT NULL";
             }
 
+            // Add FULLTEXT index for searchable columns
+            $searchableColumns = array_values(array_filter(
+                $collection->getSearchable(),
+                fn($col) => in_array($col, $fillable)
+            ));
+            if (!empty($searchableColumns)) {
+                $columns[] = "FULLTEXT KEY searchable (" . implode(',', $searchableColumns) . ")";
+            }
+
             // Build SQL
             $columnsStr = implode(",\n            ", $columns);
             $charset_collate = $wpdb->get_charset_collate();

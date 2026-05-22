@@ -106,6 +106,16 @@ class MigrationGenerator
             $columns[] = "updated_at TIMESTAMP NULL DEFAULT NULL";
         }
 
+        // Add FULLTEXT index for any searchable columns that exist in fillable
+        $searchableColumns = array_values(array_filter(
+            $collection->getSearchable(),
+            fn($col) => in_array($col, $fillable)
+        ));
+        if (!empty($searchableColumns)) {
+            $columns[] = "FULLTEXT KEY searchable (" . implode(',', $searchableColumns) . ")";
+            $notes[] = "FULLTEXT index added on: " . implode(', ', $searchableColumns);
+        }
+
         // Derive namespace and extension from the collection's own class root.
         // e.g. Keystone\Collections\Listing → namespace=Keystone, extension=keystone
         // Package key is separate (groups UI menus) and not used here.
@@ -413,6 +423,20 @@ class MigrationGenerator
         $columns[] = "updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
         // dbDelta requires PRIMARY KEY on its own line with two spaces
         $columns[] = "PRIMARY KEY  (id)";
+
+        // Add FULLTEXT index for any searchable columns present in the field list
+        $searchableColumns = $collectionData['searchable'] ?? [];
+        if (!empty($searchableColumns)) {
+            $fieldNames = array_column($fields, 'name');
+            $validSearchable = array_values(array_filter(
+                $searchableColumns,
+                fn($col) => in_array($col, $fieldNames)
+            ));
+            if (!empty($validSearchable)) {
+                $columns[] = "FULLTEXT KEY searchable (" . implode(',', $validSearchable) . ")";
+                $notes[] = "FULLTEXT index added on: " . implode(', ', $validSearchable);
+            }
+        }
 
         // Generate the PHP class code
         $code = self::generateClassCodeWithNamespace($className, $tableName, $columns, $notes, $namespace, $extensionKey);

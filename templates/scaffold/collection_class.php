@@ -8,6 +8,6 @@ class {{CLASS_NAME}} extends \Gateway\Collection {
 
     protected $key     = '{{COLLECTION_KEY}}';
     protected $title   = '{{COLLECTION_TITLE}}';
-{{PACKAGE_PROPERTY}}{{LABEL_FIELD_PROPERTY}}{{DISPLAY_FIELD_PROPERTY}}    protected $fields  = {{FIELDS_JSON}};
+{{PACKAGE_PROPERTY}}{{LABEL_FIELD_PROPERTY}}{{DISPLAY_FIELD_PROPERTY}}{{SEARCHABLE_PROPERTY}}    protected $fields  = {{FIELDS_JSON}};
 {{RELATIONSHIP_METHODS}}
 }

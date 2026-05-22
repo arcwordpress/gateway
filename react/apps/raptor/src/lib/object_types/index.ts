@@ -6,6 +6,7 @@ export type Field = {
   type: string
   label: string
   sort_order: number
+  searchable?: boolean
   config?: Record<string, unknown>
 }
 

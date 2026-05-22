@@ -46,12 +46,14 @@ class RaptorField extends \Gateway\Collection
             'type',
             'label',
             'sort_order',
+            'searchable',
             'config',
         ];
     }
 
     protected $casts = [
-        'config' => 'array',
+        'searchable' => 'boolean',
+        'config'     => 'array',
     ];
 
     public function fieldList(): \Illuminate\Database\Eloquent\Relations\BelongsTo
