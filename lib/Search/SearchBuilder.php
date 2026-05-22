@@ -14,7 +14,7 @@ class SearchBuilder
             return $query;
         }
 
-        if (static::supportsFullText()) {
+        if (static::supportsFullText($query->getConnection())) {
             return $query->whereFullText($columns, $term);
         }
 
@@ -27,12 +27,12 @@ class SearchBuilder
         });
     }
 
-    protected static function supportsFullText(): bool
+    protected static function supportsFullText(\Illuminate\Database\ConnectionInterface $connection): bool
     {
         try {
-            global $wpdb;
+            $result = $connection->selectOne('SELECT @@default_storage_engine AS engine');
 
-            $engine = $wpdb->get_var('SELECT @@default_storage_engine');
+            $engine = $result->engine ?? null;
 
             if ($engine === null) {
                 error_log('[Gateway] SearchBuilder: supportsFullText — query returned null');
