@@ -80,12 +80,7 @@ class GetManyRoute extends BaseEndpoint
             // Apply search as a query constraint so it composes with filters
             $searchableColumns = $this->collection->getSearchable();
             if ($search && !empty($searchableColumns)) {
-                SearchBuilder::apply(
-                    $query,
-                    $search,
-                    $searchableColumns,
-                    $this->collection->useFullTextSearch()
-                );
+                SearchBuilder::apply($query, $search, $searchableColumns);
             }
 
             // Eager-load requested relations to avoid N+1 fetches

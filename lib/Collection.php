@@ -75,7 +75,6 @@ class Collection extends EloquentModel
     protected $grid = [];
     protected $displayField = null;
     protected $searchable = [];
-    protected bool $fullTextSearch = false;
     protected $routes = [
         'enabled' => true,
         'namespace' => 'gateway',
@@ -387,15 +386,14 @@ class Collection extends EloquentModel
 
     public function getSearchable(): array
     {
+        if ($this->searchable === false || $this->searchable === null) {
+            return [];
+        }
+
         return array_values(array_filter(
             array_map('trim', (array) $this->searchable),
             static fn ($col) => $col !== ''
         ));
-    }
-
-    public function useFullTextSearch(): bool
-    {
-        return $this->fullTextSearch;
     }
 
     public function search(string $term)
