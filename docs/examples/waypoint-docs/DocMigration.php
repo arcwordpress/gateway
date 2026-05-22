@@ -25,7 +25,8 @@ class DocMigration extends \Gateway\Migration
             PRIMARY KEY  (id),
             KEY doc_group_id_idx (doc_group_id),
             KEY slug_idx (slug),
-            KEY position_idx (position)
+            KEY position_idx (position),
+            FULLTEXT KEY searchable (title,content)
         ) {$charset};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';

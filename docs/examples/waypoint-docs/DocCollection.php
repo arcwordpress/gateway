@@ -9,6 +9,11 @@ class DocCollection extends \Gateway\Collection
     protected $package = 'waypoint';
 
     /**
+     * @var array Columns included in full-text search via ?search=
+     */
+    protected $searchable = ['title', 'content'];
+
+    /**
      * @var array API route configuration
      */
     protected $routes = [
