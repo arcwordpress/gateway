@@ -41,7 +41,12 @@ class CollectionBuilder
 
         $normalizedFields = $fields->map(function ($f) {
             return array_merge(
-                ['name' => sanitize_key($f->name), 'type' => $f->type, 'label' => $f->label],
+                [
+                    'name'       => sanitize_key($f->name),
+                    'type'       => $f->type,
+                    'label'      => $f->label,
+                    'searchable' => (bool) $f->searchable,
+                ],
                 is_array($f->config) ? $f->config : []
             );
         })->filter(function ($f) use (&$warnings) {
@@ -61,12 +66,25 @@ class CollectionBuilder
             return true;
         })->values();
 
+        // Extract searchable column names; strip the flag from field definitions
+        // ($searchable is a class-level property, not a per-field attribute)
+        $searchableColumns = $dedupedFields
+            ->filter(fn($f) => !empty($f['searchable']))
+            ->pluck('name')
+            ->values()
+            ->toArray();
+
+        $fieldsForClass = $dedupedFields
+            ->map(fn($f) => array_diff_key($f, ['searchable' => true]))
+            ->values();
+
         $collectionData = [
             'key'           => $collection->collection_key,
             'title'         => $collection->title,
             'registered'    => isset($collection->registered) ? (bool) $collection->registered : true,
             'relationships' => $collection->relationships ?? [],
-            'fields'        => $dedupedFields->toArray(),
+            'fields'        => $fieldsForClass->toArray(),
+            'searchable'    => $searchableColumns,
             'package_key'   => $collection->package_key ?? null,
             'label_field'   => $collection->label_field ?? null,
         ];

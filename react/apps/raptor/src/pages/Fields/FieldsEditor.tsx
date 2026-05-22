@@ -9,7 +9,7 @@ import { ControlledForm, useFieldType, FieldTypeSelector } from '@arcwp/gateway-
 import '@arcwp/gateway-forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, Search } from 'lucide-react'
 import { HandleIcon } from '../../components/HandleIcon'
 import SharedPanelShell from '../../components/ui/PanelShell'
 import { useCollection, useFields, SurfaceState } from './FieldsPageContext'
@@ -135,6 +135,9 @@ function SortableFieldItem({ field, setEditSurface }: { field: Field; setEditSur
         <HandleIcon />
       </div>
       <span className="text-xs text-zinc-200 truncate flex-1 min-w-0">{field.label}</span>
+      {field.searchable && (
+        <Search size={10} className="text-zinc-500 shrink-0" aria-label="Searchable" />
+      )}
       <span className="text-[10px] text-zinc-500 shrink-0">{field.type}</span>
       <div className="flex gap-1 shrink-0">
         <button
@@ -279,10 +282,11 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
   const { updateField } = useFields()
   const { collection }  = useCollection()
   const queryClient     = useQueryClient()
-  const [name, setName]     = useState(field.name)
-  const [type, setType]     = useState(field.type)
-  const [label, setLabel]   = useState(field.label)
-  const [extras, setExtras] = useState<Record<string, unknown>>(field.config ?? {})
+  const [name, setName]           = useState(field.name)
+  const [type, setType]           = useState(field.type)
+  const [label, setLabel]         = useState(field.label)
+  const [searchable, setSearchable] = useState(field.searchable ?? false)
+  const [extras, setExtras]       = useState<Record<string, unknown>>(field.config ?? {})
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveError, setSaveError]   = useState<string | null>(null)
 
@@ -309,7 +313,7 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
   const selectedTypeDef = fieldTypeDefs?.find(ft => ft.type === type)
 
   const mutation = useMutation({
-    mutationFn: async (payload: { name: string; type: string; label: string; config: Record<string, unknown> }) => {
+    mutationFn: async (payload: { name: string; type: string; label: string; searchable: boolean; config: Record<string, unknown> }) => {
       const res = await fetch(apiUrl(`gateway/v1/raptor/field/${field.id}`), {
         method: 'PATCH',
         headers: authHeaders(),
@@ -345,14 +349,14 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
     debounceTimer.current = setTimeout(() => {
       setSaveStatus('saving')
       setSaveError(null)
-      mutation.mutate({ name, type, label, config: extras })
+      mutation.mutate({ name, type, label, searchable, config: extras })
     }, 600)
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, type, label, extras])
+  }, [name, type, label, searchable, extras])
 
   return (
     <div className="flex flex-col gap-4">
@@ -375,6 +379,16 @@ export function FieldEditForm({ field, onClose }: { field: Field; onClose: () =>
         <input type="text" value={name} onChange={e => setName(e.target.value)}
                className={baseInput} required />
       </div>
+
+      <label className="flex items-center gap-2.5 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={searchable}
+          onChange={e => setSearchable(e.target.checked)}
+          className="w-3.5 h-3.5 rounded border-zinc-600 bg-zinc-900 accent-zinc-400"
+        />
+        <span className="text-sm text-zinc-300">Include in full-text search</span>
+      </label>
 
       {selectedTypeDef && selectedTypeDef.fields.length > 0 && (
         <div className="pt-3 border-t border-zinc-800">

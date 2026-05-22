@@ -188,6 +188,9 @@ class FieldRoutes
         if (isset($data['sort_order'])) {
             $update['sort_order'] = (int) $data['sort_order'];
         }
+        if (array_key_exists('searchable', $data)) {
+            $update['searchable'] = (bool) $data['searchable'];
+        }
         if (array_key_exists('config', $data)) {
             $update['config'] = is_array($data['config']) ? $data['config'] : null;
         }

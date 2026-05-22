@@ -87,18 +87,24 @@ class FileFromData
             ? "    protected \$displayField = '" . addslashes($displayField) . "';\n"
             : '';
 
+        $searchableColumns = $collectionData['searchable'] ?? [];
+        $searchableProperty = !empty($searchableColumns)
+            ? "    protected \$searchable = " . self::phpArrayInline($searchableColumns) . ";\n"
+            : '';
+
         // Replace placeholders
         $replacements = [
-            '{{NAMESPACE}}'              => $pluginNamespace,
-            '{{CLASS_NAME}}'             => $className,
-            '{{COLLECTION_KEY}}'         => $collectionData['key'],
-            '{{COLLECTION_TITLE}}'       => $title,
-            '{{PACKAGE_PROPERTY}}'         => $packageProperty,
-            '{{LABEL_FIELD_PROPERTY}}'   => $labelFieldProperty,
-            '{{DISPLAY_FIELD_PROPERTY}}' => $displayFieldProperty,
-            '{{FIELDS_JSON}}'            => $fieldsPhp,
-            '{{RELATIONSHIP_METHODS}}'   => $relationshipMethods,
-            '{{REGISTERED}}'             => $registered ? 'true' : 'false',
+            '{{NAMESPACE}}'               => $pluginNamespace,
+            '{{CLASS_NAME}}'              => $className,
+            '{{COLLECTION_KEY}}'          => $collectionData['key'],
+            '{{COLLECTION_TITLE}}'        => $title,
+            '{{PACKAGE_PROPERTY}}'        => $packageProperty,
+            '{{LABEL_FIELD_PROPERTY}}'    => $labelFieldProperty,
+            '{{DISPLAY_FIELD_PROPERTY}}'  => $displayFieldProperty,
+            '{{SEARCHABLE_PROPERTY}}'     => $searchableProperty,
+            '{{FIELDS_JSON}}'             => $fieldsPhp,
+            '{{RELATIONSHIP_METHODS}}'    => $relationshipMethods,
+            '{{REGISTERED}}'              => $registered ? 'true' : 'false',
         ];
         
         $classContent = str_replace(array_keys($replacements), array_values($replacements), $template);
@@ -183,6 +189,16 @@ class FileFromData
         $lines[] = str_repeat('    ', $indent - 1) . "]";
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Render a flat string array as a single-line PHP array literal.
+     * e.g. ['title', 'content']
+     */
+    private static function phpArrayInline(array $values): string
+    {
+        $items = array_map(fn($v) => "'" . addslashes((string) $v) . "'", $values);
+        return '[' . implode(', ', $items) . ']';
     }
 
     /**

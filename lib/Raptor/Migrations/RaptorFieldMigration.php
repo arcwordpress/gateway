@@ -30,6 +30,7 @@ class RaptorFieldMigration
             type varchar(100) NOT NULL DEFAULT 'text',
             label varchar(200) NOT NULL DEFAULT '',
             sort_order int(11) NOT NULL DEFAULT 0,
+            searchable tinyint(1) NOT NULL DEFAULT 0,
             config longtext DEFAULT NULL,
             created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
