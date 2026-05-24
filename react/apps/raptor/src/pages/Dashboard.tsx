@@ -166,7 +166,7 @@ export default function Dashboard() {
     : null
 
   return (
-    <div className="space-y-4 p-5">
+    <div className="flex flex-col gap-4 p-5">
       {/* Stats grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
@@ -227,7 +227,7 @@ export default function Dashboard() {
       </div>
 
       {/* Status bar */}
-      <div className="border border-zinc-700 shadow-md rounded-xl p-4 flex items-center justify-between text-xs text-zinc-500">
+      <div className="border border-zinc-700 shadow-md rounded-xl p-5 flex items-center justify-between text-xs text-zinc-500">
         <span>{`Gateway v${appConfig.version || '...'}`}</span>
         <span className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-pulse" />
