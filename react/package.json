@@ -3,16 +3,18 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "block-types"
   ],
   "overrides": {
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0"
   },
   "scripts": {
-    "build": "npm run build:packages && npm run build:apps",
+    "build": "npm run build:packages && npm run build:apps && npm run build:blocks",
     "build:packages": "npm run build -w packages/data && npm run build -w packages/forms && npm run build -w packages/grids",
     "build:apps": "npm --prefix apps run build",
+    "build:blocks": "npm run build -w @arcwp/gateway-block-types",
     "build:data": "npm run build -w packages/data",
     "build:forms": "npm run build -w packages/forms",
     "build:grids": "npm run build -w packages/grids"

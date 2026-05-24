@@ -236,6 +236,14 @@
   outline-offset: 1px;
 }
 
+/* Strip the grids package wp-admin padding override from Tailwind grid layout containers.
+   The grids package sets padding: 1.5rem !important on .grid inside .wp-admin —
+   raptor manages its own page spacing so this must not apply here. */
+#gateway-raptor-canvas-host .grid,
+#gateway-raptor-root .grid {
+  padding: 0 !important;
+}
+
 /* Defeat WP admin global anchor hover/active blue color across the Raptor app. */
 #gateway-raptor-root a:hover,
 #gateway-raptor-root a:active {
