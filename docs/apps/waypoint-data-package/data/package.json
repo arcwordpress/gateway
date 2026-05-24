@@ -1,0 +1,9 @@
+{
+  "name": "@arcwp/gateway-data",
+  "version": "0.1.0",
+  "description": "Shared data utilities for Gateway React apps",
+  "main": "src/index.js",
+  "peerDependencies": {
+    "@wordpress/element": ">=5.0.0"
+  }
+}
