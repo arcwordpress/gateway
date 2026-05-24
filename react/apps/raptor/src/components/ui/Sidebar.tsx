@@ -104,13 +104,14 @@ export default function Sidebar({
 
         <NavLink to="/settings" label="Settings" icon={Settings2} />
 
-        <button
-          onClick={onToggleExpand}
+        <Link
+          to="."
+          onClick={(e) => { e.preventDefault(); onToggleExpand(); }}
           className="gateway-sidebar-link w-full flex items-center gap-2 px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
         >
           {isExpanded ? <Minimize2 className="h-3.5 w-3.5 shrink-0" /> : <Maximize2 className="h-3.5 w-3.5 shrink-0" />}
           {isExpanded ? 'Exit Fullscreen' : 'Fullscreen'}
-        </button>
+        </Link>
       </div>
     </nav>
   )
