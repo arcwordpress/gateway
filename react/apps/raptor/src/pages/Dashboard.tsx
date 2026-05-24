@@ -203,13 +203,13 @@ export default function Dashboard() {
         </div>
 
         <div className="border border-zinc-700 shadow-md rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-300 mb-4">Quick Actions</h2>
+          <h2 className="text-sm font-semibold text-zinc-300 !mb-4">Quick Actions</h2>
           <div className="space-y-2">
             {quickActions.map((action) => (
               <Link
                 key={action.label}
                 to={action.to}
-                className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:border-zinc-600 border border-transparent transition-colors group"
+                className="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg hover:border-zinc-600 border border-transparent transition-colors group"
               >
                 <span className="text-zinc-500 group-hover:text-zinc-400 transition-colors text-base">
                   {action.icon}
