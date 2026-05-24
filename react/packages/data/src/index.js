@@ -16,3 +16,6 @@ export { default as RecordsContext } from './contexts/RecordsContext';
 export * as collectionApi from './services/collectionApi';
 export * as viewApi from './services/viewApi';
 export { getApiClient } from './services/apiClient';
+
+// Utilities
+export { createStore } from './utils/createStore';

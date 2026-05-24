@@ -1,13 +1,9 @@
 /**
- * Creates an axios instance pre-configured for WordPress REST API auth.
- * Caller supplies their own axios so the package stays dependency-free.
+ * @deprecated Use getApiClient from @arcwp/gateway-data instead.
+ *
+ * The production package handles auth priority (Basic Auth, WP nonce, headless)
+ * automatically via window globals and request interceptors.
+ *
+ *   import { getApiClient } from '@arcwp/gateway-data';
+ *   const api = getApiClient();
  */
-export function createApiClient(axios, { baseURL, nonce } = {}) {
-    return axios.create({
-        baseURL: baseURL || '/wp-json/gateway/v1',
-        headers: {
-            'X-WP-Nonce': nonce || '',
-        },
-        withCredentials: true,
-    });
-}
