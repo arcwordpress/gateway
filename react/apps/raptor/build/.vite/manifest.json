@@ -21,8 +21,8 @@
       "_vendor-charts-BE7QtzxW.js"
     ]
   },
-  "_vendor-icons-DyyqNy1p.js": {
-    "file": "assets/vendor-icons-DyyqNy1p.js",
+  "_vendor-icons-CAWmFhlA.js": {
+    "file": "assets/vendor-icons-CAWmFhlA.js",
     "name": "vendor-icons",
     "imports": [
       "_vendor-router-Bjm7Z-uE.js"
@@ -47,20 +47,20 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-BhPJOHit.js",
+    "file": "assets/main-NP0cWXB3.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
     "imports": [
       "_vendor-router-Bjm7Z-uE.js",
       "_vendor-query-DO0LhBpI.js",
-      "_vendor-icons-DyyqNy1p.js",
+      "_vendor-icons-CAWmFhlA.js",
       "_vendor-charts-BE7QtzxW.js",
       "_vendor-flow-Bzi5sTz6.js",
       "_vendor-dnd-DAB07NLf.js"
     ],
     "css": [
-      "assets/main-kLuqDcBz.css"
+      "assets/main-D7izDL8b.css"
     ]
   }
 }

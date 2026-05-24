@@ -38,7 +38,7 @@ interface LogoProps {
 
 function Logo({ wordmark = true, className }: LogoProps) {
   return (
-    <Link to="/" className={`flex items-center gap-2.5 ${className ?? ''} hover:opacity-80 transition-opacity`}>
+    <Link to="/" className={`raptor-logo flex items-center gap-2.5 ${className ?? ''} hover:opacity-80 transition-opacity`}>
       <GatewayIcon className="w-5 h-4 text-zinc-100 shrink-0" />
       {wordmark && (
         <span className="font-semibold text-zinc-100 text-sm tracking-widest select-none uppercase">

@@ -347,3 +347,13 @@
   color: var(--gty-contrast-2) !important;
   opacity: 1 !important;
 }
+
+#gateway-raptor-root a,
+#gateway-raptor-root .raptor-logo {
+  text-decoration: none;
+}
+
+#gateway-raptor-root a:focus,
+#gateway-raptor-root .raptor-logo:focus {
+  box-shadow: none;
+}
