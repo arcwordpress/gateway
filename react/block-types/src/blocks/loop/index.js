@@ -1,25 +1,65 @@
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	useBlockProps,
+	useInnerBlocksProps,
+	__experimentalUseBlockPreview as useBlockPreview,
+	BlockContextProvider,
 	InnerBlocks,
-	BlockPreview,
 	InspectorControls,
 } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
-import { useSelect, useDispatch } from '@wordpress/data';
-import { useState } from '@wordpress/element';
+import { PanelBody, SelectControl, Spinner } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
+import { memo, useMemo, useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import metadata from './block.json';
 import './editor.css';
 
-function LoopEdit( { attributes, setAttributes, clientId } ) {
-	const { dataSource, previewCount } = attributes;
-	const blockProps = useBlockProps( { className: 'gty-loop-editor' } );
-	const { selectBlock } = useDispatch( 'core/block-editor' );
+// Hard cap so very large collections don't slow the editor.
+const MAX_PREVIEW_ITEMS = 5;
 
-	// Which slot is being edited (first by default).
+// ── Active slot — full InnerBlocks editing surface ───────────────────────────
+function LoopItemEdit() {
+	const innerBlocksProps = useInnerBlocksProps(
+		{ className: 'gty-loop-item' },
+		{ templateLock: false }
+	);
+	return <div { ...innerBlocksProps } />;
+}
+
+// ── Inactive slot — read-only preview via hook ───────────────────────────────
+function LoopItemPreview( { blocks, itemIndex, isHidden, setActiveItemIndex } ) {
+	const blockPreviewProps = useBlockPreview( {
+		blocks,
+		props: { className: 'gty-loop-item gty-loop-item--preview' },
+	} );
+
+	function handleClick() {
+		setActiveItemIndex( itemIndex );
+	}
+
+	return (
+		<div
+			{ ...blockPreviewProps }
+			tabIndex={ 0 }
+			role="button"
+			onClick={ handleClick }
+			onKeyPress={ handleClick }
+			style={ { display: isHidden ? 'none' : undefined } }
+		/>
+	);
+}
+
+// Memoised — only re-renders when its own props change, not when another
+// item's active state changes.
+const MemoizedLoopItemPreview = memo( LoopItemPreview );
+
+// ── Main edit ────────────────────────────────────────────────────────────────
+function LoopEdit( { attributes, setAttributes, clientId } ) {
+	const { dataSource } = attributes;
+	const blockProps = useBlockProps( { className: 'gty-loop-editor' } );
+
 	const [ activeItemIndex, setActiveItemIndex ] = useState( 0 );
-	// Clamp when previewCount shrinks.
-	const safeActive = Math.min( activeItemIndex, previewCount - 1 );
+	const [ records, setRecords ] = useState( null ); // null = loading / no source
 
 	// Walk up to gateway/app → gateway/data → gateway/data-source children.
 	const dataSources = useSelect( ( select ) => {
@@ -38,7 +78,49 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 		);
 	}, [ clientId ] );
 
-	// Live inner blocks feed every BlockPreview instance.
+	// Resolve the raw collection key for the chosen dataSource alias/key.
+	const collectionKey = useMemo( () => {
+		const found = dataSources.find(
+			( b ) =>
+				( b.attributes.dataKey || b.attributes.collection ) ===
+				dataSource
+		);
+		return found?.attributes.collection ?? null;
+	}, [ dataSources, dataSource ] );
+
+	// Fetch real records whenever the resolved collection changes.
+	useEffect( () => {
+		if ( ! collectionKey ) {
+			setRecords( null );
+			return;
+		}
+		let cancelled = false;
+		setRecords( null );
+
+		apiFetch( { path: `/gateway/v1/collections/${ collectionKey }` } )
+			.then( ( info ) => {
+				if ( cancelled ) return null;
+				const route = info?.routes?.find(
+					( r ) => r.type === 'get_many' && r.method === 'GET'
+				);
+				if ( ! route ) return null;
+				return apiFetch( { path: route.route } );
+			} )
+			.then( ( data ) => {
+				if ( ! cancelled ) {
+					setRecords( Array.isArray( data ) ? data : [] );
+				}
+			} )
+			.catch( () => {
+				if ( ! cancelled ) setRecords( [] );
+			} );
+
+		return () => {
+			cancelled = true;
+		};
+	}, [ collectionKey ] );
+
+	// Live inner blocks fed to all preview instances.
 	const innerBlocks = useSelect(
 		( select ) => select( 'core/block-editor' ).getBlocks( clientId ),
 		[ clientId ]
@@ -62,6 +144,15 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 		sourceOptions.find( ( o ) => o.value === dataSource )?.label ||
 		dataSource;
 
+	const previewItems = records
+		? records.slice( 0, MAX_PREVIEW_ITEMS )
+		: [];
+	const safeActive = Math.min(
+		activeItemIndex,
+		Math.max( 0, previewItems.length - 1 )
+	);
+	const isLoading = collectionKey && records === null;
+
 	return (
 		<>
 			<InspectorControls>
@@ -72,14 +163,6 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 						options={ sourceOptions }
 						disabled={ ! dataSources.length }
 						onChange={ ( v ) => setAttributes( { dataSource: v } ) }
-					/>
-					<RangeControl
-						label="Preview items"
-						help="Design-time placeholder count. Will reflect real record count once data fetching is wired."
-						value={ previewCount }
-						min={ 1 }
-						max={ 6 }
-						onChange={ ( v ) => setAttributes( { previewCount: v } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -98,52 +181,47 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 					) }
 				</div>
 
-				{ Array.from( { length: previewCount } ).map( ( _, i ) => {
-					const isActive = i === safeActive;
-					return (
-						<div
-							key={ i }
-							role={ isActive ? undefined : 'button' }
-							tabIndex={ isActive ? undefined : -1 }
-							className={
-								'gty-loop-editor__item' +
-								( isActive ? ' is-active' : ' is-preview' )
-							}
-							onClick={
-								isActive
-									? undefined
-									: ( e ) => {
-											e.stopPropagation();
-											setActiveItemIndex( i );
-											selectBlock( clientId );
-									  }
-							}
-						>
-							{ /*
-							 * Keep BlockPreview mounted for all slots so the
-							 * iframe stays cached (Query Loop pattern). Hide it
-							 * for the active slot and show InnerBlocks instead.
-							 * BlockPreview disables its own pointer-events, so
-							 * the outer div's onClick fires without any overlay.
-							 */ }
-							{ innerBlocks.length > 0 && (
-								<div
-									className="gty-loop-editor__preview-wrap"
-									hidden={ isActive }
-								>
-									<BlockPreview
-										blocks={ innerBlocks }
-										viewportWidth={ 320 }
-									/>
-								</div>
-							) }
+				{ isLoading && (
+					<div className="gty-loop-editor__status">
+						<Spinner />
+					</div>
+				) }
 
-							{ isActive && (
-								<InnerBlocks templateLock={ false } />
-							) }
+				{ ! isLoading && collectionKey && records?.length === 0 && (
+					<div className="gty-loop-editor__status">
+						No records found in this collection.
+					</div>
+				) }
+
+				{ ! isLoading &&
+					previewItems.map( ( record, i ) => {
+						const isActive = i === safeActive;
+						return (
+							<BlockContextProvider
+								key={ record.id ?? i }
+								value={ {
+									loopIndex: i,
+									recordId: record.id,
+								} }
+							>
+								{ isActive && <LoopItemEdit /> }
+								<MemoizedLoopItemPreview
+									blocks={ innerBlocks }
+									itemIndex={ i }
+									isHidden={ isActive }
+									setActiveItemIndex={ setActiveItemIndex }
+								/>
+							</BlockContextProvider>
+						);
+					} ) }
+
+				{ records !== null &&
+					records.length > MAX_PREVIEW_ITEMS && (
+						<div className="gty-loop-editor__more">
+							+{ records.length - MAX_PREVIEW_ITEMS } more
+							records
 						</div>
-					);
-				} ) }
+					) }
 			</div>
 		</>
 	);

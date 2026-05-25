@@ -62,10 +62,24 @@
 }
 
 .gty-loop-editor__preview-wrap {
-	/* hidden attr collapses it; this ensures no residual space */
 	display: contents;
 }
 
 .gty-loop-editor__preview-wrap[hidden] {
 	display: none;
+}
+
+/* Status messages (loading / empty) and overflow count */
+.gty-loop-editor__status {
+	padding: 10px 12px;
+	font-size: 11px;
+	color: #4a6a90;
+}
+
+.gty-loop-editor__more {
+	padding: 6px 12px;
+	font-size: 10px;
+	color: #3a5070;
+	border-top: 1px dashed #1e3255;
+	text-align: center;
 }

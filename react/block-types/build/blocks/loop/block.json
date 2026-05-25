@@ -6,16 +6,12 @@
   "title": "Gateway Loop",
   "category": "gateway",
   "icon": "controls-repeat",
-  "description": "Repeats a block template over every record from a data source. Edit the first item — all others mirror it.",
+  "description": "Repeats a block template over every record from a data source. Click any item to edit the shared template.",
   "textdomain": "gateway",
   "attributes": {
     "dataSource": {
       "type": "string",
       "default": ""
-    },
-    "previewCount": {
-      "type": "number",
-      "default": 3
     }
   },
   "supports": {
