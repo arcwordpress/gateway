@@ -31,7 +31,7 @@ function RouteEdit( { attributes, setAttributes } ) {
 					<code className="gty-route-editor__path">{ path }</code>
 					<span className="gty-route-editor__label">{ label }</span>
 				</div>
-				<InnerBlocks />
+				<InnerBlocks templateLock={ false } />
 			</div>
 		</>
 	);

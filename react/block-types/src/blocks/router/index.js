@@ -102,6 +102,7 @@ function RouterEdit( { attributes, setAttributes, clientId } ) {
 				<InnerBlocks
 					allowedBlocks={ ALLOWED_BLOCKS }
 					template={ TEMPLATE }
+					templateLock={ false }
 					renderAppender={ false }
 				/>
 			</div>
