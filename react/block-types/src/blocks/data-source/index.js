@@ -4,6 +4,7 @@ import { PanelBody, SelectControl, TextControl, Spinner } from '@wordpress/compo
 import { useEffect, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import metadata from './block.json';
+import './editor.css';
 
 function DataSourceEdit( { attributes, setAttributes } ) {
 	const { collection, dataKey } = attributes;

@@ -4,6 +4,7 @@ import { PanelBody, TextControl, ToggleControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import metadata from './block.json';
+import './editor.css';
 
 const ALLOWED_BLOCKS = [ 'gateway/route' ];
 

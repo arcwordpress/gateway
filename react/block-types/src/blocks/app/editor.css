@@ -1,0 +1,39 @@
+/* ── Gateway App editor shell ──────────────────────────────────────── */
+.gty-app-editor {
+	background: #111317;
+	border: 1.5px solid #2b2e38;
+	border-radius: 8px;
+	padding: 10px 12px 14px;
+	color: #c8cbd2;
+}
+
+.gty-app-editor__header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.gty-app-editor__badge {
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #555a66;
+}
+
+.gty-app-editor__warning {
+	font-size: 10px;
+	color: #f59e0b;
+}
+
+/* Stack data + router with a gap; reset WP margin on inner block wrappers */
+.gty-app-editor .block-editor-block-list__layout {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.gty-app-editor .block-editor-block-list__layout > .wp-block {
+	margin: 0 !important;
+}

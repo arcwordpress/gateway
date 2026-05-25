@@ -2,6 +2,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, TextControl } from '@wordpress/components';
 import metadata from './block.json';
+import './editor.css';
 
 function RouteEdit( { attributes, setAttributes } ) {
 	const { path, label } = attributes;

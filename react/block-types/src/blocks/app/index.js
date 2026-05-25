@@ -2,6 +2,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import metadata from './block.json';
+import './editor.css';
 
 const ALLOWED_BLOCKS = [ 'gateway/data', 'gateway/router' ];
 
