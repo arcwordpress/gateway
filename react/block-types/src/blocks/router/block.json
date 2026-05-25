@@ -18,6 +18,7 @@
 			"default": true
 		}
 	},
+	"parent": [ "gateway/app" ],
 	"supports": {
 		"html": false,
 		"color": false

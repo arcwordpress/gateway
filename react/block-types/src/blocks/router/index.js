@@ -1,7 +1,8 @@
-import { registerBlockType } from '@wordpress/blocks';
+import { registerBlockType, createBlock } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, TextControl, ToggleControl } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { useState } from '@wordpress/element';
 import metadata from './block.json';
 
 const ALLOWED_BLOCKS = [ 'gateway/route' ];
@@ -13,15 +14,36 @@ const TEMPLATE = [
 
 function RouterEdit( { attributes, setAttributes, clientId } ) {
 	const { defaultPath, showNav } = attributes;
+	const [ activeIndex, setActiveIndex ] = useState( 0 );
 
-	const routePaths = useSelect(
+	const { insertBlock } = useDispatch( 'core/block-editor' );
+
+	const routeBlocks = useSelect(
 		( select ) =>
 			select( 'core/block-editor' )
 				.getBlocks( clientId )
-				.filter( ( b ) => b.name === 'gateway/route' )
-				.map( ( b ) => b.attributes.path ),
+				.filter( ( b ) => b.name === 'gateway/route' ),
 		[ clientId ]
 	);
+
+	// Keep activeIndex in bounds when routes are removed.
+	const safeIndex = Math.min( activeIndex, Math.max( 0, routeBlocks.length - 1 ) );
+
+	// Inject CSS into the editor canvas to hide every route except the active one.
+	// Each block's wrapper has data-block="<clientId>" which we target directly.
+	const hideCSS = routeBlocks
+		.filter( ( _, i ) => i !== safeIndex )
+		.map( ( b ) => `[data-block="${ b.clientId }"] { display: none !important; }` )
+		.join( '\n' );
+
+	function addRoute() {
+		const newBlock = createBlock( 'gateway/route', {
+			path: `/route-${ routeBlocks.length + 1 }`,
+			label: `Route ${ routeBlocks.length + 1 }`,
+		} );
+		insertBlock( newBlock, routeBlocks.length, clientId );
+		setActiveIndex( routeBlocks.length );
+	}
 
 	const blockProps = useBlockProps( { className: 'gty-router-editor' } );
 
@@ -37,25 +59,50 @@ function RouterEdit( { attributes, setAttributes, clientId } ) {
 					/>
 					<ToggleControl
 						label="Show Navigation"
-						help="Auto-render a nav bar from Route labels on the front end."
+						help="Auto-render a nav bar on the front end."
 						checked={ showNav }
 						onChange={ ( v ) => setAttributes( { showNav: v } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
 
+			{ /* Scoped style hides inactive route blocks in the editor canvas */ }
+			{ hideCSS && (
+				// eslint-disable-next-line react/no-danger
+				<style dangerouslySetInnerHTML={ { __html: hideCSS } } />
+			) }
+
 			<div { ...blockProps }>
-				<div className="gty-router-editor__header">
-					<span className="gty-router-editor__badge">⬡ Gateway Router</span>
-					{ routePaths.length > 0 && (
-						<span className="gty-router-editor__paths">
-							{ routePaths.join( ' · ' ) }
-						</span>
-					) }
+				<div className="gty-router-editor__tabs">
+					{ routeBlocks.map( ( block, i ) => (
+						<button
+							key={ block.clientId }
+							type="button"
+							className={
+								'gty-router-editor__tab' +
+								( i === safeIndex ? ' is-active' : '' )
+							}
+							onClick={ () => setActiveIndex( i ) }
+						>
+							{ block.attributes.label }
+							<span className="gty-router-editor__tab-path">
+								{ block.attributes.path }
+							</span>
+						</button>
+					) ) }
+					<button
+						type="button"
+						className="gty-router-editor__tab-add"
+						onClick={ addRoute }
+					>
+						+ Route
+					</button>
 				</div>
+
 				<InnerBlocks
 					allowedBlocks={ ALLOWED_BLOCKS }
 					template={ TEMPLATE }
+					renderAppender={ false }
 				/>
 			</div>
 		</>
