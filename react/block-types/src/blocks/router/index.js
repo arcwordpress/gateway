@@ -2,7 +2,7 @@ import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps, InnerBlocks, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, TextControl, ToggleControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import metadata from './block.json';
 import './editor.css';
 
@@ -24,6 +24,28 @@ function RouterEdit( { attributes, setAttributes, clientId } ) {
 				.filter( ( b ) => b.name === 'gateway/route' ),
 		[ clientId ]
 	);
+
+	// When the selected block is a route (or inside one), activate that tab.
+	const selectedRouteClientId = useSelect( ( select ) => {
+		const { getSelectedBlockClientId, getBlockParents, getBlock } =
+			select( 'core/block-editor' );
+		const selectedId = getSelectedBlockClientId();
+		if ( ! selectedId ) return null;
+		if ( getBlock( selectedId )?.name === 'gateway/route' ) return selectedId;
+		const ancestors = getBlockParents( selectedId );
+		for ( const id of [ ...ancestors ].reverse() ) {
+			if ( getBlock( id )?.name === 'gateway/route' ) return id;
+		}
+		return null;
+	} );
+
+	useEffect( () => {
+		if ( ! selectedRouteClientId ) return;
+		const idx = routeBlocks.findIndex(
+			( b ) => b.clientId === selectedRouteClientId
+		);
+		if ( idx >= 0 ) setActiveIndex( idx );
+	}, [ selectedRouteClientId ] );
 
 	// Keep activeIndex in bounds when routes are removed.
 	const safeIndex = Math.min( activeIndex, Math.max( 0, routeBlocks.length - 1 ) );

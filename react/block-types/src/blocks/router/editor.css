@@ -1,17 +1,9 @@
-/* ── Gateway Router editor ──────────────────────────────────────────── */
-.gty-router-editor {
-	background: #0f0f1c;
-	border-radius: 6px;
-	overflow: hidden;
-	color: #c0c0d8;
-}
-
+/* ── Gateway Router tab bar ─────────────────────────────────────────── */
 .gty-router-editor__tabs {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 3px;
 	padding: 8px 8px 0;
-	background: #0a0a14;
 	border-bottom: 1px solid #1c1c2e;
 }
 
@@ -30,7 +22,7 @@
 }
 
 .gty-router-editor__tab.is-active {
-	background: #0f0f1c;
+	background: transparent;
 	border-color: #1c1c2e;
 	color: #d8d8f0;
 }
@@ -38,13 +30,4 @@
 .gty-router-editor__tab:hover:not( .is-active ) {
 	background: #20203a;
 	color: #a0a0c0;
-}
-
-/* Route content area */
-.gty-router-editor > .block-editor-inner-blocks {
-	padding: 12px;
-}
-
-.gty-router-editor > .block-editor-inner-blocks > .block-editor-block-list__layout > .wp-block {
-	margin: 0 !important;
 }
