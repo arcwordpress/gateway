@@ -1,43 +1,29 @@
 import { registerBlockType } from '@wordpress/blocks';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, TextControl, Notice } from '@wordpress/components';
+import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import metadata from './block.json';
 
-function DataEdit( { attributes, setAttributes } ) {
-	const { collection } = attributes;
+const ALLOWED_BLOCKS = [ 'gateway/data-source' ];
+const TEMPLATE = [ [ 'gateway/data-source', {} ] ];
+
+function DataEdit() {
 	const blockProps = useBlockProps( { className: 'gty-data-editor' } );
 
 	return (
-		<>
-			<InspectorControls>
-				<PanelBody title="Data Source">
-					<TextControl
-						label="Collection Key"
-						help="Enter the Gateway collection key to load. Full configuration coming soon."
-						value={ collection }
-						onChange={ ( v ) => setAttributes( { collection: v } ) }
-					/>
-				</PanelBody>
-			</InspectorControls>
-
-			<div { ...blockProps }>
-				<div className="gty-data-editor__header">
-					<span className="gty-data-editor__badge">⬡ Gateway Data</span>
-					<span className="gty-data-editor__collection">
-						{ collection ? collection : 'No collection selected' }
-					</span>
-				</div>
-				<div className="gty-data-editor__notice">
-					Full data source configuration coming soon.
-				</div>
+		<div { ...blockProps }>
+			<div className="gty-data-editor__header">
+				<span className="gty-data-editor__badge">⬡ Gateway Data</span>
 			</div>
-		</>
+			<InnerBlocks
+				allowedBlocks={ ALLOWED_BLOCKS }
+				template={ TEMPLATE }
+				templateLock={ false }
+			/>
+		</div>
 	);
 }
 
-// Dynamic block rendered by PHP — no saved markup needed.
 function DataSave() {
-	return null;
+	return <InnerBlocks.Content />;
 }
 
 registerBlockType( metadata.name, {

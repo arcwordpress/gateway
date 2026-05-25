@@ -2,11 +2,11 @@
 
 namespace Gateway\Integrations\Gutenberg;
 
-class DataBlock
+class DataSourceBlock
 {
     public function render( array $attrs, string $content, $block ): string
     {
-        // Data container — no HTML output; inner data-source blocks also return ''.
+        // Data-only block — consumed by JS runtime, no HTML output.
         return '';
     }
 }
