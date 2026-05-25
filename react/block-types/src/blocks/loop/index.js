@@ -6,7 +6,7 @@ import {
 	InspectorControls,
 } from '@wordpress/block-editor';
 import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import metadata from './block.json';
 import './editor.css';
@@ -14,6 +14,7 @@ import './editor.css';
 function LoopEdit( { attributes, setAttributes, clientId } ) {
 	const { dataSource, previewCount } = attributes;
 	const blockProps = useBlockProps( { className: 'gty-loop-editor' } );
+	const { selectBlock } = useDispatch( 'core/block-editor' );
 
 	// Which slot is being edited (first by default).
 	const [ activeItemIndex, setActiveItemIndex ] = useState( 0 );
@@ -74,7 +75,7 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 					/>
 					<RangeControl
 						label="Preview items"
-						help="Number of loop items shown in the editor."
+						help="Design-time placeholder count. Will reflect real record count once data fetching is wired."
 						value={ previewCount }
 						min={ 1 }
 						max={ 6 }
@@ -111,7 +112,11 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 							onClick={
 								isActive
 									? undefined
-									: () => setActiveItemIndex( i )
+									: ( e ) => {
+											e.stopPropagation();
+											setActiveItemIndex( i );
+											selectBlock( clientId );
+									  }
 							}
 						>
 							{ /*
@@ -128,7 +133,7 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 								>
 									<BlockPreview
 										blocks={ innerBlocks }
-										viewportWidth={ 800 }
+										viewportWidth={ 320 }
 									/>
 								</div>
 							) }
