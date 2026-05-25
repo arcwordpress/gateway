@@ -36,35 +36,36 @@
 	font-style: italic;
 }
 
-/* ── Template item (editable) ───────────────────────────────────────── */
-.gty-loop-editor__item--template {
-	position: relative;
-}
-
-.gty-loop-editor__item--template::after {
-	content: 'template';
-	position: absolute;
-	top: 6px;
-	right: 8px;
-	font-size: 8px;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: #2a4a70;
-	pointer-events: none;
-	z-index: 1;
-}
-
-/* ── Ghost preview items ────────────────────────────────────────────── */
-.gty-loop-editor__item--preview {
-	position: relative;
-	opacity: 0.35;
+/* ── Loop items ─────────────────────────────────────────────────────── */
+.gty-loop-editor__item {
 	border-top: 1px dashed #1e3255;
+}
+
+.gty-loop-editor__item:first-of-type {
+	border-top: none;
+}
+
+/* Active item: full opacity, not clickable */
+.gty-loop-editor__item.is-active {
+	opacity: 1;
+}
+
+/* Ghost items: dimmed, pointer cursor signals clickability */
+.gty-loop-editor__item.is-preview {
+	opacity: 0.35;
 	cursor: pointer;
 	transition: opacity 0.15s;
 }
 
-.gty-loop-editor__item--preview:hover {
+.gty-loop-editor__item.is-preview:hover {
 	opacity: 0.6;
 }
 
+.gty-loop-editor__preview-wrap {
+	/* hidden attr collapses it; this ensures no residual space */
+	display: contents;
+}
+
+.gty-loop-editor__preview-wrap[hidden] {
+	display: none;
+}

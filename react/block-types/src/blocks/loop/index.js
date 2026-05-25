@@ -6,16 +6,21 @@ import {
 	InspectorControls,
 } from '@wordpress/block-editor';
 import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
+import { useState } from '@wordpress/element';
 import metadata from './block.json';
 import './editor.css';
 
 function LoopEdit( { attributes, setAttributes, clientId } ) {
 	const { dataSource, previewCount } = attributes;
 	const blockProps = useBlockProps( { className: 'gty-loop-editor' } );
-	const { selectBlock } = useDispatch( 'core/block-editor' );
 
-	// Walk up to gateway/app, then find gateway/data > gateway/data-source children.
+	// Which slot is being edited (first by default).
+	const [ activeItemIndex, setActiveItemIndex ] = useState( 0 );
+	// Clamp when previewCount shrinks.
+	const safeActive = Math.min( activeItemIndex, previewCount - 1 );
+
+	// Walk up to gateway/app → gateway/data → gateway/data-source children.
 	const dataSources = useSelect( ( select ) => {
 		const { getBlockParents, getBlock, getBlocks } =
 			select( 'core/block-editor' );
@@ -32,7 +37,7 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 		);
 	}, [ clientId ] );
 
-	// Live inner blocks feed the ghost BlockPreview instances.
+	// Live inner blocks feed every BlockPreview instance.
 	const innerBlocks = useSelect(
 		( select ) => select( 'core/block-editor' ).getBlocks( clientId ),
 		[ clientId ]
@@ -42,7 +47,8 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 		? [
 				{ label: '— pick a source —', value: '' },
 				...dataSources.map( ( b ) => {
-					const key = b.attributes.dataKey || b.attributes.collection;
+					const key =
+						b.attributes.dataKey || b.attributes.collection;
 					const label = b.attributes.dataKey
 						? `${ b.attributes.collection } as ${ b.attributes.dataKey }`
 						: b.attributes.collection || 'Unnamed source';
@@ -52,7 +58,8 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 		: [ { label: 'No data sources defined', value: '' } ];
 
 	const selectedLabel =
-		sourceOptions.find( ( o ) => o.value === dataSource )?.label || dataSource;
+		sourceOptions.find( ( o ) => o.value === dataSource )?.label ||
+		dataSource;
 
 	return (
 		<>
@@ -67,7 +74,7 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 					/>
 					<RangeControl
 						label="Preview items"
-						help="Ghost copies shown below the editable template."
+						help="Number of loop items shown in the editor."
 						value={ previewCount }
 						min={ 1 }
 						max={ 6 }
@@ -80,7 +87,9 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 				<div className="gty-loop-editor__header">
 					<span className="gty-loop-editor__badge">⟳ Loop</span>
 					{ dataSource ? (
-						<span className="gty-loop-editor__source">{ selectedLabel }</span>
+						<span className="gty-loop-editor__source">
+							{ selectedLabel }
+						</span>
 					) : (
 						<span className="gty-loop-editor__no-source">
 							select a data source →
@@ -88,35 +97,48 @@ function LoopEdit( { attributes, setAttributes, clientId } ) {
 					) }
 				</div>
 
-				{ /* Item 1 — the editable template */ }
-				<div className="gty-loop-editor__item gty-loop-editor__item--template">
-					<InnerBlocks templateLock={ false } />
-				</div>
-
-				{ /* Items 2‥N — read-only ghost copies of the template.
-				     BlockPreview renders inside an iframe so clicks don't
-				     bubble; additionalStyles kills pointer-events on the iframe
-				     content so the outer div's onClick receives them. */ }
-				{ innerBlocks.length > 0 &&
-					previewCount > 1 &&
-					Array.from( { length: previewCount - 1 } ).map( ( _, i ) => (
+				{ Array.from( { length: previewCount } ).map( ( _, i ) => {
+					const isActive = i === safeActive;
+					return (
 						<div
 							key={ i }
-							className="gty-loop-editor__item gty-loop-editor__item--preview"
-							onClick={ () => selectBlock( clientId ) }
-							role="button"
-							tabIndex={ -1 }
-							aria-label="Edit template"
+							role={ isActive ? undefined : 'button' }
+							tabIndex={ isActive ? undefined : -1 }
+							className={
+								'gty-loop-editor__item' +
+								( isActive ? ' is-active' : ' is-preview' )
+							}
+							onClick={
+								isActive
+									? undefined
+									: () => setActiveItemIndex( i )
+							}
 						>
-							<BlockPreview
-								blocks={ innerBlocks }
-								viewportWidth={ 800 }
-								additionalStyles={ [
-									{ css: '* { pointer-events: none !important; }' },
-								] }
-							/>
+							{ /*
+							 * Keep BlockPreview mounted for all slots so the
+							 * iframe stays cached (Query Loop pattern). Hide it
+							 * for the active slot and show InnerBlocks instead.
+							 * BlockPreview disables its own pointer-events, so
+							 * the outer div's onClick fires without any overlay.
+							 */ }
+							{ innerBlocks.length > 0 && (
+								<div
+									className="gty-loop-editor__preview-wrap"
+									hidden={ isActive }
+								>
+									<BlockPreview
+										blocks={ innerBlocks }
+										viewportWidth={ 800 }
+									/>
+								</div>
+							) }
+
+							{ isActive && (
+								<InnerBlocks templateLock={ false } />
+							) }
 						</div>
-					) ) }
+					);
+				} ) }
 			</div>
 		</>
 	);
