@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "gateway/data",
+  "version": "0.1.0",
+  "title": "Gateway Data",
+  "category": "gateway",
+  "icon": "database",
+  "description": "Data source for a Gateway App. Select a collection to load records into the app.",
+  "textdomain": "gateway",
+  "parent": [
+    "gateway/app"
+  ],
+  "attributes": {
+    "collection": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false
+  },
+  "editorScript": "file:./index.js"
+}

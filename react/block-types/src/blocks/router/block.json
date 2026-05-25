@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/router",
+	"version": "0.1.0",
+	"title": "Gateway Router",
+	"category": "gateway",
+	"icon": "networking",
+	"description": "Hash-based client-side router. Add Route blocks inside to control which content shows based on the URL hash.",
+	"textdomain": "gateway",
+	"attributes": {
+		"defaultPath": {
+			"type": "string",
+			"default": "/"
+		},
+		"showNav": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"parent": [ "gateway/app" ],
+	"supports": {
+		"html": false,
+		"color": false
+	},
+	"editorScript": "file:./index.js",
+	"viewScript": "file:./view.js"
+}

@@ -1,0 +1,15 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/app",
+	"version": "0.1.0",
+	"title": "Gateway App",
+	"category": "gateway",
+	"icon": "layout",
+	"description": "Top-level Gateway application container. Holds one Data source and one Router.",
+	"textdomain": "gateway",
+	"supports": {
+		"html": false
+	},
+	"editorScript": "file:./index.js"
+}

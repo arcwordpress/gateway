@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/data",
+	"version": "0.1.0",
+	"title": "Gateway Data",
+	"category": "gateway",
+	"icon": "database",
+	"description": "Container for one or more data sources loaded into a Gateway App.",
+	"textdomain": "gateway",
+	"parent": [ "gateway/app" ],
+	"supports": {
+		"html": false,
+		"reusable": false
+	},
+	"editorScript": "file:./index.js"
+}

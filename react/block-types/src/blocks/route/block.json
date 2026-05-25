@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "gateway/route",
+	"version": "0.1.0",
+	"title": "Gateway Route",
+	"category": "gateway",
+	"icon": "admin-links",
+	"description": "A route panel shown when the URL hash matches its path. Must be placed inside a Gateway Router block.",
+	"textdomain": "gateway",
+	"parent": [ "gateway/router" ],
+	"attributes": {
+		"path": {
+			"type": "string",
+			"default": "/"
+		},
+		"label": {
+			"type": "string",
+			"default": "Route"
+		}
+	},
+	"supports": {
+		"html": false,
+		"reusable": false
+	},
+	"editorScript": "file:./index.js"
+}
