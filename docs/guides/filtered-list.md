@@ -1,6 +1,119 @@
 # Building a Custom Filtered List
 
-A minimal, code-only pattern for rendering a table of Gateway collection records with facet filters — without using the black-box `Grid` component.
+This guide covers everything from registering the WordPress route through to rendering a filtered table of Gateway collection records. It assumes your collection is already set up and working in Gateway.
+
+---
+
+## 1. Register the route
+
+`ReactAppController` handles the WordPress wiring — rewrite rules, template override, and asset enqueuing — in one call. Put this wherever your extension bootstraps (e.g. after `gateway_loaded`):
+
+```php
+\Gateway\Apps\ReactAppController::register([
+    'basePath'     => 'hats',
+    'buildDir'     => plugin_dir_path(__FILE__) . 'apps/front/build/',
+    'buildUrl'     => plugin_dir_url(__FILE__)  . 'apps/front/build/',
+    'templateFile' => plugin_dir_path(__FILE__) . 'templates/app-shell.php',
+    'localizeKey'  => 'hatsConfig',
+    'localizeData' => fn() => [
+        'apiUrl' => rest_url(),
+        'nonce'  => wp_create_nonce('wp_rest'),
+    ],
+]);
+```
+
+`basePath` is the URL slug — visiting `yoursite.com/hats` (or any sub-path under it) will load your template and enqueue your build. No WP page needs to exist in the database.
+
+After registering for the first time, flush rewrite rules once — either by visiting Settings → Permalinks or calling `flush_rewrite_rules()` in your activation hook.
+
+---
+
+## 2. Create the app shell template
+
+`templateFile` points to a plain PHP file. All it needs is a div for React to mount into:
+
+```php
+<?php
+// templates/app-shell.php
+get_header(); ?>
+
+<div id="hats-app"></div>
+
+<?php get_footer();
+```
+
+---
+
+## 3. Vite config
+
+`ReactAppController` looks for `build/index.js` and `build/index.css` by name (it uses `filemtime()` for cache-busting, so no manifest is needed). Tell Vite to output predictable filenames:
+
+```js
+// apps/front/vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: 'src/main.jsx',
+      output: {
+        entryFileNames: 'index.js',
+        assetFileNames: 'index.[ext]',
+      },
+    },
+  },
+})
+```
+
+Build output goes to `apps/front/build/` (Vite's default `outDir`). Adjust `build.outDir` if you want it elsewhere — keep it in sync with `buildDir`/`buildUrl`.
+
+---
+
+## 4. React entry point
+
+Read the config WordPress injected and configure the API client before rendering:
+
+```jsx
+// src/main.jsx
+import { createRoot } from 'react-dom/client'
+import { getApiClient } from '@arcwp/gateway-data'
+import App from './App'
+
+const config = window.hatsConfig ?? {}
+
+const client = getApiClient()
+client.defaults.baseURL  = config.apiUrl ?? '/wp-json/'
+client.defaults.headers.common['X-WP-Nonce'] = config.nonce ?? ''
+
+const root = document.getElementById('hats-app')
+if (root) {
+  createRoot(root).render(<App />)
+}
+```
+
+From here, `CollectionProvider` and `collectionApi` will automatically send the nonce header on every request. No further auth configuration is needed in your components.
+
+---
+
+## 5. The React app
+
+With the foundation in place, the rest is the filtered list pattern described below. Your `App` component is just:
+
+```jsx
+// src/App.jsx
+import { CollectionProvider } from '@arcwp/gateway-data'
+import FilteredList from './FilteredList'
+
+export default function App() {
+  return (
+    <CollectionProvider collectionKey="hats">
+      <FilteredList />
+    </CollectionProvider>
+  )
+}
+```
 
 ---
 
@@ -10,6 +123,17 @@ A minimal, code-only pattern for rendering a table of Gateway collection records
 |---|---|
 | `@arcwp/gateway-data` | Fetch collection metadata and records |
 | `@arcwp/gateway-grids` | Table view, filter panel, column generation, filter logic |
+
+Both are local workspace packages in `react/packages/`. Wire them in as workspace dependencies in your `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@arcwp/gateway-data":  "*",
+    "@arcwp/gateway-grids": "*"
+  }
+}
+```
 
 ---
 
@@ -21,10 +145,10 @@ If your collection has `grid.facets` defined on the backend, the filter panel dr
 
 ```jsx
 import { useState, useMemo } from 'react'
-import { CollectionProvider, useCollectionInfo, useCollectionRecords } from '@arcwp/gateway-data'
+import { useCollectionInfo, useCollectionRecords } from '@arcwp/gateway-data'
 import { GridLayout, TableView, generateColumns, applyFilters } from '@arcwp/gateway-grids'
 
-function FilteredList() {
+export default function FilteredList() {
   const { collection, collectionLoading } = useCollectionInfo()
   const { records, recordsLoading }       = useCollectionRecords()
   const [filterValues, setFilterValues]   = useState({})
@@ -48,14 +172,6 @@ function FilteredList() {
     </div>
   )
 }
-
-export default function MyPage() {
-  return (
-    <CollectionProvider collectionKey="tickets">
-      <FilteredList />
-    </CollectionProvider>
-  )
-}
 ```
 
 `GridLayout.Facets` calls `setFilterValues` with a functional update internally, so passing the setter directly is all that is needed. Resetting all filters is `setFilterValues({})`.
@@ -71,7 +187,7 @@ export default function MyPage() {
   data={filtered}
   columns={columns}
   loading={false}
-  onRowClick={(record) => navigate(`/tickets/${record.id}`)}
+  onRowClick={(record) => window.location.href = `/hats/${record.id}`}
 />
 ```
 
@@ -108,14 +224,19 @@ const filtered = applyFilters(records, facets, filterValues)
 ## How the pieces connect
 
 ```
-CollectionProvider
-  ├─ metadata  →  collection.grid.facets  →  GridLayout.Facets  ─┐
-  │                                                               │ filterValues state
-  │               applyFilters(records, facets, filterValues)  ←─┘
-  └─ records   →─────────────────────────────────────────────→  filtered[]
-                                                                      │
-                   generateColumns(collection)  →  columns[]          │
-                                                       └──→  <TableView data columns>
+ReactAppController::register(['basePath' => 'hats', ...])
+  └─ rewrite rule          →  yoursite.com/hats  matches
+  └─ template_include      →  templates/app-shell.php  →  <div id="hats-app">
+  └─ wp_enqueue_scripts    →  build/index.js + build/index.css
+  └─ wp_localize_script    →  window.hatsConfig { apiUrl, nonce }
+                                        │
+                               main.jsx reads config, sets axios headers
+                                        │
+                               CollectionProvider (collectionKey="hats")
+                                 ├─ metadata  →  facets  →  GridLayout.Facets  ─┐
+                                 │                                               │ filterValues
+                                 └─ records   →  applyFilters  →  filtered[]    │
+                                                                        └──→  <TableView>
 ```
 
 ---
@@ -125,7 +246,7 @@ CollectionProvider
 ```js
 import { collectionApi } from '@arcwp/gateway-data'
 
-const meta    = await collectionApi.fetchCollection('tickets')
+const meta    = await collectionApi.fetchCollection('hats')
 const route   = meta.routes.find(r => r.type === 'get_many')
 const result  = await collectionApi.fetchRecords(route.namespace, route.path)
 const records = result.data.items
