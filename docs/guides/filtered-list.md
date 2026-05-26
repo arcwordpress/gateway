@@ -4,47 +4,7 @@ This guide covers everything from registering the WordPress route through to ren
 
 ---
 
-## 1. Register the route
-
-`ReactAppController` handles the WordPress wiring — rewrite rules, template override, and asset enqueuing — in one call. Put this wherever your extension bootstraps (e.g. after `gateway_loaded`):
-
-```php
-\Gateway\Apps\ReactAppController::register([
-    'basePath'     => 'hats',
-    'buildDir'     => plugin_dir_path(__FILE__) . 'apps/front/build/',
-    'buildUrl'     => plugin_dir_url(__FILE__)  . 'apps/front/build/',
-    'templateFile' => plugin_dir_path(__FILE__) . 'templates/app-shell.php',
-    'localizeKey'  => 'hatsConfig',
-    'localizeData' => fn() => [
-        'apiUrl' => rest_url(),
-        'nonce'  => wp_create_nonce('wp_rest'),
-    ],
-]);
-```
-
-`basePath` is the URL slug — visiting `yoursite.com/hats` (or any sub-path under it) will load your template and enqueue your build. No WP page needs to exist in the database.
-
-After registering for the first time, flush rewrite rules once — either by visiting Settings → Permalinks or calling `flush_rewrite_rules()` in your activation hook.
-
----
-
-## 2. Create the app shell template
-
-`templateFile` points to a plain PHP file. All it needs is a div for React to mount into:
-
-```php
-<?php
-// templates/app-shell.php
-get_header(); ?>
-
-<div id="hats-app"></div>
-
-<?php get_footer();
-```
-
----
-
-## 3. Scaffold the Vite app
+## 1. Scaffold the Vite app
 
 From your extension root, create the app inside `apps/`:
 
@@ -58,7 +18,7 @@ npm install
 
 This creates `apps/front/` with a standard Vite + React project. The `--template react` flag sets up JSX; use `react-ts` if you prefer TypeScript.
 
-Then add the Gateway packages as workspace dependencies in `apps/front/package.json`:
+Add the Gateway packages as workspace dependencies in `apps/front/package.json`:
 
 ```json
 {
@@ -73,9 +33,9 @@ These are workspace packages inside the Gateway monorepo (`react/packages/`). Fo
 
 ---
 
-## 4. Vite config
+## 2. Vite config
 
-`ReactAppController` looks for `build/index.js` and `build/index.css` by name (it uses `filemtime()` for cache-busting, so no manifest is needed). Tell Vite to output predictable filenames:
+`ReactAppController` looks for `build/index.js` and `build/index.css` by name (it uses `filemtime()` for cache-busting, so no manifest is needed). Replace the default `vite.config.js` to output predictable filenames:
 
 ```js
 // apps/front/vite.config.js
@@ -96,13 +56,13 @@ export default defineConfig({
 })
 ```
 
-Build output goes to `apps/front/build/` (Vite's default `outDir`). Adjust `build.outDir` if you want it elsewhere — keep it in sync with `buildDir`/`buildUrl`.
+Build output goes to `apps/front/build/` (Vite's default `outDir`). Adjust `build.outDir` if you want it elsewhere — keep it in sync with `buildDir`/`buildUrl` in the PHP registration below.
 
 ---
 
-## 5. React entry point
+## 3. React entry point
 
-Read the config WordPress injected and configure the API client before rendering:
+Replace the generated `src/main.jsx` to read the WordPress-injected config and configure the API client before rendering:
 
 ```jsx
 // src/main.jsx
@@ -126,9 +86,9 @@ From here, `CollectionProvider` and `collectionApi` will automatically send the 
 
 ---
 
-## 6. The React app
+## 4. The React app
 
-With the foundation in place, the rest is the filtered list pattern described below. Your `App` component is just:
+Create `src/App.jsx`:
 
 ```jsx
 // src/App.jsx
@@ -144,6 +104,57 @@ export default function App() {
 }
 ```
 
+The `FilteredList` component is covered in the sections below. Once you have a basic version in place, run the build:
+
+```bash
+# from apps/front/
+npm run build
+```
+
+Verify `apps/front/build/index.js` exists before wiring up WordPress.
+
+---
+
+## 5. Register the route
+
+With a working build in place, wire it into WordPress. `ReactAppController` handles rewrite rules, template override, and asset enqueuing — in one call. Put this wherever your extension bootstraps (e.g. after `gateway_loaded`):
+
+```php
+\Gateway\Apps\ReactAppController::register([
+    'basePath'     => 'hats',
+    'buildDir'     => plugin_dir_path(__FILE__) . 'apps/front/build/',
+    'buildUrl'     => plugin_dir_url(__FILE__)  . 'apps/front/build/',
+    'templateFile' => plugin_dir_path(__FILE__) . 'templates/app-shell.php',
+    'localizeKey'  => 'hatsConfig',
+    'localizeData' => fn() => [
+        'apiUrl' => rest_url(),
+        'nonce'  => wp_create_nonce('wp_rest'),
+    ],
+]);
+```
+
+`basePath` is the URL slug — visiting `yoursite.com/hats` (or any sub-path under it) will load your template and enqueue your build. No WP page needs to exist in the database.
+
+After registering for the first time, flush rewrite rules once — either by visiting Settings → Permalinks or calling `flush_rewrite_rules()` in your activation hook.
+
+---
+
+## 6. Create the app shell template
+
+`templateFile` points to a plain PHP file. All it needs is the mount div wrapped in the theme shell:
+
+```php
+<?php
+// templates/app-shell.php
+get_header(); ?>
+
+<div id="hats-app"></div>
+
+<?php get_footer();
+```
+
+Visit `yoursite.com/hats` — you should see the default Vite React output inside your theme. From here, replace the app content with the filtered list pattern below.
+
 ---
 
 ## Packages involved
@@ -152,17 +163,6 @@ export default function App() {
 |---|---|
 | `@arcwp/gateway-data` | Fetch collection metadata and records |
 | `@arcwp/gateway-grids` | Table view, filter panel, column generation, filter logic |
-
-Both are local workspace packages in `react/packages/`. Wire them in as workspace dependencies in your `package.json`:
-
-```json
-{
-  "dependencies": {
-    "@arcwp/gateway-data":  "*",
-    "@arcwp/gateway-grids": "*"
-  }
-}
-```
 
 ---
 
