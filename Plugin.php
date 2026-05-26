@@ -107,12 +107,12 @@ class Plugin
         new Packages\PackageRoutes();
         Raptor\RaptorController::initEndpoints();
         $this->registry = new Collections\CollectionRegistry();
-        Collections\CoreCollections::register();
         $this->packageRegistry = new Packages\PackageRegistry();
         Raptor\Packages\PackageLoader::load();
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         new Forms\Fields\FieldTypeRoutes();
         $this->standardRoutes = new Endpoints\StandardRoutes();
+        Collections\CoreCollections::register();
         new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
