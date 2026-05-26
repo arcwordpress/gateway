@@ -1,5 +1,8 @@
 // src/utils/filterUtils.js
 export const applyFilters = (data, filters, filterValues) => {
+  if (!Array.isArray(data)) return [];
+  if (!Array.isArray(filters) || filters.length === 0) return data;
+
   return data.filter(row => {
     return filters.every(filter => {
       const value = filterValues[filter.field];
