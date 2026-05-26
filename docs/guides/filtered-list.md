@@ -44,14 +44,20 @@ npm install
 // apps/front/vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // Force Vite to resolve react to this app's copy regardless of where
-    // imports originate — prevents duplicate instances via file: symlinks
-    // into gateway/react/ which has its own node_modules/react.
-    dedupe: ['react', 'react-dom'],
+    // Pin all react imports to this app's own copies.
+    // Gateway packages are linked via file: into gateway/react/ which has
+    // its own node_modules/react — without explicit aliases, react/jsx-runtime
+    // and react can resolve to different installations giving a null dispatcher.
+    alias: {
+      'react': resolve('./node_modules/react'),
+      'react-dom': resolve('./node_modules/react-dom'),
+      'react/jsx-runtime': resolve('./node_modules/react/jsx-runtime'),
+    },
   },
   build: {
     rollupOptions: {
