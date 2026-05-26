@@ -99,7 +99,8 @@ export const CollectionProvider = ({
         routeInfo.route,
         stableQueryParams
       );
-      setRecords(data);
+      const items = data?.data?.items ?? data?.items ?? data ?? [];
+      setRecords(Array.isArray(items) ? items : []);
     } catch (error) {
       console.error('Error fetching records:', error);
       setRecordsError(error.message || 'Failed to fetch records');
