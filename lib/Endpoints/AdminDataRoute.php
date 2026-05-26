@@ -60,11 +60,20 @@ class AdminDataRoute
         // Get actual registered routes
         $actualRoutes = $standardRoutes->getActualRegisteredRoutes();
 
+        // User-activatable WP core collections — visible in the dashboard when registered.
+        $activatableCoreKeys = array_keys(\Gateway\Collections\CoreCollections::getMap());
+
         foreach ($collections as $key => $collection) {
-            // Skip core / private collections — they are structural and not
-            // intended for viewing or editing in the admin UI.
-            if (method_exists($collection, 'isHidden') && $collection->isHidden()) {
+            // Skip private collections unconditionally.
+            if (method_exists($collection, 'isPrivate') && $collection->isPrivate()) {
                 continue;
+            }
+            // Skip structural plugin-internal core collections (Raptor tables,
+            // CollectionUser, etc.) but NOT user-activatable WP core ones.
+            if (method_exists($collection, 'isCore') && $collection->isCore()) {
+                if (!in_array($key, $activatableCoreKeys, true)) {
+                    continue;
+                }
             }
 
             $fqcn = get_class($collection);
