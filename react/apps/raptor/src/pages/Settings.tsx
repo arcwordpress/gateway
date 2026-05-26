@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 import DatabaseSettings from './Settings/DatabaseSettings'
-import AISettings from './Settings/AISettings'
 import CollectionSettings from './Settings/CollectionSettings'
 
 interface SettingsData {
@@ -11,15 +10,12 @@ interface SettingsData {
   connection_port: string
   sqlite_path: string
   is_sqlite_environment: boolean
-  anthropic_api_key: string
-  has_anthropic_key: boolean
 }
 
-type TabKey = 'database' | 'ai' | 'collections' | 'migrations'
+type TabKey = 'database' | 'collections' | 'migrations'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'database', label: 'Database' },
-  { key: 'ai', label: 'AI' },
   { key: 'collections', label: 'Collections' },
   { key: 'migrations', label: 'Migrations' },
 ]
@@ -193,12 +189,6 @@ export default function Settings() {
       <div className="flex-1 overflow-y-auto p-6">
         {activeTab === 'database' && (
           <DatabaseSettings
-            settings={currentSettings}
-            onChange={handleFieldChange}
-          />
-        )}
-        {activeTab === 'ai' && (
-          <AISettings
             settings={currentSettings}
             onChange={handleFieldChange}
           />
