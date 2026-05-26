@@ -44,7 +44,36 @@ get_header(); ?>
 
 ---
 
-## 3. Vite config
+## 3. Scaffold the Vite app
+
+From your extension root, create the app inside `apps/`:
+
+```bash
+mkdir -p apps
+cd apps
+npm create vite@latest front -- --template react
+cd front
+npm install
+```
+
+This creates `apps/front/` with a standard Vite + React project. The `--template react` flag sets up JSX; use `react-ts` if you prefer TypeScript.
+
+Then add the Gateway packages as workspace dependencies in `apps/front/package.json`:
+
+```json
+{
+  "dependencies": {
+    "@arcwp/gateway-data":  "*",
+    "@arcwp/gateway-grids": "*"
+  }
+}
+```
+
+These are workspace packages inside the Gateway monorepo (`react/packages/`). For this to resolve, your extension must be part of the same npm workspace — add it to the root `package.json` workspaces array, then run `npm install` from the workspace root.
+
+---
+
+## 4. Vite config
 
 `ReactAppController` looks for `build/index.js` and `build/index.css` by name (it uses `filemtime()` for cache-busting, so no manifest is needed). Tell Vite to output predictable filenames:
 
@@ -71,7 +100,7 @@ Build output goes to `apps/front/build/` (Vite's default `outDir`). Adjust `buil
 
 ---
 
-## 4. React entry point
+## 5. React entry point
 
 Read the config WordPress injected and configure the API client before rendering:
 
@@ -97,7 +126,7 @@ From here, `CollectionProvider` and `collectionApi` will automatically send the 
 
 ---
 
-## 5. The React app
+## 6. The React app
 
 With the foundation in place, the rest is the filtered list pattern described below. Your `App` component is just:
 
