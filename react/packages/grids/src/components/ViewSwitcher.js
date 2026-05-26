@@ -1,22 +1,12 @@
-import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from 'react';
 import { Rows2, Grid3x2, List } from 'lucide-react';
 
 const ICON_SIZE = 24;
 
 const VIEW_CONFIGS = {
-  table: {
-    label: __('Table', 'gateway'),
-    Icon: Rows2,
-  },
-  list: {
-    label: __('List', 'gateway'),
-    Icon: List,
-  },
-  cards: {
-    label: __('Cards', 'gateway'),
-    Icon: Grid3x2,
-  },
+  table: { label: 'Table', Icon: Rows2 },
+  list:  { label: 'List',  Icon: List },
+  cards: { label: 'Cards', Icon: Grid3x2 },
 };
 
 const ViewSwitcher = ({
