@@ -6,21 +6,34 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import TablePaginationControls from './TablePaginationControls';
+import TableRowCount from './TableRowCount';
+import TablePageSizer from './TablePageSizer';
 
 /**
  * TableView Component with TanStack Table
- * Displays collection data in a sortable, paginated table
+ * Displays collection data in a sortable, paginated table.
+ *
+ * Footer visibility:
+ *   showPaginationControls — first/prev/next/last buttons (default: true)
+ *   showRowCount           — total row count label (default: true)
+ *   showPageSizer          — page-info text + per-page select (default: true)
+ *   pageSizes              — override the page-size options (default: [10,20,30,40,50])
  */
 const TableView = ({
   data = [],
   columns = [],
   loading = false,
   onRowClick = null,
+  showPaginationControls = true,
+  showRowCount = true,
+  showPageSizer = true,
+  pageSizes = [10, 20, 30, 40, 50],
 }) => {
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: pageSizes[0] ?? 10,
   });
 
   const table = useReactTable({
@@ -53,6 +66,8 @@ const TableView = ({
     );
   }
 
+  const showFooter = showPaginationControls || showRowCount || showPageSizer;
+
   return (
     <div className="table-view">
       <div className="table-view__wrapper">
@@ -61,10 +76,7 @@ const TableView = ({
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="table-view__row">
                 {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="table-view__th"
-                  >
+                  <th key={header.id} className="table-view__th">
                     {header.isPlaceholder ? null : (
                       <div
                         className={
@@ -101,10 +113,7 @@ const TableView = ({
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="table-view__td"
-                  >
+                  <td key={cell.id} className="table-view__td">
                     <div className="table-view__cell-content">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </div>
@@ -116,63 +125,13 @@ const TableView = ({
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="table-view__pagination">
-        <div className="table-view__pagination-controls">
-          <button
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            className="table-view__btn table-view__btn--pagination"
-          >
-            {'<<'}
-          </button>
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="table-view__btn table-view__btn--pagination"
-          >
-            {'<'}
-          </button>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="table-view__btn table-view__btn--pagination"
-          >
-            {'>'}
-          </button>
-          <button
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
-            className="table-view__btn table-view__btn--pagination"
-          >
-            {'>>'}
-          </button>
+      {showFooter && (
+        <div className="table-view__pagination">
+          {showPaginationControls && <TablePaginationControls table={table} />}
+          {showRowCount && <TableRowCount count={data.length} />}
+          {showPageSizer && <TablePageSizer table={table} pageSizes={pageSizes} />}
         </div>
-
-        <div className="table-view__row-count">
-          {data.length} {data.length === 1 ? 'row' : 'rows'}
-        </div>
-
-        <div className="table-view__page-size">
-          <span className="table-view__page-info">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
-          </span>
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className="table-view__select"
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
