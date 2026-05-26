@@ -35,7 +35,7 @@ export default function RecordsIndex() {
         {!isLoading && collections.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {collections.map((col) => (
-              <button
+              <div
                 key={col.key}
                 onClick={() =>
                   void navigate({
@@ -43,7 +43,7 @@ export default function RecordsIndex() {
                     params: { collectionKey: col.key } as never,
                   })
                 }
-                className="text-left border border-zinc-800 rounded-lg px-5 py-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-colors group"
+                className="cursor-pointer border border-zinc-800 rounded-lg px-5 py-4 hover:border-zinc-600 hover:bg-zinc-800/50 transition-colors group"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-zinc-200 group-hover:text-zinc-100 truncate">
@@ -54,7 +54,7 @@ export default function RecordsIndex() {
                   </span>
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">{col.key}</p>
-              </button>
+              </div>
             ))}
           </div>
         )}
