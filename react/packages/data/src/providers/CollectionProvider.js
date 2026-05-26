@@ -26,7 +26,13 @@ export const CollectionProvider = ({
 }) => {
   // Use ref to track if initial load has occurred
   const initialLoadDone = useRef(false);
-  
+
+  // Collection metadata state — declared before routeInfo so the useMemo
+  // dependency array sees the current value, not the hoisted undefined.
+  const [collection, setCollection] = useState(null);
+  const [collectionLoading, setCollectionLoading] = useState(true);
+  const [collectionError, setCollectionError] = useState(null);
+
   // Stabilize queryParams to prevent unnecessary re-renders
   const stableQueryParams = useMemo(() => queryParams, [JSON.stringify(queryParams)]);
 
@@ -47,11 +53,6 @@ export const CollectionProvider = ({
     }
     return null;
   }, [directAccess, collection?.routes]);
-
-  // Collection metadata state
-  const [collection, setCollection] = useState(null);
-  const [collectionLoading, setCollectionLoading] = useState(true);
-  const [collectionError, setCollectionError] = useState(null);
 
   // Collection records state
   const [records, setRecords] = useState([]);
