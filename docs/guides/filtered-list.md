@@ -47,16 +47,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      // Gateway packages use @wordpress/element (WP Admin's React wrapper).
-      // Alias it to React so standalone builds don't need the WP package.
-      '@wordpress/element': 'react',
-    },
-    // Force a single copy of React — prevents "Invalid hook call" errors
-    // when Gateway packages bring their own node_modules/react via file: links.
-    dedupe: ['react', 'react-dom'],
-  },
   build: {
     rollupOptions: {
       input: 'src/main.jsx',

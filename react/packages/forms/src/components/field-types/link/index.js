@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from '@wordpress/element';
+import { useMemo, useState, useEffect } from 'react';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
 import './link-style.css';

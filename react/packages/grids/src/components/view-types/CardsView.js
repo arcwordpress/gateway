@@ -1,4 +1,4 @@
-import { useState } from '@wordpress/element';
+import { useState } from 'react';
 import Modal from '../Dialog';
 import { useGridContext } from '../../context/GridContext';
 import { getLabelField } from '../../services/columnGenerator';

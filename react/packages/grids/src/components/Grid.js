@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useState, useEffect, useMemo } from 'react';
 import { useGridContext } from '../context/GridContext';
 import TableView from './view-types/TableView';
 import ListView from './view-types/ListView';

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from '@wordpress/element';
+import { useEffect, useMemo } from 'react';
 import { useGatewayForm } from '@arcwp/gateway-forms';
 import Field from '../../field';
 import { normalizeOptions } from '../../../utils/normalizeOptions';

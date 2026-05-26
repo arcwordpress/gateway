@@ -1,4 +1,4 @@
-import { useMemo } from '@wordpress/element';
+import { useMemo } from 'react';
 
 /**
  * Field Type Registry System
