@@ -106,8 +106,8 @@ class CollectionController extends Controller
                 }
 
                 if (!$includePrivate &&
-                    method_exists($collection, 'isHidden') &&
-                    $collection->isHidden()) {
+                    method_exists($collection, 'isPrivate') &&
+                    $collection->isPrivate()) {
                     continue;
                 }
 

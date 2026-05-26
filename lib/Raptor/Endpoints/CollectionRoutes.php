@@ -142,7 +142,7 @@ class CollectionRoutes
     public function getRegisteredCollections(\WP_REST_Request $request): \WP_REST_Response
     {
         $registry    = \Gateway\Plugin::getInstance()->getRegistry();
-        $collections = array_filter($registry->getAll(), fn($col) => !$col->isHidden());
+        $collections = array_filter($registry->getAll(), fn($col) => !$col->isPrivate());
 
         $withNested = (bool) $request->get_param('with_nested');
 
