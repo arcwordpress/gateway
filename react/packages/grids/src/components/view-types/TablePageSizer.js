@@ -1,7 +1,12 @@
+import { useTableContext } from '../../context/TableContext';
+
 const defaultPageSizes = [10, 20, 30, 40, 50];
 
-// Requires a TanStack `table` instance. Pass `pageSizes` to override the default options.
-const TablePageSizer = ({ table, pageSizes = defaultPageSizes }) => {
+const TablePageSizer = ({ table: tableProp, pageSizes = defaultPageSizes }) => {
+  const tableCtx = useTableContext();
+  const table = tableProp ?? tableCtx;
+  if (!table) return null;
+
   const { pageIndex, pageSize } = table.getState().pagination;
   const pageCount = table.getPageCount();
 

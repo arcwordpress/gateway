@@ -16,6 +16,7 @@ import RangeFilter from './components/filter-types/range/RangeFilter';
 import Filter from './components/Filter';
 import FilterGroup from './components/Filters';
 import { GridProvider, useGridContext, useRecord } from './context/GridContext';
+import { useTableContext } from './context/TableContext';
 import ViewSwitcher from './components/ViewSwitcher';
 import useFilter from './hooks/useFilter';
 import CheckboxFacet from './components/filter-types/checkbox/CheckboxFacet';
@@ -40,6 +41,7 @@ export {
   GridProvider,
   useGridContext,
   useRecord,
+  useTableContext,
   ViewSwitcher,
   useFilter,
   CheckboxFacet,
