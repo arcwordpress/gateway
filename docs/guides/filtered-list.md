@@ -99,18 +99,24 @@ import { useCollectionInfo, useCollectionRecords } from '@arcwp/gateway-data'
 import { GridLayout, TableView, generateColumns, applyFilters } from '@arcwp/gateway-grids'
 
 export default function FilteredList() {
-  const { collection, collectionLoading } = useCollectionInfo()
-  const { records, recordsLoading }       = useCollectionRecords()
-  const [filterValues, setFilterValues]   = useState({})
+  const { collection, collectionLoading, collectionError } = useCollectionInfo()
+  const { records, loading: recordsLoading, error: recordsError } = useCollectionRecords()
+  const [filterValues, setFilterValues] = useState({})
 
   const facets   = collection?.grid?.facets ?? []
   const columns  = useMemo(() => collection ? generateColumns(collection) : [], [collection])
   const filtered = useMemo(() => applyFilters(records, facets, filterValues), [records, facets, filterValues])
 
-  if (collectionLoading || recordsLoading) return <p>Loading…</p>
+  if (collectionLoading) return <p>Loading collection…</p>
+  if (collectionError)   return <p>Collection error: {collectionError}</p>
+  if (recordsLoading)    return <p>Loading records…</p>
+  if (recordsError)      return <p>Records error: {recordsError}</p>
 
   return (
     <div>
+      <p style={{ fontSize: 12, color: '#888' }}>
+        {records.length} records · {columns.length} columns · {facets.length} facets
+      </p>
       <GridLayout.Facets
         filters={facets}
         values={filterValues}
@@ -123,6 +129,8 @@ export default function FilteredList() {
   )
 }
 ```
+
+The status line (`N records · N columns · N facets`) is useful while building — remove it once things are working.
 
 **What each piece does:**
 - `useCollectionInfo` — fetches collection metadata including `grid.facets` config from the backend
