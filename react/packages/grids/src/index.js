@@ -16,6 +16,8 @@ import { GridProvider, useGridContext, useRecord } from './context/GridContext';
 import ViewSwitcher from './components/ViewSwitcher';
 import useFilter from './hooks/useFilter';
 import CheckboxFacet from './components/filter-types/checkbox/CheckboxFacet';
+import { generateColumns, getLabelField } from './services/columnGenerator';
+import { applyFilters, extractUniqueValues } from './utils/filterUtils';
 
 export {
   Grid,
@@ -38,4 +40,9 @@ export {
   ViewSwitcher,
   useFilter,
   CheckboxFacet,
+  // Composable primitives
+  generateColumns,
+  getLabelField,
+  applyFilters,
+  extractUniqueValues,
 };
