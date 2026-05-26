@@ -99,8 +99,9 @@ import { useCollectionInfo, useCollectionRecords } from '@arcwp/gateway-data'
 import { GridLayout, TableView, generateColumns, applyFilters } from '@arcwp/gateway-grids'
 
 export default function FilteredList() {
-  const { collection, collectionLoading, collectionError } = useCollectionInfo()
-  const { records, loading: recordsLoading, error: recordsError } = useCollectionRecords()
+  // Both hooks return { loading, error } — not collectionLoading/recordsLoading
+  const { collection, loading: collectionLoading, error: collectionError } = useCollectionInfo()
+  const { records,    loading: recordsLoading,    error: recordsError }    = useCollectionRecords()
   const [filterValues, setFilterValues] = useState({})
 
   const facets   = collection?.grid?.facets ?? []
