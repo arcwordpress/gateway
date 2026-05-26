@@ -15,6 +15,7 @@ const TableView = ({
   data = [],
   columns = [],
   loading = false,
+  onRowClick = null,
 }) => {
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -94,7 +95,11 @@ const TableView = ({
           </thead>
           <tbody className="table-view__tbody">
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="table-view__row table-view__row--body">
+              <tr
+                key={row.id}
+                className={`table-view__row table-view__row--body${onRowClick ? ' table-view__row--clickable' : ''}`}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
