@@ -1,4 +1,4 @@
-import { useMemo } from '@wordpress/element';
+import { useMemo } from 'react';
 import Filters from './Filters';
 import Filter from './Filter';
 import { extractUniqueValues } from '../utils/filterUtils';

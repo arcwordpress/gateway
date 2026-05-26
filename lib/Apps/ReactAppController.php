@@ -16,8 +16,8 @@ if (!defined('ABSPATH')) {
  * Usage:
  *   \Gateway\Apps\ReactAppController::register([
  *       'basePath'     => 'documentation',
- *       'buildDir'     => MY_PLUGIN_PATH . 'apps/docs/build',
- *       'buildUrl'     => MY_PLUGIN_URL  . 'apps/docs/build',
+ *       'buildDir'     => MY_PLUGIN_PATH . 'apps/docs/dist',
+ *       'buildUrl'     => MY_PLUGIN_URL  . 'apps/docs/dist',
  *       'templateFile' => MY_PLUGIN_PATH . 'templates/app-shell.php',
  *       'localizeData' => fn() => [
  *           'apiUrl' => rest_url('gateway/v1'),
@@ -35,7 +35,8 @@ if (!defined('ABSPATH')) {
  *   queryVar     (optional) WordPress query var name. Defaults to 'gateway_app_{slug}'.
  *   localizeKey  (optional) JS global name for wp_localize_script. Defaults to 'gatewayAppData'.
  *   localizeData (optional) Array or callable returning an array passed to wp_localize_script.
- *   scriptDeps   (optional) WordPress script dependencies array. Defaults to ['wp-element'].
+ *   scriptDeps   (optional) WordPress script dependencies array. Defaults to [].
+ *   scriptModule (optional) Add type="module" to the script tag. Defaults to true.
  */
 class ReactAppController {
 
@@ -48,6 +49,7 @@ class ReactAppController {
     private string $localizeKey;
     private mixed  $localizeData;
     private array  $scriptDeps;
+    private bool   $scriptModule;
 
     public function __construct(array $config) {
         $this->basePath     = trim($config['basePath'], '/');
@@ -60,7 +62,8 @@ class ReactAppController {
         $this->queryVar     = $config['queryVar']     ?? 'gateway_app_' . str_replace('-', '_', $slug);
         $this->localizeKey  = $config['localizeKey']  ?? 'gatewayAppData';
         $this->localizeData = $config['localizeData'] ?? null;
-        $this->scriptDeps   = $config['scriptDeps']   ?? ['wp-element'];
+        $this->scriptDeps   = $config['scriptDeps']   ?? [];
+        $this->scriptModule = $config['scriptModule'] ?? true;
     }
 
     public static function register(array $config): self {
@@ -133,6 +136,16 @@ class ReactAppController {
             filemtime($this->buildDir . 'index.js'),
             true
         );
+
+        if ($this->scriptModule) {
+            $handle = $this->scriptHandle;
+            add_filter('script_loader_tag', function (string $tag, string $h) use ($handle): string {
+                if ($h === $handle) {
+                    return str_replace('<script ', '<script type="module" ', $tag);
+                }
+                return $tag;
+            }, 10, 2);
+        }
 
         if ($this->localizeData !== null) {
             $data = is_callable($this->localizeData) ? ($this->localizeData)() : $this->localizeData;

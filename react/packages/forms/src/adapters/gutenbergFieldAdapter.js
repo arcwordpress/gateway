@@ -5,7 +5,7 @@
  * Supports both batch rendering and individual field composition for complex layouts.
  */
 
-import { useMemo } from '@wordpress/element';
+import { useMemo } from 'react';
 import { GatewayFormContext, createGatewayFormContext } from '../utils/gatewayFormContext';
 import { createGutenbergRegister } from '../utils/fieldRegistration';
 import { useFieldType } from '../fieldTypeRegistry';

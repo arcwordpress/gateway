@@ -20,11 +20,6 @@ export const sprintf = (fmt, ...args) => fmt.replace(/%s/g, () => args.shift())
 
 export default defineConfig({
   plugins: [react(), wpI18nStub],
-  resolve: {
-    alias: {
-      '@wordpress/element': 'react',
-    },
-  },
   build: {
     outDir: 'build',
     manifest: true,

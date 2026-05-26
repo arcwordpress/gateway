@@ -1,4 +1,4 @@
-import { useMemo } from '@wordpress/element';
+import { useMemo } from 'react';
 import Board from '@asseinfo/react-kanban';
 import { useGridContext } from '../../context/GridContext';
 import { getLabelField } from '../../services/columnGenerator';
