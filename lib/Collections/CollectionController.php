@@ -106,8 +106,8 @@ class CollectionController extends Controller
                 }
 
                 if (!$includePrivate &&
-                    method_exists($collection, 'isHidden') &&
-                    $collection->isHidden()) {
+                    method_exists($collection, 'isPrivate') &&
+                    $collection->isPrivate()) {
                     continue;
                 }
 
@@ -239,6 +239,7 @@ class CollectionController extends Controller
             'fqcn'            => $collectionClass,
             'className'       => basename(str_replace('\\', '/', $collectionClass)),
             'table'           => method_exists($collection, 'getTable')        ? $collection->getTable()        : null,
+            'primaryKey'      => $collection->getKeyName(),
             'fillable'        => method_exists($collection, 'getFillable')     ? $collection->getFillable()     : [],
             'casts'           => $casts,
             'routes'          => $registeredRoutes,

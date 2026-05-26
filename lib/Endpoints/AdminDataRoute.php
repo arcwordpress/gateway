@@ -61,9 +61,8 @@ class AdminDataRoute
         $actualRoutes = $standardRoutes->getActualRegisteredRoutes();
 
         foreach ($collections as $key => $collection) {
-            // Skip core / private collections — they are structural and not
-            // intended for viewing or editing in the admin UI.
-            if (method_exists($collection, 'isHidden') && $collection->isHidden()) {
+            // Skip private (structural/internal) collections.
+            if (method_exists($collection, 'isPrivate') && $collection->isPrivate()) {
                 continue;
             }
 

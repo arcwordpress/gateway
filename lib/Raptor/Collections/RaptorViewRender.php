@@ -12,7 +12,7 @@ class RaptorViewRender extends \Gateway\Collection
 
     protected $table = 'gateway_raptor_view_render';
 
-    protected $core = true;
+    protected $private = true;
 
     protected $routes = [
         'enabled' => false,

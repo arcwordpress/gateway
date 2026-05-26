@@ -12,7 +12,7 @@ class RaptorFacetList extends \Gateway\Collection
 
     protected $table = 'gateway_raptor_facet_list';
 
-    protected $core = true;
+    protected $private = true;
 
     protected $routes = [
         'enabled' => false,

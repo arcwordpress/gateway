@@ -28,7 +28,7 @@ class RaptorExtensionFile extends \Gateway\Collection
 {
     protected $key   = 'raptor_extension_file';
     protected $table = 'gateway_raptor_extension_file';
-    protected $core  = true;
+    protected $private = true;
 
     protected $routes = [
         'enabled' => false,

@@ -494,7 +494,7 @@ class ExtensionRoutes
                 continue;
             }
 
-            if (!method_exists($collection, 'isHidden') || $collection->isHidden()) {
+            if (!method_exists($collection, 'isPrivate') || $collection->isPrivate()) {
                 continue;
             }
 

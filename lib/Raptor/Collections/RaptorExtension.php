@@ -43,7 +43,7 @@ class RaptorExtension extends \Gateway\Collection
     protected $table = 'gateway_raptor_extension';
 
     // Internal Gateway table — excluded from public collection listings.
-    protected $core = true;
+    protected $private = true;
 
     // No public REST routes — managed exclusively via ExtensionCrudRoutes.
     protected $routes = [

@@ -31,11 +31,6 @@ class SettingsRoute
                     'validate_callback' => [$this, 'validate_port'],
                     'sanitize_callback' => 'sanitize_text_field',
                 ],
-                'anthropic_api_key' => [
-                    'required' => false,
-                    'type' => 'string',
-                    'sanitize_callback' => 'sanitize_text_field',
-                ],
                 'db_driver' => [
                     'required' => false,
                     'type' => 'string',
@@ -71,10 +66,9 @@ class SettingsRoute
             delete_option('gateway_schema_version');
             delete_transient('gateway_connection_ok');
             return rest_ensure_response([
-                'success'          => true,
-                'message'          => __('Settings saved. Reload the page to apply.', 'gateway'),
-                'connection_port'  => $request->get_param('connection_port') ?? '',
-                'has_anthropic_key' => false,
+                'success'         => true,
+                'message'         => __('Settings saved. Reload the page to apply.', 'gateway'),
+                'connection_port' => $request->get_param('connection_port') ?? '',
             ]);
         }
 
@@ -83,10 +77,6 @@ class SettingsRoute
 
         if ($request->has_param('connection_port')) {
             $settings->connection_port = $request->get_param('connection_port') ?? '';
-        }
-
-        if ($request->has_param('anthropic_api_key')) {
-            $settings->anthropic_api_key = $request->get_param('anthropic_api_key') ?? '';
         }
 
         if ($request->has_param('db_driver')) {
@@ -114,10 +104,9 @@ class SettingsRoute
         }
 
         return rest_ensure_response([
-            'success'          => true,
-            'message'          => __('Settings saved successfully.', 'gateway'),
-            'port'             => $settings->connection_port,
-            'has_anthropic_key' => (bool) $settings->has_anthropic_key,
+            'success' => true,
+            'message' => __('Settings saved successfully.', 'gateway'),
+            'port'    => $settings->connection_port,
         ]);
     }
 

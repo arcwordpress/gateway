@@ -112,6 +112,7 @@ class Plugin
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         new Forms\Fields\FieldTypeRoutes();
         $this->standardRoutes = new Endpoints\StandardRoutes();
+        Collections\CoreCollections::register();
         new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();

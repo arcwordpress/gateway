@@ -1,12 +1,15 @@
 .gateway-raptor-outlet {
     display: flex;
+    flex-direction: column;
 }
 
 .dashboard-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 40px;
     gap: 40px;
+    min-height: 0;
 }
 
 .stats-grid {

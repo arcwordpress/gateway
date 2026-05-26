@@ -36,7 +36,7 @@ class RaptorCollection extends \Gateway\Collection
     protected $table = 'gateway_raptor_collection';
 
     // Internal Gateway table — excluded from public collection listings.
-    protected $core = true;
+    protected $private = true;
 
     // Managed exclusively via Raptor\Endpoints\CollectionRoutes, not via standard REST.
     protected $routes = [
