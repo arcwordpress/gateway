@@ -2,16 +2,6 @@
 
 A complete guide for rendering a table of Gateway collection records with facet filters on a WordPress front-end page. Assumes your collection is already set up and working in Gateway.
 
-**Prerequisite — build the Gateway packages first.** The `@arcwp/gateway-data` and `@arcwp/gateway-grids` packages ship source only; their `dist/` is not committed. Before building your extension app, build them from the Gateway plugin root:
-
-```bash
-# from gateway/react/
-npm install
-npm run build:packages
-```
-
-This only needs to be done once (or after pulling Gateway changes).
-
 ---
 
 ## 1. Scaffold the Vite app
