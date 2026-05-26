@@ -15,7 +15,7 @@ namespace Gateway\Collections\Gateway;
  */
 class CollectionUser extends \Gateway\Collection
 {
-    protected $core         = true;
+    protected $private = true;
     protected $key          = 'gateway_collection_user';
     protected $title        = 'Collection Setting';
     protected $titlePlural  = 'Collection Settings';

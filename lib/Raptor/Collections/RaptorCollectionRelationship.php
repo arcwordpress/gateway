@@ -30,7 +30,7 @@ class RaptorCollectionRelationship extends \Gateway\Collection
 {
     protected $key   = 'raptor_collection_relationship';
     protected $table = 'gateway_raptor_collection_relationship';
-    protected $core  = true;
+    protected $private = true;
 
     // Managed exclusively via RelationshipRoutes, not via standard REST.
     protected $routes = [

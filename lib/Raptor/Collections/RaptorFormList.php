@@ -12,7 +12,7 @@ class RaptorFormList extends \Gateway\Collection
 
     protected $table = 'gateway_raptor_form_list';
 
-    protected $core = true;
+    protected $private = true;
 
     protected $routes = [
         'enabled' => false,

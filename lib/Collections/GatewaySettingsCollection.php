@@ -22,7 +22,7 @@ class GatewaySettingsCollection extends \Gateway\Collection
     protected $table = 'gateway_settings';
 
     // Internal collection — excluded from public listings
-    protected $core = true;
+    protected $private = true;
 
     // Disable standard REST routes (we'll use custom logic)
     protected $routes = [

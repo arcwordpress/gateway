@@ -13,7 +13,7 @@ namespace Gateway\Collections\Gateway;
  */
 class MigrationRun extends \Gateway\Collection
 {
-    protected $core        = true;
+    protected $private = true;
     protected $key         = 'gateway_migration_run';
     protected $title       = 'Migration Run';
     protected $titlePlural = 'Migration Runs';

@@ -39,7 +39,7 @@ class RaptorPackage extends \Gateway\Collection
 {
     protected $key   = 'raptor_package';
     protected $table = 'gateway_raptor_package';
-    protected $core  = true;
+    protected $private = true;
 
     protected $routes = [
         'enabled' => false,

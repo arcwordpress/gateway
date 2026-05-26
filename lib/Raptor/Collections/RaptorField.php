@@ -31,7 +31,7 @@ class RaptorField extends \Gateway\Collection
     protected $table = 'gateway_raptor_field';
 
     // Internal Gateway table — excluded from public collection listings.
-    protected $core = true;
+    protected $private = true;
 
     // Managed exclusively via Raptor\Endpoints\FieldRoutes, not via standard REST.
     protected $routes = [
