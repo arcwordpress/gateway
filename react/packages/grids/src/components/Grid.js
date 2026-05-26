@@ -84,8 +84,15 @@ const Grid = ({
       const namespace = getManyRoute?.namespace;
       const route = getManyRoute?.path;
       const records = await collectionApi.fetchRecords(namespace, route, { relations: true }, { auth });
-      
-      setData(records.data.items);
+
+      // Normalise: ensure every record has a lowercase `id` equal to its actual
+      // primary key value so consumers and action handlers can always use `record.id`
+      // regardless of whether the collection uses ID, comment_ID, term_id, etc.
+      const pkField = collectionData.primaryKey || 'id';
+      const items = (records.data.items || []).map(r =>
+        pkField === 'id' || r.id !== undefined ? r : { id: r[pkField], ...r }
+      );
+      setData(items);
       setError(null);
 
     } catch (err) {
@@ -150,7 +157,7 @@ const Grid = ({
 
       await collectionApi.deleteRecord(namespace, route, deleteConfirm.id, { auth });
 
-      setData((prevData) => prevData.filter((record) => record.id !== deleteConfirm.id));
+      setData((prevData) => prevData.filter((record) => String(record.id) !== String(deleteConfirm.id)));
 
       if (onDelete) {
         onDelete(deleteConfirm.id);

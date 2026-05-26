@@ -45,6 +45,9 @@ export default function RecordsList() {
               params: { collectionKey, id: String(record.id) } as never,
             })
           }
+          onDelete={() => {
+            // Grid removes the record from local state; nothing extra needed here
+          }}
         />
       </main>
     </div>
