@@ -16,7 +16,7 @@ npm create vite@latest front -- --template react
 
 This creates `apps/front/` with a standard Vite + React project. The `--template react` flag sets up JSX; use `react-ts` if you prefer TypeScript.
 
-**Before running `npm install`**, add the Gateway packages to `apps/front/package.json`. They are not yet published to npm — reference them by file path relative to your app. Gateway lives alongside your extension in the `plugins/` folder, so the path is typically:
+**Before running `npm install`**, add the Gateway packages to `apps/front/package.json`. They are not yet published to npm — reference them by file path. Gateway and your extension both live in the `plugins/` folder, so from `apps/front/` the path is typically three levels up and across:
 
 ```json
 {
@@ -27,33 +27,14 @@ This creates `apps/front/` with a standard Vite + React project. The `--template
 }
 ```
 
-Adjust `../../../gateway` to match your actual directory layout — it must point to the root of the Gateway plugin. From `apps/front/` that is three levels up (`front` → `apps` → your extension root → `plugins/`) and then into `gateway/react/packages/`.
+Adjust `../../../gateway` if your layout differs — it must point to the Gateway plugin root (`front` → `apps` → your extension → `plugins/` → `gateway`).
 
-Now install everything:
+Now install:
 
 ```bash
 cd front
 npm install
 ```
-
-npm resolves `file:` references as symlinks, so any changes you make to the Gateway packages are reflected immediately without reinstalling.
-
-**Alternative — npm workspace root**
-
-If you prefer workspace `*` references instead of file paths, create a `package.json` at the `plugins/` level that covers both Gateway's packages and your app:
-
-```json
-{
-  "private": true,
-  "workspaces": [
-    "gateway/react/packages/data",
-    "gateway/react/packages/grids",
-    "my-extension/apps/front"
-  ]
-}
-```
-
-Then use `"@arcwp/gateway-data": "*"` in your app's `package.json` and run `npm install` from `plugins/`. This scales better if you have multiple extensions.
 
 ---
 
