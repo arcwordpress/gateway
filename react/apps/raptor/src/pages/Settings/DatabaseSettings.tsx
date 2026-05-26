@@ -61,7 +61,7 @@ export default function DatabaseSettings({ settings, onChange }: DatabaseSetting
           <option value="mysql">MySQL</option>
           <option value="sqlite">SQLite</option>
         </select>
-        {settings.is_sqlite_environment && (
+        {!!settings.is_sqlite_environment && (
           <p className="text-sm text-zinc-400">
             ⚠ SQLite environment detected
           </p>
@@ -106,13 +106,12 @@ export default function DatabaseSettings({ settings, onChange }: DatabaseSetting
 
       {/* Test Connection Button */}
       <div className="space-y-2">
-        <button
-          onClick={() => testConnectionMutation.mutate()}
-          disabled={testStatus === 'testing'}
-          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-md transition-colors"
+        <div
+          onClick={() => { if (testStatus !== 'testing') testConnectionMutation.mutate() }}
+          className={`inline-flex items-center px-4 py-2 rounded-md text-sm text-white transition-colors ${testStatus === 'testing' ? 'bg-zinc-700 opacity-60 cursor-not-allowed' : 'bg-zinc-700 hover:bg-zinc-600 cursor-pointer'}`}
         >
           {testStatus === 'testing' ? 'Testing...' : 'Test Connection'}
-        </button>
+        </div>
 
         {testMessage && (
           <div

@@ -54,13 +54,12 @@ function CoreMigrationsPanel() {
           Re-runs all gateway-core and raptor-core migrations regardless of version. Safe to run multiple times — uses dbDelta.
         </p>
       </div>
-      <button
-        onClick={() => { setStatus(null); mutation.mutate() }}
-        disabled={mutation.isPending}
-        className="inline-flex items-center gap-1.5 h-8 px-3 rounded text-xs font-medium transition-colors bg-zinc-700 hover:bg-zinc-600 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+      <div
+        onClick={() => { if (!mutation.isPending) { setStatus(null); mutation.mutate() } }}
+        className={`inline-flex items-center gap-1.5 h-8 px-3 rounded text-xs font-medium transition-colors bg-zinc-700 text-white ${mutation.isPending ? 'opacity-40 cursor-not-allowed' : 'hover:bg-zinc-600 cursor-pointer'}`}
       >
         {mutation.isPending ? 'Running…' : 'Run Core Migrations'}
-      </button>
+      </div>
       {status && (
         <p className={`text-xs ${status.ok ? 'text-green-400' : 'text-red-400'}`}>{status.msg}</p>
       )}
@@ -176,17 +175,17 @@ export default function Settings() {
       {/* Tabs */}
       <div className="flex gap-1 px-6 pt-4 border-b border-zinc-800">
         {TABS.map((tab) => (
-          <button
+          <div
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 text-sm font-medium transition-colors rounded-t-md ${
+            className={`cursor-pointer px-4 py-2 text-sm font-medium transition-colors rounded-t-md ${
               activeTab === tab.key
                 ? 'bg-zinc-800 text-zinc-100'
                 : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50'
             }`}
           >
             {tab.label}
-          </button>
+          </div>
         ))}
       </div>
 
