@@ -173,10 +173,5 @@ Currently `TableView` expects to receive a pre-built TanStack table object. This
 **`SelectFilter.choices` shape.**
 `extractUniqueValues` returns `[{ value, label }]`. `SelectFilter` expects the same shape. This is consistent but undocumented — worth adding a type or JSDoc.
 
-**`CollectionProvider` skips PK normalisation.**
-The `Grid` component normalises records so every record has a lowercase `id` equal to its actual primary key (needed for WP core collections like `wp_post` which use `ID`). `CollectionProvider` does not do this. If your collection uses a non-standard primary key, add the normalisation step yourself after fetching:
-
-```js
-const pk      = collection.primaryKey || 'id'
-const records = raw.map(r => pk === 'id' ? r : { id: r[pk], ...r })
-```
+**`TableView` does not expose the table instance externally.**
+If you need imperative control (e.g. reset sort from outside the component) there is no ref or callback for the internal table instance. This is rarely needed for simple filtered lists but worth noting for more complex layouts.
