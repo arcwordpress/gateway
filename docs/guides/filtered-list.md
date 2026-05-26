@@ -47,6 +47,12 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    // Force Vite to resolve react to this app's copy regardless of where
+    // imports originate — prevents duplicate instances via file: symlinks
+    // into gateway/react/ which has its own node_modules/react.
+    dedupe: ['react', 'react-dom'],
+  },
   build: {
     rollupOptions: {
       input: 'src/main.jsx',
