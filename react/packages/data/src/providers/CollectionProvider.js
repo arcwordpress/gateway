@@ -38,10 +38,11 @@ export const CollectionProvider = ({
         route: directAccess.route
       };
     }
-    if (collection?.routes?.namespace && collection?.routes?.route) {
+    const getManyRoute = collection?.routes?.find(r => r.type === 'get_many');
+    if (getManyRoute) {
       return {
-        namespace: collection.routes.namespace,
-        route: collection.routes.route
+        namespace: getManyRoute.namespace,
+        route: getManyRoute.path
       };
     }
     return null;
