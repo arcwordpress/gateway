@@ -1,24 +1,24 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "gateway/route",
+  "name": "gateway/data-source",
   "version": "0.1.0",
-  "title": "Gateway Route",
+  "title": "Data Source",
   "category": "gateway",
-  "icon": "admin-links",
-  "description": "A route panel shown when the URL hash matches its path. Must be placed inside a Gateway Router block.",
+  "icon": "list-view",
+  "description": "A single collection fetch. Assign an optional key to reference this data in routes and templates.",
   "textdomain": "gateway",
   "parent": [
-    "gateway/router"
+    "gateway/data"
   ],
   "attributes": {
-    "path": {
+    "collection": {
       "type": "string",
-      "default": "/"
+      "default": ""
     },
-    "label": {
+    "dataKey": {
       "type": "string",
-      "default": "Route"
+      "default": ""
     }
   },
   "supports": {

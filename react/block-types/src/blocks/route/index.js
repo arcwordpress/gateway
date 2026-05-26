@@ -5,7 +5,7 @@ import metadata from './block.json';
 
 function RouteEdit( { attributes, setAttributes } ) {
 	const { path, label } = attributes;
-	const blockProps = useBlockProps( { className: 'gty-route-editor' } );
+	const blockProps = useBlockProps();
 
 	return (
 		<>
@@ -27,10 +27,6 @@ function RouteEdit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<div { ...blockProps }>
-				<div className="gty-route-editor__header">
-					<code className="gty-route-editor__path">{ path }</code>
-					<span className="gty-route-editor__label">{ label }</span>
-				</div>
 				<InnerBlocks templateLock={ false } />
 			</div>
 		</>

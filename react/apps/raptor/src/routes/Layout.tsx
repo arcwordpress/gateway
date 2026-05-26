@@ -9,6 +9,8 @@ import { AppContext } from '../context/app'
 import { WorkspaceContext, WorkspaceCollection, WorkspaceExtension } from '../context/workspace'
 import { apiUrl, authHeaders } from '../lib/api'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested, REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections, type RegisteredCollection } from '../lib/queries'
+import '../../main.css';
+
 
 // ─── Root layout ───────────────────────────────────────────────────────────
 //
@@ -205,7 +207,7 @@ export default function Layout() {
         {/* ── Right column: content area ─────────── */} 
         <div className="flex flex-col flex-1 min-w-0 min-h-0 relative">
           {/* Outlet for pages */}
-          <div id="gateway-raptor-outlet" className="relative flex-1 overflow-y-auto min-h-0">
+          <div id="gateway-raptor-outlet" className="gateway-raptor-outlet relative flex-1 overflow-y-auto min-h-0">
             <Outlet />
           </div>
 

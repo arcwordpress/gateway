@@ -166,9 +166,9 @@ export default function Dashboard() {
     : null
 
   return (
-    <div className="flex flex-col gap-4 p-5">
+    <div className="dashboard-container">
       {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="stats-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -191,7 +191,7 @@ export default function Dashboard() {
       </div>
 
       {/* Chart + Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="dashboard-main grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 border border-zinc-700 shadow-md rounded-xl p-5">
           <h2 className="text-sm font-semibold text-zinc-300 mb-1">API Requests</h2>
           <p className="text-xs text-zinc-600 mb-4">Last 8 weeks</p>
@@ -227,7 +227,7 @@ export default function Dashboard() {
       </div>
 
       {/* Status bar */}
-      <div className="border border-zinc-700 shadow-md rounded-xl p-5 flex items-center justify-between text-xs text-zinc-500">
+      <div className="dashboard-footer border border-zinc-700 shadow-md rounded-xl p-5 flex items-center justify-between text-xs text-zinc-500">
         <span>{`Gateway v${appConfig.version || '...'}`}</span>
         <span className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-pulse" />

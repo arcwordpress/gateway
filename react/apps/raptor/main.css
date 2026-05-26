@@ -1,0 +1,22 @@
+.gateway-raptor-outlet {
+    display: flex;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    gap: 40px;
+}
+
+.stats-grid {
+    display: grid;
+}
+
+.dashboard-main {
+    display: grid;
+}
+
+.dashboard-footer {
+    margin-top: auto;
+}
