@@ -46,8 +46,23 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
+// Gateway packages use @wordpress/i18n (WP Admin translation API) which calls
+// window.wp.i18n at runtime. Stub it out for standalone builds.
+const wpI18nStub = {
+  name: 'wp-i18n-stub',
+  resolveId(id) { if (id === '@wordpress/i18n') return '\0wp-i18n-stub' },
+  load(id) {
+    if (id === '\0wp-i18n-stub') return `
+export const __ = (t) => t
+export const _n = (s, p, n) => n === 1 ? s : p
+export const _x = (t) => t
+export const sprintf = (fmt, ...a) => fmt.replace(/%s/g, () => a.shift())
+`
+  },
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), wpI18nStub],
   resolve: {
     // Pin all react imports to this app's own copies.
     // Gateway packages are linked via file: into gateway/react/ which has
