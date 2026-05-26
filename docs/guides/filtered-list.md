@@ -38,7 +38,7 @@ npm install
 
 ## 2. Configure Vite
 
-`ReactAppController` (used in step 7) looks for `build/index.js` by name. Replace the default `vite.config.js` to output predictable filenames:
+`ReactAppController` (used in step 7) looks for `dist/index.js` by name. Replace the default `vite.config.js` to output predictable filenames:
 
 ```js
 // apps/front/vite.config.js
@@ -49,10 +49,13 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Gateway packages use @wordpress/element internally (a WP Admin
-      // wrapper around React). Alias it to React for standalone builds.
+      // Gateway packages use @wordpress/element (WP Admin's React wrapper).
+      // Alias it to React so standalone builds don't need the WP package.
       '@wordpress/element': 'react',
     },
+    // Force a single copy of React — prevents "Invalid hook call" errors
+    // when Gateway packages bring their own node_modules/react via file: links.
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     rollupOptions: {
@@ -171,7 +174,7 @@ if (root) {
 npm run build
 ```
 
-Confirm `apps/front/build/index.js` exists before continuing.
+Confirm `apps/front/dist/index.js` exists before continuing.
 
 ---
 
@@ -200,8 +203,8 @@ The `id="hats-app"` must match the `document.getElementById` call in `main.jsx`.
 ```php
 \Gateway\Apps\ReactAppController::register([
     'basePath'     => 'hats',
-    'buildDir'     => plugin_dir_path(__FILE__) . 'apps/front/build/',
-    'buildUrl'     => plugin_dir_url(__FILE__)  . 'apps/front/build/',
+    'buildDir'     => plugin_dir_path(__FILE__) . 'apps/front/dist/',
+    'buildUrl'     => plugin_dir_url(__FILE__)  . 'apps/front/dist/',
     'templateFile' => plugin_dir_path(__FILE__) . 'templates/app-shell.php',
     'localizeKey'  => 'hatsConfig',
     'localizeData' => fn() => [
@@ -223,7 +226,7 @@ After registering for the first time, flush rewrite rules — visit Settings →
 
 Visit `yoursite.com/hats`. You should see your theme header/footer with the filtered table rendered inside. If the page is blank, check:
 
-1. Build output — `apps/front/build/index.js` exists
+1. Build output — `apps/front/dist/index.js` exists
 2. Paths — `buildDir` and `buildUrl` both point to the same build folder
 3. Rewrite rules — have been flushed since registration
 4. Nonce — browser network tab shows `X-WP-Nonce` on REST requests
@@ -281,7 +284,7 @@ const filtered = applyFilters(records, facets, filterValues)
 ReactAppController::register(['basePath' => 'hats', ...])
   ├─ rewrite rule        →  yoursite.com/hats  matches
   ├─ template_include    →  templates/app-shell.php  →  <div id="hats-app">
-  ├─ wp_enqueue_scripts  →  build/index.js
+  ├─ wp_enqueue_scripts  →  dist/index.js
   └─ wp_localize_script  →  window.hatsConfig { apiUrl, nonce }
                                       │
                              main.jsx reads config, configures axios
