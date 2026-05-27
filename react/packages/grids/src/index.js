@@ -2,6 +2,10 @@ import Grid from './components/Grid';
 import GridLayout from './components/GridLayout';
 import GridPagination from './components/GridPagination';
 import TableView from './components/view-types/TableView';
+import TableTable from './components/view-types/TableTable';
+import TableHead from './components/view-types/TableHead';
+import TableBody from './components/view-types/TableBody';
+import TableFooter from './components/view-types/TableFooter';
 import TablePaginationControls from './components/view-types/TablePaginationControls';
 import TableRowCount from './components/view-types/TableRowCount';
 import TablePageSizer from './components/view-types/TablePageSizer';
@@ -46,6 +50,10 @@ export {
   useFilter,
   CheckboxFacet,
   // TableView sub-components
+  TableTable,
+  TableHead,
+  TableBody,
+  TableFooter,
   TablePaginationControls,
   TableRowCount,
   TablePageSizer,
