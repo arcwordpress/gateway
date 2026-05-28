@@ -1,8 +1,8 @@
 import { useTableContext } from '../../context/TableContext';
 
 const TableRowCount = ({ table: tableProp, count: countProp }) => {
-  const tableCtx = useTableContext();
-  const table = tableProp ?? tableCtx;
+  const ctx = useTableContext();
+  const table = tableProp ?? ctx?.table;
   const n = countProp ?? table?.options?.data?.length ?? 0;
 
   return (

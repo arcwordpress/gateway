@@ -1,8 +1,8 @@
 import { useTableContext } from '../../context/TableContext';
 
 const TablePaginationControls = ({ table: tableProp }) => {
-  const tableCtx = useTableContext();
-  const table = tableProp ?? tableCtx;
+  const ctx = useTableContext();
+  const table = tableProp ?? ctx?.table;
   if (!table) return null;
 
   return (

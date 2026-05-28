@@ -4,9 +4,12 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  flexRender,
 } from '@tanstack/react-table';
 import TableContext from '../../context/TableContext';
+import TableTable from './TableTable';
+import TableHead from './TableHead';
+import TableBody from './TableBody';
+import TableFooter from './TableFooter';
 import TablePaginationControls from './TablePaginationControls';
 import TableRowCount from './TableRowCount';
 import TablePageSizer from './TablePageSizer';
@@ -14,16 +17,23 @@ import TablePageSizer from './TablePageSizer';
 /**
  * TableView — compound component.
  *
- * Render sub-components as children to include them; omit to exclude them.
+ * With no children it renders everything (table + full footer).
+ * Pass children to control exactly what renders:
  *
- *   <TableView data={rows} columns={cols}>
- *     <TableView.PaginationControls />
- *     <TableView.RowCount />
- *     <TableView.PageSizer />
+ *   <TableView data={rows} columns={cols} onRowClick={handler}>
+ *     <TableView.Table>
+ *       <TableView.Head />
+ *       <TableView.Body />
+ *     </TableView.Table>
+ *     <TableView.Footer>
+ *       <TableView.PaginationControls />
+ *       <TableView.RowCount />
+ *     </TableView.Footer>
  *   </TableView>
  *
- * Sub-components can also be used standalone by passing a `table` prop
- * from your own useReactTable instance.
+ * Each level defaults to its own children when none are provided, so
+ * <TableView.Table /> alone renders Head + Body, and <TableView.Footer />
+ * alone renders all three pagination controls.
  */
 const TableView = ({
   data = [],
@@ -63,73 +73,23 @@ const TableView = ({
   }
 
   return (
-    <TableContext.Provider value={table}>
+    <TableContext.Provider value={{ table, onRowClick }}>
       <div className="table-view">
-        <div className="table-view__wrapper">
-          <table className="table-view__table">
-            <thead className="table-view__thead">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="table-view__row">
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="table-view__th">
-                      {header.isPlaceholder ? null : (
-                        <div
-                          className={
-                            header.column.getCanSort()
-                              ? 'table-view__header table-view__header--sortable'
-                              : 'table-view__header'
-                          }
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {header.column.getCanSort() && (
-                            <span className="table-view__sort-icon">
-                              {{
-                                asc: '↑',
-                                desc: '↓',
-                              }[header.column.getIsSorted()] ?? '⇅'}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="table-view__tbody">
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={`table-view__row table-view__row--body${onRowClick ? ' table-view__row--clickable' : ''}`}
-                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="table-view__td">
-                      <div className="table-view__cell-content">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {children && (
-          <div className="table-view__pagination">
-            {children}
-          </div>
+        {children ?? (
+          <>
+            <TableTable />
+            <TableFooter />
+          </>
         )}
       </div>
     </TableContext.Provider>
   );
 };
 
+TableView.Table = TableTable;
+TableView.Head = TableHead;
+TableView.Body = TableBody;
+TableView.Footer = TableFooter;
 TableView.PaginationControls = TablePaginationControls;
 TableView.RowCount = TableRowCount;
 TableView.PageSizer = TablePageSizer;

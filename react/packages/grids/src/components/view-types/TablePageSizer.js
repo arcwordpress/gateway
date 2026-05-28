@@ -3,8 +3,8 @@ import { useTableContext } from '../../context/TableContext';
 const defaultPageSizes = [10, 20, 30, 40, 50];
 
 const TablePageSizer = ({ table: tableProp, pageSizes = defaultPageSizes }) => {
-  const tableCtx = useTableContext();
-  const table = tableProp ?? tableCtx;
+  const ctx = useTableContext();
+  const table = tableProp ?? ctx?.table;
   if (!table) return null;
 
   const { pageIndex, pageSize } = table.getState().pagination;
