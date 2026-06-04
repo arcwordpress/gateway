@@ -1,12 +1,34 @@
 import { useState } from 'react';
-import Modal from '../Dialog';
+import CardsContext from '../../context/CardsContext';
 import { useGridContext } from '../../context/GridContext';
 import { getLabelField } from '../../services/columnGenerator';
+import CardsGrid from './CardsGrid';
+import CardsCard from './CardsCard';
+import CardsCardHeader from './CardsCardHeader';
+import CardsCardBody from './CardsCardBody';
+import CardsCardFooter from './CardsCardFooter';
+import CardsFooter from './CardsFooter';
+import Modal from '../Dialog';
 import '../dialog.css';
 
 /**
- * CardsView Component
- * Displays collection data in a grid of cards
+ * CardsView — compound component.
+ *
+ * Without children renders everything (grid + footer + detail modal).
+ * Pass children to control exactly what renders:
+ *
+ *   <CardsView data={data}>
+ *     <CardsView.Grid>
+ *       {(record) => (
+ *         <CardsView.Card record={record}>
+ *           <CardsView.CardHeader record={record} />
+ *           <p>{record.custom_field}</p>
+ *           <CardsView.CardFooter record={record} />
+ *         </CardsView.Card>
+ *       )}
+ *     </CardsView.Grid>
+ *     <CardsView.Footer />
+ *   </CardsView>
  */
 const CardsView = ({
   data = [],
@@ -15,22 +37,20 @@ const CardsView = ({
   selectedRecord: externalSelectedRecord,
   onCloseView,
   singleViewComponent: SingleViewComponent,
+  children,
 }) => {
   const [internalSelectedRecord, setInternalSelectedRecord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { collection } = useGridContext();
   const { fieldKey: labelKey, status: labelStatus } = getLabelField(collection);
 
-  // Use external or internal state
   const selectedRecord = externalSelectedRecord !== undefined ? externalSelectedRecord : internalSelectedRecord;
   const isViewOpen = externalSelectedRecord !== undefined ? !!externalSelectedRecord : isModalOpen;
 
   const handleViewRecord = (record) => {
     if (onView) {
-      // Let parent handle navigation (e.g., router)
       onView(record);
     } else {
-      // Use internal modal
       setInternalSelectedRecord(record);
       setIsModalOpen(true);
     }
@@ -61,60 +81,40 @@ const CardsView = ({
     );
   }
 
+  const contextValue = {
+    data,
+    collection,
+    labelKey,
+    labelStatus,
+    selectedRecord,
+    isViewOpen,
+    handleViewRecord,
+    handleCloseView,
+    SingleViewComponent,
+  };
+
   return (
-    <div className="cards-view">
-      <div className="cards-view__grid">
-        {data.map((record) => (
-          <div
-            key={record.id}
-            className="cards-view__card"
-            onClick={() => handleViewRecord(record)}
-          >
-            <div className="cards-view__card-header">
-              <span className="grid__id-badge">#{record.id}</span>
-              <div className="cards-view__card-title">
-                {labelStatus === 'none'
-                  ? <span className="grid__no-label">No default label field set for this collection.</span>
-                  : (record[labelKey] || <span className="grid__no-label grid__no-label--empty">—</span>)
-                }
-              </div>
-            </div>
-            <div className="cards-view__card-body">
-              {record.description && (
-                <div className="cards-view__card-description">
-                  {record.description}
-                </div>
-              )}
-            </div>
-            <div className="cards-view__card-footer">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewRecord(record);
-                }}
-                className="grid__btn grid__btn--view"
-              >
-                View
-              </button>
-            </div>
-          </div>
-        ))}
+    <CardsContext.Provider value={contextValue}>
+      <div className="cards-view">
+        {children ?? (
+          <>
+            <CardsGrid />
+            <CardsFooter />
+          </>
+        )}
+        <Modal isOpen={isViewOpen} onClose={handleCloseView} title="Record Details">
+          {SingleViewComponent ? <SingleViewComponent record={selectedRecord} /> : null}
+        </Modal>
       </div>
-
-      <div className="cards-view__footer">
-        {data.length} card(s)
-      </div>
-
-      {/* View Record Modal */}
-      <Modal
-        isOpen={isViewOpen}
-        onClose={handleCloseView}
-        title="Record Details"
-      >
-        {SingleViewComponent ? <SingleViewComponent record={selectedRecord} /> : null}
-      </Modal>
-    </div>
+    </CardsContext.Provider>
   );
 };
+
+CardsView.Grid = CardsGrid;
+CardsView.Card = CardsCard;
+CardsView.CardHeader = CardsCardHeader;
+CardsView.CardBody = CardsCardBody;
+CardsView.CardFooter = CardsCardFooter;
+CardsView.Footer = CardsFooter;
 
 export default CardsView;

@@ -11,6 +11,12 @@ import TableRowCount from './components/view-types/TableRowCount';
 import TablePageSizer from './components/view-types/TablePageSizer';
 import ListView from './components/view-types/ListView';
 import CardsView from './components/view-types/CardsView';
+import CardsGrid from './components/view-types/CardsGrid';
+import CardsCard from './components/view-types/CardsCard';
+import CardsCardHeader from './components/view-types/CardsCardHeader';
+import CardsCardBody from './components/view-types/CardsCardBody';
+import CardsCardFooter from './components/view-types/CardsCardFooter';
+import CardsFooter from './components/view-types/CardsFooter';
 import SingleView from './components/SingleView';
 import Modal from './components/Dialog';
 import SearchFilter from './components/filter-types/text/TextFilter';
@@ -21,6 +27,7 @@ import Filter from './components/Filter';
 import FilterGroup from './components/Filters';
 import { GridProvider, useGridContext, useRecord } from './context/GridContext';
 import { useTableContext } from './context/TableContext';
+import { useCardsContext } from './context/CardsContext';
 import ViewSwitcher from './components/ViewSwitcher';
 import useFilter from './hooks/useFilter';
 import CheckboxFacet from './components/filter-types/checkbox/CheckboxFacet';
@@ -31,9 +38,26 @@ export {
   Grid,
   GridLayout,
   GridPagination,
+  // Table view
   TableView,
+  TableTable,
+  TableHead,
+  TableBody,
+  TableFooter,
+  TablePaginationControls,
+  TableRowCount,
+  TablePageSizer,
+  // List view
   ListView,
+  // Cards view
   CardsView,
+  CardsGrid,
+  CardsCard,
+  CardsCardHeader,
+  CardsCardBody,
+  CardsCardFooter,
+  CardsFooter,
+  // Other components
   SingleView,
   Modal,
   SearchFilter,
@@ -42,22 +66,16 @@ export {
   RangeFilter,
   Filter,
   FilterGroup,
+  // Context & hooks
   GridProvider,
   useGridContext,
   useRecord,
   useTableContext,
+  useCardsContext,
   ViewSwitcher,
   useFilter,
   CheckboxFacet,
-  // TableView sub-components
-  TableTable,
-  TableHead,
-  TableBody,
-  TableFooter,
-  TablePaginationControls,
-  TableRowCount,
-  TablePageSizer,
-  // Composable primitives
+  // Utilities
   generateColumns,
   getLabelField,
   applyFilters,
