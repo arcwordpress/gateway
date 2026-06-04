@@ -1,0 +1,14 @@
+.gty-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.gty-menu--vertical {
+    display: block;
+}
+
+.gty-menu--horizontal {
+    display: flex;
+    gap: 1rem;
+}
