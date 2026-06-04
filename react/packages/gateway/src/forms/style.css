@@ -1,5 +1,5 @@
 /* Gateway Forms - Main Styles */
-@import '../../tokens.css';
+@import '../../../tokens.css';
 
 /* Import all field type styles */
 @import './components/field/style.css';
