@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getApiClient } from '@arcwp/gateway/data';
+import { getApiClient } from '@arcwp/gateway';
 
 const api = getApiClient(axios, {
     baseURL: window.gatewayDocsData?.apiUrl || '/wp-json/gateway/v1',

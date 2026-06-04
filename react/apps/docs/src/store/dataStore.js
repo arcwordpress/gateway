@@ -1,4 +1,4 @@
-import { createStore } from '@arcwp/gateway/data';
+import { createStore } from '@arcwp/gateway';
 import api from '../api';
 
 const { store: dataStore, useStore: useDataStore } = createStore(async () => {
