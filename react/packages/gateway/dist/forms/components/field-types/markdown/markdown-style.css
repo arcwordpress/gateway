@@ -1,0 +1,90 @@
+.markdown-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+  margin-bottom: 0.25rem;
+}
+
+.markdown-field__required {
+  color: var(--gty-error);
+  margin-left: 0.25rem;
+}
+
+.markdown-field__help {
+  font-size: 0.875rem;
+  color: var(--gty-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.markdown-field__loading {
+  padding: 1rem;
+  color: var(--gty-text-muted);
+}
+
+.markdown-field__wrapper {
+  /* SimpleMDE editor will be rendered inside */
+}
+
+/* ── EasyMDE / SimpleMDE theme overrides ─────────────────────────────────── */
+
+.markdown-field__wrapper .editor-toolbar {
+  background: var(--gty-offset-1);
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .editor-toolbar a,
+.markdown-field__wrapper .editor-toolbar button {
+  color: var(--gty-contrast-2) !important;
+}
+
+.markdown-field__wrapper .editor-toolbar a:hover,
+.markdown-field__wrapper .editor-toolbar button:hover,
+.markdown-field__wrapper .editor-toolbar a.active,
+.markdown-field__wrapper .editor-toolbar button.active {
+  background: var(--gty-bg-hover);
+  border-color: transparent;
+}
+
+.markdown-field__wrapper .editor-toolbar i.separator {
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .CodeMirror {
+  background: #33393C;
+  color: var(--gty-contrast-2);
+  border-color: var(--gty-border);
+}
+
+.markdown-field__wrapper .CodeMirror .cm-comment {
+  color: var(--gty-contrast-2);
+}
+
+.markdown-field__wrapper .CodeMirror-cursor {
+  border-left-color: var(--gty-contrast-2);
+}
+
+.markdown-field__wrapper .CodeMirror-scroll {
+  background: #33393C;
+}
+
+.markdown-field__wrapper--error .CodeMirror {
+  border-color: var(--gty-error);
+}
+
+.markdown-field__error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--gty-error);
+}
+
+.markdown-field__display {
+  color: var(--gty-text);
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.markdown-field__display--empty {
+  color: var(--gty-text-faint);
+  font-style: italic;
+}

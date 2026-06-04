@@ -1,0 +1,29 @@
+.select-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.select-filter__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a1a1aa;
+}
+
+.select-filter__control {
+  min-width: 150px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--gty-contrast-1);
+  background-color: var(--gty-offset-1);
+  border: 1px solid var(--gty-offset-2);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+}
+
+.select-filter__control:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+}

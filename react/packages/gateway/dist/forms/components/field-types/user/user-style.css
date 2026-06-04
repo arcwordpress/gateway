@@ -1,0 +1,215 @@
+/* User Field Styles */
+
+.user-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+  margin-bottom: 0.25rem;
+}
+
+.user-field__selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  background-color: var(--gty-offset-2);
+}
+
+.user-field__user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.user-field__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid var(--gty-border);
+}
+
+.user-field__user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-field__user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gty-text);
+}
+
+.user-field__user-email {
+  font-size: 0.75rem;
+  color: var(--gty-text-muted);
+}
+
+.user-field__user-roles {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.user-field__role-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--gty-accent-dim);
+  background-color: rgba(59, 130, 246, 0.15);
+  border-radius: 9999px;
+  text-transform: capitalize;
+}
+
+.user-field__clear-button {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--gty-error);
+  color: #ffffff;
+  border-radius: 9999px;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  flex-shrink: 0;
+}
+
+.user-field__clear-button:hover {
+  background-color: var(--gty-error-border);
+}
+
+.user-field__search-container {
+  position: relative;
+}
+
+.user-field__search-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--gty-text);
+  background-color: var(--gty-offset-2);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.user-field__search-input:focus {
+  outline: none;
+  border-color: var(--gty-border-focus);
+  box-shadow: var(--gty-focus-ring);
+}
+
+.user-field__search-input::placeholder {
+  color: var(--gty-text-faint);
+}
+
+.user-field__loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  padding: 0.75rem;
+  background-color: var(--gty-offset-2);
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  font-size: 0.875rem;
+  color: var(--gty-text-muted);
+  text-align: center;
+  z-index: 10;
+}
+
+.user-field__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--gty-offset-2);
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.user-field__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease-in-out;
+  border-bottom: 1px solid var(--gty-border);
+  color: var(--gty-text);
+}
+
+.user-field__dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.user-field__dropdown-item:hover {
+  background-color: var(--gty-bg-hover);
+}
+
+.user-field__no-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  padding: 0.75rem;
+  background-color: var(--gty-offset-2);
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  font-size: 0.875rem;
+  color: var(--gty-text-muted);
+  text-align: center;
+  z-index: 10;
+}
+
+.user-field__help {
+  font-size: 0.75rem;
+  color: var(--gty-text-muted);
+  margin: 0;
+}
+
+.user-field__error {
+  font-size: 0.75rem;
+  color: var(--gty-error);
+  margin: 0;
+}
+
+.user-field__display {
+  font-size: 0.875rem;
+  color: var(--gty-text);
+}
+
+.user-field__display--empty {
+  color: var(--gty-text-faint);
+  font-style: italic;
+}

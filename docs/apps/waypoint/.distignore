@@ -1,0 +1,53 @@
+# Development files
+node_modules/
+.git/
+.github/
+.gitignore
+.distignore
+.claude/
+
+# Build tools
+package.json
+package-lock.json
+composer.json
+composer.lock
+webpack.config.js
+vite.config.js
+tailwind.config.js
+postcss.config.js
+tsconfig.json
+
+# Source files (if you compile) - ONLY root level src folders
+/src/
+/assets/src/
+
+# Testing
+tests/
+phpunit.xml
+.phpunit.result.cache
+phpcs.xml
+
+# Documentation (optional - remove if you want these included)
+README.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.travis.yml
+.gitlab-ci.yml
+bitbucket-pipelines.yml
+
+# Other
+.editorconfig
+.eslintrc
+.prettierrc
+*.log
+*.map

@@ -1,0 +1,37 @@
+.number-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+  margin-bottom: 0.25rem;
+}
+
+.number-field__required {
+  color: var(--gty-error);
+  margin-left: 0.25rem;
+}
+
+.number-field__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  background-color: var(--gty-offset-2);
+  color: var(--gty-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.number-field__input:focus {
+  outline: none;
+  box-shadow: var(--gty-focus-ring);
+  border-color: var(--gty-border-focus);
+}
+
+.number-field__display {
+  color: var(--gty-text);
+}
+
+.number-field__display--empty {
+  color: var(--gty-text-faint);
+  font-style: italic;
+}

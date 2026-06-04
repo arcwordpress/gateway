@@ -1,0 +1,63 @@
+.datetime-picker-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+  margin-bottom: 0.25rem;
+}
+
+.datetime-picker-field__required {
+  color: var(--gty-error);
+  margin-left: 0.25rem;
+}
+
+.datetime-picker-field__help {
+  font-size: 0.875rem;
+  color: var(--gty-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.datetime-picker-field__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  background-color: var(--gty-offset-2);
+  color: var(--gty-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.datetime-picker-field__input:focus {
+  outline: none;
+  box-shadow: var(--gty-focus-ring);
+  border-color: var(--gty-border-focus);
+}
+
+.datetime-picker-field__input--error {
+  border-color: var(--gty-error);
+}
+
+.datetime-picker-field__input--error:focus {
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.35);
+  border-color: var(--gty-error);
+}
+
+.datetime-picker-field__error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--gty-error);
+}
+
+.datetime-picker-field__display {
+  color: var(--gty-text);
+}
+
+.datetime-picker-field__display--empty {
+  color: var(--gty-text-faint);
+  font-style: italic;
+}
+
+.datetime-picker-field__display--invalid {
+  color: var(--gty-error);
+  font-style: italic;
+}

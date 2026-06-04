@@ -1,0 +1,155 @@
+/* ── Full-width inputs ────────────────────────────────────────────────────── */
+/* Applied globally so every text-like field stretches to its container.      */
+/* Excludes controls that must be intrinsic (checkbox, radio, color swatch).  */
+.text-field__input,
+.number-field__input,
+.email-field__input,
+.password-field__input,
+.url-field__input,
+.slug-field__input,
+.select-field__select,
+.relation-field__select,
+.relationship-field__select,
+.textarea-field__textarea,
+.date-picker__input,
+.datetime-picker__input,
+.time-picker__input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Number spinner sits inside the border, not outside it */
+.number-field__input {
+  -moz-appearance: textfield;        /* Firefox: hide default spinner */
+}
+.number-field__input::-webkit-inner-spin-button,
+.number-field__input::-webkit-outer-spin-button {
+  opacity: 1;
+  height: 100%;                      /* stretch spinner to full input height */
+  cursor: pointer;
+}
+
+/* Beat WP admin's input[type=...] specificity (0,1,1) — (0,2,0) wins */
+.gty-form .text-field__input,
+.gty-form .email-field__input,
+.gty-form .number-field__input,
+.gty-form .password-field__input,
+.gty-form .url-field__input,
+.gty-form .slug-field__input,
+.gty-form .select-field__select,
+.gty-form .relation-field__select,
+.gty-form .relationship-field__select,
+.gty-form .textarea-field__textarea,
+.gty-form .date-picker__input,
+.gty-form .datetime-picker__input,
+.gty-form .time-picker__input,
+.gty-appform .text-field__input,
+.gty-appform .email-field__input,
+.gty-appform .number-field__input,
+.gty-appform .password-field__input,
+.gty-appform .url-field__input,
+.gty-appform .slug-field__input,
+.gty-appform .select-field__select,
+.gty-appform .relation-field__select,
+.gty-appform .relationship-field__select,
+.gty-appform .textarea-field__textarea,
+.gty-appform .date-picker__input,
+.gty-appform .datetime-picker__input,
+.gty-appform .time-picker__input {
+  background-color: var(--gty-offset-2);
+  color: var(--gty-text);
+  border-color: var(--gty-border);
+  box-shadow: none;
+}
+
+.gty-form__container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.gty-form {
+  border-radius: 8px;
+  color: inherit;
+}
+
+
+.gty-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gty-form__alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.gty-form__alert--warning {
+  background: var(--gty-warning-bg);
+  border: 1px solid var(--gty-warning-border);
+  color: var(--gty-warning);
+}
+
+.gty-form__alert--error {
+  background: var(--gty-error-bg);
+  border: 1px solid var(--gty-error-border);
+  color: var(--gty-error);
+}
+
+.gty-form__alert--success {
+  background: var(--gty-success-bg);
+  border: 1px solid var(--gty-success-border);
+  color: var(--gty-success);
+}
+
+.gty-form__validation-summary {
+  padding: 12px 16px;
+  border-radius: 4px;
+  background: var(--gty-bg-hover);
+  border: 1px solid var(--gty-border-strong);
+  color: var(--gty-text);
+}
+
+.gty-form__validation-summary-title {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-faint);
+}
+
+.gty-form__validation-summary-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gty-form__validation-summary-item {
+  font-size: 0.875rem;
+  color: var(--gty-text);
+}
+
+.gty-form__submit {
+  margin-top: 16px;
+  background: var(--gty-offset-1);
+  color: var(--gty-text);
+  border: 1px solid var(--gty-border-strong);
+  padding: 12px 0;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gty-form__submit:hover {
+  background: var(--gty-bg-overlay);
+}
+
+.gty-form__submit:disabled {
+  background: var(--gty-bg-overlay);
+  color: var(--gty-text-faint);
+  cursor: not-allowed;
+}

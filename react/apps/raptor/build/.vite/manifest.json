@@ -21,8 +21,8 @@
       "_vendor-charts-DJgcdPAF.js"
     ]
   },
-  "_vendor-icons-BM1_tjRX.js": {
-    "file": "assets/vendor-icons-BM1_tjRX.js",
+  "_vendor-icons-2T5cMPHO.js": {
+    "file": "assets/vendor-icons-2T5cMPHO.js",
     "name": "vendor-icons",
     "imports": [
       "_vendor-router-80ChAYgO.js"
@@ -47,20 +47,20 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-CtaC5hmI.js",
+    "file": "assets/main-71U6_kXJ.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
     "imports": [
       "_vendor-router-80ChAYgO.js",
       "_vendor-query-B90RFYKO.js",
-      "_vendor-icons-BM1_tjRX.js",
+      "_vendor-icons-2T5cMPHO.js",
       "_vendor-charts-DJgcdPAF.js",
       "_vendor-flow-BtFdiv6p.js",
       "_vendor-dnd-BgTEbaJ8.js"
     ],
     "css": [
-      "assets/main-CNct08aN.css"
+      "assets/main-DCWeRUA-.css"
     ]
   }
 }

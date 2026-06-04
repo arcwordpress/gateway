@@ -1,0 +1,75 @@
+.url-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.url-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+  margin-bottom: 0.25rem;
+}
+
+.url-field__input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gty-border);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--gty-text);
+  background-color: var(--gty-offset-2);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.url-field__input:focus {
+  outline: none;
+  border-color: var(--gty-border-focus);
+  box-shadow: var(--gty-focus-ring);
+}
+
+.url-field__input::placeholder {
+  color: var(--gty-text-faint);
+}
+
+.url-field__input:invalid {
+  border-color: var(--gty-error);
+}
+
+.url-field__help {
+  font-size: 0.75rem;
+  color: var(--gty-text-muted);
+  margin: 0;
+}
+
+.url-field__error {
+  font-size: 0.75rem;
+  color: var(--gty-error);
+  margin: 0;
+}
+
+.url-field__display {
+  font-size: 0.875rem;
+  color: var(--gty-text);
+}
+
+.url-field__link {
+  color: var(--gty-link);
+  text-decoration: underline;
+  word-break: break-all;
+  transition: color 0.15s ease-in-out;
+}
+
+.url-field__link:hover {
+  color: var(--gty-link-hover);
+}
+
+.url-field__link:visited {
+  color: var(--gty-link-visited);
+}
+
+.url-field__display--empty {
+  color: var(--gty-text-faint);
+  font-style: italic;
+}

@@ -1,0 +1,35 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gty-text-sub);
+}
+
+.field__help-icon {
+  color: var(--gty-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.field__instructions {
+  font-size: 0.875rem;
+  color: var(--gty-text-muted);
+}
+
+.field__control {
+
+}
+
+.field__control--textarea {
+  min-height: 6rem;
+  resize: vertical;
+}

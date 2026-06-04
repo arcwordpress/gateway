@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+
+.waypoint-app {
+    margin-top: 80px;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .waypoint-app {
+        max-width: 1280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+body.admin-bar .waypoint-app {
+    margin-top: 126px; 
+}

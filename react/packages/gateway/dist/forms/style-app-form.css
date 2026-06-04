@@ -1,0 +1,30 @@
+.gty-appform__container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.gty-appform__alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.gty-appform__alert--warning {
+  background: var(--gty-warning-bg);
+  border: 1px solid var(--gty-warning-border);
+  color: var(--gty-warning);
+}
+
+.gty-appform__alert--error {
+  background: var(--gty-error-bg);
+  border: 1px solid var(--gty-error-border);
+  color: var(--gty-error);
+}
+
+.gty-appform {
+  padding: 24px;
+  border-radius: 8px;
+  color: inherit;
+}
