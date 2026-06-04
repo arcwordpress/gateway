@@ -17,7 +17,6 @@ if (!defined('ABSPATH')) exit;
  * Endpoints:
  *   GET  /gateway/v1/sync/status          — what is registered vs. what is in the DB
  *   POST /gateway/v1/sync/collections     — seed core collection toggle rows
- *   POST /gateway/v1/sync/block-types     — seed block-type toggle rows
  *   POST /gateway/v1/sync/core-migrations — run Gateway core DB migrations
  */
 class SyncRoute
