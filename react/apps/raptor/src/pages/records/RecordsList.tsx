@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { Grid } from '@arcwp/gateway-grids'
-import '@arcwp/gateway-forms/style.css'
+import { Grid } from '@arcwp/gateway/grids'
+import '@arcwp/gateway/forms/style.css'
 
 export default function RecordsList() {
   const { collectionKey } = useParams({ strict: false }) as { collectionKey: string }

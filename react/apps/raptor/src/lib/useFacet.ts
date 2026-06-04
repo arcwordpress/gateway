@@ -1,6 +1,6 @@
 import { createElement, useMemo, useState } from 'react'
 import { type FacetType } from './facet_types'
-import { Filter as FilterComponent } from '@arcwp/gateway-grids'
+import { Filter as FilterComponent } from '@arcwp/gateway/grids'
 
 export interface FacetConfig {
   type: FacetType

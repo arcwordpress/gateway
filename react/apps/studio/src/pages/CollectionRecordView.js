@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { CollectionProvider, useCollectionRecords } from '@arcwp/gateway-data';
-import { SingleView } from '@arcwp/gateway-grids';
+import { CollectionProvider, useCollectionRecords } from '@arcwp/gateway/data';
+import { SingleView } from '@arcwp/gateway/grids';
 import { useCollections } from '../context/CollectionsContext';
 import CollectionsNav from '../components/CollectionsNav';
 

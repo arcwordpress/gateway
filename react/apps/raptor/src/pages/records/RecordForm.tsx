@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { Form } from '@arcwp/gateway-forms'
-import '@arcwp/gateway-forms/style.css'
+import { Form } from '@arcwp/gateway/forms'
+import '@arcwp/gateway/forms/style.css'
 
 export default function RecordForm() {
   const { collectionKey, id } = useParams({ strict: false }) as {

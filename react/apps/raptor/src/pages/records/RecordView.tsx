@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../../lib/api'
-import { SingleView } from '@arcwp/gateway-grids'
+import { SingleView } from '@arcwp/gateway/grids'
 import { REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections } from '../../lib/queries'
-import '@arcwp/gateway-forms/style.css'
+import '@arcwp/gateway/forms/style.css'
 
 type RaptorField = { name: string; label?: string; type?: string }
 type RaptorCollectionDetail = {

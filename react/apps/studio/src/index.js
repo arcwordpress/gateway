@@ -3,8 +3,8 @@ import App from './App';
 import './index.css';
 
 // Import package styles
-import '@arcwp/gateway-forms/style.css';
-import '@arcwp/gateway-grids/style.css';
+import '@arcwp/gateway/forms/style.css';
+import '@arcwp/gateway/grids/style.css';
 
 const rootElement = document.querySelector('[gateway-studio-app]');
 

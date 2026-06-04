@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@arcwp/gateway-grids';
+import { Grid } from '@arcwp/gateway/grids';
 import { useCollections } from '../context/CollectionsContext';
 import CollectionsNav from '../components/CollectionsNav';
 

@@ -22,6 +22,8 @@
       "require": "./dist/grids/index.js"
     },
     "./style.css": "./src/forms/style.css",
+    "./forms/style.css": "./src/forms/style.css",
+    "./grids/style.css": "./src/grids/style.css",
     "./board-styles.css": "./src/grids/board-styles.css"
   },
   "author": "ARCWP <hello@arcwp.ca>",
