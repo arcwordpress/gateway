@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form } from '@arcwp/gateway-forms';
+import { Form } from '@arcwp/gateway/forms';
 import { useCollections } from '../context/CollectionsContext';
 import CollectionsNav from '../components/CollectionsNav';
 

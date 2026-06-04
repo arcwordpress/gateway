@@ -10,9 +10,7 @@
     "packages-update": "wp-scripts packages-update"
   },
   "dependencies": {
-    "@arcwp/gateway-data": "file:../../packages/data",
-    "@arcwp/gateway-forms": "file:../../packages/forms",
-    "@arcwp/gateway-grids": "file:../../packages/grids",
+    "@arcwp/gateway": "file:../../packages/gateway",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.12.2",
     "react": "^18.2.0",

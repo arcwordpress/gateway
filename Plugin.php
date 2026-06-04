@@ -134,7 +134,6 @@ class Plugin
         Render\Render::init();
         Raptor\ViewRenderer::init();
         $this->patternRegistry->init();
-        Integrations\Gutenberg\BlockRegistry::init();
 
         do_action('gateway_loaded');
     }

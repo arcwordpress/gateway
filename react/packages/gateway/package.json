@@ -1,0 +1,93 @@
+{
+  "name": "@arcwp/gateway",
+  "version": "1.2.8",
+  "description": "Gateway React component library — data, forms, and grids",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./data": {
+      "import": "./dist/data/index.js",
+      "require": "./dist/data/index.js"
+    },
+    "./forms": {
+      "import": "./dist/forms/index.js",
+      "require": "./dist/forms/index.js"
+    },
+    "./grids": {
+      "import": "./dist/grids/index.js",
+      "require": "./dist/grids/index.js"
+    },
+    "./style.css": "./src/forms/style.css",
+    "./forms/style.css": "./src/forms/style.css",
+    "./grids/style.css": "./src/grids/style.css",
+    "./board-styles.css": "./src/grids/board-styles.css"
+  },
+  "author": "ARCWP <hello@arcwp.ca>",
+  "license": "MIT",
+  "scripts": {
+    "build": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js'",
+    "prepublishOnly": "npm run build",
+    "watch": "babel src --out-dir dist --copy-files --ignore '**/*.test.js','**/*.spec.js' --watch",
+    "test": "jest"
+  },
+  "keywords": [
+    "gateway",
+    "react",
+    "wordpress",
+    "forms",
+    "grids",
+    "data",
+    "components"
+  ],
+  "files": [
+    "dist",
+    "src/forms/style.css",
+    "src/forms/style-app-form.css",
+    "src/grids/style.css",
+    "src/grids/board-styles.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@testing-library/react": "^16.3.1",
+    "babel-jest": "^30.2.0",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "baseline-browser-mapping": "^2.9.11",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "dependencies": {
+    "@babel/plugin-transform-export-namespace-from": "^7.24.0",
+    "@hookform/resolvers": "^3.3.4",
+    "@tanstack/react-table": "^8.21.3",
+    "@tiptap/extension-link": "^3.6.6",
+    "@tiptap/extension-text-align": "^3.6.6",
+    "@tiptap/extension-underline": "^3.6.6",
+    "@tiptap/react": "^3.6.6",
+    "@tiptap/starter-kit": "^3.6.6",
+    "axios": "^1.7.0",
+    "easymde": "^2.20.0",
+    "lucide-react": "^0.577.0",
+    "react-datepicker": "^8.7.0",
+    "react-hook-form": "^7.49.2",
+    "react-select": "^5.10.1",
+    "react-simplemde-editor": "^5.2.0",
+    "zod": "^3.22.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

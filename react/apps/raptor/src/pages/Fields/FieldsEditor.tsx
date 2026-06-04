@@ -5,8 +5,8 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — JS-only package; declarations in src/types.d.ts
-import { ControlledForm, useFieldType, FieldTypeSelector } from '@arcwp/gateway-forms'
-import '@arcwp/gateway-forms/style.css'
+import { ControlledForm, useFieldType, FieldTypeSelector } from '@arcwp/gateway/forms'
+import '@arcwp/gateway/forms/style.css'
 import { Field, FieldTypeDef } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { Trash2, Plus, Search } from 'lucide-react'
