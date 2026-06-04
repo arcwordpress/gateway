@@ -1,4 +1,4 @@
-@import '../../tokens.css';
+@import '../../../tokens.css';
 
 .grid__title {
   color: var(--gty-text);
