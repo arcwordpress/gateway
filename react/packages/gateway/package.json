@@ -1,16 +1,28 @@
 {
-  "name": "@arcwp/gateway-forms",
+  "name": "@arcwp/gateway",
   "version": "1.2.8",
-  "description": "Gateway Forms React component library with form field types and validation",
+  "description": "Gateway React component library — data, forms, and grids",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "style": "src/style.css",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
-    "./style.css": "./src/style.css"
+    "./data": {
+      "import": "./dist/data/index.js",
+      "require": "./dist/data/index.js"
+    },
+    "./forms": {
+      "import": "./dist/forms/index.js",
+      "require": "./dist/forms/index.js"
+    },
+    "./grids": {
+      "import": "./dist/grids/index.js",
+      "require": "./dist/grids/index.js"
+    },
+    "./style.css": "./src/forms/style.css",
+    "./board-styles.css": "./src/grids/board-styles.css"
   },
   "author": "ARCWP <hello@arcwp.ca>",
   "license": "MIT",
@@ -22,22 +34,19 @@
   },
   "keywords": [
     "gateway",
-    "forms",
     "react",
     "wordpress",
-    "components",
-    "form-validation"
+    "forms",
+    "grids",
+    "data",
+    "components"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/arcwordpress/gateway-forms.git"
-  },
-  "bugs": {
-    "url": "https://github.com/arcwordpress/gateway-forms/issues"
-  },
-  "homepage": "https://github.com/arcwordpress/gateway-forms#readme",
   "files": [
-    "dist"
+    "dist",
+    "src/forms/style.css",
+    "src/forms/style-app-form.css",
+    "src/grids/style.css",
+    "src/grids/board-styles.css"
   ],
   "publishConfig": {
     "access": "public"
@@ -58,19 +67,21 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
-    "@arcwp/gateway-data": "file:../data",
+    "@babel/plugin-transform-export-namespace-from": "^7.24.0",
     "@hookform/resolvers": "^3.3.4",
+    "@tanstack/react-table": "^8.21.3",
     "@tiptap/extension-link": "^3.6.6",
     "@tiptap/extension-text-align": "^3.6.6",
     "@tiptap/extension-underline": "^3.6.6",
     "@tiptap/react": "^3.6.6",
     "@tiptap/starter-kit": "^3.6.6",
+    "axios": "^1.7.0",
     "easymde": "^2.20.0",
+    "lucide-react": "^0.577.0",
     "react-datepicker": "^8.7.0",
     "react-hook-form": "^7.49.2",
     "react-select": "^5.10.1",
     "react-simplemde-editor": "^5.2.0",
-    "lucide-react": "^0.477.0",
     "zod": "^3.22.4"
   },
   "peerDependencies": {

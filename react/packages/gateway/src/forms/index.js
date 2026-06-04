@@ -1,12 +1,9 @@
-// Note: API functions in './services/api' are for internal use only and are not exported from the main package API.
-
 // Form type component exports.
 export { Form } from './components/form-types/Form';
 export { AppForm } from './components/form-types/AppForm';
 // ComposedForm is AppForm re-exported under a semantic name for custom-layout use cases.
 export { AppForm as ComposedForm } from './components/form-types/AppForm';
 export { ControlledForm } from './components/form-types/ControlledForm';
-export { BlockForm } from './components/form-types/BlockForm';
 
 // Context and services exports.
 export {
@@ -20,11 +17,9 @@ export {
 export {
   createFieldRegister,
   createMockFormState,
-  createGutenbergRegister,
   createControlledRegister
 } from './utils/fieldRegistration';
 
-// @TODO: Refactor to remove getFieldLabel from zodSchemaGenerator and move to a more appropriate utility module.
 export { generateZodSchema, generateZodSchemaFromFields, generateFieldSchema, getFieldLabel } from './utils/zodSchemaGenerator';
 
 // Field Registry System
@@ -37,15 +32,6 @@ export {
   getFieldTypeDisplay,
   getFieldTypeInput,
 } from './fieldTypeRegistry';
-
-// Gutenberg Block Adapter
-export {
-  GutenbergFieldProvider,
-  GutenbergField,
-  GutenbergFieldGroup,
-  useGutenbergField,
-  useGutenbergFieldWithContext
-} from './adapters/gutenbergFieldAdapter';
 
 // Composed form hook — use inside ComposedForm/AppForm to get auto-saving field components by name.
 export { useField } from './hooks/useField';

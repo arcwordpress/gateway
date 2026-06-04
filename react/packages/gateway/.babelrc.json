@@ -11,10 +11,13 @@
     }]
   ],
   "plugins": [
+    "@babel/plugin-transform-export-namespace-from",
     ["module-resolver", {
+      "root": ["./src"],
       "alias": {
-        "@arcwp/gateway-forms": "./src",
-        "@wordpress/i18n": "./src/i18n"
+        "@arcwp/gateway-data": "./src/data",
+        "@arcwp/gateway-forms": "./src/forms",
+        "@wordpress/i18n": "./src/forms/i18n"
       }
     }]
   ],
