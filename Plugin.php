@@ -134,6 +134,7 @@ class Plugin
         Render\Render::init();
         Raptor\ViewRenderer::init();
         $this->patternRegistry->init();
+        Apps\AppRegistry::init();
         Docs\Docs::init();
 
         do_action('gateway_loaded');
