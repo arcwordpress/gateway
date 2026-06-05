@@ -28,7 +28,6 @@ phpunit.xml
 phpcs.xml
 
 # Documentation (optional - remove if you want these included)
-README.md
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 CLAUDE.md
