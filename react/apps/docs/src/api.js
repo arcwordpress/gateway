@@ -1,9 +1,13 @@
-import axios from 'axios';
 import { getApiClient } from '@arcwp/gateway';
 
-const api = getApiClient(axios, {
-    baseURL: window.gatewayDocsData?.apiUrl || '/wp-json/gateway/v1',
-    nonce: window.gatewayDocsData?.nonce,
-});
+// Bridge gatewayDocsData into the shape getApiClient expects.
+if (window.gatewayDocsData && !window.gatewayAdminScript) {
+    window.gatewayAdminScript = {
+        apiUrl: window.gatewayDocsData.apiUrl,
+        nonce:  window.gatewayDocsData.nonce,
+    };
+}
+
+const api = getApiClient();
 
 export default api;
