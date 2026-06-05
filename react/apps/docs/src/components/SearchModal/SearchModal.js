@@ -6,7 +6,7 @@ import Modal from 'react-modal';
 import api from '../../api';
 import './style.css';
 
-Modal.setAppElement('#gateway-docs-app');
+Modal.setAppElement('#gateway-app-docs');
 
 function SearchModal({ isOpen, onClose }) {
     const navigate = useNavigate();
