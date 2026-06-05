@@ -5,16 +5,38 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 import { useState } from 'react';
-import Modal from "../Dialog";
+import CardsContext from "../../context/CardsContext";
 import { useGridContext } from "../../context/GridContext";
 import { getLabelField } from "../../services/columnGenerator";
+import CardsGrid from "./CardsGrid";
+import CardsCard from "./CardsCard";
+import CardsCardHeader from "./CardsCardHeader";
+import CardsCardBody from "./CardsCardBody";
+import CardsCardFooter from "./CardsCardFooter";
+import CardsFooter from "./CardsFooter";
+import Modal from "../Dialog";
 import "../dialog.css";
 
 /**
- * CardsView Component
- * Displays collection data in a grid of cards
+ * CardsView — compound component.
+ *
+ * Without children renders everything (grid + footer + detail modal).
+ * Pass children to control exactly what renders:
+ *
+ *   <CardsView data={data}>
+ *     <CardsView.Grid>
+ *       {(record) => (
+ *         <CardsView.Card record={record}>
+ *           <CardsView.CardHeader record={record} />
+ *           <p>{record.custom_field}</p>
+ *           <CardsView.CardFooter record={record} />
+ *         </CardsView.Card>
+ *       )}
+ *     </CardsView.Grid>
+ *     <CardsView.Footer />
+ *   </CardsView>
  */
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 var CardsView = _ref => {
   var _ref$data = _ref.data,
     data = _ref$data === void 0 ? [] : _ref$data,
@@ -23,7 +45,8 @@ var CardsView = _ref => {
     onView = _ref.onView,
     externalSelectedRecord = _ref.selectedRecord,
     onCloseView = _ref.onCloseView,
-    SingleViewComponent = _ref.singleViewComponent;
+    SingleViewComponent = _ref.singleViewComponent,
+    children = _ref.children;
   var _useState = useState(null),
     _useState2 = _slicedToArray(_useState, 2),
     internalSelectedRecord = _useState2[0],
@@ -37,16 +60,12 @@ var CardsView = _ref => {
   var _getLabelField = getLabelField(collection),
     labelKey = _getLabelField.fieldKey,
     labelStatus = _getLabelField.status;
-
-  // Use external or internal state
   var selectedRecord = externalSelectedRecord !== undefined ? externalSelectedRecord : internalSelectedRecord;
   var isViewOpen = externalSelectedRecord !== undefined ? !!externalSelectedRecord : isModalOpen;
   var handleViewRecord = record => {
     if (onView) {
-      // Let parent handle navigation (e.g., router)
       onView(record);
     } else {
-      // Use internal modal
       setInternalSelectedRecord(record);
       setIsModalOpen(true);
     }
@@ -77,57 +96,38 @@ var CardsView = _ref => {
       })
     });
   }
-  return /*#__PURE__*/_jsxs("div", {
-    className: "cards-view",
-    children: [/*#__PURE__*/_jsx("div", {
-      className: "cards-view__grid",
-      children: data.map(record => /*#__PURE__*/_jsxs("div", {
-        className: "cards-view__card",
-        onClick: () => handleViewRecord(record),
-        children: [/*#__PURE__*/_jsxs("div", {
-          className: "cards-view__card-header",
-          children: [/*#__PURE__*/_jsxs("span", {
-            className: "grid__id-badge",
-            children: ["#", record.id]
-          }), /*#__PURE__*/_jsx("div", {
-            className: "cards-view__card-title",
-            children: labelStatus === 'none' ? /*#__PURE__*/_jsx("span", {
-              className: "grid__no-label",
-              children: "No default label field set for this collection."
-            }) : record[labelKey] || /*#__PURE__*/_jsx("span", {
-              className: "grid__no-label grid__no-label--empty",
-              children: "\u2014"
-            })
-          })]
-        }), /*#__PURE__*/_jsx("div", {
-          className: "cards-view__card-body",
-          children: record.description && /*#__PURE__*/_jsx("div", {
-            className: "cards-view__card-description",
-            children: record.description
-          })
-        }), /*#__PURE__*/_jsx("div", {
-          className: "cards-view__card-footer",
-          children: /*#__PURE__*/_jsx("button", {
-            onClick: e => {
-              e.stopPropagation();
-              handleViewRecord(record);
-            },
-            className: "grid__btn grid__btn--view",
-            children: "View"
-          })
-        })]
-      }, record.id))
-    }), /*#__PURE__*/_jsxs("div", {
-      className: "cards-view__footer",
-      children: [data.length, " card(s)"]
-    }), /*#__PURE__*/_jsx(Modal, {
-      isOpen: isViewOpen,
-      onClose: handleCloseView,
-      title: "Record Details",
-      children: SingleViewComponent ? /*#__PURE__*/_jsx(SingleViewComponent, {
-        record: selectedRecord
-      }) : null
-    })]
+  var contextValue = {
+    data,
+    collection,
+    labelKey,
+    labelStatus,
+    selectedRecord,
+    isViewOpen,
+    handleViewRecord,
+    handleCloseView,
+    SingleViewComponent
+  };
+  return /*#__PURE__*/_jsx(CardsContext.Provider, {
+    value: contextValue,
+    children: /*#__PURE__*/_jsxs("div", {
+      className: "cards-view",
+      children: [children !== null && children !== void 0 ? children : /*#__PURE__*/_jsxs(_Fragment, {
+        children: [/*#__PURE__*/_jsx(CardsGrid, {}), /*#__PURE__*/_jsx(CardsFooter, {})]
+      }), /*#__PURE__*/_jsx(Modal, {
+        isOpen: isViewOpen,
+        onClose: handleCloseView,
+        title: "Record Details",
+        children: SingleViewComponent ? /*#__PURE__*/_jsx(SingleViewComponent, {
+          record: selectedRecord
+        }) : null
+      })]
+    })
   });
 };
+CardsView.Grid = CardsGrid;
+CardsView.Card = CardsCard;
+CardsView.CardHeader = CardsCardHeader;
+CardsView.CardBody = CardsCardBody;
+CardsView.CardFooter = CardsCardFooter;
+CardsView.Footer = CardsFooter;
 export default CardsView;

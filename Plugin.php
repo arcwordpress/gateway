@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gateway
  * Description: Gateway plugin
- * Version: 1.3.1
+ * Version: 1.3.3
  * Requires at least: 6.9
  * Requires PHP: 7.4
  * Author: ARCWP
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GATEWAY_VERSION', '1.3.2');
+define('GATEWAY_VERSION', '1.3.3');
 define('GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('GATEWAY_URL', plugin_dir_url(__FILE__));
 define('GATEWAY_FILE', __FILE__);

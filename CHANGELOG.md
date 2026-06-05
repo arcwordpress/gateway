@@ -2,6 +2,11 @@
 
 All notable changes to the Gateway plugin will be documented in this file.
 
+## [1.3.3] - 2026-06-05
+
+### Added 
+- Integrated documentation Waypoint.
+
 ## [1.3.1] - 2026-05-12
 
 ### Added 
