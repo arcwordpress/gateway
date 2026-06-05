@@ -25,7 +25,7 @@ import DateFilter from './components/filter-types/date_range/DateRangeFilter';
 import RangeFilter from './components/filter-types/range/RangeFilter';
 import Filter from './components/Filter';
 import FilterGroup from './components/Filters';
-import { GridProvider, useGridContext, useRecord } from './context/GridContext';
+import { GridProvider, useGridContext, useRecord as useGridRecord } from './context/GridContext';
 import { useTableContext } from './context/TableContext';
 import { useCardsContext } from './context/CardsContext';
 import ViewSwitcher from './components/ViewSwitcher';
@@ -69,7 +69,7 @@ export {
   // Context & hooks
   GridProvider,
   useGridContext,
-  useRecord,
+  useGridRecord,
   useTableContext,
   useCardsContext,
   ViewSwitcher,
