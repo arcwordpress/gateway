@@ -2,7 +2,7 @@
 
 namespace Gateway\Docs;
 
-use Gateway\Docs\Apps\DocsController;
+use Gateway\Docs\Apps\DocsApp;
 use Gateway\Docs\Collections\DocSetCollection;
 use Gateway\Docs\Collections\DocGroupCollection;
 use Gateway\Docs\Collections\DocCollection;
@@ -14,7 +14,7 @@ class Docs
 {
     public static function init(): void
     {
-        DocsController::register();
+        DocsApp::register();
 
         add_action('gateway_loaded', function () {
             DocSetCollection::register();

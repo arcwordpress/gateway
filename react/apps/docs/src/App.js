@@ -5,9 +5,7 @@ import DocGroupPage from './components/pages/DocGroupPage';
 import DocPage from './components/pages/DocPage';
 import './index.css';
 
-// Get the first path segment as the basename
-const pathSegments = window.location.pathname.split('/').filter(Boolean);
-const basename = pathSegments.length ? `/${pathSegments[0]}` : '/';
+const basename = window.gatewayDocsData?.basePath || '/';
 
 function App() {
     return (
