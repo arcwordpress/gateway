@@ -10,5 +10,5 @@ Store only .md anything else belongs somewhere else. Examples that are files mig
 
 Every file must start with a title on its own line and have an empty line under it before the rest of the content. This enables us to parse out the title when needed in certain displays where title is stored separately.
 
-Example suitable naming: user-guide--getting-started--installation.md
+Example suitable naming: user-guide/getting-started--installation.md
 
