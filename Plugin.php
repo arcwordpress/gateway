@@ -191,35 +191,7 @@ class Plugin
     public static function findSQLiteDatabase() { return Database\DatabaseConnection::findSQLiteDatabase(); }
 }
 
-/**
- * DELAYED BOOTSTRAP FOR LICENSING AND CORE
- * Moves licensing client instantiation to 'init' to prevent
- * early get_plugin_data() translation calls.
- */
 add_action('init', function () {
-    if (!class_exists('SureCart\Licensing\Client')) {
-        require_once GATEWAY_PATH . 'licensing/src/Client.php';
-    }
-
-    $client = new \SureCart\Licensing\Client('Gateway', 'pt_RomxYGqZkhNpvhHTGwrvMtND', GATEWAY_FILE);
-    $opts = get_option('gateway_license_options', []);
-    $license_required = (bool) apply_filters('gateway_requires_license', true);
-    $has_activation   = !empty($opts['sc_activation_id']);
-
-    if ($license_required && !$has_activation) {
-        $client->settings()->add_page([
-            'type'               => 'menu',
-            'page_title'         => 'Gateway — Activate License',
-            'menu_title'         => 'Gateway',
-            'capability'         => 'manage_options',
-            'menu_slug'          => 'gateway',
-            'icon_url'           => 'dashicons-admin-plugins',
-            'position'           => 30,
-            'activated_redirect' => admin_url('admin.php?page=gateway'),
-        ]);
-        return;
-    }
-
     Plugin::getInstance()->boot();
     do_action('gateway_plugin_loaded');
 }, 5);
