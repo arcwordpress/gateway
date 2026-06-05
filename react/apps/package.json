@@ -2,8 +2,9 @@
   "name": "@arcwp/gateway-apps",
   "private": true,
   "scripts": {
-    "build": "npm run build:studio && npm run build:raptor",
+    "build": "npm run build:studio && npm run build:raptor && npm run build:docs",
     "build:studio": "npm --prefix studio run build",
-    "build:raptor": "npm --prefix raptor run build"
+    "build:raptor": "npm --prefix raptor run build",
+    "build:docs": "npm --prefix docs run build"
   }
 }

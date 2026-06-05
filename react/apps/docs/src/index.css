@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+
+.gateway-docs-app {
+    margin-top: 80px;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .gateway-docs-app {
+        max-width: 1280px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+body.admin-bar .gateway-docs-app {
+    margin-top: 126px; 
+}
