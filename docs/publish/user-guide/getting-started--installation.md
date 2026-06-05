@@ -2,7 +2,7 @@
 
 Install Gateway via the WordPress admin or by uploading and unzipping the plugin manually to create `/wp-content/plugins/gateway`.
 
-Gateway is a free, open plugin. The latest stable version is available as a release from the project GitHub at <https://github.com/arcwordpress/gateway-dev>.
+Gateway is a free, open plugin. The latest stable version is available as a release from the project GitHub at <https://github.com/arcwordpress/gateway>.
 
 ## Gateway Activation
 
