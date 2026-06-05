@@ -86,6 +86,10 @@ class AppRegistry
      * For every page assigned an App template, add a rewrite rule that routes
      * all sub-paths (e.g. /kb/docs/intro) back to that page_id so WP loads
      * the same page and template_include can intercept.
+     *
+     * Rules are always re-registered on init (they live in memory, not the DB).
+     * A flush — which writes rules to the rewrite_rules option — only happens
+     * when the fingerprint of registered apps + assigned pages changes.
      */
     public static function addRewriteRules(): void
     {
@@ -93,26 +97,23 @@ class AppRegistry
             return;
         }
 
-        $needsFlush = false;
-
+        // Build the current state: app key => [page_id => uri, ...]
+        $state = [];
         foreach (self::$apps as $app) {
             foreach (self::getPagesForApp($app) as $page) {
-                $uri     = get_page_uri($page->ID); // e.g. 'kb' or 'docs/guide'
+                $uri = get_page_uri($page->ID);
+                $state[$app->getKey()][$page->ID] = $uri;
+
                 $escaped = preg_quote($uri, '|');
-                $pattern = '^' . $escaped . '(/[^?]*)?/?$';
-                $rewrite = 'index.php?page_id=' . $page->ID;
-
-                add_rewrite_rule($pattern, $rewrite, 'top');
-
-                $rules = get_option('rewrite_rules', []);
-                if (!isset($rules[$pattern])) {
-                    $needsFlush = true;
-                }
+                add_rewrite_rule('^' . $escaped . '(/[^?]*)?/?$', 'index.php?page_id=' . $page->ID, 'top');
             }
         }
 
-        if ($needsFlush) {
+        // Flush only when state has changed since the last flush.
+        $fingerprint = md5(serialize($state));
+        if (get_option('gateway_app_rewrite_hash') !== $fingerprint) {
             flush_rewrite_rules(false);
+            update_option('gateway_app_rewrite_hash', $fingerprint, false);
         }
     }
 
@@ -197,14 +198,14 @@ class AppRegistry
     }
 
     /**
-     * Flush rewrite rules when a page using one of our templates is saved,
-     * in case the page's slug changed.
+     * When a page using one of our templates is saved (slug may have changed),
+     * invalidate the stored hash so addRewriteRules() flushes on the next init.
      */
     public static function maybeFlusRewriteRules(int $pageId): void
     {
         $template = get_post_meta($pageId, '_wp_page_template', true);
         if ($template && strpos($template, 'gateway-app-') === 0) {
-            flush_rewrite_rules(false);
+            delete_option('gateway_app_rewrite_hash');
         }
     }
 
