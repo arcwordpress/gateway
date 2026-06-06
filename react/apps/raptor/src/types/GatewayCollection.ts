@@ -1,4 +1,11 @@
 import type { RouteInfo } from './RouteInfo';
+
+export type CollectionRelationship = {
+  name: string;
+  type: 'HasMany' | 'BelongsTo' | 'HasOne' | 'BelongsToMany';
+  target_key: string;
+};
+
 export type GatewayCollection = {
   key: string;
   title: string;
@@ -8,4 +15,5 @@ export type GatewayCollection = {
   table: string;
   record_count: number;
   routes: RouteInfo[];
+  relationships?: CollectionRelationship[];
 };

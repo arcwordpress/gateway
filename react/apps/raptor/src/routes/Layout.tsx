@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { appConfig } from '../config'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -93,7 +93,7 @@ export default function Layout() {
     enabled: shouldLoadCollections,
     staleTime: 60_000,
     gcTime: 5 * 60_000,
-    select: (json) => json.map((c) => ({
+    select: (json: RegisteredCollection[]) => json.map((c) => ({
       collection_key: c.key,
       title: c.titlePlural || c.title || c.key,
       is_code_defined: c.is_code_defined,
@@ -135,7 +135,7 @@ export default function Layout() {
 
   useEffect(() => {
     if (!activeCollectionKey || collections.length === 0) return
-    const exists = collections.some((c) => c.collection_key === activeCollectionKey)
+    const exists = collections.some((c: WorkspaceCollection) => c.collection_key === activeCollectionKey)
     if (!exists) {
       setActiveCollectionKey(null)
 
