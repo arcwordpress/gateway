@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 
@@ -14,9 +13,7 @@ type RegisteredPackage = {
 }
 
 export default function PackagesTopLevel() {
-  const [filter, setFilter] = useState('')
-
-  const { data: packages = [], isLoading } = useQuery<RegisteredPackage[]>({
+  const { data: packages = [], isLoading, isError } = useQuery<RegisteredPackage[]>({
     queryKey: ['packages-registered'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/packages/registered'), { headers: authHeaders() })
@@ -27,75 +24,72 @@ export default function PackagesTopLevel() {
     staleTime: 30_000,
   })
 
-  const q = filter.toLowerCase()
-  const filtered = q
-    ? packages.filter((p) => p.key.includes(q) || (p.label ?? '').toLowerCase().includes(q))
-    : packages
-
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/90 shadow-2xl backdrop-blur-sm">
 
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <h1 className="text-xl font-semibold text-zinc-100">Packages</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">{packages.length} registered</p>
+          <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+            <h2 className="text-sm font-semibold text-zinc-100">Registered Packages</h2>
+            <div className="rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-medium text-zinc-300">
+              {isLoading ? '...' : packages.length}
+            </div>
           </div>
-          <input
-            type="text"
-            placeholder="Filter…"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="h-8 rounded border border-zinc-700 bg-zinc-800 px-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 w-48"
-          />
+
+          {isError && (
+            <div className="px-4 py-3 text-xs text-red-400">Could not load registered packages.</div>
+          )}
+
+          {!isError && isLoading && (
+            <div className="space-y-2 px-4 py-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-8 rounded bg-zinc-900 animate-pulse" />
+              ))}
+            </div>
+          )}
+
+          {!isError && !isLoading && packages.length === 0 && (
+            <div className="px-4 py-4 text-xs text-zinc-500">
+              No registered packages are active yet.
+            </div>
+          )}
+
+          {!isError && !isLoading && packages.length > 0 && (
+            <div className="max-h-[32rem] overflow-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="sticky top-0 bg-zinc-950/95 text-zinc-500">
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Key</th>
+                    <th className="px-4 py-2 font-medium">Label</th>
+                    <th className="px-4 py-2 font-medium">Collections</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {packages.map((pkg) => (
+                    <tr key={pkg.key} className="border-t border-zinc-900 align-middle">
+                      <td className="px-4 py-2.5 font-mono text-zinc-300">{pkg.key}</td>
+                      <td className="px-4 py-2.5 text-zinc-300">{pkg.label || '—'}</td>
+                      <td className="px-4 py-2.5">
+                        {pkg.collection_keys.length === 0 ? (
+                          <span className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
+                            no collections
+                          </span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {pkg.collection_keys.map((ck) => (
+                              <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
-
-        {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-zinc-900 border border-zinc-800 animate-pulse" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/30 p-10 flex flex-col items-center gap-2 text-center">
-            <p className="text-sm font-medium text-zinc-300">
-              {packages.length === 0 ? 'No packages registered' : 'No packages match the filter'}
-            </p>
-            {packages.length === 0 && (
-              <p className="text-xs text-zinc-500">
-                Register a package in PHP by extending <code className="font-mono">\Gateway\Package</code> and calling <code className="font-mono">register()</code>.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map((pkg) => (
-              <div
-                key={pkg.key}
-                className="w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800"
-              >
-                <span className={`dashicons ${pkg.icon ?? 'dashicons-admin-generic'} text-zinc-500`} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-zinc-200">{pkg.label || pkg.key}</p>
-                  <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.key}</p>
-                  {pkg.collection_keys.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {pkg.collection_keys.map((ck) => (
-                        <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {pkg.collection_keys.length === 0 && (
-                  <span className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
-                    no collections
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
       </div>
     </div>
   )
