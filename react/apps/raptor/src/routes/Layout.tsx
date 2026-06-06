@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { appConfig } from '../config'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Sidebar from '../components/ui/Sidebar'
 import { AppContext } from '../context/app'
-import { WorkspaceContext, WorkspaceCollection, WorkspaceExtension } from '../context/workspace'
-import { apiUrl, authHeaders } from '../lib/api'
+import { WorkspaceContext, WorkspaceCollection } from '../context/workspace'
 import { COLLECTIONS_NESTED_KEY, fetchCollectionsWithNested, REGISTERED_COLLECTIONS_KEY, fetchRegisteredCollections, type RegisteredCollection } from '../lib/queries'
 import '../../main.css';
 
@@ -25,9 +24,6 @@ import '../../main.css';
 export default function Layout() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeCollectionKey, setActiveCollectionKey] = useState<string | null>(null)
-  const [activeExtensionKey, setActiveExtensionKey] = useState<string | null>(
-    () => window.localStorage.getItem('raptor.activeExtensionKey') ?? null
-  )
   const [baseTopOffset, setBaseTopOffset] = useState(0)
   const [baseShellHeightPx, setBaseShellHeightPx] = useState(0)
   const navigate = useNavigate()
@@ -89,12 +85,6 @@ export default function Layout() {
     }
   }, [])
 
-  const shouldLoadExtensions =
-    pathname === '/' ||
-    pathname.startsWith('/extensions') ||
-    pathname.startsWith('/packages') ||
-    pathname.startsWith('/collections')
-
   const shouldLoadCollections = pathname === '/fields'
 
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<RegisteredCollection[], Error, WorkspaceCollection[]>({
@@ -108,19 +98,6 @@ export default function Layout() {
       title: c.titlePlural || c.title || c.key,
       is_code_defined: c.is_code_defined,
     })),
-  })
-
-  const { data: extensions = [], isLoading: isExtensionsLoading } = useQuery<WorkspaceExtension[]>({
-    queryKey: ['extensions'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as { extensions?: WorkspaceExtension[] }
-      return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
-    },
-    enabled: shouldLoadExtensions,
-    staleTime: 60_000,
-    gcTime: 5 * 60_000,
   })
 
   // Once the stub list is loaded, warm the nested-collections cache in the background.
@@ -157,14 +134,6 @@ export default function Layout() {
   }, [activeCollectionKey])
 
   useEffect(() => {
-    if (activeExtensionKey) {
-      window.localStorage.setItem('raptor.activeExtensionKey', activeExtensionKey)
-    } else {
-      window.localStorage.removeItem('raptor.activeExtensionKey')
-    }
-  }, [activeExtensionKey])
-
-  useEffect(() => {
     if (!activeCollectionKey || collections.length === 0) return
     const exists = collections.some((c) => c.collection_key === activeCollectionKey)
     if (!exists) {
@@ -178,7 +147,7 @@ export default function Layout() {
 
   return (
     <AppContext.Provider value={{ isExpanded, toggleExpand, shellTopOffset, shellHeightCss, shellHeightPx }}>
-      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading, activeExtensionKey, setActiveExtensionKey, extensions, isExtensionsLoading }}>
+      <WorkspaceContext.Provider value={{ activeCollectionKey, setActiveCollectionKey, collections, isCollectionsLoading }}>
       <div
         id="gateway-raptor-canvas-host"
         className="flex items-stretch text-zinc-100 relative"

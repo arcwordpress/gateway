@@ -10,8 +10,6 @@ class RaptorController
 {
     public static function initEndpoints(): void
     {
-        new Endpoints\ExtensionCrudRoutes();
-        new Endpoints\ExtensionRoutes();
         new Endpoints\CollectionRoutes();
         new Endpoints\FieldListRoutes();
         new Endpoints\FieldRoutes();

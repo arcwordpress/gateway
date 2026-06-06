@@ -22,7 +22,6 @@ class MigrationHooks
         ], GATEWAY_VERSION);
 
         MigrationRegistry::register('raptor-core', 'Raptor Core', [
-            \Gateway\Raptor\Migrations\RaptorExtensionMigration::class,
             \Gateway\Raptor\Migrations\RaptorCollectionMigration::class,
             \Gateway\Raptor\Migrations\RaptorFieldListMigration::class,
             \Gateway\Raptor\Migrations\RaptorFieldMigration::class,
@@ -39,8 +38,6 @@ class MigrationHooks
             \Gateway\Raptor\Migrations\RaptorCollectionRelationshipMigration::class,
             \Gateway\Raptor\Migrations\RaptorCollectionLabelFieldMigration::class,
             \Gateway\Raptor\Migrations\RaptorCollectionDisplayFieldMigration::class,
-            \Gateway\Raptor\Migrations\RaptorExtensionFileMigration::class,
-            \Gateway\Raptor\Migrations\RaptorExtensionMigrationTrackingMigration::class,
         ], GATEWAY_VERSION);
     }
 
