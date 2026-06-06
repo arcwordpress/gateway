@@ -244,7 +244,7 @@ export default function CollectionsRelationshipsViewer() {
       const res = await fetch(apiUrl('gateway/v1/collections?include_private=true'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      return json.collections as Collection[]
+      return Array.isArray(json) ? json : (json.collections ?? [])
     },
     staleTime: 30_000,
   })
