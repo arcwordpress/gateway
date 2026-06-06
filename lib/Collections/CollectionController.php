@@ -105,9 +105,7 @@ class CollectionController extends Controller
                     continue;
                 }
 
-                if (!$includePrivate &&
-                    method_exists($collection, 'isPrivate') &&
-                    $collection->isPrivate()) {
+                if (!$includePrivate && method_exists($collection, 'isPrivate') && $collection->isPrivate()) {
                     continue;
                 }
 
@@ -234,7 +232,6 @@ class CollectionController extends Controller
             'titlePlural'     => method_exists($collection, 'getTitlePlural')  ? $collection->getTitlePlural()  : null,
             'is_code_defined' => !isset($dbManagedKeys[$key]) && !empty(method_exists($collection, 'getFields') ? $collection->getFields() : []),
             'package'         => method_exists($collection, 'getPackage')      ? $collection->getPackage()      : 'default',
-            'core'            => method_exists($collection, 'isCore')          ? $collection->isCore()          : false,
             'private'         => method_exists($collection, 'isPrivate')       ? $collection->isPrivate()       : false,
             'fqcn'            => $collectionClass,
             'className'       => basename(str_replace('\\', '/', $collectionClass)),

@@ -15,8 +15,7 @@ if (!defined('ABSPATH')) exit;
  * and let the user decide when to sync.
  *
  * Endpoints:
- *   GET  /gateway/v1/sync/status          — what is registered vs. what is in the DB
- *   POST /gateway/v1/sync/collections     — seed core collection toggle rows
+ *   GET  /gateway/v1/sync/status          — registered collections at runtime
  *   POST /gateway/v1/sync/core-migrations — run Gateway core DB migrations
  */
 class SyncRoute
@@ -31,12 +30,6 @@ class SyncRoute
         register_rest_route('gateway/v1', '/sync/status', [
             'methods'             => 'GET',
             'callback'            => [$this, 'getStatus'],
-            'permission_callback' => [$this, 'checkPermissions'],
-        ]);
-
-        register_rest_route('gateway/v1', '/sync/collections', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'syncCollections'],
             'permission_callback' => [$this, 'checkPermissions'],
         ]);
 
@@ -57,55 +50,18 @@ class SyncRoute
     /**
      * GET /sync/status
      *
-     * Returns what Gateway currently knows about at runtime vs. what the DB
-     * contains, so the UI can surface any gaps and offer action buttons.
+     * Returns collections registered at runtime.
      */
     public function getStatus(\WP_REST_Request $request): \WP_REST_Response
     {
-        $plugin = Plugin::getInstance();
-
-        // Registered collections (those actually wired up with REST routes)
-        $registeredCollections = array_keys($plugin->getRegistry()->getAll());
-
-        // Core collection map (all WP core collections Gateway knows about)
-        $coreMap = Plugin::getCoreCollectionMap();
-
-        // Collection toggle rows that exist in the DB
-        $seededCollections = [];
-        try {
-            $seededCollections = \Gateway\Collections\Gateway\CollectionUser::pluck('collection_key')->toArray();
-        } catch (\Throwable $e) {
-            // Table may not exist yet
-        }
-
-        $unseededCollections = array_values(array_diff(array_keys($coreMap), $seededCollections));
+        $registeredCollections = array_keys(Plugin::getInstance()->getRegistry()->getAll());
 
         return new \WP_REST_Response([
             'success'     => true,
             'collections' => [
-                'registered'  => $registeredCollections,
-                'core_known'  => array_keys($coreMap),
-                'seeded'      => $seededCollections,
-                'unseeded'    => $unseededCollections,
-                'needs_sync'  => !empty($unseededCollections),
+                'registered' => $registeredCollections,
             ],
         ], 200);
-    }
-
-    /**
-     * POST /sync/collections
-     *
-     * Creates a toggle row for each known core collection if one does not exist.
-     * Safe to call multiple times — uses firstOrCreate internally.
-     */
-    public function syncCollections(\WP_REST_Request $request): \WP_REST_Response
-    {
-        try {
-            Plugin::getInstance()->seedCollections();
-            return new \WP_REST_Response(['success' => true, 'message' => 'Core collections synced.'], 200);
-        } catch (\Throwable $e) {
-            return new \WP_REST_Response(['success' => false, 'message' => $e->getMessage()], 500);
-        }
     }
 
     /**

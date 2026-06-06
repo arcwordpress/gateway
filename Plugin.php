@@ -112,7 +112,6 @@ class Plugin
         $this->fieldTypeRegistry = new Forms\Fields\FieldTypeRegistry();
         new Forms\Fields\FieldTypeRoutes();
         $this->standardRoutes = new Endpoints\StandardRoutes();
-        Collections\CoreCollections::register();
         new Collections\CollectionRoutes();
         $this->adminDataRoute = new Endpoints\AdminDataRoute();
         $this->settingsRoute = new Endpoints\SettingsRoute();
@@ -122,7 +121,6 @@ class Plugin
         $this->migrationRunnerRoute = new Migrations\MigrationRunnerRoute();
         new Endpoints\SyncRoute();
         new Migrations\MigrationRoutes();
-        new Endpoints\CoreCollectionUserRoute();
         $this->patternRegistry = new Patterns\PatternRegistry();
         Migrations\MigrationHooks::init();
         PluginController::maybeRunMigrations();
@@ -150,7 +148,6 @@ class Plugin
             return;
         }
         Migrations\MigrationHooks::runCoreMigrations();
-        Collections\CoreCollections::seed();
         flush_rewrite_rules();
     }
 
@@ -173,18 +170,6 @@ class Plugin
     public function getCollectionRoutes() { return $this->collectionRoutes; }
     public function getPatternRegistry() { return $this->patternRegistry; }
     public function getFieldTypeRegistry() { return $this->fieldTypeRegistry; }
-
-    /** @deprecated use Collections\CoreCollections::getMap() */
-    public static function getCoreCollectionMap(): array
-    {
-        return Collections\CoreCollections::getMap();
-    }
-
-    /** @deprecated use Collections\CoreCollections::seed() */
-    public function seedCollections(): void
-    {
-        Collections\CoreCollections::seed();
-    }
 
     public static function bootEloquent() { Database\DatabaseConnection::boot(); }
     public static function isSQLiteEnvironment() { return Database\DatabaseConnection::isSQLiteEnvironment(); }

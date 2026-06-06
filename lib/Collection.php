@@ -53,19 +53,8 @@ class Collection extends EloquentModel
     protected $package = 'default';
 
     /**
-     * Whether this collection is a core plugin-internal collection.
-     * Set by the plugin itself on structural collections (e.g. WP core tables,
-     * CollectionUser). Excluded from generic listings by default.
-     * Plugin consumers should use $private instead.
-     *
-     * @var bool
-     */
-    protected $core = false;
-
-    /**
      * Whether this collection is private.
-     * Can be set by plugin consumers to hide their own collections from
-     * generic listings in the studio and admin apps.
+     * Set to true to hide from generic listings in the Studio and admin apps.
      *
      * @var bool
      */
@@ -351,37 +340,9 @@ class Collection extends EloquentModel
         return $this->package;
     }
 
-    /**
-     * Whether this is a core plugin-internal collection.
-     * Core collections are excluded from generic listings by default.
-     *
-     * @return bool
-     */
-    public function isCore(): bool
-    {
-        return (bool) $this->core;
-    }
-
-    /**
-     * Whether this collection is private (consumer-defined).
-     * Private collections are excluded from generic listings by default.
-     *
-     * @return bool
-     */
     public function isPrivate(): bool
     {
         return (bool) $this->private;
-    }
-
-    /**
-     * Whether this collection should be excluded from generic listings.
-     * True when either $core or $private is set.
-     *
-     * @return bool
-     */
-    public function isHidden(): bool
-    {
-        return $this->isCore() || $this->isPrivate();
     }
 
     public function getSearchable(): array
