@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
 import DatabaseSettings from './Settings/DatabaseSettings'
-import CollectionSettings from './Settings/CollectionSettings'
 
 interface SettingsData {
   id: number
@@ -12,11 +11,10 @@ interface SettingsData {
   is_sqlite_environment: boolean
 }
 
-type TabKey = 'database' | 'collections' | 'migrations'
+type TabKey = 'database' | 'migrations'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'database', label: 'Database' },
-  { key: 'collections', label: 'Collections' },
   { key: 'migrations', label: 'Migrations' },
 ]
 
@@ -193,7 +191,6 @@ export default function Settings() {
             onChange={handleFieldChange}
           />
         )}
-        {activeTab === 'collections' && <CollectionSettings />}
         {activeTab === 'migrations' && <CoreMigrationsPanel />}
       </div>
     </div>

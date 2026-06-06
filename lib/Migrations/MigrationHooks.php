@@ -17,7 +17,6 @@ class MigrationHooks
         add_action('gateway/collection/migrations', [__CLASS__, 'runMigrations'], 10, 2);
 
         MigrationRegistry::register('gateway-core', 'Gateway Core', [
-            \Gateway\Migrations\GatewayCollectionUserMigration::class,
             \Gateway\Migrations\GatewaySettingsMigration::class,
             \Gateway\Migrations\GatewayMigrationRunMigration::class,
         ], GATEWAY_VERSION);

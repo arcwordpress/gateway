@@ -32,7 +32,7 @@ class CollectionRoutes
                     'required'    => false,
                     'type'        => 'boolean',
                     'default'     => false,
-                    'description' => 'When true, include core and private collections in the response.',
+                    'description' => 'When true, include private collections in the response.',
                 ],
             ],
         ]);
