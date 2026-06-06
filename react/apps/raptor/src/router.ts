@@ -10,7 +10,6 @@ import { appConfig } from './config'
 import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
-import ExtensionsEditorPage from './pages/ExtensionsEditorPage'
 // import CollectionsPage from './pages/Collections'
 import CollectionsPageWithTabs from './pages/CollectionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
@@ -91,12 +90,6 @@ const extensionsRoute = createRoute({
   component: ExtensionsPage,
 })
 
-const extensionsEditorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/editor',
-  component: ExtensionsEditorPage,
-})
-
 const packagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/packages',
@@ -167,7 +160,6 @@ const routeTree = rootRoute.addChildren([
   formsTopLevelRoute,
   viewsTopLevelRoute,
   extensionsRoute,
-  extensionsEditorRoute,
   packagesRoute,
   fieldsRoute,
   formsRoute,
