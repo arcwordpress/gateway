@@ -10,8 +10,6 @@ import { appConfig } from './config'
 import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
-// import CollectionsPage from './pages/Collections'
-import CollectionsPageWithTabs from './pages/CollectionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
 import FieldsPage from './pages/Fields'
 import ViewsPage from './pages/Views'
@@ -50,15 +48,9 @@ const indexRoute = createRoute({
   component: DashboardPage,
 })
 
-const collectionsViewerRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections',
-  component: CollectionsPageWithTabs,
-})
-
 const registeredCollectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/collections/registered',
+  path: '/collections',
   component: RegisteredCollectionsPage,
 })
 
@@ -153,7 +145,6 @@ export const recordViewRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  collectionsViewerRoute,
   registeredCollectionsRoute,
   collectionsRelationshipsRoute,
   fieldsTopLevelRoute,

@@ -3,9 +3,8 @@ import { Maximize2, Minimize2, Settings2, type LucideIcon } from 'lucide-react'
 
 // ─── Helper function to determine if a link is active ─────────────────────
 function getIsActive(to: string, pathname: string): boolean {
-  // For /collections, match either of the two collections routes
   if (to === '/collections') {
-    return pathname === '/collections' || pathname === '/collections/registered'
+    return pathname === '/collections' || pathname === '/collections/relationships'
   }
 
   // For /fields, /forms, /views, match either:
