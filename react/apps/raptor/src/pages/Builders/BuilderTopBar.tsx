@@ -18,18 +18,15 @@ export function BuilderTopBar({ showPanel, onTogglePanel, viewMode, onViewModeCh
     const nextKey = value || null
     setActiveCollectionKey(nextKey)
 
-    const inFields = /^\/collections\/[^/]+\/fields/.test(pathname) || pathname === '/fields'
     const inViews  = /^\/collections\/[^/]+\/views/.test(pathname)  || pathname === '/views'
     const inForms  = /^\/collections\/[^/]+\/forms/.test(pathname)  || pathname === '/forms'
 
     if (!nextKey) {
-      if (inFields) void navigate({ to: '/fields' })
       if (inViews)  void navigate({ to: '/views' })
       if (inForms)  void navigate({ to: '/forms' })
       return
     }
 
-    if (inFields) void navigate({ to: '/collections/$collectionKey/fields', params: { collectionKey: nextKey } })
     if (inViews)  void navigate({ to: '/collections/$collectionKey/views',  params: { collectionKey: nextKey } })
     if (inForms)  void navigate({ to: '/collections/$collectionKey/forms',  params: { collectionKey: nextKey } })
   }

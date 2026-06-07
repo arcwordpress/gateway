@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Form } from '../../lib/object_types'
-import { useCollection } from '../Fields/FieldsPageContext'
+import { useCollection } from '../Builders/BuilderCollectionContext'
 
 export type SurfaceState =
   | { mode: 'deleteConfirm'; form: Form }
   | { mode: 'editForm'; form: Form }
   | null
 
-export { useCollection, CollectionProvider } from '../Fields/FieldsPageContext'
+export { useCollection, CollectionProvider } from '../Builders/BuilderCollectionContext'
 
 const FormsContext = createContext<{
   forms: Form[]

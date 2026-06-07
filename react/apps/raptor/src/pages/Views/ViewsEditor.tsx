@@ -9,7 +9,7 @@ import { View } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { HandleIcon } from '../../components/HandleIcon'
 import { useCollection, useViews, SurfaceState } from './ViewsPageContext'
-import { EditPanel } from '../Fields/FieldsEditor'
+import { EditPanel } from '../Builders/BuilderCollectionContext'
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
@@ -349,7 +349,7 @@ export function ViewEditForm({ view, onClose }: { view: View; onClose: () => voi
           </p>
         ) : (
           <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
-            {availableFields.map((field) => {
+            {availableFields.map((field: { name: string; label: string }) => {
               const checked = selectedColumns.includes(field.name)
               return (
                 <label

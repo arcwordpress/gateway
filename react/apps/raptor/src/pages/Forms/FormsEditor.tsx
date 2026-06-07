@@ -8,7 +8,7 @@ import { Form } from '../../lib/object_types'
 import { apiUrl, authHeaders } from '../../lib/api'
 import { HandleIcon } from '../../components/HandleIcon'
 import { useCollection, useForms, SurfaceState } from './FormsPageContext'
-import { EditPanel } from '../Fields/FieldsEditor'
+import { EditPanel } from '../Builders/BuilderCollectionContext'
 
 const baseInput =
   'w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 ' +
