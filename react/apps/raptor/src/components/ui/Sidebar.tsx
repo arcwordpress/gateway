@@ -83,6 +83,7 @@ export default function Sidebar({
         <NavLink to="/packages" label="Packages" />
         <NavLink to="/collections" label="Collections" />
         <NavLink to="/fields" label="Fields" />
+        <NavLink to="/apps" label="Apps" />
 
         <SectionLabel label="Records" />
         <NavLink to="/records" label="Records" />

@@ -25,6 +25,7 @@ import RecordFormPage from './pages/records/RecordForm'
 import RecordViewPage from './pages/records/RecordView'
 import CollectionsRelationshipsPage from './pages/CollectionsRelationshipsPage'
 import PackagesTopLevelPage from './pages/PackagesTopLevel'
+import AppsPage from './pages/AppsPage'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -79,6 +80,12 @@ const packagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/packages',
   component: PackagesTopLevelPage,
+})
+
+const appsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/apps',
+  component: AppsPage,
 })
 
 // Hidden from nav — restore nav links in Sidebar.tsx to re-enable
@@ -139,6 +146,7 @@ const routeTree = rootRoute.addChildren([
   viewsTopLevelRoute,
   extensionsRoute,
   packagesRoute,
+  appsRoute,
   formsRoute,
   viewsRoute,
   viewDesignRoute,

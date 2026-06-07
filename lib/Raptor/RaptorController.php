@@ -17,5 +17,6 @@ class RaptorController
         new Endpoints\FormRoutes();
         new Endpoints\UserLayoutRoutes();
         new Endpoints\RelationshipRoutes();
+        new Endpoints\AppRoutes();
     }
 }
