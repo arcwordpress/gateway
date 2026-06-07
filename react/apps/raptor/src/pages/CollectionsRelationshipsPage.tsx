@@ -1,4 +1,4 @@
-import { CollectionsTabs } from './CollectionsPage'
+import { CollectionsTabs } from './RegisteredCollectionsPage'
 import CollectionsRelationshipsViewer from './CollectionsRelationshipsViewer'
 
 // ─── /collections/relationships ───────────────────────────────────────────────

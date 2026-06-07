@@ -1,7 +1,5 @@
 import { type NodeTypes, type EdgeTypes } from '@xyflow/react'
 import { FieldNode } from './FieldNode'
-import { SiteNode } from './SiteNode'
-import { ExtensionsGraphNode } from './ExtensionsGraphNode'
 import { CollectionRootNode } from './CollectionRootNode'
 import { DatabaseNode } from './DatabaseNode'
 import { RecordsContainerNode } from './RecordsContainerNode'
@@ -14,8 +12,6 @@ import { RenderStrategyNode } from './RenderStrategyNode'
 import { RenderOutputNode } from './RenderOutputNode'
 import { FormListLabelNode } from './FormListLabelNode'
 import { FormNode } from './FormNode'
-import { PackageNode } from './PackageNode'
-
 // Import Collections Viewer nodes
 import { CollectionsLabelNode } from './CollectionsRootNode'
 import { ExtensionNode } from './ExtensionNode'
@@ -47,12 +43,6 @@ export type { RenderOutputNodeType } from './RenderOutputNode'
 // Export context
 export { RecordsCtx } from './RecordsContext'
 
-// Export Extensions graph nodes
-export { SiteNode } from './SiteNode'
-export type { SiteNodeType } from './SiteNode'
-export { ExtensionsGraphNode } from './ExtensionsGraphNode'
-export type { ExtensionsGraphNodeType } from './ExtensionsGraphNode'
-
 // Export node components
 export { FieldNode } from './FieldNode'
 export type { FieldNodeType } from './FieldNode'
@@ -75,12 +65,6 @@ export { ExtensionNode } from './ExtensionNode'
 export { CollectionNode } from './CollectionNode'
 export { BusEdge } from './BusEdge'
 export { NodeTypeHeader } from './NodeTypeHeader'
-
-// Extensions graph node types registry (used by pages/ExtensionsGraph.tsx)
-export const EXTENSIONS_GRAPH_NODE_TYPES: NodeTypes = {
-  siteNode:      SiteNode,
-  extensionNode: ExtensionsGraphNode,
-}
 
 // Export node types registry
 export const FIELD_GRAPH_NODE_TYPES: NodeTypes = {
@@ -121,10 +105,3 @@ export const COLLECTIONS_GRAPH_EDGE_TYPES: EdgeTypes = {
 // Export Collections Viewer layout utilities
 export { NODE_DIMS, layoutWithDagre, layoutCollectionsLR, layoutCollectionsDagre } from './layoutWithDagre'
 
-export { PackageNode } from './PackageNode'
-export type { PackageNodeType, PackageNodeData } from './PackageNode'
-
-export const PACKAGES_GRAPH_NODE_TYPES: NodeTypes = {
-  extensionNode: ExtensionNode,
-  packageNode:   PackageNode,
-}

@@ -1,11 +1,5 @@
-import { useState, useEffect, createContext, useContext } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { apiUrl, authHeaders } from '../lib/api'
-import { BuilderLayout } from './Builders/BuilderLayout'
-import { GlobalPackagesGraph, type PackageRecord, type ExtensionRecord } from './packages/GlobalPackagesGraph'
-import { PackagePanel } from './PackagePanel'
-
-// ─── Registered package shape (gateway/v1/packages/registered) ────────────
 
 type RegisteredPackage = {
   key: string
@@ -15,70 +9,11 @@ type RegisteredPackage = {
   position: number
   capability: string
   parent: string | null
-  is_database_package: boolean
   collection_keys: string[]
-  collections_count: number
 }
 
-// ─── Page context ─────────────────────────────────────────────────────────
-
-type SelectedExt = { key: string; id: number; title: string } | null
-
-type PackagePageCtx = {
-  selectedExt: SelectedExt
-  setSelectedExt: (ext: SelectedExt) => void
-  extensionsReady: boolean
-}
-
-const PackagePageContext = createContext<PackagePageCtx>({
-  selectedExt: null,
-  setSelectedExt: () => {},
-  extensionsReady: false,
-})
-
-const usePackagePage = () => useContext(PackagePageContext)
-
-// ─── Persistence helpers ──────────────────────────────────────────────────
-
-const STORAGE_KEY = 'raptor.packages.selectedExt'
-
-function loadPersistedExt(): SelectedExt {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as SelectedExt) : null
-  } catch {
-    return null
-  }
-}
-
-function persistExt(ext: SelectedExt) {
-  if (ext) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ext))
-  } else {
-    window.localStorage.removeItem(STORAGE_KEY)
-  }
-}
-
-// ─── Extensions query ─────────────────────────────────────────────────────
-
-function useExtensions() {
-  return useQuery<ExtensionRecord[]>({
-    queryKey: ['extensions'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/extension'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json() as { extensions?: ExtensionRecord[] }
-      return (json.extensions ?? []).map((e) => ({ ...e, id: Number(e.id) }))
-    },
-    staleTime: 60_000,
-    gcTime: 5 * 60_000,
-  })
-}
-
-// ─── Registered packages query (list view) ───────────────────────────────
-
-function useRegisteredPackages(enabled: boolean) {
-  return useQuery<RegisteredPackage[]>({
+export default function PackagesTopLevel() {
+  const { data: packages = [], isLoading, isError } = useQuery<RegisteredPackage[]>({
     queryKey: ['packages-registered'],
     queryFn: async () => {
       const res = await fetch(apiUrl('gateway/v1/packages/registered'), { headers: authHeaders() })
@@ -86,327 +21,76 @@ function useRegisteredPackages(enabled: boolean) {
       const json = await res.json() as { packages?: RegisteredPackage[] }
       return json.packages ?? []
     },
-    enabled,
-    staleTime: 30_000,
-  })
-}
-
-// ─── Panel state ──────────────────────────────────────────────────────────
-
-type PanelState =
-  | { mode: 'create' }
-  | { mode: 'edit'; packageKey: string }
-  | null
-
-// ─── Shared button class ──────────────────────────────────────────────────
-
-const NEW_PKG_BTN =
-  'flex items-center gap-1.5 h-8 px-3 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-medium transition-colors'
-
-// ─── New Package button ───────────────────────────────────────────────────
-
-function NewPackageButton({ onNew }: { onNew: () => void }) {
-  const { selectedExt, extensionsReady } = usePackagePage()
-  const disabled = !extensionsReady || !selectedExt
-  const title = !extensionsReady
-    ? 'Loading extensions…'
-    : !selectedExt
-      ? 'Select an extension first'
-      : 'New Package'
-  return (
-    <button
-      onClick={onNew}
-      disabled={disabled}
-      title={title}
-      className={NEW_PKG_BTN}
-    >
-      <span className="text-sm leading-none">+</span>
-      New Package
-    </button>
-  )
-}
-
-// ─── Top bar ──────────────────────────────────────────────────────────────
-
-function PackagesTopBar({
-  extensions,
-  viewMode,
-  onViewModeChange,
-  onNew,
-}: {
-  extensions: ExtensionRecord[]
-  viewMode: 'graph' | 'list'
-  onViewModeChange: (m: 'graph' | 'list') => void
-  onNew: () => void
-}) {
-  const { selectedExt, setSelectedExt } = usePackagePage()
-
-  const handleChange = (key: string | null) => {
-    if (!key) {
-      setSelectedExt(null)
-      return
-    }
-    const ext = extensions.find((e) => e.extension_key === key)
-    if (ext) {
-      setSelectedExt({ key: ext.extension_key, id: ext.id, title: ext.title })
-    }
-  }
-
-  return (
-    <div
-      className="absolute top-4 left-4 right-4 z-10 flex items-center gap-2 px-4 py-2 rounded bg-dark backdrop-blur-sm"
-      style={{ boxShadow: '0 4px 20px rgba(161,161,170,0.18)' }}
-    >
-      <span className="text-[10px] font-semibold tracking-widest uppercase text-zinc-400">Extension</span>
-      <select
-        value={selectedExt?.key ?? ''}
-        onChange={(e) => handleChange(e.target.value || null)}
-        className="h-8 min-w-[200px] rounded border border-zinc-400 bg-zinc-700 px-2 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-      >
-        <option value="">All Extensions</option>
-        {extensions.map((e) => (
-          <option key={e.extension_key} value={e.extension_key}>
-            {e.title || e.extension_key}
-          </option>
-        ))}
-      </select>
-
-      <NewPackageButton onNew={onNew} />
-
-      <div className="ml-auto flex gap-1 border border-zinc-700 rounded p-1 bg-zinc-900/50">
-        {(['graph', 'list'] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => onViewModeChange(m)}
-            className={`px-2 py-1 rounded text-xs font-medium transition-colors capitalize ${viewMode === m ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
-          >
-            {m}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Arrow icon ───────────────────────────────────────────────────────────
-
-function ArrowIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" className="text-zinc-600 group-hover:text-zinc-300 transition-colors">
-      <path d="M0.5 7.5H14.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7.5 0.5L14.5 7.5L7.5 14.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────
-
-export default function PackagesTopLevel() {
-  // Initialize from localStorage — button is enabled immediately if user
-  // previously selected an extension, no API load required.
-  const [selectedExt, setSelectedExtRaw] = useState<SelectedExt>(loadPersistedExt)
-  const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph')
-  const [panel, setPanel] = useState<PanelState>(null)
-
-  const setSelectedExt = (ext: SelectedExt) => {
-    setSelectedExtRaw(ext)
-    persistExt(ext)
-  }
-
-  const { data: allPackages = [], isLoading: packagesLoading } = useQuery<PackageRecord[]>({
-    queryKey: ['packages'],
-    queryFn: async () => {
-      const res = await fetch(apiUrl('gateway/v1/raptor/package'), { headers: authHeaders() })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      return (json.packages ?? []).map((p: PackageRecord) => ({ ...p, extension_id: p.extension_id !== null ? Number(p.extension_id) : null }))
-    },
     staleTime: 30_000,
   })
 
-  const { data: extensions = [], isLoading: extensionsLoading } = useExtensions()
-  const { data: registeredPackages = [], isLoading: registeredLoading } = useRegisteredPackages(viewMode === 'list')
-
-  const isLoading = packagesLoading || extensionsLoading
-  const extensionsReady = !extensionsLoading
-
-  // Sync selectedExt state when API data arrives — fixes stale id/title from localStorage.
-  // Also clears the selection if the persisted extension no longer exists.
-  useEffect(() => {
-    if (extensions.length === 0) return
-    if (!selectedExt) return
-    const fresh = extensions.find((e) => e.extension_key === selectedExt.key)
-    if (!fresh) {
-      setSelectedExtRaw(null)
-      persistExt(null)
-      return
-    }
-    if (fresh.id !== selectedExt.id || fresh.title !== selectedExt.title) {
-      const updated = { key: fresh.extension_key, id: fresh.id, title: fresh.title }
-      setSelectedExtRaw(updated)
-      persistExt(updated)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [extensions])
-
-  const visiblePackages = selectedExt
-    ? allPackages.filter((p) => p.extension_id === selectedExt.id)
-    : allPackages
-
-  const visibleExtensions = selectedExt
-    ? extensions.filter((e) => e.extension_key === selectedExt.key)
-    : extensions
-
-  const openNew = () => {
-    if (!extensionsReady || !selectedExt) return
-    setPanel({ mode: 'create' })
-  }
-
-  const openEdit = (key: string) => setPanel({ mode: 'edit', packageKey: key })
-  const closePanel = () => setPanel(null)
-
-  const handleExtensionSelect = (extKey: string) => {
-    const ext = extensions.find((e) => e.extension_key === extKey)
-    if (ext) {
-      setSelectedExt({ key: ext.extension_key, id: ext.id, title: ext.title })
-    }
-  }
-
   return (
-    <PackagePageContext.Provider value={{ selectedExt, setSelectedExt, extensionsReady }}>
-      <BuilderLayout>
-        {/* ── Graph ──────────────────────────────────────────────────────── */}
-        <div
-          className={`absolute inset-0 transition-all duration-300 ease-out ${
-            viewMode === 'graph' ? 'opacity-100 pointer-events-auto' : 'opacity-25 blur-[2px] pointer-events-none'
-          }`}
-        >
-          {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-6 h-6 rounded-full border-2 border-zinc-600 border-t-zinc-300 animate-spin" />
-                <span className="text-xs text-zinc-500">Loading…</span>
-              </div>
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="rounded-xl border border-zinc-800/90 bg-zinc-950/90 shadow-2xl backdrop-blur-sm">
+
+          <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+            <h2 className="text-sm font-semibold text-zinc-100">Registered Packages</h2>
+            <div className="rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-medium text-zinc-300">
+              {isLoading ? '...' : packages.length}
             </div>
-          ) : extensions.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="text-3xl opacity-20">⬡</div>
-                <p className="text-sm font-medium text-zinc-400">No extensions yet</p>
-                <p className="text-xs text-zinc-600">Create an extension first, then add packages to it.</p>
-              </div>
-            </div>
-          ) : (
-            <GlobalPackagesGraph
-              packages={visiblePackages}
-              extensions={visibleExtensions.length > 0 ? visibleExtensions : extensions}
-              selectedExtKey={selectedExt?.key ?? null}
-              onPackageSelect={openEdit}
-              onExtensionSelect={handleExtensionSelect}
-            />
+          </div>
+
+          {isError && (
+            <div className="px-4 py-3 text-xs text-red-400">Could not load registered packages.</div>
           )}
-        </div>
 
-        {/* ── List ───────────────────────────────────────────────────────── */}
-        <div
-          className={`absolute top-20 left-4 right-4 bottom-4 z-[5] transition-all duration-300 ease-out ${
-            viewMode === 'list' ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-1 pointer-events-none'
-          }`}
-        >
-          <div className="w-full h-full overflow-auto rounded border border-zinc-800 bg-zinc-950/70 backdrop-blur-sm px-8 py-6 text-white">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-zinc-200">Packages</h1>
-                <p className="text-sm text-zinc-400 mt-1">
-                  All registered · {registeredPackages.length} package{registeredPackages.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-              <NewPackageButton onNew={openNew} />
+          {!isError && isLoading && (
+            <div className="space-y-2 px-4 py-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-8 rounded bg-zinc-900 animate-pulse" />
+              ))}
             </div>
+          )}
 
-            {registeredLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-16 rounded-xl bg-zinc-900 border border-zinc-800 animate-pulse" />
-                ))}
-              </div>
-            ) : registeredPackages.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-900/30 p-10 flex flex-col items-center gap-2 text-center">
-                <p className="text-sm font-medium text-zinc-300">No packages registered</p>
-                <p className="text-xs text-zinc-500">Select an extension in the top bar, then create a package.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {registeredPackages.map((pkg) => {
-                  const editable = pkg.is_database_package
-                  return (
-                    <button
-                      key={pkg.key}
-                      onClick={() => editable ? openEdit(pkg.key) : undefined}
-                      disabled={!editable}
-                      className={`group w-full flex items-center gap-4 p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 transition-all text-left ${editable ? 'hover:border-zinc-700 hover:bg-zinc-900/80 cursor-pointer' : 'cursor-default opacity-80'}`}
-                    >
-                      <span className={`dashicons ${pkg.icon ?? 'dashicons-admin-generic'} text-zinc-500 group-hover:text-zinc-400 transition-colors`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-zinc-200 group-hover:text-zinc-100">{pkg.label || pkg.key}</p>
-                        <p className="text-xs text-zinc-600 mt-0.5 font-mono">{pkg.key}</p>
-                        {pkg.collection_keys.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
+          {!isError && !isLoading && packages.length === 0 && (
+            <div className="px-4 py-4 text-xs text-zinc-500">
+              No registered packages are active yet.
+            </div>
+          )}
+
+          {!isError && !isLoading && packages.length > 0 && (
+            <div className="max-h-[32rem] overflow-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="sticky top-0 bg-zinc-950/95 text-zinc-500">
+                  <tr>
+                    <th className="px-4 py-2 font-medium">Key</th>
+                    <th className="px-4 py-2 font-medium">Label</th>
+                    <th className="px-4 py-2 font-medium">Collections</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {packages.map((pkg) => (
+                    <tr key={pkg.key} className="border-t border-zinc-900 align-middle">
+                      <td className="px-4 py-2.5 font-mono text-zinc-300">{pkg.key}</td>
+                      <td className="px-4 py-2.5 text-zinc-300">{pkg.label || '—'}</td>
+                      <td className="px-4 py-2.5">
+                        {pkg.collection_keys.length === 0 ? (
+                          <span className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
+                            no collections
+                          </span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
                             {pkg.collection_keys.map((ck) => (
                               <span key={ck} className="text-[10px] font-mono text-zinc-500 bg-zinc-800 rounded px-1.5 py-0.5">{ck}</span>
                             ))}
                           </div>
                         )}
-                      </div>
-                      {!pkg.is_database_package && (
-                        <span className="text-[10px] text-blue-400/80 border border-blue-800/50 rounded px-1.5 py-0.5 bg-blue-950/40">
-                          code
-                        </span>
-                      )}
-                      {pkg.collection_keys.length === 0 && (
-                        <span title="No collections assigned" className="text-[10px] text-amber-400/80 border border-amber-800/50 rounded px-1.5 py-0.5 bg-amber-950/40">
-                          no collections
-                        </span>
-                      )}
-                      {editable && <ArrowIcon />}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
-
-        {/* ── Top bar ────────────────────────────────────────────────────── */}
-        <PackagesTopBar
-          extensions={extensions}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onNew={openNew}
-        />
-
-        {/* ── Right panel ────────────────────────────────────────────────── */}
-        {panel?.mode === 'create' && selectedExt && (
-          <PackagePanel
-            mode="create"
-            extensionId={selectedExt.id}
-            extensionKey={selectedExt.key}
-            extensionTitle={selectedExt.title || selectedExt.key}
-            onClose={closePanel}
-            onCreated={(key) => { closePanel(); openEdit(key) }}
-          />
-        )}
-        {panel?.mode === 'edit' && (
-          <PackagePanel
-            key={panel.packageKey}
-            mode="edit"
-            packageKey={panel.packageKey}
-            onClose={closePanel}
-            onDeleted={closePanel}
-            onKeyChange={(newKey) => setPanel({ mode: 'edit', packageKey: newKey })}
-          />
-        )}
-      </BuilderLayout>
-    </PackagePageContext.Provider>
+      </div>
+    </div>
   )
 }

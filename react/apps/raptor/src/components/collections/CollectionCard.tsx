@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import MethodBadge from './MethodBadge'
 import routeTypeLabel from './routes/routeTypeLabel'
+import type { GatewayCollection, CollectionRelationship } from '../../types/GatewayCollection'
 
 type RouteInfo = {
   type: string
@@ -11,15 +12,11 @@ type RouteInfo = {
   path: string
 }
 
-type GatewayCollection = {
-  key: string
-  title: string
-  titlePlural: string
-  className: string
-  fqcn: string
-  table: string
-  record_count: number
-  routes: RouteInfo[]
+const REL_COLORS: Record<CollectionRelationship['type'], string> = {
+  HasMany:       'text-blue-400 bg-blue-950/60 border-blue-800/40',
+  BelongsTo:     'text-amber-400 bg-amber-950/60 border-amber-800/40',
+  HasOne:        'text-emerald-400 bg-emerald-950/60 border-emerald-800/40',
+  BelongsToMany: 'text-purple-400 bg-purple-950/60 border-purple-800/40',
 }
 
 export default function CollectionCard({
@@ -61,6 +58,23 @@ export default function CollectionCard({
             <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Table</span>
             <code className="block text-[11px] text-zinc-400 font-mono">{collection.table}</code>
           </div>
+          {collection.relationships && collection.relationships.length > 0 && (
+            <div>
+              <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Relationships</span>
+              <div className="mt-1 flex flex-col gap-1">
+                {collection.relationships.map((rel) => (
+                  <div key={rel.name} className="flex items-center gap-1.5">
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${REL_COLORS[rel.type] ?? 'text-zinc-400 bg-zinc-800 border-zinc-700'}`}>
+                      {rel.type}
+                    </span>
+                    <code className="text-[11px] text-zinc-400 font-mono">{rel.name}</code>
+                    <span className="text-zinc-600 text-[10px]">→</span>
+                    <code className="text-[11px] text-zinc-500 font-mono">{rel.target_key}</code>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

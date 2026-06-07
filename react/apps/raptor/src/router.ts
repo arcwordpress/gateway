@@ -10,26 +10,22 @@ import { appConfig } from './config'
 import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
-import ExtensionsEditorPage from './pages/ExtensionsEditorPage'
-// import CollectionsPage from './pages/Collections'
-import CollectionsPageWithTabs from './pages/CollectionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
-import FieldsPage from './pages/Fields'
+import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsPage from './pages/Views'
 import ViewDesignPage from './pages/ViewDesign'
 import FormsPage from './pages/Forms'
-import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsTopLevelPage from './pages/ViewsTopLevel'
 import FormsTopLevelPage from './pages/FormsTopLevel'
 import SettingsPage from './pages/Settings'
 import ConnectionSettingsPage from './pages/ConnectionSettings'
-import DocsPage from './pages/Docs'
 import RecordsIndexPage from './pages/records/RecordsIndex'
 import RecordsListPage from './pages/records/RecordsList'
 import RecordFormPage from './pages/records/RecordForm'
 import RecordViewPage from './pages/records/RecordView'
 import CollectionsRelationshipsPage from './pages/CollectionsRelationshipsPage'
 import PackagesTopLevelPage from './pages/PackagesTopLevel'
+import AppsPage from './pages/AppsPage'
 
 // For WP admin: set the initial hash route from the PHP-injected data-route
 // attribute before the router reads window.location.hash
@@ -51,15 +47,9 @@ const indexRoute = createRoute({
   component: DashboardPage,
 })
 
-const collectionsViewerRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections',
-  component: CollectionsPageWithTabs,
-})
-
 const registeredCollectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/collections/registered',
+  path: '/collections',
   component: RegisteredCollectionsPage,
 })
 
@@ -79,11 +69,6 @@ const fieldsTopLevelRoute = createRoute({
 const viewsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsTopLevelPage })
 const formsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/forms', component: FormsTopLevelPage })
 
-export const fieldsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections/$collectionKey/fields',
-  component: FieldsPage,
-})
 
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -91,16 +76,16 @@ const extensionsRoute = createRoute({
   component: ExtensionsPage,
 })
 
-const extensionsEditorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/extensions/editor',
-  component: ExtensionsEditorPage,
-})
-
 const packagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/packages',
   component: PackagesTopLevelPage,
+})
+
+const appsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/apps',
+  component: AppsPage,
 })
 
 // Hidden from nav — restore nav links in Sidebar.tsx to re-enable
@@ -118,12 +103,6 @@ const connectionSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/connection',
   component: ConnectionSettingsPage,
-})
-
-const docsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/docs',
-  component: DocsPage,
 })
 
 // ─── Records routes ───────────────────────────────────────────────────────────
@@ -160,22 +139,19 @@ export const recordViewRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  collectionsViewerRoute,
   registeredCollectionsRoute,
   collectionsRelationshipsRoute,
   fieldsTopLevelRoute,
   formsTopLevelRoute,
   viewsTopLevelRoute,
   extensionsRoute,
-  extensionsEditorRoute,
   packagesRoute,
-  fieldsRoute,
+  appsRoute,
   formsRoute,
   viewsRoute,
   viewDesignRoute,
   settingsRoute,
   connectionSettingsRoute,
-  docsRoute,
   recordsIndexRoute,
   recordsListRoute,
   recordCreateRoute,

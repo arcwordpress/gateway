@@ -130,7 +130,6 @@ export default function RegisteredExtensionsCard() {
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-zinc-100">Registered Extensions</h2>
-          <p className="text-xs text-zinc-500">Built and active in the runtime registry</p>
         </div>
         <div className="rounded-md border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-medium text-zinc-300">
           {isLoading ? '...' : total}

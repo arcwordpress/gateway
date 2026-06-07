@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { View } from '../../lib/object_types'
-import { useCollection } from '../Fields/FieldsPageContext'
+import { useCollection } from '../Builders/BuilderCollectionContext'
 
 export type SurfaceState =
   | { mode: 'deleteConfirm'; view: View }
   | { mode: 'editView'; view: View }
   | null
 
-export { useCollection, CollectionProvider } from '../Fields/FieldsPageContext'
+export { useCollection, CollectionProvider } from '../Builders/BuilderCollectionContext'
 
 const ViewsContext = createContext<{
   views: View[]

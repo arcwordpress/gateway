@@ -3,9 +3,8 @@ import { Maximize2, Minimize2, Settings2, type LucideIcon } from 'lucide-react'
 
 // ─── Helper function to determine if a link is active ─────────────────────
 function getIsActive(to: string, pathname: string): boolean {
-  // For /collections, match either of the two collections routes
   if (to === '/collections') {
-    return pathname === '/collections' || pathname === '/collections/registered'
+    return pathname === '/collections' || pathname === '/collections/relationships'
   }
 
   // For /fields, /forms, /views, match either:
@@ -84,6 +83,7 @@ export default function Sidebar({
         <NavLink to="/packages" label="Packages" />
         <NavLink to="/collections" label="Collections" />
         <NavLink to="/fields" label="Fields" />
+        <NavLink to="/apps" label="Apps" />
 
         <SectionLabel label="Records" />
         <NavLink to="/records" label="Records" />
@@ -91,17 +91,6 @@ export default function Sidebar({
 
       {/* Bottom items - always visible at bottom */}
       <div className="p-2 space-y-0.5">
-        <SectionLabel label="Help" />
-        <NavLink to="/docs" label="Documentation" />
-        <a
-          href="https://arcwp.ca/support"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="gateway-sidebar-link flex items-center px-3 py-2 rounded text-sm !text-zinc-400 hover:!text-zinc-100 hover:bg-zinc-700/25 transition-colors"
-        >
-          Support
-        </a>
-
         <NavLink to="/settings" label="Settings" icon={Settings2} />
 
         <Link
