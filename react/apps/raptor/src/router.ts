@@ -11,10 +11,6 @@ import Layout from './routes/Layout'
 import DashboardPage from './pages/Dashboard'
 import ExtensionsPage from './pages/ExtensionsPage'
 import RegisteredCollectionsPage from './pages/RegisteredCollectionsPage'
-import FieldsPage from './pages/Fields'
-import ViewsPage from './pages/Views'
-import ViewDesignPage from './pages/ViewDesign'
-import FormsPage from './pages/Forms'
 import FieldsTopLevelPage from './pages/FieldsTopLevel'
 import ViewsTopLevelPage from './pages/ViewsTopLevel'
 import FormsTopLevelPage from './pages/FormsTopLevel'
@@ -70,11 +66,6 @@ const fieldsTopLevelRoute = createRoute({
 const viewsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsTopLevelPage })
 const formsTopLevelRoute = createRoute({ getParentRoute: () => rootRoute, path: '/forms', component: FormsTopLevelPage })
 
-export const fieldsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/collections/$collectionKey/fields',
-  component: FieldsPage,
-})
 
 const extensionsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -152,7 +143,6 @@ const routeTree = rootRoute.addChildren([
   viewsTopLevelRoute,
   extensionsRoute,
   packagesRoute,
-  fieldsRoute,
   formsRoute,
   viewsRoute,
   viewDesignRoute,

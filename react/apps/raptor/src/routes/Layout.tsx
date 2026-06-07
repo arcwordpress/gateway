@@ -85,7 +85,7 @@ export default function Layout() {
     }
   }, [])
 
-  const shouldLoadCollections = pathname === '/fields'
+  const shouldLoadCollections = false
 
   const { data: collections = [], isLoading: isCollectionsLoading } = useQuery<RegisteredCollection[], Error, WorkspaceCollection[]>({
     queryKey: REGISTERED_COLLECTIONS_KEY,
