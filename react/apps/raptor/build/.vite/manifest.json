@@ -1,6 +1,6 @@
 {
-  "_vendor-charts-DJgcdPAF.js": {
-    "file": "assets/vendor-charts-DJgcdPAF.js",
+  "_vendor-charts-CL42erA5.js": {
+    "file": "assets/vendor-charts-CL42erA5.js",
     "name": "vendor-charts",
     "imports": [
       "_vendor-router-80ChAYgO.js"
@@ -13,16 +13,16 @@
       "_vendor-router-80ChAYgO.js"
     ]
   },
-  "_vendor-flow-BtFdiv6p.js": {
-    "file": "assets/vendor-flow-BtFdiv6p.js",
+  "_vendor-flow-g5uTFUeq.js": {
+    "file": "assets/vendor-flow-g5uTFUeq.js",
     "name": "vendor-flow",
     "imports": [
       "_vendor-router-80ChAYgO.js",
-      "_vendor-charts-DJgcdPAF.js"
+      "_vendor-charts-CL42erA5.js"
     ]
   },
-  "_vendor-icons-2T5cMPHO.js": {
-    "file": "assets/vendor-icons-2T5cMPHO.js",
+  "_vendor-icons-cCzI0lsN.js": {
+    "file": "assets/vendor-icons-cCzI0lsN.js",
     "name": "vendor-icons",
     "imports": [
       "_vendor-router-80ChAYgO.js"
@@ -47,20 +47,20 @@
     "name": "vendor-router"
   },
   "src/main.tsx": {
-    "file": "assets/main-BOyfXdXA.js",
+    "file": "assets/main-BTs_MyOX.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true,
     "imports": [
       "_vendor-router-80ChAYgO.js",
       "_vendor-query-B90RFYKO.js",
-      "_vendor-icons-2T5cMPHO.js",
-      "_vendor-charts-DJgcdPAF.js",
-      "_vendor-flow-BtFdiv6p.js",
-      "_vendor-dnd-BgTEbaJ8.js"
+      "_vendor-icons-cCzI0lsN.js",
+      "_vendor-charts-CL42erA5.js",
+      "_vendor-dnd-BgTEbaJ8.js",
+      "_vendor-flow-g5uTFUeq.js"
     ],
     "css": [
-      "assets/main-DCWeRUA-.css"
+      "assets/main-DRWr4rqx.css"
     ]
   }
 }
