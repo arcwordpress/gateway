@@ -47,10 +47,14 @@ export default function FieldsTopLevelPage() {
       const res = await fetch(apiUrl('gateway/v1/collections?include_private=true'), { headers: authHeaders() })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      const cols: CollectionWithFields[] = (Array.isArray(json) ? json : []).filter(
-        (c: CollectionWithFields) => Array.isArray(c.fields) && c.fields.length > 0
-      )
-      return cols
+      const raw: (Omit<CollectionWithFields, 'fields'> & { fields: FieldDef[] | Record<string, FieldDef> })[] =
+        Array.isArray(json) ? json : []
+      return raw
+        .map((c) => ({
+          ...c,
+          fields: Array.isArray(c.fields) ? c.fields : Object.values(c.fields ?? {}),
+        }))
+        .filter((c) => c.fields.length > 0)
     },
     staleTime: 30_000,
   })
