@@ -12,17 +12,32 @@ Wrap your component tree in `CollectionProvider`, then read records with `useCol
 import { CollectionProvider, useCollectionRecords } from '@arcwp/gateway';
 
 function EventsList() {
-    const { records, loading, error } = useCollectionRecords();
+    const {
+        records,
+        loading,
+        error,
+        deleteRecord,
+        refresh,
+    } = useCollectionRecords();
 
     if (loading) return <p>Loading...</p>;
     if (error)   return <p>Error: {error}</p>;
 
     return (
-        <ul>
-            {records.map(record => (
-                <li key={record.id}>{record.title}</li>
-            ))}
-        </ul>
+        <div>
+            <button onClick={refresh}>Reload</button>
+            <ul>
+                {records.map(record => (
+                    <li key={record.id}>
+                        <strong>{record.title}</strong>
+                        <span>{record.date}</span>
+                        <button onClick={() => deleteRecord(record.id)}>
+                            Delete
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 
@@ -37,6 +52,8 @@ export default function EventsPage() {
     );
 }
 ```
+
+`record.title` and `record.date` are whatever fields your collection defines — field names match the keys set in the PHP collection schema.
 
 `collectionKey` is the key you registered the collection with in PHP.
 
