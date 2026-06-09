@@ -80,13 +80,13 @@ Replace `my-app` with whatever `$key` you set in your PHP class.
 
 ## 4. Write `src/App.js`
 
-Read `basePath` from the localized global (set by your PHP class's `$localizeKey`):
+Read `basePath` from the shared `gatewayAdminScript` global. All Gateway apps use the same key — this is fine because only one app ever loads on a given page:
 
 ```js
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/pages/Home';
 
-const basename = window.myAppData?.basePath || '/';
+const basename = window.gatewayAdminScript?.basePath || '/';
 
 function App() {
     return (
@@ -101,7 +101,7 @@ function App() {
 export default App;
 ```
 
-Replace `myAppData` with your `$localizeKey`. Add routes as needed.
+Add routes as needed.
 
 ---
 
