@@ -38,13 +38,20 @@ Copy this exactly and swap the `name`:
     "@wordpress/scripts": "^27.0.0"
   },
   "dependencies": {
+    "@arcwp/gateway": "file:../../../gateway/react/packages/gateway",
     "@wordpress/element": "^5.0.0",
     "react-router-dom": "^7.0.0"
   }
 }
 ```
 
-Add any other packages you need under `dependencies`. Run `npm install`.
+The `@arcwp/gateway` path assumes your plugin lives alongside the Gateway plugin (e.g. `wp-content/plugins/your-plugin/apps/my-app/package.json`). Adjust the relative path if your directory layout differs — it must resolve to `gateway/react/packages/gateway`.
+
+Add any other packages you need under `dependencies`, then install:
+
+```bash
+npm install
+```
 
 ---
 
@@ -95,9 +102,10 @@ Replace `myAppData` with your `$localizeKey`. Add routes as needed.
 
 ---
 
-## 5. Build
+## 5. Install and build
 
 ```bash
+npm install      # install dependencies (including @arcwp/gateway local package)
 npm run build    # production build → build/
 npm run start    # watch mode for development
 ```
