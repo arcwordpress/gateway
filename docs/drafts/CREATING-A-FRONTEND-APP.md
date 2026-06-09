@@ -13,6 +13,9 @@ your-plugin/
   apps/
     my-app/
       src/
+        components/
+          pages/
+            Home.js
         index.js
         App.js
         index.css
@@ -102,7 +105,22 @@ Replace `myAppData` with your `$localizeKey`. Add routes as needed.
 
 ---
 
-## 5. Install and build
+## 5. Write `src/components/pages/Home.js`
+
+A minimal placeholder so the app renders:
+
+```js
+function Home() {
+    return <div>Hello from my app.</div>;
+}
+
+export default Home;
+```
+
+---
+
+## 6. Install and build
+
 
 ```bash
 npm install      # install dependencies (including @arcwp/gateway local package)
