@@ -37,6 +37,7 @@ export {
 export { useField } from './hooks/useField';
 
 // Field type exports.
+export { useHasManyField } from './components/field-types/has-many';
 export { useRelationField } from './components/field-types/relation';
 export { useTextField } from './components/field-types/text';
 export { useButtonGroupField } from './components/field-types/button-group';
