@@ -192,7 +192,11 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
       {}  // No updatingFields for FormBuilder
     ),
     saveParent,
-  }), [methods, collection, effectiveRecordId, loading, error, autoSavedId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // loading and error are intentionally omitted — they gate the outer loading
+  // UI in Form, not the field components inside the context.  Including them
+  // would cause every field to re-render (and re-run effects) on every loading
+  // state transition, producing duplicate API calls in fields like has_many.
+  }), [methods, collection, effectiveRecordId, autoSavedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!collectionKey) {
     return (

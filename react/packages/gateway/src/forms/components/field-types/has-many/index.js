@@ -170,12 +170,11 @@ const HasManyControl = ({ config = {} }) => {
   const parentId = recordId ?? null;
 
   // Fetch target collection info + all its records.
+  // Guard: wait until parent collection is loaded before attempting to resolve
+  // the relationship target.  Add AbortController so React StrictMode's
+  // double-invoke and fast navigation don't leave stale requests in flight.
   useEffect(() => {
-    if (!relName) {
-      setFetchError('No relationship name configured');
-      setLoading(false);
-      return;
-    }
+    if (!relName || !collection) return; // wait for parent collection to load
 
     const targetKey = resolveTargetKey(collection, relName);
     if (!targetKey) {
@@ -184,32 +183,37 @@ const HasManyControl = ({ config = {} }) => {
       return;
     }
 
+    const controller = new AbortController();
+
     const load = async () => {
       try {
         setLoading(true);
         setFetchError(null);
         const client = getApiClient();
 
-        const infoRes    = await client.get(`gateway/v1/collections/${targetKey}`);
+        const infoRes    = await client.get(`gateway/v1/collections/${targetKey}`, { signal: controller.signal });
         const targetColl = infoRes.data;
         setTargetCollection(targetColl);
 
         const listEndpoint = resolveEndpoint(targetColl?.routes, 'get_many');
         if (listEndpoint) {
-          const recordsRes = await client.get(listEndpoint);
+          const recordsRes = await client.get(listEndpoint, { signal: controller.signal });
           const items = recordsRes.data?.data?.items ?? recordsRes.data ?? [];
           setAllItems(Array.isArray(items) ? items : []);
         }
 
         setUpdateEndpoint(resolveEndpoint(targetColl?.routes, 'update'));
       } catch (err) {
-        setFetchError(err.message || 'Failed to load related items');
+        if (!controller.signal.aborted) {
+          setFetchError(err.message || 'Failed to load related items');
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     load();
+    return () => controller.abort();
   }, [relName, collection]);
 
   // Items currently associated with this parent (FK matches parentId).
