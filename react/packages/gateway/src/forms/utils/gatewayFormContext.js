@@ -41,6 +41,7 @@ export const createGatewayFormContext = (
     // Other RHF methods (may be undefined in non-RHF context)
     setValue: methods?.setValue,
     getValues: methods?.getValues,
+    unregister: methods?.unregister,
     watch: methods?.watch,
     control: methods?.control,
     handleSubmit: methods?.handleSubmit,
