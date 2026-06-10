@@ -16,7 +16,7 @@ export const generateFieldSchema = (fieldName, fieldConfig = {}, options = {}) =
 
   // has_many is a UI-only relationship manager — children store the FK back to
   // the parent, so nothing is saved on the parent record itself.
-  if (fieldConfig.type === 'has_many') {
+  if (fieldConfig.type === 'has_many' || fieldConfig.type === 'has-many') {
     return null;
   }
 

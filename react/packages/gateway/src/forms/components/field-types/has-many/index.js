@@ -137,7 +137,17 @@ const HasManyInlineForm = ({ targetCollection, fkField, parentId, onCreated, onC
 const HasManyControl = ({ config = {} }) => {
   // recordId is the parent record's ID — needed as the FK value for children.
   // collection is the parent collection (used to resolve the relationship target key).
-  const { collection, recordId } = useGatewayForm();
+  const { collection, recordId, unregister } = useGatewayForm();
+
+  // Ensure this field is never part of the parent form's RHF state.
+  // reset(serverData) may have seeded an array value here (e.g. eager-loaded
+  // relation data from the server), which would fail Zod's string schema if
+  // it somehow slipped through.  Unregistering removes it immediately.
+  useEffect(() => {
+    if (name && unregister) {
+      unregister(name, { keepDefaultValue: false, keepValue: false });
+    }
+  }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const name         = config.name;
   const relName      = config.relationship ?? '';
