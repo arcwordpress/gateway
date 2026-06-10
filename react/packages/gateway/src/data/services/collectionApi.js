@@ -18,7 +18,7 @@ export const fetchCollections = async (params = {}, options = {}) => {
   if (options.auth) {
     config.auth = options.auth;
   }
-  const response = await client.get('collections', config);
+  const response = await client.get('gateway/v1/collections', config);
   return response.data;
 };
 
@@ -35,7 +35,7 @@ export const fetchCollection = async (key, options = {}) => {
   if (options.auth) {
     config.auth = options.auth;
   }
-  const response = await client.get(`collections/${key}`, config);
+  const response = await client.get(`gateway/v1/collections/${key}`, config);
   return response.data;
 };
 
@@ -50,9 +50,7 @@ export const fetchCollection = async (key, options = {}) => {
  * @returns {string} Full endpoint path
  */
 const buildEndpoint = (namespace, route) => {
-  // apiClient baseURL already includes the namespace (e.g. /wp-json/gateway/v1),
-  // so we only need the route segment here.
-  return route;
+  return `${namespace}/${route}`;
 };
 
 /**
