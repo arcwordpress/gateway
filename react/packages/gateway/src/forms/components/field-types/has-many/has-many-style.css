@@ -1,0 +1,234 @@
+/* ── Has-Many field type ─────────────────────────────────────────────── */
+
+.has-many {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Selected chips */
+
+.has-many__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+
+.has-many__empty {
+  font-size: 13px;
+  color: #9ca3af;
+  align-self: center;
+}
+
+.has-many__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 10px;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  font-size: 13px;
+  color: #0369a1;
+}
+
+.has-many__chip-label {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.has-many__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #0369a1;
+  transition: background 0.15s;
+}
+
+.has-many__chip-remove:hover {
+  background: #bae6fd;
+}
+
+/* Action buttons row */
+
+.has-many__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.has-many__btn {
+  padding: 5px 12px;
+  font-size: 13px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.has-many__btn--select {
+  background: #fff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.has-many__btn--select:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.has-many__btn--create {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
+
+.has-many__btn--create:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+}
+
+/* Dropdown */
+
+.has-many__dropdown-wrap {
+  position: relative;
+}
+
+.has-many__dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+
+.has-many__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  min-width: 220px;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.has-many__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.has-many__dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+/* Loading / error states */
+
+.has-many__loading,
+.has-many__error {
+  font-size: 13px;
+  padding: 6px 0;
+}
+
+.has-many__error {
+  color: #dc2626;
+}
+
+/* Display mode */
+
+.has-many__display--empty {
+  color: #9ca3af;
+}
+
+/* ── Modal form ──────────────────────────────────────────────────────── */
+
+.has-many-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.has-many-modal__error {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.has-many-modal__loading {
+  padding: 16px 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.has-many-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.has-many-modal__btn {
+  padding: 7px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+
+.has-many-modal__btn--cancel {
+  background: #fff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.has-many-modal__btn--cancel:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.has-many-modal__btn--submit {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
+
+.has-many-modal__btn--submit:hover:not(:disabled) {
+  background: #0284c7;
+}
+
+.has-many-modal__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

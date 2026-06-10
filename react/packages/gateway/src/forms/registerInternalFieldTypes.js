@@ -1,4 +1,5 @@
 import { registerFieldType } from './fieldTypeRegistry';
+import { hasManyFieldType } from './components/field-types/has-many';
 import { relationFieldType } from './components/field-types/relation';
 import { relationshipFieldType } from './components/field-types/relationship';
 import { textFieldType } from './components/field-types/text';
@@ -45,6 +46,7 @@ export const initializeFieldTypes = () => {
 
   isInitialized = true;
 
+  registerFieldType(hasManyFieldType);
   registerFieldType(relationFieldType);
   registerFieldType(relationshipFieldType);
   registerFieldType(textFieldType);
