@@ -17,19 +17,18 @@ function resolveTargetKey(collection, relationshipName) {
   return rel?.target_key ?? null;
 }
 
-function resolveEndpoint(routes, preferType) {
+// Returns the clean base endpoint path (no ID suffix) suitable for both
+// collection-level operations (GET list, POST create) and record-level
+// operations where the caller appends the ID (PUT, DELETE).
+// create and get_many routes always carry the plain path; update/delete/get_one
+// append the WP REST regex placeholder which we deliberately avoid here.
+function resolveBaseCollectionEndpoint(routes) {
   if (!Array.isArray(routes) || routes.length === 0) return null;
   const r =
-    routes.find((r) => r.type === preferType) ??
+    routes.find((r) => r.type === 'create') ??
     routes.find((r) => r.type === 'get_many') ??
-    routes[0] ??
     null;
-  if (!r) return null;
-  // WordPress REST routes for single-item operations include a regex placeholder
-  // like "(?P<id>\d+)".  Strip everything from that pattern onward so we end up
-  // with a clean base path (e.g. "timeline-images") that we can append the ID to.
-  const cleanPath = (r.path ?? '').replace(/\/\(\?P<[^>]+>[^)]+\).*$/, '');
-  return `${r.namespace}/${cleanPath}`;
+  return r ? `${r.namespace}/${r.path}` : null;
 }
 
 // ── Inline FieldRenderer ─────────────────────────────────────────────────────
@@ -66,7 +65,7 @@ const HasManyInlineForm = ({ targetCollection, fkField, parentId, onCreated, onC
   });
 
   const endpoint = useMemo(
-    () => resolveEndpoint(targetCollection?.routes, 'create'),
+    () => resolveBaseCollectionEndpoint(targetCollection?.routes),
     [targetCollection],
   );
 
@@ -195,14 +194,14 @@ const HasManyControl = ({ config = {} }) => {
         const targetColl = infoRes.data;
         setTargetCollection(targetColl);
 
-        const listEndpoint = resolveEndpoint(targetColl?.routes, 'get_many');
-        if (listEndpoint) {
-          const recordsRes = await client.get(listEndpoint, { signal: controller.signal });
+        const baseEndpoint = resolveBaseCollectionEndpoint(targetColl?.routes);
+        if (baseEndpoint) {
+          const recordsRes = await client.get(baseEndpoint, { signal: controller.signal });
           const items = recordsRes.data?.data?.items ?? recordsRes.data ?? [];
           setAllItems(Array.isArray(items) ? items : []);
+          // Same base path is used for PUT /base/:id and DELETE /base/:id
+          setUpdateEndpoint(baseEndpoint);
         }
-
-        setUpdateEndpoint(resolveEndpoint(targetColl?.routes, 'update'));
       } catch (err) {
         if (!controller.signal.aborted) {
           setFetchError(err.message || 'Failed to load related items');
