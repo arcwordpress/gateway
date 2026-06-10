@@ -65,6 +65,8 @@ export const createGatewayFormContext = (
       delete refs.fields[fieldName];
     },
     isFieldUpdating: (fieldName) => updatingFields[fieldName] || false,
+    // Placeholder — Form.js spreads its own saveParent over this.
+    saveParent: null,
     getFieldError: (fieldName) => fieldErrors[fieldName] || null,
     getFieldConfig: (fieldName) => {
       if (!collection?.fields?.[fieldName]) return null;

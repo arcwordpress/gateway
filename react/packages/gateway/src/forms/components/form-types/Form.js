@@ -47,6 +47,8 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  // ID of a record auto-saved by a has_many field before the user hit the main submit.
+  const [autoSavedId, setAutoSavedId] = useState(null);
 
   // Generate validation schema from collection data
   const validationSchema = useMemo(() => {
@@ -126,9 +128,10 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
       setError(null);
       setSuccess(null);
 
+      const effectiveId = recordId || autoSavedId;
       let response;
-      if (isEditMode && recordId) {
-        response = await updateRecord(endpoint, recordId, data, { auth: apiAuth });
+      if (isEditMode || effectiveId) {
+        response = await updateRecord(endpoint, effectiveId, data, { auth: apiAuth });
         setSuccess('Record updated successfully!');
       } else {
         response = await createRecord(endpoint, data, { auth: apiAuth });
@@ -144,16 +147,52 @@ const Form = ({ collectionKey, recordId, apiAuth }) => {
     }
   };
 
+  // Called by has_many fields when they need the parent ID before the main
+  // submit button is pressed (inline child creation in create mode).
+  // Validates, saves the parent, and returns the new record's ID.
+  const saveParent = async () => {
+    const endpoint = resolveBaseEndpoint(collection?.routes);
+    if (!endpoint) throw new Error('No endpoint available');
+
+    const effectiveId = recordId || autoSavedId;
+
+    // Trigger validation; throws if invalid so the has_many field can handle it.
+    const valid = await methods.trigger();
+    if (!valid) throw new Error('Please fix validation errors before adding related items.');
+
+    const data = methods.getValues();
+    if (effectiveId) {
+      // Already saved — update and return existing ID.
+      await updateRecord(endpoint, effectiveId, data, { auth: apiAuth });
+      return effectiveId;
+    } else {
+      const response = await createRecord(endpoint, data, { auth: apiAuth });
+      const newId = response?.id ?? response?.data?.id ?? null;
+      if (newId) {
+        setAutoSavedId(newId);
+        setIsEditMode(true);
+      }
+      return newId;
+    }
+  };
+
+  // effectiveRecordId: use the prop if provided, otherwise fall back to a
+  // record that was auto-saved by an inline has_many create action.
+  const effectiveRecordId = recordId || autoSavedId || null;
+
   // Combined context value to provide to children (fields)
-  const contextValue = useMemo(() => createGatewayFormContext(
-    methods,
-    collection,
-    recordId,
-    loading,
-    error,
-    {}, // No fieldErrors for FormBuilder
-    {}  // No updatingFields for FormBuilder
-  ), [methods, collection, recordId, loading, error]);
+  const contextValue = useMemo(() => ({
+    ...createGatewayFormContext(
+      methods,
+      collection,
+      effectiveRecordId,
+      loading,
+      error,
+      {}, // No fieldErrors for FormBuilder
+      {}  // No updatingFields for FormBuilder
+    ),
+    saveParent,
+  }), [methods, collection, effectiveRecordId, loading, error, autoSavedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!collectionKey) {
     return (

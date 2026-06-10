@@ -24,7 +24,12 @@ function resolveEndpoint(routes, preferType) {
     routes.find((r) => r.type === 'get_many') ??
     routes[0] ??
     null;
-  return r ? `${r.namespace}/${r.path}` : null;
+  if (!r) return null;
+  // WordPress REST routes for single-item operations include a regex placeholder
+  // like "(?P<id>\d+)".  Strip everything from that pattern onward so we end up
+  // with a clean base path (e.g. "timeline-images") that we can append the ID to.
+  const cleanPath = (r.path ?? '').replace(/\/\(\?P<[^>]+>[^)]+\).*$/, '');
+  return `${r.namespace}/${cleanPath}`;
 }
 
 // ── Inline FieldRenderer ─────────────────────────────────────────────────────
@@ -135,38 +140,34 @@ const HasManyInlineForm = ({ targetCollection, fkField, parentId, onCreated, onC
 // ── HasManyControl ───────────────────────────────────────────────────────────
 
 const HasManyControl = ({ config = {} }) => {
-  // recordId is the parent record's ID — needed as the FK value for children.
-  // collection is the parent collection (used to resolve the relationship target key).
-  const { collection, recordId, unregister } = useGatewayForm();
+  const { collection, recordId, unregister, saveParent } = useGatewayForm();
 
-  // Ensure this field is never part of the parent form's RHF state.
-  // reset(serverData) may have seeded an array value here (e.g. eager-loaded
-  // relation data from the server), which would fail Zod's string schema if
-  // it somehow slipped through.  Unregistering removes it immediately.
+  const name         = config.name;
+  const relName      = config.relationship ?? '';
+  const displayField = config.displayField ?? 'title';
+  const valueField   = config.valueField   ?? 'id';
+  const fkField      = config.fkField ?? null;
+
+  // Ensure any array value seeded into RHF by reset(serverData) is removed
+  // so it never interferes with parent form validation.
   useEffect(() => {
     if (name && unregister) {
       unregister(name, { keepDefaultValue: false, keepValue: false });
     }
   }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const name         = config.name;
-  const relName      = config.relationship ?? '';
-  const displayField = config.displayField ?? 'title';
-  const valueField   = config.valueField   ?? 'id';
-  // fkField: the field on the child collection that holds the FK pointing to this parent.
-  // e.g. 'timeline_item_id' for a TimelineImage that belongs to a TimelineItem.
-  const fkField      = config.fkField ?? null;
-
-  const [allItems, setAllItems]               = useState([]);
+  const [allItems, setAllItems]                 = useState([]);
   const [targetCollection, setTargetCollection] = useState(null);
-  const [updateEndpoint, setUpdateEndpoint]   = useState(null);
-  const [loading, setLoading]                 = useState(true);
-  const [fetchError, setFetchError]           = useState(null);
-  const [modalOpen, setModalOpen]             = useState(false);
-  const [dropdownOpen, setDropdownOpen]       = useState(false);
+  const [updateEndpoint, setUpdateEndpoint]     = useState(null);
+  const [loading, setLoading]                   = useState(true);
+  const [fetchError, setFetchError]             = useState(null);
+  const [actionError, setActionError]           = useState(null);
+  const [modalOpen, setModalOpen]               = useState(false);
+  const [dropdownOpen, setDropdownOpen]         = useState(false);
+  const [autoSaving, setAutoSaving]             = useState(false);
 
+  // parentId comes from context — updated immediately after auto-save.
   const parentId = recordId ?? null;
-  const isEditMode = parentId != null;
 
   // Fetch target collection info + all its records.
   useEffect(() => {
@@ -200,8 +201,7 @@ const HasManyControl = ({ config = {} }) => {
           setAllItems(Array.isArray(items) ? items : []);
         }
 
-        const upEndpoint = resolveEndpoint(targetColl?.routes, 'update');
-        setUpdateEndpoint(upEndpoint);
+        setUpdateEndpoint(resolveEndpoint(targetColl?.routes, 'update'));
       } catch (err) {
         setFetchError(err.message || 'Failed to load related items');
       } finally {
@@ -214,50 +214,77 @@ const HasManyControl = ({ config = {} }) => {
 
   // Items currently associated with this parent (FK matches parentId).
   const currentItems = useMemo(() => {
-    if (!fkField || !isEditMode) return [];
+    if (!fkField || parentId == null) return [];
     return allItems.filter((item) => String(item[fkField]) === String(parentId));
-  }, [allItems, fkField, parentId, isEditMode]);
+  }, [allItems, fkField, parentId]);
 
-  // Items that exist but belong to a different parent (or no parent) — can be re-assigned.
+  // Items that can be re-assigned to this parent.
   const availableItems = useMemo(() => {
-    if (!fkField || !isEditMode) return [];
+    if (!fkField || parentId == null) return [];
     return allItems.filter((item) => String(item[fkField]) !== String(parentId));
-  }, [allItems, fkField, parentId, isEditMode]);
+  }, [allItems, fkField, parentId]);
 
   const getLabel = (item) =>
     item[displayField] ?? item.title ?? item.name ?? String(item[valueField]);
 
-  // "Select existing" — update the child record's FK to point to this parent.
-  const handleSelect = useCallback(async (item) => {
-    if (!updateEndpoint || !fkField || !isEditMode) return;
+  // Ensure the parent record exists (auto-save if needed) before any child operation.
+  const ensureParent = async () => {
+    if (parentId != null) return parentId;
+    if (!saveParent) throw new Error('Auto-save not available');
+    setAutoSaving(true);
+    try {
+      const newId = await saveParent();
+      return newId;
+    } finally {
+      setAutoSaving(false);
+    }
+  };
+
+  // "Create New" — auto-save parent first if needed, then open modal.
+  const handleCreateNew = async () => {
+    setActionError(null);
+    try {
+      await ensureParent();
+      setModalOpen(true);
+    } catch (err) {
+      setActionError(err.message || 'Could not save parent record');
+    }
+  };
+
+  // "Select existing" — auto-save parent if needed, then re-assign FK.
+  const handleSelect = async (item) => {
+    if (!fkField) return;
+    setActionError(null);
     setDropdownOpen(false);
     try {
-      const updated = await updateRecord(updateEndpoint, item[valueField], { [fkField]: parentId });
+      const pid = await ensureParent();
+      const updated = await updateRecord(updateEndpoint, item[valueField], { [fkField]: pid });
       setAllItems((prev) =>
-        prev.map((i) => (i[valueField] === item[valueField] ? { ...i, ...updated } : i)),
+        prev.map((i) => (String(i[valueField]) === String(item[valueField]) ? { ...i, ...updated } : i)),
       );
     } catch (err) {
+      setActionError(err.message || 'Failed to associate item');
       console.error('HasMany: failed to associate item', err);
     }
-  }, [updateEndpoint, fkField, parentId, isEditMode, valueField]);
+  };
 
-  // "Remove" — update the child record's FK to null (disassociate).
-  const handleRemove = useCallback(async (item) => {
+  // "Remove" — set child FK to null.
+  const handleRemove = async (item) => {
     if (!updateEndpoint || !fkField) return;
     try {
       const updated = await updateRecord(updateEndpoint, item[valueField], { [fkField]: null });
       setAllItems((prev) =>
-        prev.map((i) => (i[valueField] === item[valueField] ? { ...i, ...updated } : i)),
+        prev.map((i) => (String(i[valueField]) === String(item[valueField]) ? { ...i, ...updated } : i)),
       );
     } catch (err) {
       console.error('HasMany: failed to disassociate item', err);
     }
-  }, [updateEndpoint, fkField, valueField]);
+  };
 
-  const handleCreated = useCallback((newRecord) => {
+  const handleCreated = (newRecord) => {
     setAllItems((prev) => [...prev, newRecord]);
     setModalOpen(false);
-  }, []);
+  };
 
   if (!name) return null;
   if (loading) return <div className="has-many__loading">Loading…</div>;
@@ -265,6 +292,8 @@ const HasManyControl = ({ config = {} }) => {
 
   return (
     <div className="has-many">
+      {actionError && <div className="has-many__error">{actionError}</div>}
+
       {/* ── Current associated items ── */}
       <div className="has-many__chips">
         {currentItems.length === 0 ? (
@@ -288,59 +317,53 @@ const HasManyControl = ({ config = {} }) => {
         )}
       </div>
 
-      {!isEditMode && (
-        <p className="has-many__save-hint">
-          Save this record first to create or associate related items.
-        </p>
-      )}
-
-      {isEditMode && (
-        <div className="has-many__actions">
-          {/* Select existing (re-assign FK) */}
-          {fkField && availableItems.length > 0 && (
-            <div className="has-many__dropdown-wrap">
-              <button
-                type="button"
-                className="has-many__btn has-many__btn--select"
-                onClick={() => setDropdownOpen((o) => !o)}
-              >
-                + Select Existing
-              </button>
-              {dropdownOpen && (
-                <>
-                  <div
-                    className="has-many__dropdown-backdrop"
-                    onClick={() => setDropdownOpen(false)}
-                  />
-                  <div className="has-many__dropdown">
-                    {availableItems.map((item) => (
-                      <button
-                        key={item[valueField]}
-                        type="button"
-                        className="has-many__dropdown-item"
-                        onClick={() => handleSelect(item)}
-                      >
-                        {getLabel(item)}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Create new */}
-          {targetCollection && (
+      <div className="has-many__actions">
+        {/* Select existing (re-assign FK) */}
+        {fkField && availableItems.length > 0 && (
+          <div className="has-many__dropdown-wrap">
             <button
               type="button"
-              className="has-many__btn has-many__btn--create"
-              onClick={() => setModalOpen(true)}
+              className="has-many__btn has-many__btn--select"
+              disabled={autoSaving}
+              onClick={() => setDropdownOpen((o) => !o)}
             >
-              + Create New
+              + Select Existing
             </button>
-          )}
-        </div>
-      )}
+            {dropdownOpen && (
+              <>
+                <div
+                  className="has-many__dropdown-backdrop"
+                  onClick={() => setDropdownOpen(false)}
+                />
+                <div className="has-many__dropdown">
+                  {availableItems.map((item) => (
+                    <button
+                      key={item[valueField]}
+                      type="button"
+                      className="has-many__dropdown-item"
+                      onClick={() => handleSelect(item)}
+                    >
+                      {getLabel(item)}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Create new */}
+        {targetCollection && (
+          <button
+            type="button"
+            className="has-many__btn has-many__btn--create"
+            disabled={autoSaving}
+            onClick={handleCreateNew}
+          >
+            {autoSaving ? 'Saving…' : '+ Create New'}
+          </button>
+        )}
+      </div>
 
       {/* ── Inline create modal ── */}
       <Modal
