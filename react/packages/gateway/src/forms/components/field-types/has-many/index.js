@@ -7,7 +7,7 @@ import { getApiClient } from '@arcwp/gateway-data';
 import { GatewayFormContext, createGatewayFormContext } from '../../../utils/gatewayFormContext';
 import { generateZodSchema } from '../../../utils/zodSchemaGenerator';
 import { useFieldType } from '../../../fieldTypeRegistry';
-import { createRecord } from '../../../services/api';
+import { createRecord, updateRecord } from '../../../services/api';
 import Modal from '../../../../grids/components/Dialog';
 import './has-many-style.css';
 
@@ -19,15 +19,15 @@ function resolveTargetKey(collection, relationshipName) {
 
 function resolveEndpoint(routes, preferType) {
   if (!Array.isArray(routes) || routes.length === 0) return null;
-  const r = routes.find((r) => r.type === preferType)
-    ?? routes.find((r) => r.type === 'get_many')
-    ?? routes[0]
-    ?? null;
+  const r =
+    routes.find((r) => r.type === preferType) ??
+    routes.find((r) => r.type === 'get_many') ??
+    routes[0] ??
+    null;
   return r ? `${r.namespace}/${r.path}` : null;
 }
 
 // ── Inline FieldRenderer ─────────────────────────────────────────────────────
-// Mirrors the FieldRenderer in Form.js but lives inside the modal form context.
 
 const InlineFieldRenderer = React.memo(({ fieldConfig }) => {
   const { Input } = useFieldType(fieldConfig);
@@ -37,23 +37,33 @@ const InlineFieldRenderer = React.memo(({ fieldConfig }) => {
 });
 
 // ── HasManyInlineForm ────────────────────────────────────────────────────────
-// Mini CRUD form rendered inside the modal for creating a related item.
+// Mini form for creating a child record. The FK field is pre-filled with the
+// parent ID and hidden so the user never sees or touches it.
 
-const HasManyInlineForm = ({ targetCollection, onCreated, onCancel }) => {
+const HasManyInlineForm = ({ targetCollection, fkField, parentId, onCreated, onCancel }) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
-  const validationSchema = useMemo(() => {
-    if (!targetCollection) return null;
-    return generateZodSchema(targetCollection);
-  }, [targetCollection]);
+  const defaultValues = useMemo(() => {
+    if (fkField && parentId != null) return { [fkField]: parentId };
+    return {};
+  }, [fkField, parentId]);
+
+  const validationSchema = useMemo(
+    () => (targetCollection ? generateZodSchema(targetCollection) : null),
+    [targetCollection],
+  );
 
   const methods = useForm({
+    defaultValues,
     resolver: validationSchema ? zodResolver(validationSchema) : undefined,
     mode: 'onSubmit',
   });
 
-  const endpoint = useMemo(() => resolveEndpoint(targetCollection?.routes, 'create'), [targetCollection]);
+  const endpoint = useMemo(
+    () => resolveEndpoint(targetCollection?.routes, 'create'),
+    [targetCollection],
+  );
 
   const contextValue = useMemo(
     () => createGatewayFormContext(methods, targetCollection, null, false, submitError, {}, {}),
@@ -78,16 +88,16 @@ const HasManyInlineForm = ({ targetCollection, onCreated, onCancel }) => {
   };
 
   if (!targetCollection?.fields) {
-    return <div className="has-many-modal__loading">Loading form...</div>;
+    return <div className="has-many-modal__loading">Loading form…</div>;
   }
 
   return (
     <GatewayFormContext.Provider value={contextValue}>
-      {submitError && (
-        <div className="has-many-modal__error">{submitError}</div>
-      )}
+      {submitError && <div className="has-many-modal__error">{submitError}</div>}
       <form onSubmit={methods.handleSubmit(onSubmit)} className="has-many-modal__form">
         {Object.entries(targetCollection.fields || {}).map(([fieldName, fieldDef]) => {
+          // Always skip the FK field — it's pre-filled and not for the user to edit.
+          if (fieldName === fkField) return null;
           if (fieldDef.hidden) return null;
           if (
             targetCollection.fillable &&
@@ -125,38 +135,30 @@ const HasManyInlineForm = ({ targetCollection, onCreated, onCancel }) => {
 // ── HasManyControl ───────────────────────────────────────────────────────────
 
 const HasManyControl = ({ config = {} }) => {
-  const { setValue, getValues, collection } = useGatewayForm();
-  const name          = config.name;
-  const relName       = config.relationship ?? '';
-  const displayField  = config.displayField ?? 'title';
-  const valueField    = config.valueField   ?? 'id';
+  // recordId is the parent record's ID — needed as the FK value for children.
+  // collection is the parent collection (used to resolve the relationship target key).
+  const { collection, recordId } = useGatewayForm();
 
-  // selectedIds is the primary source of truth; sync'd to RHF field value.
-  const [selectedIds, setSelectedIds]     = useState([]);
-  const [initialized, setInitialized]     = useState(false);
-  const [availableItems, setAvailableItems] = useState([]);
+  const name         = config.name;
+  const relName      = config.relationship ?? '';
+  const displayField = config.displayField ?? 'title';
+  const valueField   = config.valueField   ?? 'id';
+  // fkField: the field on the child collection that holds the FK pointing to this parent.
+  // e.g. 'timeline_item_id' for a TimelineImage that belongs to a TimelineItem.
+  const fkField      = config.fkField ?? null;
+
+  const [allItems, setAllItems]               = useState([]);
   const [targetCollection, setTargetCollection] = useState(null);
-  const [loading, setLoading]             = useState(true);
-  const [fetchError, setFetchError]       = useState(null);
-  const [modalOpen, setModalOpen]         = useState(false);
-  const [dropdownOpen, setDropdownOpen]   = useState(false);
+  const [updateEndpoint, setUpdateEndpoint]   = useState(null);
+  const [loading, setLoading]                 = useState(true);
+  const [fetchError, setFetchError]           = useState(null);
+  const [modalOpen, setModalOpen]             = useState(false);
+  const [dropdownOpen, setDropdownOpen]       = useState(false);
 
-  // Seed selectedIds from current form value once on mount.
-  useEffect(() => {
-    const current = getValues(name);
-    if (Array.isArray(current) && current.length > 0) {
-      setSelectedIds(current.map(String));
-    }
-    setInitialized(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const parentId = recordId ?? null;
+  const isEditMode = parentId != null;
 
-  // Keep RHF in sync whenever selection changes (skip before initialization).
-  useEffect(() => {
-    if (!initialized) return;
-    setValue(name, selectedIds, { shouldDirty: true, shouldValidate: false });
-  }, [selectedIds, initialized, name, setValue]);
-
-  // Fetch target collection info + its records.
+  // Fetch target collection info + all its records.
   useEffect(() => {
     if (!relName) {
       setFetchError('No relationship name configured');
@@ -177,7 +179,7 @@ const HasManyControl = ({ config = {} }) => {
         setFetchError(null);
         const client = getApiClient();
 
-        const infoRes  = await client.get(`gateway/v1/collections/${targetKey}`);
+        const infoRes    = await client.get(`gateway/v1/collections/${targetKey}`);
         const targetColl = infoRes.data;
         setTargetCollection(targetColl);
 
@@ -185,8 +187,11 @@ const HasManyControl = ({ config = {} }) => {
         if (listEndpoint) {
           const recordsRes = await client.get(listEndpoint);
           const items = recordsRes.data?.data?.items ?? recordsRes.data ?? [];
-          setAvailableItems(Array.isArray(items) ? items : []);
+          setAllItems(Array.isArray(items) ? items : []);
         }
+
+        const upEndpoint = resolveEndpoint(targetColl?.routes, 'update');
+        setUpdateEndpoint(upEndpoint);
       } catch (err) {
         setFetchError(err.message || 'Failed to load related items');
       } finally {
@@ -197,107 +202,135 @@ const HasManyControl = ({ config = {} }) => {
     load();
   }, [relName, collection]);
 
-  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  // Items currently associated with this parent (FK matches parentId).
+  const currentItems = useMemo(() => {
+    if (!fkField || !isEditMode) return [];
+    return allItems.filter((item) => String(item[fkField]) === String(parentId));
+  }, [allItems, fkField, parentId, isEditMode]);
 
-  const selectedItems = useMemo(
-    () => availableItems.filter((item) => selectedIdSet.has(String(item[valueField]))),
-    [availableItems, selectedIdSet, valueField],
-  );
-
-  const unselectedItems = useMemo(
-    () => availableItems.filter((item) => !selectedIdSet.has(String(item[valueField]))),
-    [availableItems, selectedIdSet, valueField],
-  );
+  // Items that exist but belong to a different parent (or no parent) — can be re-assigned.
+  const availableItems = useMemo(() => {
+    if (!fkField || !isEditMode) return [];
+    return allItems.filter((item) => String(item[fkField]) !== String(parentId));
+  }, [allItems, fkField, parentId, isEditMode]);
 
   const getLabel = (item) =>
     item[displayField] ?? item.title ?? item.name ?? String(item[valueField]);
 
-  const handleSelect = useCallback((item) => {
-    setSelectedIds((prev) => [...prev, String(item[valueField])]);
+  // "Select existing" — update the child record's FK to point to this parent.
+  const handleSelect = useCallback(async (item) => {
+    if (!updateEndpoint || !fkField || !isEditMode) return;
     setDropdownOpen(false);
-  }, [valueField]);
+    try {
+      const updated = await updateRecord(updateEndpoint, item[valueField], { [fkField]: parentId });
+      setAllItems((prev) =>
+        prev.map((i) => (i[valueField] === item[valueField] ? { ...i, ...updated } : i)),
+      );
+    } catch (err) {
+      console.error('HasMany: failed to associate item', err);
+    }
+  }, [updateEndpoint, fkField, parentId, isEditMode, valueField]);
 
-  const handleRemove = useCallback((id) => {
-    setSelectedIds((prev) => prev.filter((v) => v !== String(id)));
-  }, []);
+  // "Remove" — update the child record's FK to null (disassociate).
+  const handleRemove = useCallback(async (item) => {
+    if (!updateEndpoint || !fkField) return;
+    try {
+      const updated = await updateRecord(updateEndpoint, item[valueField], { [fkField]: null });
+      setAllItems((prev) =>
+        prev.map((i) => (i[valueField] === item[valueField] ? { ...i, ...updated } : i)),
+      );
+    } catch (err) {
+      console.error('HasMany: failed to disassociate item', err);
+    }
+  }, [updateEndpoint, fkField, valueField]);
 
   const handleCreated = useCallback((newRecord) => {
-    setAvailableItems((prev) => [...prev, newRecord]);
-    setSelectedIds((prev) => [...prev, String(newRecord[valueField])]);
+    setAllItems((prev) => [...prev, newRecord]);
     setModalOpen(false);
-  }, [valueField]);
+  }, []);
 
   if (!name) return null;
-
   if (loading) return <div className="has-many__loading">Loading…</div>;
   if (fetchError) return <div className="has-many__error">Error: {fetchError}</div>;
 
   return (
     <div className="has-many">
-      {/* ── Selected chips ── */}
+      {/* ── Current associated items ── */}
       <div className="has-many__chips">
-        {selectedItems.length === 0 ? (
-          <span className="has-many__empty">No items selected</span>
+        {currentItems.length === 0 ? (
+          <span className="has-many__empty">No items associated yet</span>
         ) : (
-          selectedItems.map((item) => (
+          currentItems.map((item) => (
             <span key={item[valueField]} className="has-many__chip">
               <span className="has-many__chip-label">{getLabel(item)}</span>
-              <button
-                type="button"
-                className="has-many__chip-remove"
-                onClick={() => handleRemove(item[valueField])}
-                aria-label={`Remove ${getLabel(item)}`}
-              >
-                ×
-              </button>
+              {fkField && (
+                <button
+                  type="button"
+                  className="has-many__chip-remove"
+                  onClick={() => handleRemove(item)}
+                  aria-label={`Remove ${getLabel(item)}`}
+                >
+                  ×
+                </button>
+              )}
             </span>
           ))
         )}
       </div>
 
-      {/* ── Actions row ── */}
-      <div className="has-many__actions">
-        {/* Select existing */}
-        {unselectedItems.length > 0 && (
-          <div className="has-many__dropdown-wrap">
+      {!isEditMode && (
+        <p className="has-many__save-hint">
+          Save this record first to create or associate related items.
+        </p>
+      )}
+
+      {isEditMode && (
+        <div className="has-many__actions">
+          {/* Select existing (re-assign FK) */}
+          {fkField && availableItems.length > 0 && (
+            <div className="has-many__dropdown-wrap">
+              <button
+                type="button"
+                className="has-many__btn has-many__btn--select"
+                onClick={() => setDropdownOpen((o) => !o)}
+              >
+                + Select Existing
+              </button>
+              {dropdownOpen && (
+                <>
+                  <div
+                    className="has-many__dropdown-backdrop"
+                    onClick={() => setDropdownOpen(false)}
+                  />
+                  <div className="has-many__dropdown">
+                    {availableItems.map((item) => (
+                      <button
+                        key={item[valueField]}
+                        type="button"
+                        className="has-many__dropdown-item"
+                        onClick={() => handleSelect(item)}
+                      >
+                        {getLabel(item)}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Create new */}
+          {targetCollection && (
             <button
               type="button"
-              className="has-many__btn has-many__btn--select"
-              onClick={() => setDropdownOpen((o) => !o)}
+              className="has-many__btn has-many__btn--create"
+              onClick={() => setModalOpen(true)}
             >
-              + Select Existing
+              + Create New
             </button>
-            {dropdownOpen && (
-              <>
-                <div className="has-many__dropdown-backdrop" onClick={() => setDropdownOpen(false)} />
-                <div className="has-many__dropdown">
-                  {unselectedItems.map((item) => (
-                    <button
-                      key={item[valueField]}
-                      type="button"
-                      className="has-many__dropdown-item"
-                      onClick={() => handleSelect(item)}
-                    >
-                      {getLabel(item)}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Create new */}
-        {targetCollection && (
-          <button
-            type="button"
-            className="has-many__btn has-many__btn--create"
-            onClick={() => setModalOpen(true)}
-          >
-            + Create New
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* ── Inline create modal ── */}
       <Modal
@@ -307,6 +340,8 @@ const HasManyControl = ({ config = {} }) => {
       >
         <HasManyInlineForm
           targetCollection={targetCollection}
+          fkField={fkField}
+          parentId={parentId}
           onCreated={handleCreated}
           onCancel={() => setModalOpen(false)}
         />
